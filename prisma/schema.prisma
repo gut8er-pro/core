@@ -1,0 +1,477 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── User & Auth ────────────────────────────────────────────
+
+model User {
+  id                        String        @id @default(uuid())
+  email                     String        @unique
+  title                     String?
+  firstName                 String?
+  lastName                  String?
+  phone                     String?
+  professionalQualification String?
+  avatarUrl                 String?
+  role                      UserRole      @default(USER)
+  plan                      Plan          @default(PRO)
+  stripeCustomerId          String?       @unique
+  stripeSubscriptionId      String?       @unique
+  trialEndsAt               DateTime?
+  createdAt                 DateTime      @default(now())
+  updatedAt                 DateTime      @updatedAt
+
+  business     Business?
+  integrations Integration[]
+  reports      Report[]
+
+  @@index([email])
+}
+
+model Business {
+  id          String @id @default(uuid())
+  userId      String @unique
+  companyName String
+  street      String
+  postcode    String
+  city        String
+  taxId       String
+  vatId       String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Integration {
+  id                  String              @id @default(uuid())
+  userId              String
+  provider            IntegrationProvider
+  encryptedCredentials String?
+  isActive            Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+// ─── Report ─────────────────────────────────────────────────
+
+model Report {
+  id                   String       @id @default(uuid())
+  userId               String
+  title                String       @default("Untitled Report")
+  status               ReportStatus @default(DRAFT)
+  completionPercentage Int          @default(0)
+  isLocked             Boolean      @default(false)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photos         Photo[]
+  accidentInfo   AccidentInfo?
+  claimantInfo   ClaimantInfo?
+  opponentInfo   OpponentInfo?
+  visits         Visit[]
+  expertOpinion  ExpertOpinion?
+  signatures     Signature[]
+  vehicleInfo    VehicleInfo?
+  condition      VehicleCondition?
+  calculation    Calculation?
+  invoice        Invoice?
+  exportConfig   ExportConfig?
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([userId, status])
+}
+
+// ─── Gallery (Photos & Annotations) ─────────────────────────
+
+model Photo {
+  id            String       @id @default(uuid())
+  reportId      String
+  url           String
+  thumbnailUrl  String?
+  previewUrl    String?
+  aiUrl         String?
+  filename      String
+  type          PhotoType?
+  aiDescription String?
+  order         Int          @default(0)
+  uploadedAt    DateTime     @default(now())
+
+  report      Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  annotations Annotation[]
+
+  @@index([reportId])
+  @@index([reportId, order])
+}
+
+model Annotation {
+  id          String @id @default(uuid())
+  photoId     String
+  type        String
+  color       String
+  coordinates Json
+  fabricJson  Json?
+
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@index([photoId])
+}
+
+// ─── Accident Info ──────────────────────────────────────────
+
+model AccidentInfo {
+  id            String   @id @default(uuid())
+  reportId      String   @unique
+  accidentDay   DateTime?
+  accidentScene String?
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+model ClaimantInfo {
+  id                          String  @id @default(uuid())
+  reportId                    String  @unique
+  company                     String?
+  salutation                  String?
+  firstName                   String?
+  lastName                    String?
+  street                      String?
+  postcode                    String?
+  location                    String?
+  email                       String?
+  phone                       String?
+  vehicleMake                 String?
+  licensePlate                String?
+  eligibleForInputTaxDeduction Boolean @default(false)
+  isVehicleOwner              Boolean @default(true)
+  representedByLawyer         Boolean @default(false)
+  involvedLawyer              String?
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+model OpponentInfo {
+  id               String  @id @default(uuid())
+  reportId         String  @unique
+  company          String?
+  salutation       String?
+  firstName        String?
+  lastName         String?
+  street           String?
+  postcode         String?
+  location         String?
+  email            String?
+  phone            String?
+  insuranceCompany String?
+  insuranceNumber  String?
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+model Visit {
+  id               String   @id @default(uuid())
+  reportId         String
+  type             String
+  street           String?
+  postcode         String?
+  location         String?
+  date             DateTime?
+  expert           String?
+  vehicleCondition String?
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+model ExpertOpinion {
+  id                String   @id @default(uuid())
+  reportId          String   @unique
+  expertName        String?
+  fileNumber        String?
+  caseDate          DateTime?
+  orderWasPlacement String?
+  issuedDate        DateTime?
+  orderByClaimant   Boolean  @default(false)
+  mediator          String?
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+model Signature {
+  id       String        @id @default(uuid())
+  reportId String
+  type     SignatureType
+  imageUrl String?
+  signedAt DateTime?
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+// ─── Vehicle Info ───────────────────────────────────────────
+
+model VehicleInfo {
+  id                      String   @id @default(uuid())
+  reportId                String   @unique
+  // Identification
+  vin                     String?
+  datsCode                String?
+  marketIndex             String?
+  manufacturer            String?
+  mainType                String?
+  subtype                 String?
+  kbaNumber               String?
+  // Specification
+  powerKw                 Float?
+  powerHp                 Float?
+  engineDesign            String?
+  cylinders               Int?
+  transmission            String?
+  engineDisplacementCcm   Int?
+  firstRegistration       DateTime?
+  lastRegistration        DateTime?
+  sourceOfTechnicalData   String?
+  // Vehicle Details
+  vehicleType             String?
+  motorType               String?
+  axles                   Int?
+  drivenAxles             Int?
+  doors                   Int?
+  seats                   Int?
+  previousOwners          Int?
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+// ─── Condition ──────────────────────────────────────────────
+
+model VehicleCondition {
+  id                        String  @id @default(uuid())
+  reportId                  String  @unique
+  // Paint & condition
+  paintType                 String?
+  hard                      String?
+  paintCondition            String?
+  generalCondition          String?
+  bodyCondition             String?
+  interiorCondition         String?
+  drivingAbility            String?
+  specialFeatures           String?
+  parkingSensors            Boolean @default(false)
+  mileageRead               Int?
+  estimateMileage           Int?
+  unit                      String  @default("km")
+  nextMot                   DateTime?
+  fullServiceHistory        Boolean @default(false)
+  testDrivePerformed        Boolean @default(false)
+  errorMemoryRead           Boolean @default(false)
+  airbagsDeployed           Boolean @default(false)
+  produceGroups             String[]
+  notes                     String?
+  // Manual setup toggle
+  manualSetup               Boolean @default(false)
+  // Prior damage
+  previousDamageReported    String?
+  existingDamageNotReported String?
+  subsequentDamage          String?
+
+  report        Report         @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  damageMarkers DamageMarker[]
+  paintMarkers  PaintMarker[]
+  tireSets      TireSet[]
+}
+
+model DamageMarker {
+  id          String @id @default(uuid())
+  conditionId String
+  x           Float
+  y           Float
+  comment     String?
+
+  condition VehicleCondition @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+
+  @@index([conditionId])
+}
+
+model PaintMarker {
+  id          String @id @default(uuid())
+  conditionId String
+  x           Float
+  y           Float
+  thickness   Float
+  color       String?
+  position    String?
+
+  condition VehicleCondition @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+
+  @@index([conditionId])
+}
+
+model TireSet {
+  id           String  @id @default(uuid())
+  conditionId  String
+  setNumber    Int
+  matchAndAlloy Boolean @default(false)
+
+  condition VehicleCondition @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+  tires     Tire[]
+
+  @@index([conditionId])
+}
+
+model Tire {
+  id           String @id @default(uuid())
+  tireSetId    String
+  position     String
+  size         String?
+  profileLevel String?
+  manufacturer String?
+  usability    Int    @default(1)
+
+  tireSet TireSet @relation(fields: [tireSetId], references: [id], onDelete: Cascade)
+}
+
+// ─── Calculation ────────────────────────────────────────────
+
+model Calculation {
+  id                    String  @id @default(uuid())
+  reportId              String  @unique
+  // Vehicle value
+  replacementValue      Float?
+  taxRate               String?
+  residualValue         Float?
+  diminutionInValue     Float?
+  // Repair
+  wheelAlignment        String?
+  bodyMeasurements      String?
+  bodyPaint             String?
+  plasticRepair         Boolean @default(false)
+  repairMethod          String?
+  risks                 String?
+  damageClass           String?
+  // Loss of use
+  dropoutGroup          String?
+  costPerDay            Float?
+  rentalCarClass        String?
+  repairTimeDays        Int?
+  replacementTimeDays   Int?
+  // DAT result
+  datCalculationResult  Json?
+
+  report          Report           @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  additionalCosts AdditionalCost[]
+}
+
+model AdditionalCost {
+  id            String @id @default(uuid())
+  calculationId String
+  description   String
+  amount        Float
+
+  calculation Calculation @relation(fields: [calculationId], references: [id], onDelete: Cascade)
+
+  @@index([calculationId])
+}
+
+// ─── Invoice ────────────────────────────────────────────────
+
+model Invoice {
+  id            String  @id @default(uuid())
+  reportId      String  @unique
+  invoiceNumber String?
+  recipientId   String?
+  date          DateTime?
+  payoutDelay   Int?
+  eInvoice      Boolean @default(true)
+  feeSchedule   String  @default("bvsk")
+  totalNet      Float   @default(0)
+  totalGross    Float   @default(0)
+  taxRate       Float   @default(19)
+
+  report    Report            @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  lineItems InvoiceLineItem[]
+}
+
+model InvoiceLineItem {
+  id             String  @id @default(uuid())
+  invoiceId      String
+  description    String
+  specialFeature String?
+  rate           Float   @default(0)
+  amount         Float   @default(0)
+  isLumpSum      Boolean @default(false)
+  quantity       Float   @default(1)
+  perUnit        Float?
+  order          Int     @default(0)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([invoiceId, order])
+}
+
+// ─── Export ─────────────────────────────────────────────────
+
+model ExportConfig {
+  id                       String  @id @default(uuid())
+  reportId                 String  @unique
+  recipientEmail           String?
+  recipientName            String?
+  subject                  String?
+  body                     String?
+  includeVehicleValuation  Boolean @default(false)
+  includeCommission        Boolean @default(true)
+  includeInvoice           Boolean @default(true)
+  lockReport               Boolean @default(true)
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+// ─── Enums ──────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum ReportStatus {
+  DRAFT
+  COMPLETED
+  SENT
+  LOCKED
+}
+
+enum IntegrationProvider {
+  DAT
+  AUDATEX
+  GT_MOTIVE
+}
+
+enum PhotoType {
+  VEHICLE_DIAGONAL
+  DAMAGE_OVERVIEW
+  DOCUMENT
+  OTHER
+}
+
+enum SignatureType {
+  LAWYER
+  DATA_PERMISSION
+  CANCELLATION
+}

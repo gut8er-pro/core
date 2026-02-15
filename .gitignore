@@ -37,3 +37,15 @@ prisma/*.db
 
 # Vercel
 .vercel
+
+# Test
+coverage/
+test-results/
+playwright-report/
+blob-report/
+
+# Misc
+*.tsbuildinfo
+next-env.d.ts
+
+/src/generated/prisma
