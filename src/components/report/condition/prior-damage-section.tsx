@@ -6,7 +6,7 @@ import { TextField } from '@/components/ui/text-field'
 import { cn } from '@/lib/utils'
 import type { ConditionSectionProps } from './types'
 
-type PriorDamageTab = 'damage-notes' | 'inspection' | 'prior-damage'
+type PriorDamageTab = 'damage-notes' | 'damage-description'
 
 function PriorDamageSection({
 	register,
@@ -17,17 +17,17 @@ function PriorDamageSection({
 	const [activeTab, setActiveTab] = useState<PriorDamageTab>('damage-notes')
 
 	return (
-		<CollapsibleSection title="Prior Damage" defaultOpen={false} className={className}>
+		<CollapsibleSection title="Prior and Existing Damage" info defaultOpen={false} className={className}>
 			<div className="flex flex-col gap-6">
-				{/* Sub-tabs */}
-				<div className="flex items-center gap-1">
+				{/* Segmented tab control */}
+				<div className="flex rounded-full border border-border bg-white p-1">
 					<button
 						type="button"
 						onClick={() => setActiveTab('damage-notes')}
 						className={cn(
-							'inline-flex cursor-pointer items-center rounded-full px-4 py-2 text-body-sm font-medium transition-colors',
+							'flex-1 cursor-pointer rounded-full py-2.5 text-center text-body-sm font-medium transition-colors',
 							activeTab === 'damage-notes'
-								? 'bg-black text-white'
+								? 'bg-primary text-white'
 								: 'bg-transparent text-grey-100 hover:bg-grey-25',
 						)}
 					>
@@ -35,72 +35,55 @@ function PriorDamageSection({
 					</button>
 					<button
 						type="button"
-						onClick={() => setActiveTab('inspection')}
+						onClick={() => setActiveTab('damage-description')}
 						className={cn(
-							'inline-flex cursor-pointer items-center rounded-full px-4 py-2 text-body-sm font-medium transition-colors',
-							activeTab === 'inspection'
-								? 'bg-black text-white'
+							'flex-1 cursor-pointer rounded-full py-2.5 text-center text-body-sm font-medium transition-colors',
+							activeTab === 'damage-description'
+								? 'bg-primary text-white'
 								: 'bg-transparent text-grey-100 hover:bg-grey-25',
 						)}
 					>
-						Inspection
-					</button>
-					<button
-						type="button"
-						onClick={() => setActiveTab('prior-damage')}
-						className={cn(
-							'inline-flex cursor-pointer items-center rounded-full px-4 py-2 text-body-sm font-medium transition-colors',
-							activeTab === 'prior-damage'
-								? 'bg-black text-white'
-								: 'bg-transparent text-grey-100 hover:bg-grey-25',
-						)}
-					>
-						Prior Damage Notes
+						Damage Description
 					</button>
 				</div>
 
 				{/* Tab content */}
 				{activeTab === 'damage-notes' && (
 					<div className="flex flex-col gap-4">
-						<p className="text-caption text-grey-100">
-							Document any previously reported damage found during the assessment.
-						</p>
-						<TextField
-							label="Previously Reported Damage"
-							placeholder="Describe previously reported damage in detail..."
-							error={errors.previousDamageReported?.message}
-							{...register('previousDamageReported')}
-							onBlur={() => onFieldBlur?.('previousDamageReported')}
-						/>
-					</div>
-				)}
+						{/* Previous damage (repaired) / Existing damage (not repaired) */}
+						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+							<TextField
+								label="Previous damage (repaired)"
+								placeholder="Add repaired damage"
+								error={errors.previousDamageReported?.message}
+								{...register('previousDamageReported')}
+								onBlur={() => onFieldBlur?.('previousDamageReported')}
+							/>
+							<TextField
+								label="Existing damage (not repaired)"
+								placeholder="Current car age"
+								error={errors.existingDamageNotReported?.message}
+								{...register('existingDamageNotReported')}
+								onBlur={() => onFieldBlur?.('existingDamageNotReported')}
+							/>
+						</div>
 
-				{activeTab === 'inspection' && (
-					<div className="flex flex-col gap-4">
-						<p className="text-caption text-grey-100">
-							Document any existing damage found during inspection that was not previously reported.
-						</p>
+						{/* Subsequent damage */}
 						<TextField
-							label="Existing Damage (Not Reported)"
-							placeholder="Describe unreported existing damage in detail..."
-							error={errors.existingDamageNotReported?.message}
-							{...register('existingDamageNotReported')}
-							onBlur={() => onFieldBlur?.('existingDamageNotReported')}
-						/>
-					</div>
-				)}
-
-				{activeTab === 'prior-damage' && (
-					<div className="flex flex-col gap-4">
-						<p className="text-caption text-grey-100">
-							Document any subsequent damage that occurred after the reported incident.
-						</p>
-						<TextField
-							label="Subsequent Damage"
-							placeholder="Describe any subsequent damage in detail..."
+							label="Subsequent damage (occurred between accident and inspection)"
+							placeholder="Subsequent damage"
 							error={errors.subsequentDamage?.message}
 							{...register('subsequentDamage')}
 							onBlur={() => onFieldBlur?.('subsequentDamage')}
+						/>
+					</div>
+				)}
+
+				{activeTab === 'damage-description' && (
+					<div className="flex flex-col gap-4">
+						<textarea
+							className="min-h-30 w-full rounded-md border border-border bg-white px-4 py-3 text-body-sm text-black placeholder:text-placeholder focus:border-border-focus focus:outline-none"
+							placeholder="Describe damage in detail..."
 						/>
 					</div>
 				)}

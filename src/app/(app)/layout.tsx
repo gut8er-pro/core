@@ -1,7 +1,7 @@
 'use client'
 
 import { type ReactNode, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { TopNavBar } from '@/components/layout/top-nav-bar'
 import { useAuth } from '@/hooks/use-auth'
 import { useUserSettings } from '@/hooks/use-settings'
@@ -10,6 +10,7 @@ import { logout } from '@/lib/auth/actions'
 
 function AppLayout({ children }: { children: ReactNode }) {
 	const router = useRouter()
+	const pathname = usePathname()
 	const { user, loading } = useAuth()
 	const { data: settings } = useUserSettings()
 	const setIsPro = useProStore((s) => s.setIsPro)
@@ -47,6 +48,12 @@ function AppLayout({ children }: { children: ReactNode }) {
 				userRole={
 					(user?.user_metadata?.['professional_qualification'] as string | undefined) ??
 					'Sachverständiger'
+				}
+				activePath={
+					pathname.startsWith('/dashboard') ? '/dashboard'
+					: pathname.startsWith('/statistics') ? '/statistics'
+					: pathname.startsWith('/settings') ? '/settings'
+					: undefined
 				}
 				onNavigate={handleNavigate}
 				onLogout={handleLogout}

@@ -47,10 +47,9 @@ describe('Filmstrip', () => {
 		expect(screen.getByAltText('vin-plate.jpg')).toBeInTheDocument()
 	})
 
-	it('shows order number badge', () => {
-		render(<Filmstrip photos={mockPhotos} />)
-		expect(screen.getByText('0')).toBeInTheDocument()
-		expect(screen.getByText('1')).toBeInTheDocument()
+	it('shows add button when onAdd provided', () => {
+		render(<Filmstrip photos={mockPhotos} onAdd={vi.fn()} />)
+		expect(screen.getByLabelText('Add more photos')).toBeInTheDocument()
 	})
 
 	it('calls onSelect when thumbnail clicked', async () => {

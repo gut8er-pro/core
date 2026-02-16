@@ -11,11 +11,11 @@ import { IntegrationsStep } from '@/components/auth/integrations-step'
 import { CompleteStep } from '@/components/auth/complete-step'
 
 const STEPS = [
-	{ number: 1, title: 'Account', subtitle: 'Create your login' },
+	{ number: 1, title: 'Account', subtitle: 'Login credentials' },
 	{ number: 2, title: 'Personal', subtitle: 'Your details' },
 	{ number: 3, title: 'Business', subtitle: 'Company info' },
 	{ number: 4, title: 'Plan', subtitle: 'Choose your plan' },
-	{ number: 5, title: 'Integrations', subtitle: 'Connect tools' },
+	{ number: 5, title: 'Integrations', subtitle: 'Connect services' },
 ]
 
 const STEP_MAP: Record<string, number> = {

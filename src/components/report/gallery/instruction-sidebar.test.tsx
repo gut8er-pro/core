@@ -3,41 +3,30 @@ import { render, screen } from '@/test/test-utils'
 import { InstructionSidebar } from './instruction-sidebar'
 
 describe('InstructionSidebar', () => {
-	it('renders "Photo Tips" heading', () => {
+	it('renders "Instruction" heading', () => {
 		render(<InstructionSidebar />)
-		expect(screen.getByText('Photo Tips')).toBeInTheDocument()
+		expect(screen.getByText('Instruction')).toBeInTheDocument()
 	})
 
-	it('renders all 6 tips', () => {
+	it('renders all 3 instruction items', () => {
 		render(<InstructionSidebar />)
-		expect(
-			screen.getByText('Take photos in good lighting'),
-		).toBeInTheDocument()
-		expect(screen.getByText('Avoid using flash')).toBeInTheDocument()
-		expect(
-			screen.getByText('Capture all 4 diagonal angles'),
-		).toBeInTheDocument()
-		expect(
-			screen.getByText('Include close-ups of all damage'),
-		).toBeInTheDocument()
-		expect(
-			screen.getByText('Photograph VIN plate and registration'),
-		).toBeInTheDocument()
-		expect(
-			screen.getByText('Maximum 20 photos per report'),
-		).toBeInTheDocument()
+		expect(screen.getByText('Good lighting or use of flash')).toBeInTheDocument()
+		expect(screen.getByText('JPG or PNG format')).toBeInTheDocument()
+		expect(screen.getByText('Maximum 20 images')).toBeInTheDocument()
 	})
 
-	it('renders "Suggested Photos" section with photo type labels', () => {
+	it('renders "Suggested Photos" section with category labels', () => {
 		render(<InstructionSidebar />)
 		expect(screen.getByText('Suggested Photos')).toBeInTheDocument()
-		expect(screen.getByText('Front Left')).toBeInTheDocument()
-		expect(screen.getByText('Front Right')).toBeInTheDocument()
-		expect(screen.getByText('Rear Left')).toBeInTheDocument()
-		expect(screen.getByText('Rear Right')).toBeInTheDocument()
-		expect(screen.getByText('VIN Plate')).toBeInTheDocument()
-		expect(screen.getByText('Registration')).toBeInTheDocument()
+		expect(screen.getByText('Vehicle Diagonals')).toBeInTheDocument()
 		expect(screen.getByText('Damage Overview')).toBeInTheDocument()
-		expect(screen.getByText('Damage Detail')).toBeInTheDocument()
+		expect(screen.getByText('Document Shot')).toBeInTheDocument()
+	})
+
+	it('renders category descriptions', () => {
+		render(<InstructionSidebar />)
+		expect(screen.getByText('Front and rear diagonal photos of the vehicle')).toBeInTheDocument()
+		expect(screen.getByText('Detailed close-ups of all damaged areas')).toBeInTheDocument()
+		expect(screen.getByText('Photos of all relevant vehicle documents')).toBeInTheDocument()
 	})
 })

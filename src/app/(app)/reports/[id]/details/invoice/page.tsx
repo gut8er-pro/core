@@ -149,6 +149,9 @@ function InvoicePage() {
 			{/* Invoice totals banner */}
 			<InvoiceBanner control={control} />
 
+			{/* Invoice Details heading */}
+			<h3 className="text-h3 font-semibold text-black">Invoice Details</h3>
+
 			{/* Invoice settings */}
 			<InvoiceSettings
 				register={register}
@@ -157,17 +160,17 @@ function InvoicePage() {
 				onFieldBlur={handleFieldBlur}
 			/>
 
-			{/* BVSK Rate Table */}
-			<BvskRateTable
-				onApplyRate={handleApplyBvskRate}
-			/>
-
-			{/* Line items */}
+			{/* Line items with BVSK rate table embedded */}
 			<LineItemsSection
 				register={register}
 				control={control}
 				errors={errors}
 				onFieldBlur={handleFieldBlur}
+				bvskContent={
+					<BvskRateTable
+						onApplyRate={handleApplyBvskRate}
+					/>
+				}
 			/>
 		</div>
 	)

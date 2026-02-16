@@ -25,35 +25,26 @@ describe('PhotoViewer', () => {
 		expect(screen.getByText('Select a photo to view')).toBeInTheDocument()
 	})
 
-	it('renders photo filename', () => {
+	it('renders photo image', () => {
 		render(<PhotoViewer photo={mockPhoto} />)
-		expect(screen.getByText('damage-front.jpg')).toBeInTheDocument()
+		expect(screen.getByAltText('damage-front.jpg')).toBeInTheDocument()
 	})
 
-	it('shows action buttons (Edit, Annotate, Delete)', () => {
+	it('shows floating action buttons (Annotate, Delete)', () => {
 		render(
 			<PhotoViewer
 				photo={mockPhoto}
-				onEdit={vi.fn()}
 				onAnnotate={vi.fn()}
 				onDelete={vi.fn()}
 			/>,
 		)
-		expect(screen.getByText('Edit')).toBeInTheDocument()
-		expect(screen.getByText('Annotate')).toBeInTheDocument()
-		expect(screen.getByText('Delete')).toBeInTheDocument()
+		expect(screen.getByLabelText('Annotate photo')).toBeInTheDocument()
+		expect(screen.getByLabelText('Delete photo')).toBeInTheDocument()
 	})
 
-	it('shows AI description when present', () => {
-		const photoWithAI: Photo = {
-			...mockPhoto,
-			aiDescription: 'Front bumper damage with deep scratches',
-		}
-		render(<PhotoViewer photo={photoWithAI} />)
-		expect(screen.getByText('AI Description')).toBeInTheDocument()
-		expect(
-			screen.getByText('Front bumper damage with deep scratches'),
-		).toBeInTheDocument()
+	it('shows watermark', () => {
+		render(<PhotoViewer photo={mockPhoto} />)
+		expect(screen.getByText('Gut8erPRO')).toBeInTheDocument()
 	})
 
 	it('calls onDelete when delete clicked', async () => {
@@ -61,7 +52,25 @@ describe('PhotoViewer', () => {
 		const onDelete = vi.fn()
 		render(<PhotoViewer photo={mockPhoto} onDelete={onDelete} />)
 
-		await user.click(screen.getByText('Delete'))
+		await user.click(screen.getByLabelText('Delete photo'))
 		expect(onDelete).toHaveBeenCalledOnce()
+	})
+
+	it('calls onAnnotate when annotate clicked', async () => {
+		const user = userEvent.setup()
+		const onAnnotate = vi.fn()
+		render(<PhotoViewer photo={mockPhoto} onAnnotate={onAnnotate} />)
+
+		await user.click(screen.getByLabelText('Annotate photo'))
+		expect(onAnnotate).toHaveBeenCalledOnce()
+	})
+
+	it('calls onAnnotate when photo image clicked', async () => {
+		const user = userEvent.setup()
+		const onAnnotate = vi.fn()
+		render(<PhotoViewer photo={mockPhoto} onAnnotate={onAnnotate} />)
+
+		await user.click(screen.getByAltText('damage-front.jpg'))
+		expect(onAnnotate).toHaveBeenCalledOnce()
 	})
 })

@@ -44,4 +44,33 @@ describe('TopNavBar', () => {
 		render(<TopNavBar />)
 		expect(screen.getByText('U')).toBeInTheDocument()
 	})
+
+	it('shows active label text when activePath matches dashboard', () => {
+		render(<TopNavBar activePath="/dashboard" />)
+		const dashboardButton = screen.getByLabelText('Dashboard')
+		expect(dashboardButton).toHaveAttribute('aria-current', 'page')
+		expect(dashboardButton).toHaveTextContent('Dashboard')
+	})
+
+	it('shows active label text when activePath matches settings', () => {
+		render(<TopNavBar activePath="/settings" />)
+		const settingsButton = screen.getByLabelText('Settings')
+		expect(settingsButton).toHaveAttribute('aria-current', 'page')
+		expect(settingsButton).toHaveTextContent('Settings')
+	})
+
+	it('does not mark any center nav item as active when activePath is undefined', () => {
+		render(<TopNavBar />)
+		expect(screen.getByLabelText('Dashboard')).not.toHaveAttribute('aria-current')
+		expect(screen.getByLabelText('Statistics')).not.toHaveAttribute('aria-current')
+		expect(screen.getByLabelText('Settings')).not.toHaveAttribute('aria-current')
+	})
+
+	it('calls onNavigate for notifications bell', async () => {
+		const user = userEvent.setup()
+		const onNavigate = vi.fn()
+		render(<TopNavBar onNavigate={onNavigate} />)
+		await user.click(screen.getByLabelText('Notifications'))
+		expect(onNavigate).toHaveBeenCalledWith('/notifications')
+	})
 })

@@ -65,7 +65,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	const stringFields = [
 		'vin', 'datsCode', 'marketIndex', 'manufacturer',
 		'mainType', 'subType', 'kbaNumber', 'engineDesign',
-		'transmission', 'vehicleType', 'motorType',
+		'transmission', 'sourceOfTechnicalData', 'vehicleType', 'motorType',
 	] as const
 	for (const field of stringFields) {
 		if (data[field] !== undefined) {

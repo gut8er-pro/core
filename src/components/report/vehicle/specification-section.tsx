@@ -9,15 +9,16 @@ import { kwToHp, hpToKw } from '@/lib/utils/power-conversion'
 import type { VehicleSectionProps } from './types'
 
 const ENGINE_DESIGN_OPTIONS = [
-	{ value: 'Petrol', label: 'Petrol' },
-	{ value: 'Diesel', label: 'Diesel' },
-	{ value: 'Electric', label: 'Electric' },
-	{ value: 'Hybrid', label: 'Hybrid' },
+	{ value: 'Inline', label: 'Inline' },
+	{ value: 'V-Type', label: 'V-Type' },
+	{ value: 'Boxer', label: 'Boxer' },
+	{ value: 'Rotary', label: 'Rotary' },
 	{ value: 'Other', label: 'Other' },
 ]
 
 const TRANSMISSION_OPTIONS = [
-	{ value: 'Manual', label: 'Manual' },
+	{ value: 'Manual (5-speed)', label: 'Manual (5-speed)' },
+	{ value: 'Manual (6-speed)', label: 'Manual (6-speed)' },
 	{ value: 'Automatic', label: 'Automatic' },
 	{ value: 'CVT', label: 'CVT' },
 	{ value: 'DCT', label: 'DCT' },
@@ -59,77 +60,94 @@ function SpecificationSection({
 	}, [onFieldBlur, setValue])
 
 	return (
-		<CollapsibleSection title="Specification" className={className}>
-			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-				<TextField
-					label="Power (kW)"
-					type="number"
-					placeholder="e.g. 110"
-					error={errors.powerKw?.message}
-					{...register('powerKw')}
-					onBlur={handleKwBlur}
-				/>
-				<TextField
-					label="Power (HP)"
-					type="number"
-					placeholder="e.g. 150"
-					error={errors.powerHp?.message}
-					{...register('powerHp')}
-					onBlur={handleHpBlur}
-				/>
-				<SelectField
-					label="Engine Design"
-					options={ENGINE_DESIGN_OPTIONS}
-					placeholder="Select engine design"
-					value={engineDesign || undefined}
-					onValueChange={(value) => {
-						setValue?.('engineDesign', value)
-						onFieldBlur?.('engineDesign')
-					}}
-					error={errors.engineDesign?.message}
-				/>
-				<TextField
-					label="Cylinders"
-					type="number"
-					placeholder="e.g. 4"
-					error={errors.cylinders?.message}
-					{...register('cylinders')}
-					onBlur={() => onFieldBlur?.('cylinders')}
-				/>
-				<SelectField
-					label="Transmission"
-					options={TRANSMISSION_OPTIONS}
-					placeholder="Select transmission"
-					value={transmission || undefined}
-					onValueChange={(value) => {
-						setValue?.('transmission', value)
-						onFieldBlur?.('transmission')
-					}}
-					error={errors.transmission?.message}
-				/>
-				<TextField
-					label="Displacement"
-					type="number"
-					placeholder="e.g. 1984"
-					hint="cc"
-					error={errors.displacement?.message}
-					{...register('displacement')}
-					onBlur={() => onFieldBlur?.('displacement')}
-				/>
-				<TextField
-					label="First Registration"
-					type="date"
-					error={errors.firstRegistration?.message}
-					{...register('firstRegistration')}
-					onBlur={() => onFieldBlur?.('firstRegistration')}
-				/>
-				<TextField
-					label="Last Registration"
-					type="date"
-					error={errors.lastRegistration?.message}
-					{...register('lastRegistration')}
-					onBlur={() => onFieldBlur?.('lastRegistration')}
-				/>
+		<CollapsibleSection title="Specification" info className={className}>
+			<div className="flex flex-col gap-4">
+				{/* Row 1: Power (kW) / Power (HP) / Engine Design */}
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+					<TextField
+						label="Power (kW)"
+						type="number"
+						placeholder="e.g. 110 kW"
+						error={errors.powerKw?.message}
+						{...register('powerKw')}
+						onBlur={handleKwBlur}
+					/>
+					<TextField
+						label="Power ( HP)"
+						type="number"
+						placeholder="e.g. 150 HP"
+						error={errors.powerHp?.message}
+						{...register('powerHp')}
+						onBlur={handleHpBlur}
+					/>
+					<SelectField
+						label="Engine Design"
+						options={ENGINE_DESIGN_OPTIONS}
+						placeholder="Select"
+						value={engineDesign || undefined}
+						onValueChange={(value) => {
+							setValue?.('engineDesign', value)
+							onFieldBlur?.('engineDesign')
+						}}
+						error={errors.engineDesign?.message}
+					/>
+				</div>
+
+				{/* Row 2: Cylinder / Transmission / Engine displacement */}
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+					<TextField
+						label="Cylinder"
+						type="number"
+						placeholder="e.g. 4"
+						error={errors.cylinders?.message}
+						{...register('cylinders')}
+						onBlur={() => onFieldBlur?.('cylinders')}
+					/>
+					<SelectField
+						label="Transmission"
+						options={TRANSMISSION_OPTIONS}
+						placeholder="Select"
+						value={transmission || undefined}
+						onValueChange={(value) => {
+							setValue?.('transmission', value)
+							onFieldBlur?.('transmission')
+						}}
+						error={errors.transmission?.message}
+					/>
+					<TextField
+						label="Engine displacement (ccm)"
+						type="number"
+						placeholder="e.g. 1968 ccm"
+						error={errors.displacement?.message}
+						{...register('displacement')}
+						onBlur={() => onFieldBlur?.('displacement')}
+					/>
+				</div>
+
+				{/* Row 3: First registration / Last registration / Source of technical data */}
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+					<TextField
+						label="First registration"
+						type="date"
+						error={errors.firstRegistration?.message}
+						{...register('firstRegistration')}
+						onBlur={() => onFieldBlur?.('firstRegistration')}
+					/>
+					<TextField
+						label="Last registration"
+						type="date"
+						error={errors.lastRegistration?.message}
+						{...register('lastRegistration')}
+						onBlur={() => onFieldBlur?.('lastRegistration')}
+					/>
+					<TextField
+						label="Source of technical data"
+						placeholder="KBA (Kraftfahrt-Bundesamt)"
+						error={errors.sourceOfTechnicalData?.message}
+						{...register('sourceOfTechnicalData')}
+						onBlur={() => onFieldBlur?.('sourceOfTechnicalData')}
+					/>
+				</div>
 			</div>
 		</CollapsibleSection>
 	)

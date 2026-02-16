@@ -23,6 +23,7 @@ type VehicleInfoResponse = {
 	displacement: number | null
 	firstRegistration: string | null
 	lastRegistration: string | null
+	sourceOfTechnicalData: string | null
 	vehicleType: string | null
 	motorType: string | null
 	axles: number | null

@@ -18,6 +18,7 @@ type VehicleFormData = {
 	displacement: string
 	firstRegistration: string
 	lastRegistration: string
+	sourceOfTechnicalData: string
 	// Details
 	vehicleType: string
 	motorType: string

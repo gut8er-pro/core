@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState } from 'react'
 import Link from 'next/link'
 import { login, signInWithGoogle, signInWithApple } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,7 @@ function LoginPage() {
 	return (
 		<div className="flex min-h-screen">
 			{/* Left branding panel */}
-			<div className="hidden w-1/2 flex-col justify-between bg-surface-secondary p-8 lg:flex">
+			<div className="hidden w-1/2 flex-col justify-between rounded-xl bg-primary-light p-8 lg:flex">
 				<div>
 					<span className="text-h3 font-bold">
 						Gut8er<span className="text-primary">PRO</span>
@@ -27,22 +27,20 @@ function LoginPage() {
 
 				<div className="flex flex-col gap-6">
 					<h1 className="text-h1 font-bold text-black">
-						Professional vehicle
+						Professional Vehicle
 						<br />
-						damage assessment
+						Assessment Web App
 					</h1>
-					<p className="text-body text-grey-100">
-						Streamline your appraisal workflow with AI-powered analysis, automated
-						calculations, and digital report generation.
-					</p>
 					<div className="flex gap-4">
-						<StatBadge value="-35%" label="report time" />
-						<StatBadge value="-60%" label="less manual work" />
-						<StatBadge value="2000+" label="reports" />
+						<StatBadge label="Report time" value="-35%" />
+						<StatBadge label="Less manual work" value="-40%" />
 					</div>
 				</div>
 
-				<div />
+				{/* Car illustration placeholder — replace with actual 3D car image asset */}
+				<div className="flex items-center justify-center">
+					<div className="h-48 w-full rounded-lg" />
+				</div>
 			</div>
 
 			{/* Right login form */}
@@ -56,7 +54,7 @@ function LoginPage() {
 
 					<h2 className="mb-1 text-h2 font-bold text-black">Welcome back</h2>
 					<p className="mb-8 text-body text-grey-100">
-						Sign in to your account to continue
+						Please log in to your account to continue.
 					</p>
 
 					{error && (
@@ -70,7 +68,7 @@ function LoginPage() {
 							name="email"
 							label="Email address"
 							type="email"
-							placeholder="your@email.com"
+							placeholder="Enter your email"
 							required
 							autoComplete="email"
 						/>
@@ -83,11 +81,7 @@ function LoginPage() {
 							autoComplete="current-password"
 						/>
 
-						<div className="flex items-center justify-between">
-							<label className="flex cursor-pointer items-center gap-1 text-body-sm text-grey-100">
-								<input type="checkbox" name="remember" className="cursor-pointer rounded" />
-								Remember me
-							</label>
+						<div className="flex justify-end">
 							<Link
 								href="/forgot-password"
 								className="text-body-sm font-medium text-primary hover:text-primary-hover"
@@ -97,7 +91,7 @@ function LoginPage() {
 						</div>
 
 						<Button type="submit" fullWidth loading={isPending}>
-							Sign In
+							Log in
 						</Button>
 					</form>
 
@@ -107,15 +101,15 @@ function LoginPage() {
 						<div className="h-px flex-1 bg-border" />
 					</div>
 
-					<div className="flex flex-col gap-2">
+					<div className="grid grid-cols-2 gap-3">
 						<form action={signInWithGoogle}>
 							<Button type="submit" variant="outline" fullWidth>
-								Continue with Google
+								Login with Google
 							</Button>
 						</form>
 						<form action={signInWithApple}>
 							<Button type="submit" variant="outline" fullWidth>
-								Continue with Apple
+								Login with Apple
 							</Button>
 						</form>
 					</div>
@@ -126,7 +120,7 @@ function LoginPage() {
 							href="/signup/account"
 							className="font-medium text-primary hover:text-primary-hover"
 						>
-							Create account
+							Sign Up
 						</Link>
 					</p>
 				</div>
@@ -137,9 +131,9 @@ function LoginPage() {
 
 function StatBadge({ value, label }: { value: string; label: string }) {
 	return (
-		<div className="rounded-lg bg-white px-4 py-2 shadow-card">
-			<span className="text-h4 font-bold text-primary">{value}</span>
-			<span className="ml-1 text-caption text-grey-100">{label}</span>
+		<div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-card">
+			<span className="text-body-sm text-grey-100">{label}</span>
+			<span className="text-body-sm font-bold text-primary">{value}</span>
 		</div>
 	)
 }

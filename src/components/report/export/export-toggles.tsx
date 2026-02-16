@@ -14,56 +14,34 @@ type ExportTogglesProps = {
 }
 
 type ToggleConfigItem = {
-	field: 'includeValuation' | 'includeCommission' | 'includeInvoice' | 'lockReport'
+	field: 'includeValuation' | 'includeCommission' | 'includeInvoice'
 	label: string
-	description: string
-	icon: typeof Eye | typeof Lock
-	warning?: boolean
 }
 
-const TOGGLE_CONFIG: readonly ToggleConfigItem[] = [
+const DOCUMENT_TOGGLES: readonly ToggleConfigItem[] = [
 	{
 		field: 'includeValuation',
-		label: 'Include Vehicle Valuation',
-		description: 'Attach vehicle valuation details to the exported report',
-		icon: Eye,
+		label: 'Vehicle valuation',
 	},
 	{
 		field: 'includeCommission',
-		label: 'Include Commission',
-		description: 'Include commission breakdown in the report',
-		icon: Eye,
+		label: 'Commission',
 	},
 	{
 		field: 'includeInvoice',
-		label: 'Include Invoice',
-		description: 'Attach the generated invoice to the report',
-		icon: Eye,
-	},
-	{
-		field: 'lockReport',
-		label: 'Lock Report',
-		description: 'Locking prevents further edits',
-		icon: Lock,
-		warning: true,
+		label: 'The Invoice',
 	},
 ]
 
-function ToggleItem({
+function DocumentToggleItem({
 	control,
 	field,
 	label,
-	description,
-	icon: Icon,
-	warning,
 	onToggleChange,
 }: {
 	control: Control<ExportFormData>
-	field: 'includeValuation' | 'includeCommission' | 'includeInvoice' | 'lockReport'
+	field: 'includeValuation' | 'includeCommission' | 'includeInvoice'
 	label: string
-	description: string
-	icon: typeof Eye | typeof Lock
-	warning?: boolean
 	onToggleChange?: (field: keyof ExportFormData, value: boolean) => void
 }) {
 	const { field: controlledField } = useController({
@@ -72,52 +50,72 @@ function ToggleItem({
 	})
 
 	return (
-		<div className="flex flex-col gap-1">
-			<div className="flex items-center justify-between gap-2">
-				<div className="flex items-center gap-2">
-					<Icon className="h-4 w-4 text-grey-100" />
-					<span className="text-body-sm font-medium text-black">
-						{label}
-					</span>
-				</div>
-				<ToggleSwitch
-					label=""
-					checked={controlledField.value as boolean}
-					onCheckedChange={(checked) => {
-						controlledField.onChange(checked)
-						onToggleChange?.(field, checked)
-					}}
-				/>
+		<div className="flex items-center justify-between gap-3">
+			<div className="flex items-center gap-2">
+				<Eye className="h-4 w-4 text-grey-100" />
+				<span className="text-body-sm text-black">{label}</span>
 			</div>
-			<p
-				className={cn(
-					'text-caption pl-8',
-					warning ? 'text-warning' : 'text-grey-100',
-				)}
-			>
-				{description}
-			</p>
+			<ToggleSwitch
+				label=""
+				checked={controlledField.value as boolean}
+				onCheckedChange={(checked) => {
+					controlledField.onChange(checked)
+					onToggleChange?.(field, checked)
+				}}
+			/>
+		</div>
+	)
+}
+
+function LockToggle({
+	control,
+	onToggleChange,
+}: {
+	control: Control<ExportFormData>
+	onToggleChange?: (field: keyof ExportFormData, value: boolean) => void
+}) {
+	const { field: controlledField } = useController({
+		control,
+		name: 'lockReport',
+	})
+
+	return (
+		<div className="flex items-center justify-between gap-3">
+			<div className="flex items-center gap-2">
+				<Lock className="h-4 w-4 text-grey-100" />
+				<span className="text-body-sm font-medium text-black">Lock Report</span>
+			</div>
+			<ToggleSwitch
+				label=""
+				checked={controlledField.value as boolean}
+				onCheckedChange={(checked) => {
+					controlledField.onChange(checked)
+					onToggleChange?.('lockReport', checked)
+				}}
+			/>
 		</div>
 	)
 }
 
 function ExportToggles({ control, onToggleChange, className }: ExportTogglesProps) {
 	return (
-		<div className={cn('flex flex-col gap-6', className)}>
-			<h3 className="text-body font-semibold text-black">Export Options</h3>
-			<div className="flex flex-col gap-4">
-				{TOGGLE_CONFIG.map((config) => (
-					<ToggleItem
+		<div className={cn('flex flex-col gap-4', className)}>
+			{/* Document toggles card */}
+			<div className="flex flex-col gap-4 rounded-xl border border-border bg-white p-5">
+				{DOCUMENT_TOGGLES.map((config) => (
+					<DocumentToggleItem
 						key={config.field}
 						control={control}
 						field={config.field}
 						label={config.label}
-						description={config.description}
-						icon={config.icon}
-						warning={config.warning}
 						onToggleChange={onToggleChange}
 					/>
 				))}
+			</div>
+
+			{/* Lock Report card */}
+			<div className="rounded-xl border border-border bg-white p-5">
+				<LockToggle control={control} onToggleChange={onToggleChange} />
 			</div>
 		</div>
 	)

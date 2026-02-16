@@ -15,6 +15,12 @@ type Report = {
 	createdAt: string
 	updatedAt: string
 	_count: { photos: number }
+	// Joined data for dashboard display
+	claimantName?: string | null
+	plateNumber?: string | null
+	vehicleMake?: string | null
+	vehicleModel?: string | null
+	vehicleType?: string | null
 }
 
 type ReportListResponse = {

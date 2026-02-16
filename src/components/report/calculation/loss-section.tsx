@@ -1,9 +1,10 @@
 'use client'
 
 import { Controller } from 'react-hook-form'
-import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { Info } from 'lucide-react'
 import { TextField } from '@/components/ui/text-field'
 import { SelectField } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import type { CalculationSectionProps } from './types'
 
 const DROPOUT_GROUP_OPTIONS = [
@@ -41,78 +42,84 @@ function LossSection({
 	className,
 }: CalculationSectionProps) {
 	return (
-		<CollapsibleSection title="Loss of Use" className={className}>
-			<div className="flex flex-col gap-4">
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-					<Controller
-						name="dropoutGroup"
-						control={control}
-						render={({ field }) => (
-							<SelectField
-								label="Dropout Group"
-								options={DROPOUT_GROUP_OPTIONS}
-								placeholder="Select dropout group"
-								value={field.value}
-								onValueChange={(val) => {
-									field.onChange(val)
-									onFieldBlur?.('dropoutGroup')
-								}}
-								error={errors.dropoutGroup?.message}
-							/>
-						)}
-					/>
-
-					<TextField
-						label="Cost Per Day"
-						type="number"
-						prefix="EUR"
-						placeholder="0.00"
-						step="0.01"
-						error={errors.costPerDay?.message}
-						{...register('costPerDay')}
-						onBlur={() => onFieldBlur?.('costPerDay')}
-					/>
-				</div>
-
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-					<Controller
-						name="rentalCarClass"
-						control={control}
-						render={({ field }) => (
-							<SelectField
-								label="Rental Car Class"
-								options={RENTAL_CLASS_OPTIONS}
-								placeholder="Select rental class"
-								value={field.value}
-								onValueChange={(val) => {
-									field.onChange(val)
-									onFieldBlur?.('rentalCarClass')
-								}}
-								error={errors.rentalCarClass?.message}
-							/>
-						)}
-					/>
-
-					<TextField
-						label="Repair Days"
-						type="number"
-						placeholder="0"
-						error={errors.repairTimeDays?.message}
-						{...register('repairTimeDays')}
-						onBlur={() => onFieldBlur?.('repairTimeDays')}
-					/>
-
-					<TextField
-						label="Replacement Days"
-						type="number"
-						placeholder="0"
-						error={errors.replacementTimeDays?.message}
-						{...register('replacementTimeDays')}
-						onBlur={() => onFieldBlur?.('replacementTimeDays')}
-					/>
-				</div>
+		<div className={cn('flex flex-col gap-5 border-t border-border pt-6', className)}>
+			{/* Section header */}
+			<div className="flex items-center gap-2">
+				<h4 className="text-body font-semibold text-black">Loss of Use</h4>
+				<Info className="h-4 w-4 text-grey-100" />
 			</div>
-		</CollapsibleSection>
+
+			{/* First row: Dropout group, Cost per Day, Rental Car Class */}
+			<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+				<Controller
+					name="dropoutGroup"
+					control={control}
+					render={({ field }) => (
+						<SelectField
+							label="Dropout group"
+							options={DROPOUT_GROUP_OPTIONS}
+							placeholder="Choose"
+							value={field.value}
+							onValueChange={(val) => {
+								field.onChange(val)
+								onFieldBlur?.('dropoutGroup')
+							}}
+							error={errors.dropoutGroup?.message}
+						/>
+					)}
+				/>
+
+				<TextField
+					label="Cost per Day (EUR)"
+					type="number"
+					prefix="EUR"
+					placeholder="0.00"
+					step="0.01"
+					error={errors.costPerDay?.message}
+					{...register('costPerDay')}
+					onBlur={() => onFieldBlur?.('costPerDay')}
+				/>
+
+				<Controller
+					name="rentalCarClass"
+					control={control}
+					render={({ field }) => (
+						<SelectField
+							label="Rental Car Class"
+							options={RENTAL_CLASS_OPTIONS}
+							placeholder="Choose"
+							value={field.value}
+							onValueChange={(val) => {
+								field.onChange(val)
+								onFieldBlur?.('rentalCarClass')
+							}}
+							error={errors.rentalCarClass?.message}
+						/>
+					)}
+				/>
+			</div>
+
+			{/* Second row: Repair time, Replacement time */}
+			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+				<TextField
+					label="Repair time (days)"
+					type="number"
+					placeholder="Add days"
+					error={errors.repairTimeDays?.message}
+					{...register('repairTimeDays')}
+					onBlur={() => onFieldBlur?.('repairTimeDays')}
+				/>
+
+				<TextField
+					label="Replacement time (days)"
+					type="number"
+					placeholder="Add days"
+					error={errors.replacementTimeDays?.message}
+					{...register('replacementTimeDays')}
+					onBlur={() => onFieldBlur?.('replacementTimeDays')}
+				/>
+			</div>
+		</div>
 	)
 }
 

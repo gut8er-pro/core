@@ -39,19 +39,19 @@ describe('PhotoCard', () => {
 		expect(screen.getByText('Gut8erPRO')).toBeInTheDocument()
 	})
 
-	it('renders edit and delete buttons on grid variant', () => {
+	it('renders annotate and delete buttons on grid variant', () => {
 		render(
 			<PhotoCard src="/test.jpg" variant="grid" onEdit={() => {}} onDelete={() => {}} />,
 		)
-		expect(screen.getByLabelText('Edit photo')).toBeInTheDocument()
+		expect(screen.getByLabelText('Annotate photo')).toBeInTheDocument()
 		expect(screen.getByLabelText('Delete photo')).toBeInTheDocument()
 	})
 
-	it('calls onEdit when edit button clicked', async () => {
+	it('calls onEdit when annotate button clicked', async () => {
 		const user = userEvent.setup()
 		const onEdit = vi.fn()
 		render(<PhotoCard src="/test.jpg" variant="grid" onEdit={onEdit} />)
-		await user.click(screen.getByLabelText('Edit photo'))
+		await user.click(screen.getByLabelText('Annotate photo'))
 		expect(onEdit).toHaveBeenCalledOnce()
 	})
 
@@ -72,6 +72,6 @@ describe('PhotoCard', () => {
 				onDelete={() => {}}
 			/>,
 		)
-		expect(screen.queryByLabelText('Edit photo')).not.toBeInTheDocument()
+		expect(screen.queryByLabelText('Annotate photo')).not.toBeInTheDocument()
 	})
 })

@@ -195,23 +195,27 @@ function AccidentInfoPage() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{/* Auto-save status indicator */}
-			<div className="flex items-center justify-end gap-1 text-caption">
-				{autoSaveState.status === 'saving' && (
-					<>
-						<Loader2 className="h-3 w-3 animate-spin text-grey-100" />
-						<span className="text-grey-100">Saving...</span>
-					</>
-				)}
-				{autoSaveState.status === 'saved' && (
-					<>
-						<CheckCircle2 className="h-3 w-3 text-primary" />
-						<span className="text-primary">Saved</span>
-					</>
-				)}
-				{autoSaveState.status === 'error' && (
-					<span className="text-error">Failed to save</span>
-				)}
+			{/* Page heading with completion badge + auto-save status */}
+			<div className="flex items-center justify-between">
+				<h2 className="text-h3 font-bold text-black">Accident Overview</h2>
+				<div className="flex items-center gap-3">
+					{autoSaveState.status === 'saving' && (
+						<span className="flex items-center gap-1 text-caption text-grey-100">
+							<Loader2 className="h-3 w-3 animate-spin" />
+							Saving...
+						</span>
+					)}
+					{autoSaveState.status === 'saved' && (
+						<span className="flex items-center gap-1 text-caption text-primary">
+							<CheckCircle2 className="h-3 w-3" />
+							Saved
+						</span>
+					)}
+					{autoSaveState.status === 'error' && (
+						<span className="text-caption text-error">Failed to save</span>
+					)}
+					<span className="text-body-sm text-grey-100">64% Complete</span>
+				</div>
 			</div>
 
 			{/* Form sections */}
@@ -257,7 +261,7 @@ function AccidentInfoPage() {
 
 			{/* Signature Modal */}
 			<Modal
-				title={`Add Signature — ${signatureModalType?.replace('_', ' ') ?? ''}`}
+				title="Your Signature"
 				open={signatureModalType !== null}
 				onClose={() => {
 					setSignatureModalType(null)
@@ -267,7 +271,7 @@ function AccidentInfoPage() {
 				footer={
 					<>
 						<Button
-							variant="secondary"
+							variant="outline"
 							onClick={() => {
 								setSignatureModalType(null)
 								setSignatureValue('')
@@ -280,7 +284,7 @@ function AccidentInfoPage() {
 							onClick={handleSignatureSave}
 							disabled={!signatureValue}
 						>
-							Save Signature
+							Save
 						</Button>
 					</>
 				}
@@ -289,7 +293,15 @@ function AccidentInfoPage() {
 					value={signatureValue}
 					onChange={setSignatureValue}
 				/>
+				<p className="mt-4 text-caption text-grey-100">
+					By signing this document with an electronic signature, I agree that such signature will be extend allowed by local law.
+				</p>
 			</Modal>
+
+			{/* Update Report button */}
+			<div className="flex justify-end">
+				<Button variant="primary">Update Report</Button>
+			</div>
 		</div>
 	)
 }

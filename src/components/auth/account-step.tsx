@@ -37,14 +37,14 @@ function AccountStep() {
 		<div>
 			<h2 className="mb-1 text-h2 font-bold text-black">Create your account</h2>
 			<p className="mb-8 text-body text-grey-100">
-				Start with your email and a secure password
+				Enter your email and create a secure password.
 			</p>
 
 			<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 				<TextField
 					label="Email address"
 					type="email"
-					placeholder="your@email.com"
+					placeholder="you@example.com"
 					error={errors.email?.message}
 					{...register('email')}
 				/>
@@ -58,14 +58,14 @@ function AccountStep() {
 				<TextField
 					label="Confirm password"
 					type="password"
-					placeholder="Repeat your password"
+					placeholder="Repeat password"
 					error={errors.confirmPassword?.message}
 					{...register('confirmPassword')}
 				/>
 
 				<div className="mt-4 flex items-center gap-4">
-					<Link href="/login">
-						<Button type="button" variant="ghost">
+					<Link href="/login" className="flex-1">
+						<Button type="button" variant="outline" fullWidth>
 							Cancel
 						</Button>
 					</Link>

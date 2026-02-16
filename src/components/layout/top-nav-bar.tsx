@@ -1,4 +1,4 @@
-import { BarChart3, Bell, LayoutDashboard, LogOut, Settings, User } from 'lucide-react'
+import { BarChart3, Bell, Home, LogOut, Settings, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
 	DropdownMenu,
@@ -9,15 +9,28 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+type NavItem = {
+	path: string
+	icon: typeof Home
+	label: string
+}
+
+const CENTER_NAV_ITEMS: NavItem[] = [
+	{ path: '/dashboard', icon: Home, label: 'Dashboard' },
+	{ path: '/statistics', icon: BarChart3, label: 'Statistics' },
+	{ path: '/settings', icon: Settings, label: 'Settings' },
+]
+
 type TopNavBarProps = {
 	userName?: string
 	userRole?: string
+	activePath?: string
 	onNavigate?: (path: string) => void
 	onLogout?: () => void
 	className?: string
 }
 
-function TopNavBar({ userName, userRole, onNavigate, onLogout, className }: TopNavBarProps) {
+function TopNavBar({ userName, userRole, activePath, onNavigate, onLogout, className }: TopNavBarProps) {
 	return (
 		<header
 			className={cn(
@@ -25,7 +38,8 @@ function TopNavBar({ userName, userRole, onNavigate, onLogout, className }: TopN
 				className,
 			)}
 		>
-			<div className="flex items-center gap-4">
+			{/* Left: Logo */}
+			<div className="flex items-center">
 				<span
 					className="cursor-pointer text-h4 font-bold"
 					onClick={() => onNavigate?.('/dashboard')}
@@ -37,27 +51,32 @@ function TopNavBar({ userName, userRole, onNavigate, onLogout, className }: TopN
 				</span>
 			</div>
 
+			{/* Center: Navigation items */}
+			<nav className="flex items-center gap-1">
+				{CENTER_NAV_ITEMS.map((item) => {
+					const isActive = activePath === item.path
+					return (
+						<CenterNavItem
+							key={item.path}
+							icon={item.icon}
+							label={item.label}
+							isActive={isActive}
+							onClick={() => onNavigate?.(item.path)}
+						/>
+					)
+				})}
+			</nav>
+
+			{/* Right: Notification bell + User avatar */}
 			<div className="flex items-center gap-2">
-				<NavButton
-					icon={LayoutDashboard}
-					label="Dashboard"
-					onClick={() => onNavigate?.('/dashboard')}
-				/>
-				<NavButton
-					icon={BarChart3}
-					label="Statistics"
-					onClick={() => onNavigate?.('/statistics')}
-				/>
-				<NavButton
-					icon={Settings}
-					label="Settings"
-					onClick={() => onNavigate?.('/settings')}
-				/>
-				<NavButton
-					icon={Bell}
-					label="Notifications"
+				<button
+					type="button"
 					onClick={() => onNavigate?.('/notifications')}
-				/>
+					className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
+					aria-label="Notifications"
+				>
+					<Bell className="h-5 w-5" />
+				</button>
 
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
@@ -98,15 +117,32 @@ function TopNavBar({ userName, userRole, onNavigate, onLogout, className }: TopN
 	)
 }
 
-function NavButton({
+function CenterNavItem({
 	icon: Icon,
 	label,
+	isActive,
 	onClick,
 }: {
-	icon: typeof LayoutDashboard
+	icon: typeof Home
 	label: string
+	isActive: boolean
 	onClick?: () => void
 }) {
+	if (isActive) {
+		return (
+			<button
+				type="button"
+				onClick={onClick}
+				className="flex h-10 cursor-pointer items-center gap-2 rounded-full bg-black px-4 text-body-sm font-medium text-white transition-colors"
+				aria-label={label}
+				aria-current="page"
+			>
+				<Icon className="h-5 w-5" />
+				<span>{label}</span>
+			</button>
+		)
+	}
+
 	return (
 		<button
 			type="button"

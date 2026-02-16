@@ -52,21 +52,21 @@ function PersonalStep() {
 	return (
 		<div>
 			<h2 className="mb-1 text-h2 font-bold text-black">Personal details</h2>
-			<p className="mb-8 text-body text-grey-100">Tell us about yourself</p>
+			<p className="mb-8 text-body text-grey-100">Tell us a bit about yourself.</p>
 
 			<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-				<SelectField
-					label="Title"
-					options={titleOptions}
-					placeholder="Select title"
-					error={errors.title?.message}
-					onValueChange={(value) => setValue('title', value)}
-					defaultValue={personal.title}
-				/>
-				<div className="grid grid-cols-2 gap-4">
+				<div className="grid grid-cols-3 gap-4">
+					<SelectField
+						label="Title"
+						options={titleOptions}
+						placeholder="Select"
+						error={errors.title?.message}
+						onValueChange={(value) => setValue('title', value)}
+						defaultValue={personal.title}
+					/>
 					<TextField
 						label="First name"
-						placeholder="First name"
+						placeholder="Name"
 						error={errors.firstName?.message}
 						{...register('firstName')}
 					/>
@@ -80,19 +80,18 @@ function PersonalStep() {
 				<TextField
 					label="Phone number"
 					type="tel"
-					placeholder="+49"
+					placeholder="+49 123 456789"
 					error={errors.phone?.message}
 					{...register('phone')}
 				/>
 				<TextField
 					label="Professional qualification"
-					placeholder="eg. Kfz-Sachverständiger, Dipl.-Ing."
-					hint="Optional"
+					placeholder="e.g. Kfz-Sachverständiger, Dipl.-Ing."
 					{...register('professionalQualification')}
 				/>
 
 				<div className="mt-4 flex items-center gap-4">
-					<Button type="button" variant="ghost" onClick={handleBack}>
+					<Button type="button" variant="outline" onClick={handleBack} className="flex-1">
 						Back
 					</Button>
 					<Button type="submit" loading={isSubmitting} className="flex-1">

@@ -1,4 +1,4 @@
-import { Edit2, Trash2 } from 'lucide-react'
+import { Palette, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type PhotoCardProps = {
@@ -13,9 +13,9 @@ type PhotoCardProps = {
 }
 
 const variantClasses = {
-	grid: 'aspect-[4/3] w-full rounded-lg',
-	viewer: 'aspect-video w-full rounded-lg',
-	thumbnail: 'h-16 w-24 rounded-md',
+	grid: 'aspect-[4/3] w-full rounded-xl',
+	viewer: 'aspect-video w-full rounded-xl',
+	thumbnail: 'h-16 w-24 rounded-lg',
 } as const
 
 function PhotoCard({
@@ -45,31 +45,38 @@ function PhotoCard({
 			/>
 
 			{watermark && (
-				<div className="absolute inset-0 flex items-center justify-center">
-					<span className="select-none text-h2 font-bold text-white/30">Gut8erPRO</span>
+				<div className="pointer-events-none absolute bottom-4 left-4">
+					<span className="text-body-sm font-bold italic text-white/70">Gut8erPRO</span>
 				</div>
 			)}
 
+			{/* Floating action buttons - bottom right, stacked vertically */}
 			{(onEdit || onDelete) && variant === 'grid' && (
-				<div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+				<div className="absolute bottom-3 right-3 flex flex-col gap-2">
 					{onEdit && (
 						<button
 							type="button"
-							onClick={onEdit}
-							className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-black/60 text-white transition-colors hover:bg-black/80"
-							aria-label="Edit photo"
+							onClick={(e) => {
+								e.stopPropagation()
+								onEdit()
+							}}
+							className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg bg-black/90 backdrop-blur-sm transition-colors hover:bg-black"
+							aria-label="Annotate photo"
 						>
-							<Edit2 className="h-4 w-4" />
+							<Palette className="h-4 w-4 text-white" />
 						</button>
 					)}
 					{onDelete && (
 						<button
 							type="button"
-							onClick={onDelete}
-							className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-black/60 text-white transition-colors hover:bg-black/80"
+							onClick={(e) => {
+								e.stopPropagation()
+								onDelete()
+							}}
+							className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg bg-black/90 backdrop-blur-sm transition-colors hover:bg-black"
 							aria-label="Delete photo"
 						>
-							<Trash2 className="h-4 w-4" />
+							<Trash2 className="h-4 w-4 text-white" />
 						</button>
 					)}
 				</div>

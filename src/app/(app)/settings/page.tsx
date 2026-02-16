@@ -3,12 +3,21 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { User, Building2, Link as LinkIcon, CreditCard } from 'lucide-react'
+import {
+	User,
+	Building2,
+	Link as LinkIcon,
+	DollarSign,
+	Bookmark,
+	Instagram,
+	Facebook,
+	Linkedin,
+	Download,
+	CreditCard,
+} from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton, SkeletonGroup } from '@/components/ui/skeleton'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
@@ -20,6 +29,50 @@ import {
 	type ProfileSettingsInput,
 	type BusinessSettingsInput,
 } from '@/lib/validations/settings'
+import { cn } from '@/lib/utils'
+
+type SettingsTab = 'profile' | 'business' | 'integrations' | 'billing' | 'templates'
+
+const SETTINGS_TABS: Array<{ key: SettingsTab; label: string; icon: typeof User }> = [
+	{ key: 'profile', label: 'Profile', icon: User },
+	{ key: 'business', label: 'Business', icon: Building2 },
+	{ key: 'integrations', label: 'Integrations', icon: LinkIcon },
+	{ key: 'billing', label: 'Billing', icon: DollarSign },
+	{ key: 'templates', label: 'Templates', icon: Bookmark },
+]
+
+function SettingsSidebar({
+	activeTab,
+	onTabChange,
+}: {
+	activeTab: SettingsTab
+	onTabChange: (tab: SettingsTab) => void
+}) {
+	return (
+		<nav className="flex w-55 shrink-0 flex-col gap-1">
+			{SETTINGS_TABS.map((tab) => {
+				const Icon = tab.icon
+				const isActive = activeTab === tab.key
+				return (
+					<button
+						key={tab.key}
+						type="button"
+						onClick={() => onTabChange(tab.key)}
+						className={cn(
+							'flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-body-sm font-medium transition-colors',
+							isActive
+								? 'bg-primary-light text-primary'
+								: 'text-black hover:bg-grey-25',
+						)}
+					>
+						<Icon className="h-5 w-5" />
+						{tab.label}
+					</button>
+				)
+			})}
+		</nav>
+	)
+}
 
 function ProfileSection() {
 	const { data: settings, isLoading } = useUserSettings()
@@ -61,52 +114,109 @@ function ProfileSection() {
 	}
 
 	if (isLoading) {
-		return <SkeletonGroup count={4} />
+		return <SkeletonGroup count={6} />
 	}
 
 	return (
-		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-			<div className="flex items-center gap-6">
-				<div className="flex h-16 w-16 items-center justify-center rounded-full bg-grey-25">
-					<User className="h-8 w-8 text-grey-100" />
+		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+			<h2 className="text-h3 font-semibold text-black">Personal Information</h2>
+
+			{/* Avatar */}
+			<div className="flex items-center gap-4">
+				<div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-grey-25">
+					{settings?.avatarUrl ? (
+						<img
+							src={settings.avatarUrl}
+							alt="Profile"
+							className="h-full w-full object-cover"
+						/>
+					) : (
+						<User className="h-8 w-8 text-grey-100" />
+					)}
 				</div>
-				<div>
-					<p className="text-body-sm font-medium text-black">
-						{settings?.firstName ?? ''} {settings?.lastName ?? ''}
-					</p>
-					<p className="text-caption text-grey-100">{settings?.email ?? ''}</p>
-				</div>
+				<Button type="button" variant="outline" size="sm">
+					Remove
+				</Button>
 			</div>
-			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+			{/* First Name / Last Name */}
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				<TextField
 					label="First Name"
+					placeholder="Ketn"
 					{...register('firstName')}
 					error={errors.firstName?.message}
 				/>
 				<TextField
 					label="Last Name"
+					placeholder="Torres"
 					{...register('lastName')}
 					error={errors.lastName?.message}
 				/>
+			</div>
+
+			{/* Title */}
+			<TextField
+				label="Title"
+				placeholder="Kfz-Sachverständiger"
+				{...register('title')}
+				error={errors.title?.message}
+			/>
+
+			{/* Email / Phone */}
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				<TextField
 					label="Email"
 					value={settings?.email ?? ''}
 					disabled
-					hint="Email cannot be changed here"
+					placeholder="ketn.torres@example.com"
 				/>
 				<TextField
 					label="Phone"
+					placeholder="+49 151 23456789"
 					{...register('phone')}
 					error={errors.phone?.message}
 				/>
 			</div>
-			<div className="flex justify-end">
+
+			{/* Social links */}
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+				<TextField
+					label="Instagram"
+					placeholder="@username"
+					icon={<Instagram className="h-5 w-5" />}
+					disabled
+				/>
+				<TextField
+					label="Facebook"
+					placeholder="facebook.com/username"
+					icon={<Facebook className="h-5 w-5" />}
+					disabled
+				/>
+				<TextField
+					label="LinkedIn"
+					placeholder="linkedin.com/username"
+					icon={<Linkedin className="h-5 w-5" />}
+					disabled
+				/>
+			</div>
+
+			{/* Action buttons */}
+			<div className="flex justify-end gap-3">
+				<Button
+					type="button"
+					variant="outline"
+					onClick={() => reset()}
+					disabled={!isDirty}
+				>
+					Cancel
+				</Button>
 				<Button
 					type="submit"
 					disabled={!isDirty || saveMutation.isPending}
 					loading={saveMutation.isPending}
 				>
-					Save Profile
+					Update
 				</Button>
 			</div>
 		</form>
@@ -155,53 +265,108 @@ function BusinessSection() {
 	}
 
 	if (isLoading) {
-		return <SkeletonGroup count={6} />
+		return <SkeletonGroup count={8} />
 	}
 
 	return (
-		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+			<h2 className="text-h3 font-semibold text-black">Business Information</h2>
+
+			{/* Logo upload */}
+			<div className="flex items-center gap-4">
+				<div className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-grey-50">
+					<span className="text-caption text-grey-50">Empty</span>
+				</div>
+				<Button type="button" variant="outline" size="sm">
+					Upload Logo
+				</Button>
+			</div>
+
+			{/* Company Name / Website */}
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				<TextField
 					label="Company Name"
+					placeholder="Kfz-Sachverständiger"
 					{...register('companyName')}
 					error={errors.companyName?.message}
-					className="md:col-span-2"
 				/>
 				<TextField
-					label="Street"
-					{...register('street')}
-					error={errors.street?.message}
-					className="md:col-span-2"
+					label="Website"
+					placeholder="www.kfz.de"
+					disabled
 				/>
+			</div>
+
+			{/* Email / Phone number */}
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+				<TextField
+					label="Email"
+					placeholder="sales.contact@kfz.com"
+					disabled
+				/>
+				<TextField
+					label="Phone number"
+					placeholder="+3513331253"
+					disabled
+				/>
+			</div>
+
+			{/* Street & Number */}
+			<TextField
+				label="Street & Number"
+				placeholder="Musterstraße 123"
+				{...register('street')}
+				error={errors.street?.message}
+			/>
+
+			{/* Postcode / City */}
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				<TextField
 					label="Postcode"
+					placeholder="10115"
 					{...register('postcode')}
 					error={errors.postcode?.message}
 				/>
 				<TextField
 					label="City"
+					placeholder="Berlin"
 					{...register('city')}
 					error={errors.city?.message}
 				/>
+			</div>
+
+			{/* Tax ID / VAT ID */}
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				<TextField
 					label="Tax ID (Steuernummer)"
+					placeholder="123/456/78901"
 					{...register('taxId')}
 					error={errors.taxId?.message}
 				/>
 				<TextField
-					label="VAT ID (USt-IdNr)"
+					label="VAT ID (USt-IdNr.)"
+					placeholder="DE123456789"
 					{...register('vatId')}
 					error={errors.vatId?.message}
-					hint="Format: DE123456789"
 				/>
 			</div>
-			<div className="flex justify-end">
+
+			{/* Action buttons */}
+			<div className="flex justify-end gap-3">
+				<Button
+					type="button"
+					variant="outline"
+					onClick={() => reset()}
+					disabled={!isDirty}
+				>
+					Cancel
+				</Button>
 				<Button
 					type="submit"
 					disabled={!isDirty || saveMutation.isPending}
 					loading={saveMutation.isPending}
 				>
-					Save Business
+					Update
 				</Button>
 			</div>
 		</form>
@@ -270,28 +435,41 @@ function IntegrationsSection() {
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
-			<Card padding="md">
+		<div className="flex flex-col gap-6">
+			<div>
+				<h2 className="text-h3 font-semibold text-black">Connected Services</h2>
+				<p className="mt-1 text-body-sm text-grey-100">
+					Connect third-party services to streamline your workflow
+				</p>
+			</div>
+
+			{/* DAT Integration Card */}
+			<div className="rounded-xl border border-border bg-white p-5">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-4">
-						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-secondary">
-							<LinkIcon className="h-5 w-5 text-grey-100" />
+						<div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-white">
+							<span className="text-caption font-bold text-warning">DAT</span>
 						</div>
 						<div>
-							<p className="text-body-sm font-medium text-black">
-								DAT SilverDAT3
-							</p>
+							<p className="text-body-sm font-semibold text-black">DAT</p>
 							<p className="text-caption text-grey-100">
-								Vehicle data, valuation, and repair costs
+								Automatically backup reports from DAT
 							</p>
+							{datIntegration?.isActive && (
+								<p className="text-caption font-medium text-primary">
+									Last sync: 2 hours ago
+								</p>
+							)}
 						</div>
 					</div>
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-3">
 						{datIntegration?.isActive ? (
 							<>
-								<Badge variant="success">Connected</Badge>
+								<Button variant="outline" size="sm">
+									Configure
+								</Button>
 								<Button
-									variant="outline"
+									variant="danger"
 									size="sm"
 									onClick={handleDisconnect}
 									loading={saveMutation.isPending}
@@ -351,41 +529,17 @@ function IntegrationsSection() {
 						</div>
 					</form>
 				)}
-			</Card>
+			</div>
 
-			<Card padding="md">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-4">
-						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-secondary">
-							<LinkIcon className="h-5 w-5 text-grey-100" />
-						</div>
-						<div>
-							<p className="text-body-sm font-medium text-black">Audatex</p>
-							<p className="text-caption text-grey-100">
-								Alternative calculation provider
-							</p>
-						</div>
-					</div>
-					<Badge variant="default">Coming Soon</Badge>
-				</div>
-			</Card>
-
-			<Card padding="md">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-4">
-						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-secondary">
-							<LinkIcon className="h-5 w-5 text-grey-100" />
-						</div>
-						<div>
-							<p className="text-body-sm font-medium text-black">GT Motive</p>
-							<p className="text-caption text-grey-100">
-								Alternative calculation provider
-							</p>
-						</div>
-					</div>
-					<Badge variant="default">Coming Soon</Badge>
-				</div>
-			</Card>
+			{/* Action buttons */}
+			<div className="flex justify-end gap-3">
+				<Button type="button" variant="outline">
+					Cancel
+				</Button>
+				<Button type="button">
+					Update
+				</Button>
+			</div>
 		</div>
 	)
 }
@@ -397,8 +551,10 @@ function BillingSection() {
 
 	if (isLoading) {
 		return (
-			<div className="flex flex-col gap-4">
-				<Skeleton variant="rect" className="h-32" />
+			<div className="flex flex-col gap-6">
+				<Skeleton variant="rect" className="h-40" />
+				<Skeleton variant="rect" className="h-20" />
+				<Skeleton variant="rect" className="h-64" />
 			</div>
 		)
 	}
@@ -408,47 +564,50 @@ function BillingSection() {
 		: null
 	const isTrialing =
 		trialEndsAt !== null && trialEndsAt.getTime() > Date.now()
-	const trialDaysRemaining = trialEndsAt
-		? Math.max(
-				0,
-				Math.ceil(
-					(trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-				),
-			)
-		: 0
+
+	// Mock billing history data for display
+	const billingHistory = [
+		{ date: '14.12.2025', description: 'Pro Plan - December', amount: '49.00', status: 'Paid' as const },
+		{ date: '14.11.2025', description: 'Pro Plan - November', amount: '49.00', status: 'Paid' as const },
+		{ date: '14.10.2025', description: 'Pro Plan - October', amount: '49.00', status: 'Paid' as const },
+		{ date: '14.09.2025', description: 'Pro Plan - September', amount: '49.00', status: 'Paid' as const },
+		{ date: '14.08.2025', description: 'Pro Plan - August', amount: '49.00', status: 'Paid' as const },
+		{ date: '14.07.2025', description: 'Pro Plan - July', amount: '49.00', status: 'Paid' as const },
+		{ date: '14.06.2025', description: 'Pro Plan - June', amount: '49.00', status: 'Paid' as const },
+		{ date: '14.05.2025', description: 'Pro Plan - May', amount: '49.00', status: 'Paid' as const },
+		{ date: '14.04.2025', description: 'Pro Plan - April', amount: '49.00', status: 'Paid' as const },
+	]
 
 	return (
-		<div className="flex flex-col gap-4">
-			<Card padding="lg">
-				<div className="flex items-center justify-between">
-					<div className="flex flex-col gap-1">
-						<div className="flex items-center gap-2">
-							<p className="text-h4 font-semibold text-black">
-								Pro Plan
-							</p>
-							<Badge variant="success">Active</Badge>
-							{isTrialing && (
-								<Badge variant="warning">Trial</Badge>
-							)}
-						</div>
-						<p className="text-body-sm text-grey-100">
+		<div className="flex flex-col gap-6">
+			{/* Current Plan Card - Dark gradient */}
+			<div className="overflow-hidden rounded-xl bg-linear-to-b from-dark-green to-black p-6 text-white">
+				<div className="flex items-start justify-between">
+					<div>
+						<p className="text-caption font-medium text-primary">Current Plan</p>
+						<h2 className="mt-1 text-h2 font-bold">Pro Plan</h2>
+						<p className="mt-1 text-body-sm text-white/70">
 							{isTrialing
-								? `${trialDaysRemaining} days remaining in trial`
-								: 'EUR 49/month'}
+								? 'Trial period active'
+								: 'EUR 49.00 / month - Renews on Feb 14, 2026'}
 						</p>
 					</div>
 					<div>
 						{settings?.stripeCustomerId ? (
 							<Button
 								variant="outline"
+								size="sm"
+								className="border-white/30 bg-transparent text-white hover:bg-white/10"
 								onClick={() => portalMutation.mutate()}
 								loading={portalMutation.isPending}
 							>
-								Manage Subscription
+								Cancel Plan
 							</Button>
 						) : (
 							<Button
-								variant="primary"
+								variant="outline"
+								size="sm"
+								className="border-white/30 bg-transparent text-white hover:bg-white/10"
 								onClick={() => checkoutMutation.mutate()}
 								loading={checkoutMutation.isPending}
 							>
@@ -457,42 +616,119 @@ function BillingSection() {
 						)}
 					</div>
 				</div>
-			</Card>
+				{/* Usage stats */}
+				<div className="mt-6 grid grid-cols-3 gap-4 border-t border-white/20 pt-4">
+					<div>
+						<p className="text-caption text-white/60">Reports this month</p>
+						<p className="mt-1 text-h4 font-bold">5 / 100</p>
+					</div>
+					<div>
+						<p className="text-caption text-white/60">AI Auto-fills</p>
+						<p className="mt-1 text-h4 font-bold">Unlimited</p>
+					</div>
+					<div>
+						<p className="text-caption text-white/60">Cloud Storage</p>
+						<p className="mt-1 text-h4 font-bold">50 GB</p>
+					</div>
+				</div>
+			</div>
+
+			{/* Payment Method */}
+			<div className="rounded-xl border border-border bg-white p-6">
+				<h3 className="text-h4 font-semibold text-black">Payment Method</h3>
+				<div className="mt-4 flex items-center justify-between">
+					<div className="flex items-center gap-4">
+						<div className="flex h-10 w-14 items-center justify-center rounded-md border border-border bg-white">
+							<CreditCard className="h-5 w-5 text-info-blue" />
+						</div>
+						<div>
+							<p className="text-body-sm font-medium text-black">Visa ending in 4242</p>
+							<p className="text-caption text-grey-100">Expires 12/2027</p>
+						</div>
+					</div>
+					<Button variant="danger" size="sm">
+						Remove
+					</Button>
+				</div>
+			</div>
+
+			{/* Billing History */}
+			<div className="rounded-xl border border-border bg-white p-6">
+				<h3 className="text-h4 font-semibold text-black">Billing History</h3>
+				<div className="mt-4">
+					<table className="w-full">
+						<tbody className="divide-y divide-border">
+							{billingHistory.map((item) => (
+								<tr key={item.date} className="text-body-sm">
+									<td className="py-3 pr-4 text-grey-100">{item.date}</td>
+									<td className="py-3 pr-4 text-black">{item.description}</td>
+									<td className="py-3 pr-4 font-medium text-black">EUR {item.amount}</td>
+									<td className="py-3 pr-4">
+										<Badge variant="success">
+											{item.status}
+										</Badge>
+									</td>
+									<td className="py-3 text-right">
+										<button type="button" className="cursor-pointer text-grey-100 hover:text-black">
+											<Download className="h-4 w-4" />
+										</button>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	)
+}
+
+function TemplatesSection() {
+	return (
+		<div className="flex flex-col gap-6">
+			<div>
+				<h2 className="text-h3 font-semibold text-black">Report Templates</h2>
+				<p className="mt-1 text-body-sm text-grey-100">
+					Manage your report templates and default settings
+				</p>
+			</div>
+			<div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-16">
+				<Bookmark className="h-12 w-12 text-grey-50" />
+				<p className="mt-4 text-body-sm font-medium text-grey-100">
+					Coming soon
+				</p>
+				<p className="mt-1 text-caption text-grey-100">
+					Template management will be available in a future update.
+				</p>
+			</div>
 		</div>
 	)
 }
 
 function SettingsPage() {
+	const [activeTab, setActiveTab] = useState<SettingsTab>('profile')
+
 	return (
 		<ErrorBoundary>
-			<div className="mx-auto max-w-4xl">
+			<div className="mx-auto max-w-5xl">
 				<div className="mb-8">
-					<h1 className="text-h2 font-bold text-black">Settings</h1>
-					<p className="mt-1 text-body-sm text-grey-100">
-						Manage your profile, business details, and subscription.
-					</p>
+					<h1 className="text-h1 font-bold text-black">Account Settings</h1>
 				</div>
 
-				<div className="flex flex-col gap-2">
-					<CollapsibleSection
-						title="Profile"
-						info
-						defaultOpen
-					>
-						<ProfileSection />
-					</CollapsibleSection>
+				<div className="flex gap-8">
+					{/* Sidebar Navigation */}
+					<div className="rounded-xl border border-border bg-white p-4">
+						<SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+					</div>
 
-					<CollapsibleSection title="Business">
-						<BusinessSection />
-					</CollapsibleSection>
-
-					<CollapsibleSection title="Integrations">
-						<IntegrationsSection />
-					</CollapsibleSection>
-
-					<CollapsibleSection title="Billing">
-						<BillingSection />
-					</CollapsibleSection>
+					{/* Content Area */}
+					<div className="min-w-0 flex-1">
+						{activeTab === 'profile' && <ProfileSection />}
+						{activeTab === 'business' && <BusinessSection />}
+						{activeTab === 'integrations' && <IntegrationsSection />}
+						{activeTab === 'billing' && <BillingSection />}
+						{activeTab === 'templates' && <TemplatesSection />}
+					</div>
 				</div>
 			</div>
 		</ErrorBoundary>

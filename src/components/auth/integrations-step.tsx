@@ -202,10 +202,11 @@ function IntegrationsStep() {
 
 					<p className="mt-4 text-caption text-grey-100">
 						You can skip this step and configure integrations later in Settings.
+
 					</p>
 
 					<div className="mt-6 flex items-center gap-4">
-						<Button type="button" variant="ghost" onClick={handleBack}>
+						<Button type="button" variant="outline" onClick={handleBack} className="flex-1">
 							Back
 						</Button>
 						<Button type="submit" loading={isSubmitting} className="flex-1">
@@ -223,10 +224,11 @@ function IntegrationsStep() {
 
 					<p className="mt-4 text-caption text-grey-100">
 						You can skip this step and configure integrations later in Settings.
+
 					</p>
 
 					<div className="mt-6 flex items-center gap-4">
-						<Button type="button" variant="ghost" onClick={handleBack}>
+						<Button type="button" variant="outline" onClick={handleBack} className="flex-1">
 							Back
 						</Button>
 						<Button type="button" onClick={handleSkip} loading={isSubmitting} className="flex-1">

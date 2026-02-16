@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
-import { ReportList, Pagination, EmptyState } from './report-list'
+import { ReportTable, Pagination, EmptyState } from './report-list'
 import type { Report } from '@/hooks/use-reports'
 
 vi.mock('next/navigation', () => ({
@@ -19,6 +19,10 @@ const mockReports: Report[] = [
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 		_count: { photos: 5 },
+		claimantName: 'Marko Jovanović',
+		plateNumber: 'ES 1315',
+		vehicleMake: 'Toyota',
+		vehicleModel: 'Sedan',
 	},
 	{
 		id: '2',
@@ -30,6 +34,10 @@ const mockReports: Report[] = [
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 		_count: { photos: 12 },
+		claimantName: 'Ana Petrović',
+		plateNumber: 'AL 1815',
+		vehicleMake: 'Ford',
+		vehicleModel: 'SUV',
 	},
 	{
 		id: '3',
@@ -44,47 +52,44 @@ const mockReports: Report[] = [
 	},
 ]
 
-describe('ReportList', () => {
+describe('ReportTable', () => {
 	const mockOnDelete = vi.fn()
 
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})
 
-	it('renders report titles', () => {
-		render(<ReportList reports={mockReports} onDelete={mockOnDelete} />)
-		expect(screen.getByText('Accident Report #1')).toBeInTheDocument()
-		expect(screen.getByText('Insurance Claim #42')).toBeInTheDocument()
+	it('renders report names from claimant data', () => {
+		render(<ReportTable reports={mockReports} onDelete={mockOnDelete} />)
+		expect(screen.getByText('Marko Jovanović')).toBeInTheDocument()
+		expect(screen.getByText('Ana Petrović')).toBeInTheDocument()
+	})
+
+	it('falls back to report title when no claimant name', () => {
+		render(<ReportTable reports={mockReports} onDelete={mockOnDelete} />)
 		expect(screen.getByText('Vehicle Assessment')).toBeInTheDocument()
 	})
 
-	it('renders status badges', () => {
-		render(<ReportList reports={mockReports} onDelete={mockOnDelete} />)
-		expect(screen.getAllByText('Draft').length).toBeGreaterThanOrEqual(1)
-		expect(screen.getAllByText('Completed').length).toBeGreaterThanOrEqual(1)
-		expect(screen.getAllByText('Sent').length).toBeGreaterThanOrEqual(1)
-	})
-
 	it('renders table headers', () => {
-		render(<ReportList reports={mockReports} onDelete={mockOnDelete} />)
+		render(<ReportTable reports={mockReports} onDelete={mockOnDelete} />)
 		expect(screen.getByText('Report')).toBeInTheDocument()
-		expect(screen.getByText('Status')).toBeInTheDocument()
-		expect(screen.getByText('Updated')).toBeInTheDocument()
 	})
 
 	it('shows action menu on button click', async () => {
 		const user = userEvent.setup()
-		render(<ReportList reports={mockReports} onDelete={mockOnDelete} />)
+		render(<ReportTable reports={mockReports} onDelete={mockOnDelete} />)
 
 		const actionButtons = screen.getAllByLabelText('Report actions')
 		await user.click(actionButtons[0]!)
 
 		expect(screen.getByText('Delete')).toBeInTheDocument()
+		expect(screen.getByText('Details')).toBeInTheDocument()
+		expect(screen.getByText('Edit Report')).toBeInTheDocument()
 	})
 
 	it('calls onDelete when delete is clicked', async () => {
 		const user = userEvent.setup()
-		render(<ReportList reports={mockReports} onDelete={mockOnDelete} />)
+		render(<ReportTable reports={mockReports} onDelete={mockOnDelete} />)
 
 		const actionButtons = screen.getAllByLabelText('Report actions')
 		await user.click(actionButtons[0]!)

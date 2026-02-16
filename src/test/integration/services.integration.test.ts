@@ -81,9 +81,11 @@ describe('Anthropic Integration', () => {
 
 		expect(message.id).toBeTruthy()
 		expect(message.content.length).toBeGreaterThanOrEqual(1)
-		expect(message.content[0].type).toBe('text')
+		const firstBlock = message.content[0]
+		expect(firstBlock).toBeDefined()
+		expect(firstBlock!.type).toBe('text')
 
-		const text = message.content[0].type === 'text' ? message.content[0].text : ''
+		const text = firstBlock && firstBlock.type === 'text' ? firstBlock.text : ''
 		expect(text.length).toBeGreaterThan(50)
 		// Should mention relevant damage terms
 		expect(text.toLowerCase()).toMatch(/dent|scratch|headlight|fender|damage/)
@@ -104,7 +106,8 @@ describe('Anthropic Integration', () => {
 			],
 		})
 
-		const text = message.content[0].type === 'text' ? message.content[0].text : ''
+		const vinBlock = message.content[0]
+		const text = vinBlock && vinBlock.type === 'text' ? vinBlock.text : ''
 		expect(text).toContain('WBAPH5C55BA123456')
 	}, 15000)
 })

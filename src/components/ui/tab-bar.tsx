@@ -30,7 +30,7 @@ function TabBar({ tabs, activeTab, onTabChange, className }: TabBarProps) {
 						className={cn(
 							'inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-full px-4 py-2 text-body-sm font-medium transition-colors',
 							activeTab === tab.key
-								? 'bg-black text-white'
+								? 'bg-primary text-white'
 								: 'bg-transparent text-grey-100 hover:bg-grey-25',
 						)}
 					>

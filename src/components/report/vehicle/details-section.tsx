@@ -1,7 +1,7 @@
 'use client'
 
 import { useController } from 'react-hook-form'
-import { Car, Truck, Bus, Fuel, Zap, Leaf } from 'lucide-react'
+import { Car, Truck, Bus, Fuel, Zap, Leaf, Plus } from 'lucide-react'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { IconSelector } from '@/components/ui/icon-selector'
 import { NumberChipSelector } from '@/components/ui/number-chip-selector'
@@ -10,6 +10,7 @@ import type { VehicleSectionProps } from './types'
 
 const VEHICLE_TYPE_OPTIONS = [
 	{ value: 'sedan', label: 'Sedan', icon: Car },
+	{ value: 'compact', label: 'Compact Car', icon: Car },
 	{ value: 'suv', label: 'SUV', icon: Truck },
 	{ value: 'wagon', label: 'Wagon', icon: Bus },
 	{ value: 'coupe', label: 'Coupe', icon: Car },
@@ -22,12 +23,15 @@ const MOTOR_TYPE_OPTIONS = [
 	{ value: 'diesel', label: 'Diesel', icon: Fuel },
 	{ value: 'electric', label: 'Electric', icon: Zap },
 	{ value: 'hybrid', label: 'Hybrid', icon: Leaf },
+	{ value: 'gas', label: 'Gas', icon: Fuel },
 ]
 
 const AXLE_OPTIONS = [
+	{ value: '1', label: '1' },
 	{ value: '2', label: '2' },
 	{ value: '3', label: '3' },
 	{ value: '4', label: '4' },
+	{ value: '5', label: '5' },
 ]
 
 const DRIVEN_AXLE_OPTIONS = [
@@ -35,31 +39,31 @@ const DRIVEN_AXLE_OPTIONS = [
 	{ value: '2', label: '2' },
 	{ value: '3', label: '3' },
 	{ value: '4', label: '4' },
+	{ value: '5', label: '5' },
 ]
 
 const DOOR_OPTIONS = [
-	{ value: '2', label: '2' },
-	{ value: '3', label: '3' },
-	{ value: '4', label: '4' },
-	{ value: '5', label: '5' },
-]
-
-const SEAT_OPTIONS = [
-	{ value: '2', label: '2' },
-	{ value: '4', label: '4' },
-	{ value: '5', label: '5' },
-	{ value: '6', label: '6' },
-	{ value: '7', label: '7' },
-	{ value: '8', label: '8' },
-	{ value: '9', label: '9' },
-]
-
-const PREVIOUS_OWNER_OPTIONS = [
+	{ value: '0', label: '0' },
 	{ value: '1', label: '1' },
 	{ value: '2', label: '2' },
 	{ value: '3', label: '3' },
 	{ value: '4', label: '4' },
-	{ value: '5', label: '5' },
+]
+
+const SEAT_OPTIONS = [
+	{ value: '0', label: '0' },
+	{ value: '1', label: '1' },
+	{ value: '2', label: '2' },
+	{ value: '3', label: '3' },
+	{ value: '4', label: '4' },
+]
+
+const PREVIOUS_OWNER_OPTIONS = [
+	{ value: '0', label: 'New' },
+	{ value: '1', label: '1' },
+	{ value: '2', label: '2' },
+	{ value: '3', label: '3' },
+	{ value: '4', label: '4' },
 ]
 
 function DetailsSection({
@@ -76,35 +80,56 @@ function DetailsSection({
 	const previousOwners = useController({ control, name: 'previousOwners' })
 
 	return (
-		<CollapsibleSection title="Vehicle Details" className={className}>
+		<CollapsibleSection title="Vehicle Details" info className={className}>
 			<div className="flex flex-col gap-6">
-				<div className="flex flex-col gap-1">
-					<Label>Vehicle Type</Label>
-					<IconSelector
-						options={VEHICLE_TYPE_OPTIONS}
-						selected={vehicleType.field.value}
-						onChange={(value) => {
-							vehicleType.field.onChange(value)
-							onFieldBlur?.('vehicleType')
-						}}
-					/>
+				{/* Vehicle Type row */}
+				<div className="flex items-center justify-between">
+					<Label className="min-w-35">Vehicle Type</Label>
+					<div className="flex items-center gap-2">
+						<IconSelector
+							options={VEHICLE_TYPE_OPTIONS}
+							selected={vehicleType.field.value}
+							onChange={(value) => {
+								vehicleType.field.onChange(value)
+								onFieldBlur?.('vehicleType')
+							}}
+						/>
+						<button
+							type="button"
+							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
+							aria-label="Add vehicle type"
+						>
+							<Plus className="h-4 w-4" />
+						</button>
+					</div>
 				</div>
 
-				<div className="flex flex-col gap-1">
-					<Label>Motor Type</Label>
-					<IconSelector
-						options={MOTOR_TYPE_OPTIONS}
-						selected={motorType.field.value}
-						onChange={(value) => {
-							motorType.field.onChange(value)
-							onFieldBlur?.('motorType')
-						}}
-					/>
+				{/* Motor Type row */}
+				<div className="flex items-center justify-between">
+					<Label className="min-w-35">Motor Type</Label>
+					<div className="flex items-center gap-2">
+						<IconSelector
+							options={MOTOR_TYPE_OPTIONS}
+							selected={motorType.field.value}
+							onChange={(value) => {
+								motorType.field.onChange(value)
+								onFieldBlur?.('motorType')
+							}}
+						/>
+						<button
+							type="button"
+							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
+							aria-label="Add motor type"
+						>
+							<Plus className="h-4 w-4" />
+						</button>
+					</div>
 				</div>
 
-				<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-					<div className="flex flex-col gap-1">
-						<Label>Axles</Label>
+				{/* Axles row */}
+				<div className="flex items-center justify-between">
+					<Label className="min-w-35">Axles</Label>
+					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={AXLE_OPTIONS}
 							selected={String(axles.field.value)}
@@ -113,10 +138,20 @@ function DetailsSection({
 								onFieldBlur?.('axles')
 							}}
 						/>
+						<button
+							type="button"
+							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
+							aria-label="Add axle option"
+						>
+							<Plus className="h-4 w-4" />
+						</button>
 					</div>
+				</div>
 
-					<div className="flex flex-col gap-1">
-						<Label>Driven Axles</Label>
+				{/* Driven by this row */}
+				<div className="flex items-center justify-between">
+					<Label className="min-w-35">Driven by this</Label>
+					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={DRIVEN_AXLE_OPTIONS}
 							selected={String(drivenAxles.field.value)}
@@ -125,10 +160,20 @@ function DetailsSection({
 								onFieldBlur?.('drivenAxles')
 							}}
 						/>
+						<button
+							type="button"
+							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
+							aria-label="Add driven option"
+						>
+							<Plus className="h-4 w-4" />
+						</button>
 					</div>
+				</div>
 
-					<div className="flex flex-col gap-1">
-						<Label>Doors</Label>
+				{/* Doors row */}
+				<div className="flex items-center justify-between">
+					<Label className="min-w-35">Doors</Label>
+					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={DOOR_OPTIONS}
 							selected={String(doors.field.value)}
@@ -137,10 +182,20 @@ function DetailsSection({
 								onFieldBlur?.('doors')
 							}}
 						/>
+						<button
+							type="button"
+							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
+							aria-label="Add door option"
+						>
+							<Plus className="h-4 w-4" />
+						</button>
 					</div>
+				</div>
 
-					<div className="flex flex-col gap-1">
-						<Label>Seats</Label>
+				{/* Seats row */}
+				<div className="flex items-center justify-between">
+					<Label className="min-w-35">Seats</Label>
+					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={SEAT_OPTIONS}
 							selected={String(seats.field.value)}
@@ -149,10 +204,20 @@ function DetailsSection({
 								onFieldBlur?.('seats')
 							}}
 						/>
+						<button
+							type="button"
+							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
+							aria-label="Add seat option"
+						>
+							<Plus className="h-4 w-4" />
+						</button>
 					</div>
+				</div>
 
-					<div className="flex flex-col gap-1">
-						<Label>Previous Owners</Label>
+				{/* Previous Owners row */}
+				<div className="flex items-center justify-between">
+					<Label className="min-w-35">Previous Owners</Label>
+					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={PREVIOUS_OWNER_OPTIONS}
 							selected={String(previousOwners.field.value)}
@@ -161,6 +226,13 @@ function DetailsSection({
 								onFieldBlur?.('previousOwners')
 							}}
 						/>
+						<button
+							type="button"
+							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
+							aria-label="Add previous owner option"
+						>
+							<Plus className="h-4 w-4" />
+						</button>
 					</div>
 				</div>
 			</div>

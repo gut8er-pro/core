@@ -44,52 +44,53 @@ function BusinessStep() {
 		<div>
 			<h2 className="mb-1 text-h2 font-bold text-black">Business information</h2>
 			<p className="mb-8 text-body text-grey-100">
-				Enter your company details for invoicing
+				Your company details for invoices and reports.
 			</p>
 
 			<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 				<TextField
 					label="Company name"
-					placeholder="Company GmbH"
+					placeholder="Mustermann Gutachten GmbH"
 					error={errors.companyName?.message}
 					{...register('companyName')}
 				/>
 				<TextField
 					label="Street & house number"
-					placeholder="Musterstraße 1"
+					placeholder="Musterstraße 123"
 					error={errors.street?.message}
 					{...register('street')}
 				/>
 				<div className="grid grid-cols-2 gap-4">
 					<TextField
 						label="Postcode"
-						placeholder="28195"
+						placeholder="1234"
 						error={errors.postcode?.message}
 						{...register('postcode')}
 					/>
 					<TextField
 						label="City"
-						placeholder="Bremen"
+						placeholder="Berlin"
 						error={errors.city?.message}
 						{...register('city')}
 					/>
 				</div>
-				<TextField
-					label="Tax ID (Steuernummer)"
-					placeholder="12/345/67890"
-					error={errors.taxId?.message}
-					{...register('taxId')}
-				/>
-				<TextField
-					label="VAT ID (USt-IdNr.)"
-					placeholder="DE123456789"
-					hint="Optional — Format: DE + 9 digits"
-					error={errors.vatId?.message}
-					{...register('vatId')}
-				/>
+				<div className="grid grid-cols-2 gap-4">
+					<TextField
+						label="Tax ID (Steuernummer)"
+						placeholder="123/456/78901"
+						error={errors.taxId?.message}
+						{...register('taxId')}
+					/>
+					<TextField
+						label="VAT ID (USt-IdNr.) Optional"
+						placeholder="DE123456789"
+						error={errors.vatId?.message}
+						{...register('vatId')}
+					/>
+				</div>
 
 				<div className="mt-4 flex items-center gap-4">
-					<Button type="button" variant="ghost" onClick={handleBack}>
+					<Button type="button" variant="outline" onClick={handleBack} className="flex-1">
 						Back
 					</Button>
 					<Button type="submit" loading={isSubmitting} className="flex-1">

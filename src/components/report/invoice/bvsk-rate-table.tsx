@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
-import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { ChevronDown, TriangleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BVSK_RATES, lookupBvskRate } from '@/lib/utils/invoice-calculations'
 import { cn } from '@/lib/utils'
@@ -30,75 +30,73 @@ function BvskRateTable({
 		onApplyRate(rate.baseFee, rate.additionalFee)
 	}, [repairCost, onApplyRate])
 
+	// Show a compact horizontal scrolling table matching Figma
+	const displayRates = BVSK_RATES.slice(0, 8)
+
 	return (
-		<CollapsibleSection title="BVSK Fee Schedule" className={className}>
-			<div className="flex flex-col gap-4">
-				<p className="text-body-sm text-grey-100">
-					Reference table for standard BVSK appraisal fees based on repair cost ranges.
-				</p>
+		<div className={cn('flex flex-col gap-3', className)}>
+			{/* BVSK selector button and rate display */}
+			<div className="overflow-x-auto rounded-lg border border-border">
+				<div className="flex items-stretch min-w-150">
+					{/* BVSK dropdown trigger */}
+					<div className="flex items-center gap-2 border-r border-border bg-white px-4 py-3">
+						<TriangleAlert className="h-4 w-4 text-error" />
+						<span className="text-body-sm font-semibold text-black whitespace-nowrap">BVSK</span>
+						<ChevronDown className="h-4 w-4 text-grey-100" />
+					</div>
 
-				{/* Scrollable table */}
-				<div className="overflow-x-auto rounded-lg border border-border">
-					<table className="w-full min-w-[500px]">
-						<thead>
-							<tr className="border-b border-border bg-grey-25">
-								<th className="px-4 py-2 text-left text-caption font-medium text-grey-100">
-									Repair Cost Range
-								</th>
-								<th className="px-4 py-2 text-right text-caption font-medium text-grey-100">
-									Base Fee
-								</th>
-								<th className="px-4 py-2 text-right text-caption font-medium text-grey-100">
-									Additional Fee
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{BVSK_RATES.map((rate, index) => {
-								const isActive =
-									repairCost !== undefined &&
-									repairCost >= rate.minRepairCost &&
-									repairCost <= rate.maxRepairCost
+					{/* Rate columns */}
+					<div className="flex flex-1">
+						{displayRates.map((rate, index) => {
+							const isActive =
+								repairCost !== undefined &&
+								repairCost >= rate.minRepairCost &&
+								repairCost <= rate.maxRepairCost
 
-								return (
-									<tr
-										key={index}
-										className={cn(
-											'border-b border-border last:border-b-0',
-											isActive && 'bg-primary/5',
-										)}
-									>
-										<td className="px-4 py-2 text-body-sm text-black">
-											{formatEUR(rate.minRepairCost)} &ndash;{' '}
-											{formatEUR(rate.maxRepairCost)}
-										</td>
-										<td className="px-4 py-2 text-right text-body-sm font-medium text-black">
+							return (
+								<div
+									key={index}
+									className={cn(
+										'flex flex-col items-center justify-center border-r border-border px-3 py-2 last:border-r-0',
+										isActive && 'bg-primary/5',
+									)}
+								>
+									<span className="text-[10px] text-grey-100 whitespace-nowrap">
+										Amount of damage
+									</span>
+									<span className="text-caption font-medium text-black whitespace-nowrap">
+										{formatEUR(rate.minRepairCost)}
+									</span>
+									<span className="text-caption text-grey-100 whitespace-nowrap">
+										{formatEUR(rate.maxRepairCost)}
+									</span>
+									<div className="mt-1 flex gap-2">
+										<span className="text-caption font-medium text-black">
 											{formatEUR(rate.baseFee)}
-										</td>
-										<td className="px-4 py-2 text-right text-body-sm text-grey-100">
+										</span>
+										<span className="text-caption text-grey-100">
 											{formatEUR(rate.additionalFee)}
-										</td>
-									</tr>
-								)
-							})}
-						</tbody>
-					</table>
+										</span>
+									</div>
+								</div>
+							)
+						})}
+					</div>
 				</div>
-
-				{onApplyRate && (
-					<Button
-						type="button"
-						variant="secondary"
-						size="sm"
-						onClick={handleApply}
-						disabled={!repairCost}
-						className="self-start"
-					>
-						Apply BVSK Rate
-					</Button>
-				)}
 			</div>
-		</CollapsibleSection>
+
+			{onApplyRate && repairCost && (
+				<Button
+					type="button"
+					variant="secondary"
+					size="sm"
+					onClick={handleApply}
+					className="self-start"
+				>
+					Apply BVSK Rate
+				</Button>
+			)}
+		</div>
 	)
 }
 

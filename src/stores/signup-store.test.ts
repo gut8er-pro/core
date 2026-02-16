@@ -54,8 +54,8 @@ describe('useSignupStore', () => {
 	})
 
 	it('sets plan data', () => {
-		useSignupStore.getState().setPlan({ plan: 'free' })
-		expect(useSignupStore.getState().plan.plan).toBe('free')
+		useSignupStore.getState().setPlan({ plan: 'pro' })
+		expect(useSignupStore.getState().plan.plan).toBe('pro')
 	})
 
 	it('sets integrations data', () => {
