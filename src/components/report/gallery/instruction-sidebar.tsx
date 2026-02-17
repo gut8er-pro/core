@@ -1,10 +1,20 @@
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ClassificationResult } from '@/lib/ai/types'
+
+type GenerationSummaryData = {
+	totalFieldsFilled: number
+	damageMarkersPlaced: number
+	photosProcessed: number
+	classifications: Record<string, number>
+	warnings: string[]
+	generatedAt?: string
+}
 
 type InstructionSidebarProps = {
 	className?: string
 	classifications?: Map<string, ClassificationResult>
+	generationSummary?: GenerationSummaryData
 }
 
 const INSTRUCTIONS = [
@@ -37,8 +47,23 @@ const SUGGESTED_CATEGORIES: SuggestedCategory[] = [
 	},
 ]
 
-function InstructionSidebar({ className, classifications }: InstructionSidebarProps) {
+function InstructionSidebar({ className, classifications, generationSummary }: InstructionSidebarProps) {
 	const hasClassifications = classifications && classifications.size > 0
+
+	// Get category counts: prefer live classification map, fall back to persisted summary counts
+	function getCategoryCount(category: SuggestedCategory): number {
+		if (hasClassifications) {
+			return countMatches(classifications, category.matchTypes)
+		}
+		if (generationSummary?.classifications) {
+			let total = 0
+			for (const matchType of category.matchTypes) {
+				total += generationSummary.classifications[matchType] ?? 0
+			}
+			return total
+		}
+		return 0
+	}
 
 	return (
 		<div className={cn('flex flex-col gap-4', className)}>
@@ -60,9 +85,7 @@ function InstructionSidebar({ className, classifications }: InstructionSidebarPr
 				<h3 className="text-h3 font-medium text-black">Suggested Photos</h3>
 				<div className="flex flex-col gap-3">
 					{SUGGESTED_CATEGORIES.map((category) => {
-						const count = hasClassifications
-							? countMatches(classifications, category.matchTypes)
-							: 0
+						const count = getCategoryCount(category)
 						const isFulfilled = count > 0
 
 						return (
@@ -88,7 +111,7 @@ function InstructionSidebar({ className, classifications }: InstructionSidebarPr
 									<span className="text-caption text-grey-100">
 										{category.description}
 									</span>
-									{hasClassifications && count > 0 && (
+									{count > 0 && (
 										<span className="text-caption font-semibold text-primary">
 											{count} photo{count !== 1 ? 's' : ''}
 										</span>
@@ -99,6 +122,32 @@ function InstructionSidebar({ className, classifications }: InstructionSidebarPr
 					})}
 				</div>
 			</div>
+
+			{/* AI Generation Summary Card */}
+			{generationSummary && (
+				<div className="flex flex-col gap-3 rounded-2xl bg-white p-5">
+					<div className="flex items-center gap-2">
+						<Sparkles className="h-4 w-4 text-primary" />
+						<h3 className="text-h3 font-medium text-black">AI Analysis</h3>
+					</div>
+					<div className="flex flex-col gap-2">
+						<div className="flex items-center justify-between">
+							<span className="text-caption text-grey-100">Photos processed</span>
+							<span className="text-body-sm font-semibold text-black">{generationSummary.photosProcessed}</span>
+						</div>
+						<div className="flex items-center justify-between">
+							<span className="text-caption text-grey-100">Fields auto-filled</span>
+							<span className="text-body-sm font-semibold text-primary">{generationSummary.totalFieldsFilled}</span>
+						</div>
+						{generationSummary.damageMarkersPlaced > 0 && (
+							<div className="flex items-center justify-between">
+								<span className="text-caption text-grey-100">Damage markers</span>
+								<span className="text-body-sm font-semibold text-black">{generationSummary.damageMarkersPlaced}</span>
+							</div>
+						)}
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }

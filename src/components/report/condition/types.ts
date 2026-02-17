@@ -58,6 +58,8 @@ type TireData = {
 	profileLevel: string
 	manufacturer: string
 	usability: number
+	dotCode?: string
+	tireType?: string
 }
 
 type TireSetData = {

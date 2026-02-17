@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { CheckCircle2, Loader2, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useExportConfig, useSendReport } from '@/hooks/use-export'
+import { useReport } from '@/hooks/use-reports'
 import { useToast } from '@/hooks/use-toast'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { ExportToggles } from '@/components/report/export/export-toggles'
@@ -16,6 +17,7 @@ function ExportPage() {
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useExportConfig(reportId)
+	const { data: report } = useReport(reportId)
 	const sendMutation = useSendReport(reportId)
 	const toast = useToast()
 	const [sendSuccess, setSendSuccess] = useState(false)
@@ -23,6 +25,7 @@ function ExportPage() {
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'export',
+		disabled: report?.isLocked,
 	})
 
 	const {
@@ -31,6 +34,7 @@ function ExportPage() {
 		formState: { errors },
 		reset,
 		getValues,
+		setValue,
 	} = useForm<ExportFormData>({
 		defaultValues: {
 			includeValuation: true,
@@ -170,6 +174,7 @@ function ExportPage() {
 				<div className="lg:col-span-3">
 					<EmailComposer
 						register={register}
+						setValue={setValue}
 						errors={errors}
 						onSend={handleSend}
 						isSending={sendMutation.isPending}

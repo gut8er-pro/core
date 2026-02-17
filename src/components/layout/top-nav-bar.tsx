@@ -34,7 +34,7 @@ function TopNavBar({ userName, userRole, activePath, onNavigate, onLogout, class
 	return (
 		<header
 			className={cn(
-				'flex h-16 items-center justify-between border-b border-border bg-white px-6',
+				'flex items-center justify-between px-6 py-4',
 				className,
 			)}
 		>
@@ -52,7 +52,7 @@ function TopNavBar({ userName, userRole, activePath, onNavigate, onLogout, class
 			</div>
 
 			{/* Center: Navigation items */}
-			<nav className="flex items-center gap-1">
+			<nav className="flex items-center gap-2.5">
 				{CENTER_NAV_ITEMS.map((item) => {
 					const isActive = activePath === item.path
 					return (
@@ -68,14 +68,14 @@ function TopNavBar({ userName, userRole, activePath, onNavigate, onLogout, class
 			</nav>
 
 			{/* Right: Notification bell + User avatar */}
-			<div className="flex items-center gap-2">
+			<div className="flex items-center gap-2.5">
 				<button
 					type="button"
 					onClick={() => onNavigate?.('/notifications')}
-					className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
+					className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
 					aria-label="Notifications"
 				>
-					<Bell className="h-5 w-5" />
+					<Bell className="h-6 w-6" />
 				</button>
 
 				<DropdownMenu>
@@ -133,11 +133,11 @@ function CenterNavItem({
 			<button
 				type="button"
 				onClick={onClick}
-				className="flex h-10 cursor-pointer items-center gap-2 rounded-full bg-black px-4 text-body-sm font-medium text-white transition-colors"
+				className="flex h-[50px] cursor-pointer items-center gap-2.5 rounded-[15px] bg-black px-3.5 text-body-sm font-medium text-white transition-colors"
 				aria-label={label}
 				aria-current="page"
 			>
-				<Icon className="h-5 w-5" />
+				<Icon className="h-6 w-6" />
 				<span>{label}</span>
 			</button>
 		)
@@ -147,10 +147,10 @@ function CenterNavItem({
 		<button
 			type="button"
 			onClick={onClick}
-			className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
+			className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
 			aria-label={label}
 		>
-			<Icon className="h-5 w-5" />
+			<Icon className="h-6 w-6" />
 		</button>
 	)
 }

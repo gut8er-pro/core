@@ -61,6 +61,7 @@ type OverviewAnalysisResult = {
 	model: string | null
 	bodyType: string | null
 	generalCondition: string | null
+	bodyCondition: string | null
 }
 
 type TireAnalysisResult = {
@@ -82,6 +83,9 @@ type InteriorAnalysisResult = {
 	description: string
 	condition: string | null
 	features: string[]
+	mileage: number | null
+	parkingSensors: boolean | null
+	airbagsDeployed: boolean | null
 }
 
 type VinDetectionResult = {
@@ -105,6 +109,13 @@ type OcrExtractionResult = {
 	power: string
 	fuel: string
 	mileage: string
+	kbaNumber: string
+	previousOwners: string
+	lastRegistration: string
+	vehicleType: string
+	color: string
+	seats: string
+	transmission: string
 }
 
 type VehicleLookupResult = {

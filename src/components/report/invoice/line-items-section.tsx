@@ -113,7 +113,7 @@ function LineItemsSection({
 								<TextField
 									label="Rate"
 									type="number"
-									prefix="EUR"
+									prefix="€"
 									placeholder="0,00"
 									step="0.01"
 									error={errors.lineItems?.[index]?.rate?.message}

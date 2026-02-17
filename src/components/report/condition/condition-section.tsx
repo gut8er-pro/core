@@ -287,7 +287,7 @@ function ConditionSection({
 				<div className="flex items-end gap-4">
 					<div className="w-full max-w-xs">
 						<TextField
-							label="Next MOT (optional)"
+							label="Next MOT"
 							type="date"
 							placeholder="MM/YY/YY"
 							error={errors.nextMot?.message}
@@ -354,6 +354,20 @@ function ConditionSection({
 								onChange={(checked) => {
 									field.onChange(checked)
 									onFieldBlur?.('airbagsDeployed')
+								}}
+							/>
+						)}
+					/>
+					<Controller
+						name="parkingSensors"
+						control={control}
+						render={({ field }) => (
+							<CheckboxPill
+								label="Parking sensors"
+								checked={field.value}
+								onChange={(checked) => {
+									field.onChange(checked)
+									onFieldBlur?.('parkingSensors')
 								}}
 							/>
 						)}

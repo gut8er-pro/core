@@ -35,13 +35,15 @@ function useGenerateReport(reportId: string) {
 	const abortRef = useRef<AbortController | null>(null)
 	const queryClient = useQueryClient()
 
-	const generate = useCallback(async () => {
+	const generate = useCallback(async (options?: { incremental?: boolean }) => {
 		if (status.isGenerating) return
+
+		const incremental = options?.incremental ?? false
 
 		setStatus({
 			...INITIAL_STATUS,
 			isGenerating: true,
-			message: 'Starting report generation...',
+			message: incremental ? 'Processing new photos...' : 'Starting report generation...',
 		})
 
 		const controller = new AbortController()
@@ -50,6 +52,8 @@ function useGenerateReport(reportId: string) {
 		try {
 			const response = await fetch(`/api/reports/${reportId}/generate`, {
 				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ incremental }),
 				signal: controller.signal,
 			})
 

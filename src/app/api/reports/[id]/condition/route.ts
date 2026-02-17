@@ -47,6 +47,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 					generalCondition: condition.generalCondition,
 					bodyCondition: condition.bodyCondition,
 					interiorCondition: condition.interiorCondition,
+					vehicleColor: condition.vehicleColor,
 					drivingAbility: condition.drivingAbility,
 					specialFeatures: condition.specialFeatures,
 					parkingSensors: condition.parkingSensors,

@@ -16,37 +16,40 @@ const ORDER_PLACEMENT_OPTIONS = [
 
 function ExpertOpinionSection({ register, control, errors, onFieldBlur, className }: SectionProps & { className?: string }) {
 	return (
-		<CollapsibleSection title="Expert Opinion" className={className}>
+		<CollapsibleSection title="Expert Opinion Characteristics" className={className}>
 			<div className="flex flex-col gap-4">
+				<TextField
+					label="Expert name"
+					placeholder="Expert name"
+					error={errors.expertName?.message}
+					{...register('expertName')}
+					onBlur={() => onFieldBlur?.('expertName')}
+				/>
+
+				{/* File number | Case date — 2-column per Figma */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<TextField
-						label="Expert Name"
-						placeholder="Name of expert"
-						error={errors.expertName?.message}
-						{...register('expertName')}
-						onBlur={() => onFieldBlur?.('expertName')}
-					/>
-					<TextField
-						label="File Number"
-						placeholder="File/case number"
+						label="File number"
+						placeholder="HB3351"
 						error={errors.fileNumber?.message}
 						{...register('fileNumber')}
 						onBlur={() => onFieldBlur?.('fileNumber')}
 					/>
-				</div>
-
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<TextField
-						label="Case Date"
+						label="Case date"
 						type="date"
 						error={errors.caseDate?.message}
 						{...register('caseDate')}
 						onBlur={() => onFieldBlur?.('caseDate')}
 					/>
+				</div>
+
+				{/* Order was placement | Issued date — 2-column per Figma */}
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<SelectField
-						label="Order Was Placement"
+						label="Order was placement"
 						options={ORDER_PLACEMENT_OPTIONS}
-						placeholder="Select placement type"
+						placeholder="Personal"
 						error={errors.orderWasPlacement?.message}
 						onValueChange={(value) => {
 							const event = { target: { name: 'orderWasPlacement', value } }
@@ -54,22 +57,12 @@ function ExpertOpinionSection({ register, control, errors, onFieldBlur, classNam
 							onFieldBlur?.('orderWasPlacement')
 						}}
 					/>
-				</div>
-
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<TextField
-						label="Issued Date"
+						label="Issued date"
 						type="date"
 						error={errors.issuedDate?.message}
 						{...register('issuedDate')}
 						onBlur={() => onFieldBlur?.('issuedDate')}
-					/>
-					<TextField
-						label="Mediator"
-						placeholder="Mediator name"
-						error={errors.mediator?.message}
-						{...register('mediator')}
-						onBlur={() => onFieldBlur?.('mediator')}
 					/>
 				</div>
 
@@ -87,6 +80,14 @@ function ExpertOpinionSection({ register, control, errors, onFieldBlur, classNam
 						Order by claimant
 					</Label>
 				</div>
+
+				<TextField
+					label="Mediator"
+					placeholder="Mark Cooper"
+					error={errors.mediator?.message}
+					{...register('mediator')}
+					onBlur={() => onFieldBlur?.('mediator')}
+				/>
 			</div>
 		</CollapsibleSection>
 	)

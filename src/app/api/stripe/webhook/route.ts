@@ -60,7 +60,7 @@ async function POST(request: NextRequest) {
 				await prisma.user.update({
 					where: { stripeCustomerId: customerId },
 					data: {
-						plan: 'PRO',
+						plan: 'FREE',
 						stripeSubscriptionId: null,
 						trialEndsAt: null,
 					},

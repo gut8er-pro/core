@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { MoreVertical, Eye, Pencil, Trash2, ChevronDown } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { LicensePlate } from '@/components/ui/license-plate'
+import { CarBrandLogo } from '@/components/ui/car-brand-logo'
 import { Button } from '@/components/ui/button'
 import { FileText } from 'lucide-react'
 import type { Report } from '@/hooks/use-reports'
@@ -157,7 +158,7 @@ function ReportRow({
 			{/* Report (Avatar + Name) */}
 			<td className="px-6 py-3">
 				<div className="flex items-center gap-3">
-					<Avatar className="h-9 w-9">
+					<Avatar className="h-[42px] w-[42px]">
 						<AvatarFallback className={getAvatarColor(displayName)}>
 							{getInitials(displayName)}
 						</AvatarFallback>
@@ -191,11 +192,7 @@ function ReportRow({
 			<td className="hidden px-6 py-3 lg:table-cell">
 				{carModel ? (
 					<div className="flex items-center gap-2">
-						<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-grey-25">
-							<span className="text-[10px] font-bold text-grey-100">
-								{(report.vehicleMake ?? '?')[0]}
-							</span>
-						</div>
+						<CarBrandLogo make={report.vehicleMake ?? ''} />
 						<span className="text-body-sm text-black">{carModel}</span>
 					</div>
 				) : (

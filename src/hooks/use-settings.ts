@@ -24,6 +24,7 @@ type UserSettings = {
 		city: string
 		taxId: string
 		vatId: string | null
+		logoUrl: string | null
 	} | null
 	integrations: Array<{
 		id: string
@@ -47,7 +48,8 @@ async function saveSettings(data: SettingsUpdateInput): Promise<UserSettings> {
 		body: JSON.stringify(data),
 	})
 	if (!response.ok) {
-		throw new Error('Failed to save settings')
+		const body = await response.json().catch(() => ({}))
+		throw new Error(body.error || 'Failed to save settings')
 	}
 	return response.json()
 }

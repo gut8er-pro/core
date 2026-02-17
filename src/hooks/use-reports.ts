@@ -5,6 +5,15 @@ import {
 } from '@tanstack/react-query'
 import type { ReportListParams } from '@/lib/validations/reports'
 
+type AiGenerationSummary = {
+	totalFieldsFilled: number
+	damageMarkersPlaced: number
+	photosProcessed: number
+	classifications: Record<string, number>
+	warnings: string[]
+	generatedAt: string
+}
+
 type Report = {
 	id: string
 	userId: string
@@ -12,6 +21,7 @@ type Report = {
 	status: 'DRAFT' | 'COMPLETED' | 'SENT' | 'LOCKED'
 	completionPercentage: number
 	isLocked: boolean
+	aiGenerationSummary: AiGenerationSummary | null
 	createdAt: string
 	updatedAt: string
 	_count: { photos: number }
@@ -96,5 +106,22 @@ function useDeleteReport() {
 	})
 }
 
-export { useReports, useCreateReport, useDeleteReport, fetchReports }
-export type { Report, ReportListResponse }
+async function fetchReport(id: string): Promise<{ report: Report }> {
+	const response = await fetch(`/api/reports/${id}`)
+	if (!response.ok) {
+		throw new Error('Failed to fetch report')
+	}
+	return response.json()
+}
+
+function useReport(id: string) {
+	return useQuery({
+		queryKey: ['report', id],
+		queryFn: () => fetchReport(id),
+		enabled: !!id,
+		select: (data) => data.report,
+	})
+}
+
+export { useReports, useReport, useCreateReport, useDeleteReport, fetchReports }
+export type { Report, ReportListResponse, AiGenerationSummary }

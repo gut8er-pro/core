@@ -29,4 +29,38 @@ describe('InstructionSidebar', () => {
 		expect(screen.getByText('Detailed close-ups of all damaged areas')).toBeInTheDocument()
 		expect(screen.getByText('Photos of all relevant vehicle documents')).toBeInTheDocument()
 	})
+
+	it('renders AI Analysis card when generationSummary is provided', () => {
+		render(
+			<InstructionSidebar
+				generationSummary={{
+					totalFieldsFilled: 19,
+					damageMarkersPlaced: 2,
+					photosProcessed: 5,
+					classifications: { overview: 2, damage: 1, document: 1, vin: 1 },
+					warnings: [],
+				}}
+			/>,
+		)
+		expect(screen.getByText('AI Analysis')).toBeInTheDocument()
+		expect(screen.getByText('19')).toBeInTheDocument()
+		expect(screen.getByText('2')).toBeInTheDocument()
+		expect(screen.getByText('5')).toBeInTheDocument()
+	})
+
+	it('shows category counts from persisted summary when no classifications map', () => {
+		render(
+			<InstructionSidebar
+				generationSummary={{
+					totalFieldsFilled: 10,
+					damageMarkersPlaced: 0,
+					photosProcessed: 3,
+					classifications: { overview: 2, damage: 1 },
+					warnings: [],
+				}}
+			/>,
+		)
+		expect(screen.getByText('2 photos')).toBeInTheDocument()
+		expect(screen.getByText('1 photo')).toBeInTheDocument()
+	})
 })

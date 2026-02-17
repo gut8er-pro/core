@@ -14,6 +14,7 @@ Return JSON with these fields:
 4. "model": Vehicle model if identifiable (e.g., "Golf", "3 Series", "C-Class"). Use null if unsure.
 5. "bodyType": Body type (e.g., "Hatchback", "Sedan", "SUV", "Kombi/Estate", "Coupe", "Convertible", "Van"). Use null if unsure.
 6. "generalCondition": Brief condition note (e.g., "Generally well-maintained exterior", "Signs of age and wear"). Use null if not assessable.
+7. "bodyCondition": Body/chassis condition (e.g., "No visible corrosion", "Minor surface rust on wheel arches", "Structural corrosion present"). Use null if not assessable.
 
 Return ONLY valid JSON.`
 
@@ -28,7 +29,7 @@ async function analyzeOverview(
 	const client = getAnthropicClient()
 
 	const message = await client.messages.create({
-		model: 'claude-sonnet-4-5-20250929',
+		model: 'claude-haiku-4-5-20251001',
 		max_tokens: 512,
 		messages: [{
 			role: 'user',
@@ -63,6 +64,7 @@ function parseOverviewResponse(photoId: string, rawResponse: string): OverviewAn
 		model: null,
 		bodyType: null,
 		generalCondition: null,
+		bodyCondition: null,
 	}
 
 	try {
@@ -80,6 +82,7 @@ function parseOverviewResponse(photoId: string, rawResponse: string): OverviewAn
 			model: typeof parsed.model === 'string' ? parsed.model : null,
 			bodyType: typeof parsed.bodyType === 'string' ? parsed.bodyType : null,
 			generalCondition: typeof parsed.generalCondition === 'string' ? parsed.generalCondition : null,
+			bodyCondition: typeof parsed.bodyCondition === 'string' ? parsed.bodyCondition : null,
 		}
 	} catch {
 		console.error('Failed to parse overview response:', rawResponse)

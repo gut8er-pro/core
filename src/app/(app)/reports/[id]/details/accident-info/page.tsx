@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useAccidentInfo, useSaveSignature } from '@/hooks/use-accident-info'
+import { useReport } from '@/hooks/use-reports'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
@@ -23,11 +24,13 @@ function AccidentInfoPage() {
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useAccidentInfo(reportId)
+	const { data: report } = useReport(reportId)
 	const saveSignature = useSaveSignature(reportId)
 
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'accident-info',
+		disabled: report?.isLocked,
 	})
 
 	const [signatureModalType, setSignatureModalType] = useState<SignatureType | null>(null)
