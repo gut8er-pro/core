@@ -4,21 +4,24 @@ import { useState, useCallback, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { useQueryClient } from '@tanstack/react-query'
-import { CheckCircle2, ChevronRight, Info, Loader2, Sparkles } from 'lucide-react'
+import { CheckCircle2, ChevronRight, Loader2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CompletionBadge } from '@/components/ui/completion-badge'
 import { useCalculation } from '@/hooks/use-calculation'
+import { useReport } from '@/hooks/use-reports'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { ValueSection } from '@/components/report/calculation/value-section'
 import { RepairSection } from '@/components/report/calculation/repair-section'
 import { LossSection } from '@/components/report/calculation/loss-section'
 import { DatModal } from '@/components/report/calculation/dat-modal'
+import type { DatFormData } from '@/components/report/calculation/dat-modal'
 import type { CalculationFormData } from '@/components/report/calculation/types'
 
 function CalculationPage() {
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useCalculation(reportId)
+	const { data: report } = useReport(reportId)
 
 	const queryClient = useQueryClient()
 	const [isAutoFilling, setIsAutoFilling] = useState(false)
@@ -28,6 +31,7 @@ function CalculationPage() {
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'calculation',
+		disabled: report?.isLocked,
 	})
 
 	const {
@@ -116,6 +120,23 @@ function CalculationPage() {
 		[saveField],
 	)
 
+	const handleDatSave = useCallback(async (datData: DatFormData) => {
+		try {
+			await fetch(`/api/reports/${reportId}/calculation`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					calculation: {
+						datCalculationResult: datData,
+					},
+				}),
+			})
+			queryClient.invalidateQueries({ queryKey: ['report', reportId, 'calculation'] })
+		} catch {
+			// silently fail — DAT settings are non-critical
+		}
+	}, [reportId, queryClient])
+
 	const handleAutoFill = useCallback(async () => {
 		setIsAutoFilling(true)
 		setAutoFillMessage(null)
@@ -150,8 +171,8 @@ function CalculationPage() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{/* Auto-save status indicator */}
-			<div className="flex items-center justify-end">
+			{/* Top row: auto-save status + auto-fill button */}
+			<div className="flex items-center justify-end gap-3">
 				<div className="flex items-center gap-3">
 					{autoFillMessage && (
 						<span className="text-caption text-grey-100">{autoFillMessage}</span>
@@ -174,6 +195,24 @@ function CalculationPage() {
 						)}
 					</div>
 				</div>
+				<Button
+					variant="primary"
+					size="lg"
+					onClick={handleAutoFill}
+					disabled={isAutoFilling}
+				>
+					{isAutoFilling ? (
+						<>
+							<Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+							Auto-filling...
+						</>
+					) : (
+						<>
+							<Sparkles className="mr-1.5 h-4 w-4" />
+							Upload Image to Auto-fill
+						</>
+					)}
+				</Button>
 			</div>
 
 			{/* Repair and Valuation Providers banner */}
@@ -189,38 +228,48 @@ function CalculationPage() {
 				<ChevronRight className="h-5 w-5 text-grey-100" />
 			</button>
 
-			<DatModal open={datModalOpen} onClose={() => setDatModalOpen(false)} />
-
-			{/* Section heading with completion badge */}
-			<div className="flex items-center justify-between">
-				<h3 className="text-h3 font-semibold text-black">Value and Repair Calculation</h3>
-				<CompletionBadge percentage={30} />
-			</div>
-
-			{/* Two-column layout: Value (left) + Repair (right) */}
-			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-				<ValueSection
-					register={register}
-					control={control}
-					errors={errors}
-					onFieldBlur={handleFieldBlur}
-				/>
-
-				<RepairSection
-					register={register}
-					control={control}
-					errors={errors}
-					onFieldBlur={handleFieldBlur}
-				/>
-			</div>
-
-			{/* Loss of Use - full width below */}
-			<LossSection
-				register={register}
-				control={control}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
+			<DatModal
+				open={datModalOpen}
+				onClose={() => setDatModalOpen(false)}
+				onSave={handleDatSave}
 			/>
+
+			{/* White card wrapping all calculation sections */}
+			<div className="flex flex-col gap-5 rounded-[20px] bg-white p-5">
+				{/* Section heading with completion badge */}
+				<div className="flex items-center justify-between">
+					<h3 className="text-h3 font-semibold text-black">Value and Repair Calculation</h3>
+					<CompletionBadge percentage={30} />
+				</div>
+
+				{/* Two-column layout: Value (left) + Repair (right) */}
+				<div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+					<ValueSection
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={handleFieldBlur}
+						className="rounded-3xl border-2 border-[#f5f5f5] p-5"
+					/>
+
+					<RepairSection
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={handleFieldBlur}
+						className="rounded-3xl border-2 border-[#f5f5f5] p-5"
+					/>
+				</div>
+
+				{/* Loss of Use - full width below */}
+				<LossSection
+					register={register}
+					control={control}
+					errors={errors}
+					onFieldBlur={handleFieldBlur}
+					className="rounded-3xl border-2 border-[#f5f5f5] p-5"
+				/>
+			</div>
 		</div>
 	)
 }

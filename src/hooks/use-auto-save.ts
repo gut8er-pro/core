@@ -1,10 +1,11 @@
-import { useRef, useCallback, useState } from 'react'
+import { useRef, useCallback, useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 type UseAutoSaveOptions = {
 	reportId: string
 	section: string
 	debounceMs?: number
+	disabled?: boolean
 }
 
 type AutoSaveState = {
@@ -43,6 +44,7 @@ function useAutoSave({
 	reportId,
 	section,
 	debounceMs = 2000,
+	disabled = false,
 }: UseAutoSaveOptions): UseAutoSaveReturn {
 	const queryClient = useQueryClient()
 	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -90,19 +92,31 @@ function useAutoSave({
 
 	const saveField = useCallback(
 		(field: string, value: unknown) => {
+			if (disabled) return
 			pendingRef.current[field] = value
 			scheduleFlush()
 		},
-		[scheduleFlush],
+		[scheduleFlush, disabled],
 	)
 
 	const saveFields = useCallback(
 		(data: Record<string, unknown>) => {
+			if (disabled) return
 			Object.assign(pendingRef.current, data)
 			scheduleFlush()
 		},
-		[scheduleFlush],
+		[scheduleFlush, disabled],
 	)
+
+	useEffect(() => {
+		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (Object.keys(pendingRef.current).length > 0 || mutation.isPending) {
+				e.preventDefault()
+			}
+		}
+		window.addEventListener('beforeunload', handleBeforeUnload)
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+	}, [mutation.isPending])
 
 	return { saveField, saveFields, state }
 }

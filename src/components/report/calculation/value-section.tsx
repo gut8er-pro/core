@@ -48,7 +48,7 @@ function ValueSection({
 				<TextField
 					label="Replacement value"
 					type="number"
-					prefix="EUR"
+					prefix="€"
 					placeholder="Add value"
 					step="0.01"
 					error={errors.replacementValue?.message}
@@ -109,7 +109,7 @@ function ValueSection({
 						<TextField
 							label="Amount"
 							type="number"
-							prefix="EUR"
+							prefix="€"
 							placeholder="0.00"
 							step="0.01"
 							error={errors.additionalCosts?.[index]?.amount?.message}

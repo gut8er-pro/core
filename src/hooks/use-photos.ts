@@ -22,6 +22,7 @@ type Photo = {
 	aiUrl: string | null
 	filename: string
 	type: string | null
+	aiClassification: string | null
 	aiDescription: string | null
 	order: number
 	uploadedAt: string

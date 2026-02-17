@@ -33,20 +33,19 @@ function ClaimantSection({ register, control, errors, onFieldBlur, className }: 
 					onBlur={() => onFieldBlur?.('claimantCompany')}
 				/>
 
-				<SelectField
-					label="Salutation"
-					options={salutationOptions}
-					placeholder="Select salutation"
-					error={errors.claimantSalutation?.message}
-					onValueChange={(value) => {
-						// Trigger form update through control
-						const event = { target: { name: 'claimantSalutation', value } }
-						register('claimantSalutation').onChange(event)
-						onFieldBlur?.('claimantSalutation')
-					}}
-				/>
-
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+				{/* Salutation | First Name | Last Name — 3-column per Figma */}
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+					<SelectField
+						label="Salutation"
+						options={salutationOptions}
+						placeholder="Select salutation"
+						error={errors.claimantSalutation?.message}
+						onValueChange={(value) => {
+							const event = { target: { name: 'claimantSalutation', value } }
+							register('claimantSalutation').onChange(event)
+							onFieldBlur?.('claimantSalutation')
+						}}
+					/>
 					<TextField
 						label="First Name"
 						placeholder="First name"
@@ -63,57 +62,57 @@ function ClaimantSection({ register, control, errors, onFieldBlur, className }: 
 					/>
 				</div>
 
-				<TextField
-					label="Street"
-					placeholder="Street and house number"
-					error={errors.claimantStreet?.message}
-					{...register('claimantStreet')}
-					onBlur={() => onFieldBlur?.('claimantStreet')}
-				/>
-
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+				{/* Street | Postcode | Location — 3-column per Figma */}
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+					<TextField
+						label="Street & house number or PO box"
+						placeholder="Musterstraße 123"
+						error={errors.claimantStreet?.message}
+						{...register('claimantStreet')}
+						onBlur={() => onFieldBlur?.('claimantStreet')}
+					/>
 					<TextField
 						label="Postcode"
-						placeholder="28195"
+						placeholder="R0S312"
 						error={errors.claimantPostcode?.message}
 						{...register('claimantPostcode')}
 						onBlur={() => onFieldBlur?.('claimantPostcode')}
 					/>
 					<TextField
 						label="Location"
-						placeholder="City"
+						placeholder="Berlin"
 						error={errors.claimantLocation?.message}
 						{...register('claimantLocation')}
 						onBlur={() => onFieldBlur?.('claimantLocation')}
 					/>
 				</div>
 
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+				{/* Email | IBAN | First number (Claimant) — 3-column per Figma */}
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 					<TextField
 						label="Email"
 						type="email"
-						placeholder="email@example.com"
+						placeholder="markecooper@gmail.com"
 						error={errors.claimantEmail?.message}
 						{...register('claimantEmail')}
 						onBlur={() => onFieldBlur?.('claimantEmail')}
 					/>
 					<TextField
-						label="Phone"
+						label="IBAN"
+						placeholder="123/456/78901"
+						error={errors.claimantVehicleMake?.message}
+						{...register('claimantVehicleMake')}
+						onBlur={() => onFieldBlur?.('claimantVehicleMake')}
+					/>
+					<TextField
+						label="First number (Claimant)"
 						type="tel"
-						placeholder="+49"
+						placeholder="DE123456780"
 						error={errors.claimantPhone?.message}
 						{...register('claimantPhone')}
 						onBlur={() => onFieldBlur?.('claimantPhone')}
 					/>
 				</div>
-
-				<TextField
-					label="Vehicle Make"
-					placeholder="e.g. BMW, Mercedes-Benz"
-					error={errors.claimantVehicleMake?.message}
-					{...register('claimantVehicleMake')}
-					onBlur={() => onFieldBlur?.('claimantVehicleMake')}
-				/>
 
 				<div className="flex flex-col gap-1">
 					<Label>License Plate</Label>
@@ -131,7 +130,8 @@ function ClaimantSection({ register, control, errors, onFieldBlur, className }: 
 					</div>
 				</div>
 
-				<div className="flex flex-col gap-2 pt-2">
+				{/* Checkboxes — horizontal row per Figma */}
+				<div className="flex flex-wrap items-center gap-6 pt-2">
 					<div className="flex items-center gap-2">
 						<Checkbox
 							id="claimant-eligible-input-tax"
@@ -160,7 +160,7 @@ function ClaimantSection({ register, control, errors, onFieldBlur, className }: 
 							{...register('claimantIsVehicleOwner')}
 						/>
 						<Label htmlFor="claimant-is-vehicle-owner" className="cursor-pointer font-normal">
-							Is vehicle owner
+							Is the vehicle owner
 						</Label>
 					</div>
 
@@ -175,7 +175,7 @@ function ClaimantSection({ register, control, errors, onFieldBlur, className }: 
 							{...register('claimantRepresentedByLawyer')}
 						/>
 						<Label htmlFor="claimant-represented-by-lawyer" className="cursor-pointer font-normal">
-							Represented by lawyer
+							Represented by a lawyer
 						</Label>
 					</div>
 				</div>

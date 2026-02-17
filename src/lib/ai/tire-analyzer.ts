@@ -27,6 +27,15 @@ function mapWheelPosition(position: VehiclePosition): 'VL' | 'VR' | 'HL' | 'HR' 
 		case 'wheel-fr': return 'VR'
 		case 'wheel-rl': return 'HL'
 		case 'wheel-rr': return 'HR'
+		// Map general positions to closest wheel — better than returning null
+		case 'front-left': return 'VL'
+		case 'front-right': return 'VR'
+		case 'front': return 'VL'
+		case 'rear-left': return 'HL'
+		case 'rear-right': return 'HR'
+		case 'rear': return 'HL'
+		case 'left': return 'VL'
+		case 'right': return 'VR'
 		default: return null
 	}
 }

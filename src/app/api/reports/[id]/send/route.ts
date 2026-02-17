@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { sendReportSchema } from '@/lib/validations/export'
 import { sendReportEmail } from '@/lib/email/send-report'
+import { generateReportPdfBuffer } from '@/lib/pdf/generate-buffer'
 
 type RouteContext = {
 	params: Promise<{ id: string }>
@@ -71,6 +72,23 @@ async function POST(request: NextRequest, context: RouteContext) {
 		},
 	})
 
+	// Generate PDF attachment
+	let pdfAttachment: { filename: string; content: Buffer } | undefined
+	try {
+		const pdfResult = await generateReportPdfBuffer(id, user!.id)
+		if ('buffer' in pdfResult) {
+			pdfAttachment = {
+				filename: pdfResult.filename,
+				content: pdfResult.buffer,
+			}
+		} else {
+			console.error('PDF generation error:', pdfResult.error)
+		}
+	} catch (err) {
+		console.error('PDF generation failed:', err)
+		// Continue sending email without attachment
+	}
+
 	// Fetch sender details from DB
 	const dbUser = await prisma.user.findUnique({
 		where: { id: user!.id },
@@ -85,7 +103,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	const senderName = [dbUser?.firstName, dbUser?.lastName].filter(Boolean).join(' ') || 'Gut8erPRO User'
 	const senderCompany = dbUser?.business?.companyName ?? undefined
 
-	// Send email via Resend
+	// Send email via Resend with PDF attachment
 	const emailResult = await sendReportEmail({
 		to: data.recipientEmail,
 		recipientName: data.recipientName,
@@ -94,6 +112,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 		reportTitle: report.title,
 		senderName,
 		senderCompany,
+		pdfAttachment,
 	})
 
 	if (!emailResult.success) {

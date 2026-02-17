@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useInvoice } from '@/hooks/use-invoice'
+import { useReport } from '@/hooks/use-reports'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { InvoiceBanner } from '@/components/report/invoice/invoice-banner'
 import { InvoiceSettings } from '@/components/report/invoice/invoice-settings'
@@ -16,10 +17,12 @@ function InvoicePage() {
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useInvoice(reportId)
+	const { data: report } = useReport(reportId)
 
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'invoice',
+		disabled: report?.isLocked,
 	})
 
 	const {
@@ -149,29 +152,32 @@ function InvoicePage() {
 			{/* Invoice totals banner */}
 			<InvoiceBanner control={control} />
 
-			{/* Invoice Details heading */}
-			<h3 className="text-h3 font-semibold text-black">Invoice Details</h3>
+			{/* White card wrapping invoice details */}
+			<div className="flex flex-col gap-6 rounded-[20px] bg-white p-5">
+				{/* Invoice Details heading */}
+				<h3 className="text-h3 font-semibold text-black">Invoice Details</h3>
 
-			{/* Invoice settings */}
-			<InvoiceSettings
-				register={register}
-				control={control}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
-			/>
+				{/* Invoice settings */}
+				<InvoiceSettings
+					register={register}
+					control={control}
+					errors={errors}
+					onFieldBlur={handleFieldBlur}
+				/>
 
-			{/* Line items with BVSK rate table embedded */}
-			<LineItemsSection
-				register={register}
-				control={control}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
-				bvskContent={
-					<BvskRateTable
-						onApplyRate={handleApplyBvskRate}
-					/>
-				}
-			/>
+				{/* Line items with BVSK rate table embedded */}
+				<LineItemsSection
+					register={register}
+					control={control}
+					errors={errors}
+					onFieldBlur={handleFieldBlur}
+					bvskContent={
+						<BvskRateTable
+							onApplyRate={handleApplyBvskRate}
+						/>
+					}
+				/>
+			</div>
 		</div>
 	)
 }

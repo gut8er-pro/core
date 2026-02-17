@@ -13,6 +13,7 @@ import {
 	useSaveTireSet,
 	useDeleteTireSet,
 } from '@/hooks/use-condition'
+import { useReport } from '@/hooks/use-reports'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { getPaintColor } from '@/lib/validations/condition'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
@@ -28,6 +29,7 @@ function ConditionPage() {
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useCondition(reportId)
+	const { data: report } = useReport(reportId)
 	const saveDamageMarker = useSaveDamageMarker(reportId)
 	const deleteDamageMarker = useDeleteDamageMarker(reportId)
 	const savePaintMarker = useSavePaintMarker(reportId)
@@ -39,6 +41,7 @@ function ConditionPage() {
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'condition',
+		disabled: report?.isLocked,
 	})
 
 	const {

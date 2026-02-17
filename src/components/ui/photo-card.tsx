@@ -15,7 +15,7 @@ type PhotoCardProps = {
 const variantClasses = {
 	grid: 'aspect-[4/3] w-full rounded-xl',
 	viewer: 'aspect-video w-full rounded-xl',
-	thumbnail: 'h-16 w-24 rounded-lg',
+	thumbnail: 'h-14 w-14 rounded-lg',
 } as const
 
 function PhotoCard({

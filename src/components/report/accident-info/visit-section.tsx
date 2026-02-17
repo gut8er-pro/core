@@ -93,34 +93,35 @@ function VisitSection({ control, register, errors, onFieldBlur, className }: Sec
 								)}
 							</div>
 
-							<TextField
-								label="Street"
-								placeholder="Street and house number"
-								error={errors.visits?.[index]?.street?.message}
-								{...register(`visits.${index}.street`)}
-								onBlur={() => onFieldBlur?.(`visits.${index}.street`)}
-							/>
-
-							<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+							{/* Street | Postcode | Location — 3-column per Figma */}
+							<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+								<TextField
+									label="Street & house number or PO box"
+									placeholder="Street address or po box"
+									error={errors.visits?.[index]?.street?.message}
+									{...register(`visits.${index}.street`)}
+									onBlur={() => onFieldBlur?.(`visits.${index}.street`)}
+								/>
 								<TextField
 									label="Postcode"
-									placeholder="28195"
+									placeholder="eg 006312"
 									error={errors.visits?.[index]?.postcode?.message}
 									{...register(`visits.${index}.postcode`)}
 									onBlur={() => onFieldBlur?.(`visits.${index}.postcode`)}
 								/>
 								<TextField
 									label="Location"
-									placeholder="City"
+									placeholder="Berlin"
 									error={errors.visits?.[index]?.location?.message}
 									{...register(`visits.${index}.location`)}
 									onBlur={() => onFieldBlur?.(`visits.${index}.location`)}
 								/>
 							</div>
 
-							<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+							{/* Data | Expert | Vehicle condition — 3-column per Figma */}
+							<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 								<TextField
-									label="Date"
+									label="Data"
 									type="date"
 									error={errors.visits?.[index]?.date?.message}
 									{...register(`visits.${index}.date`)}
@@ -133,19 +134,18 @@ function VisitSection({ control, register, errors, onFieldBlur, className }: Sec
 									{...register(`visits.${index}.expert`)}
 									onBlur={() => onFieldBlur?.(`visits.${index}.expert`)}
 								/>
+								<SelectField
+									label="Vehicle condition"
+									options={VEHICLE_CONDITION_OPTIONS}
+									placeholder="Choose condition"
+									error={errors.visits?.[index]?.vehicleCondition?.message}
+									onValueChange={(value) => {
+										const event = { target: { name: `visits.${index}.vehicleCondition`, value } }
+										register(`visits.${index}.vehicleCondition`).onChange(event)
+										onFieldBlur?.(`visits.${index}.vehicleCondition`)
+									}}
+								/>
 							</div>
-
-							<SelectField
-								label="Vehicle Condition"
-								options={VEHICLE_CONDITION_OPTIONS}
-								placeholder="Select condition"
-								error={errors.visits?.[index]?.vehicleCondition?.message}
-								onValueChange={(value) => {
-									const event = { target: { name: `visits.${index}.vehicleCondition`, value } }
-									register(`visits.${index}.vehicleCondition`).onChange(event)
-									onFieldBlur?.(`visits.${index}.vehicleCondition`)
-								}}
-							/>
 						</div>
 					</div>
 				))}

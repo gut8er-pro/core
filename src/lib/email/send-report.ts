@@ -8,6 +8,10 @@ interface SendReportEmailParams {
 	reportTitle: string
 	senderName: string
 	senderCompany?: string
+	pdfAttachment?: {
+		filename: string
+		content: Buffer
+	}
 }
 
 interface SendReportEmailResult {
@@ -89,7 +93,7 @@ function buildReportEmailHtml(params: {
 async function sendReportEmail(
 	params: SendReportEmailParams,
 ): Promise<SendReportEmailResult> {
-	const { to, recipientName, subject, body, reportTitle, senderName, senderCompany } = params
+	const { to, recipientName, subject, body, reportTitle, senderName, senderCompany, pdfAttachment } = params
 
 	const html = buildReportEmailHtml({
 		recipientName,
@@ -104,12 +108,23 @@ async function sendReportEmail(
 	try {
 		const resend = getResendClient()
 
-		const { error } = await resend.emails.send({
+		const emailPayload: Parameters<typeof resend.emails.send>[0] = {
 			from: `Gut8erPRO <${fromAddress}>`,
 			to: [to],
 			subject,
 			html,
-		})
+		}
+
+		if (pdfAttachment) {
+			emailPayload.attachments = [
+				{
+					filename: pdfAttachment.filename,
+					content: pdfAttachment.content,
+				},
+			]
+		}
+
+		const { error } = await resend.emails.send(emailPayload)
 
 		if (error) {
 			return { success: false, error: error.message }

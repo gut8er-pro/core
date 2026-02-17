@@ -34,7 +34,7 @@ async function GET(request: NextRequest) {
 		...(status ? { status } : {}),
 	}
 
-	const [reports, total] = await Promise.all([
+	const [rawReports, total] = await Promise.all([
 		prisma.report.findMany({
 			where,
 			orderBy: { [sortBy]: sortOrder },
@@ -42,10 +42,36 @@ async function GET(request: NextRequest) {
 			take: limit,
 			include: {
 				_count: { select: { photos: true } },
+				claimantInfo: { select: { firstName: true, lastName: true, licensePlate: true } },
+				vehicleInfo: { select: { manufacturer: true, mainType: true, vehicleType: true } },
 			},
 		}),
 		prisma.report.count({ where }),
 	])
+
+	// Flatten joined data for dashboard display
+	const reports = rawReports.map((r) => {
+		const claimantName = [r.claimantInfo?.firstName, r.claimantInfo?.lastName]
+			.filter(Boolean)
+			.join(' ') || null
+		return {
+			id: r.id,
+			userId: r.userId,
+			title: r.title,
+			status: r.status,
+			completionPercentage: r.completionPercentage,
+			isLocked: r.isLocked,
+			aiGenerationSummary: r.aiGenerationSummary,
+			createdAt: r.createdAt,
+			updatedAt: r.updatedAt,
+			_count: r._count,
+			claimantName,
+			plateNumber: r.claimantInfo?.licensePlate || null,
+			vehicleMake: r.vehicleInfo?.manufacturer || null,
+			vehicleModel: r.vehicleInfo?.mainType || null,
+			vehicleType: r.vehicleInfo?.vehicleType || null,
+		}
+	})
 
 	return NextResponse.json({
 		reports,

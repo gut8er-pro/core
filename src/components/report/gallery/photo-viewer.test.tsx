@@ -13,6 +13,7 @@ const mockPhoto: Photo = {
 	aiUrl: null,
 	filename: 'damage-front.jpg',
 	type: 'DAMAGE_OVERVIEW',
+	aiClassification: null,
 	aiDescription: null,
 	order: 0,
 	uploadedAt: '2024-01-01T00:00:00Z',

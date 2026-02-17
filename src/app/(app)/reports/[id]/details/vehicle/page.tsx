@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useVehicleInfo } from '@/hooks/use-vehicle-info'
+import { useReport } from '@/hooks/use-reports'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
 import { CompletionBadge } from '@/components/ui/completion-badge'
@@ -18,11 +19,13 @@ function VehiclePage() {
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useVehicleInfo(reportId)
+	const { data: report } = useReport(reportId)
 	const [showMissing, setShowMissing] = useState(false)
 
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'vehicle',
+		disabled: report?.isLocked,
 	})
 
 	const {

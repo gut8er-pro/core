@@ -24,6 +24,7 @@ const businessSettingsSchema = z.object({
 		.refine((val) => !val || /^DE\d{9}$/.test(val), {
 			message: 'VAT ID must be in format DE + 9 digits',
 		}),
+	logoUrl: z.string().url().optional().nullable(),
 })
 
 const integrationSettingsSchema = z.object({
@@ -37,6 +38,7 @@ const settingsUpdateSchema = z.object({
 	profile: profileSettingsSchema.optional(),
 	business: businessSettingsSchema.optional(),
 	integration: integrationSettingsSchema.optional(),
+	logoUrl: z.string().url('Invalid logo URL').optional().nullable(),
 })
 
 type ProfileSettingsInput = z.infer<typeof profileSettingsSchema>

@@ -42,7 +42,7 @@ function LossSection({
 	className,
 }: CalculationSectionProps) {
 	return (
-		<div className={cn('flex flex-col gap-5 border-t border-border pt-6', className)}>
+		<div className={cn('flex flex-col gap-5', className)}>
 			{/* Section header */}
 			<div className="flex items-center gap-2">
 				<h4 className="text-body font-semibold text-black">Loss of Use</h4>
@@ -70,9 +70,9 @@ function LossSection({
 				/>
 
 				<TextField
-					label="Cost per Day (EUR)"
+					label="Cost per Day (€)"
 					type="number"
-					prefix="EUR"
+					prefix="€"
 					placeholder="0.00"
 					step="0.01"
 					error={errors.costPerDay?.message}

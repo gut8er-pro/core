@@ -64,7 +64,7 @@ function Filmstrip({
 				<button
 					type="button"
 					onClick={onAdd}
-					className="flex h-16 w-24 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-dashed border-grey-50 bg-grey-25 transition-colors hover:border-primary hover:bg-primary/5"
+					className="flex h-14 w-14 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-dashed border-grey-50 bg-grey-25 transition-colors hover:border-primary hover:bg-primary/5"
 					aria-label="Add more photos"
 				>
 					<Plus className="h-5 w-5 text-grey-100" />

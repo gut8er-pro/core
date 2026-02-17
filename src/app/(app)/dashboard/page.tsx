@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Search, SlidersHorizontal, Info, ChevronDown } from 'lucide-react'
+import { Plus, Search, ListFilter, Info, ChevronDown } from 'lucide-react'
 import { useReports, useCreateReport, useDeleteReport } from '@/hooks/use-reports'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
@@ -101,9 +101,25 @@ function DashboardPage() {
 					{CHART_VALUES.map((value, i) => (
 						<div
 							key={CHART_MONTHS[i]}
-							className="flex-1 rounded-t-sm bg-white/20 transition-all hover:bg-white/30"
+							className="relative flex-1"
 							style={{ height: `${value}%` }}
-						/>
+						>
+							{/* Tooltip on highlighted bar (Oct = index 9) */}
+							{i === 9 && (
+								<div className="absolute -top-12 left-1/2 -translate-x-1/2">
+									<div className="rounded-lg bg-white px-4 py-2 text-body-sm font-bold text-black shadow-md">
+										$240
+									</div>
+									<div className="mx-auto h-0 w-0 border-x-[6px] border-t-[6px] border-x-transparent border-t-white" />
+								</div>
+							)}
+							<div
+								className={cn(
+									'h-full w-full rounded-t-sm transition-all',
+									i === 9 ? 'bg-white/40' : 'bg-white/20 hover:bg-white/30',
+								)}
+							/>
+						</div>
 					))}
 				</div>
 
@@ -147,10 +163,10 @@ function DashboardPage() {
 				<div className="flex items-center gap-3">
 					<button
 						type="button"
-						className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
+						className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
 						aria-label="Filter reports"
 					>
-						<SlidersHorizontal className="h-4 w-4" />
+						<ListFilter className="h-5 w-5" />
 					</button>
 					<div className="relative">
 						<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-grey-100" />
@@ -159,13 +175,15 @@ function DashboardPage() {
 							placeholder="Search.."
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="h-10 w-52 rounded-lg border border-border bg-white pl-9 pr-3 text-body-sm text-black outline-none placeholder:text-grey-100 focus:border-primary focus:ring-1 focus:ring-primary"
+							className="h-11 w-[320px] rounded-lg border border-border bg-white pl-9 pr-3 text-body-sm text-black outline-none placeholder:text-grey-100 focus:border-primary focus:ring-1 focus:ring-primary"
 						/>
 					</div>
 					<Button
 						onClick={handleCreateReport}
 						loading={createReport.isPending}
-						icon={<Plus className="h-4 w-4" />}
+						size="lg"
+						icon={<Plus className="h-3.5 w-3.5" />}
+						iconPosition="right"
 					>
 						New Report
 					</Button>

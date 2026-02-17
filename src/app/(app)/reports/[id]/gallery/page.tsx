@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import {
 	Sparkles,
@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button'
 import { usePhotos, useDeletePhoto } from '@/hooks/use-photos'
 import { usePhotoUpload } from '@/hooks/use-photo-upload'
 import { useGenerateReport } from '@/hooks/use-generate-report'
+import { useReport } from '@/hooks/use-reports'
+import type { AiGenerationSummary } from '@/hooks/use-reports'
 
 import { MAX_PHOTOS_PER_REPORT } from '@/lib/validations/photos'
 import { UploadZone } from '@/components/report/gallery/upload-zone'
@@ -22,6 +24,7 @@ import { InstructionSidebar } from '@/components/report/gallery/instruction-side
 import { AnnotationModal } from '@/components/report/gallery/annotation-modal.dynamic'
 import { GenerateProgress } from '@/components/report/gallery/generate-progress'
 import { ClassificationBadge } from '@/components/report/gallery/photo-classification-badge'
+import type { PhotoClassificationType } from '@/lib/ai/types'
 
 type ViewMode = 'single' | 'grid'
 
@@ -29,6 +32,7 @@ function GalleryPage() {
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = usePhotos(reportId)
+	const { data: report } = useReport(reportId)
 	const deletePhoto = useDeletePhoto(reportId)
 	const { uploadState, uploadPhotos } = usePhotoUpload(reportId)
 	const { status: genStatus, generate, cancel, reset } = useGenerateReport(reportId)
@@ -39,6 +43,25 @@ function GalleryPage() {
 
 	const photos = data?.photos ?? []
 	const selectedPhoto = photos.find((p) => p.id === selectedPhotoId) ?? photos[0] ?? null
+
+	// Persisted AI generation summary from the report
+	const persistedSummary = report?.aiGenerationSummary as AiGenerationSummary | null
+
+	// Build classifications map: prefer live SSE data, fall back to persisted aiClassification
+	const mergedClassifications = useMemo(() => {
+		if (genStatus.classifications.size > 0) return genStatus.classifications
+		const map = new Map<string, { type: PhotoClassificationType }>()
+		for (const photo of photos) {
+			if (photo.aiClassification) {
+				map.set(photo.id, { type: photo.aiClassification as PhotoClassificationType })
+			}
+		}
+		return map
+	}, [genStatus.classifications, photos])
+
+	// Effective summary: live SSE summary takes priority, then persisted DB summary
+	const effectiveSummary = genStatus.summary || persistedSummary
+	const hasLiveSummary = !!genStatus.summary
 
 	const handleFilesSelected = useCallback(
 		(files: File[]) => {
@@ -107,7 +130,8 @@ function GalleryPage() {
 			{/* Left instruction sidebar */}
 			<InstructionSidebar
 				className="hidden w-72 shrink-0 xl:block"
-				classifications={genStatus.classifications}
+				classifications={mergedClassifications as Map<string, import('@/lib/ai/types').ClassificationResult>}
+				generationSummary={effectiveSummary ?? undefined}
 			/>
 
 			{/* Main content area */}
@@ -146,22 +170,24 @@ function GalleryPage() {
 					</div>
 				)}
 
-				{/* Generation complete toast */}
-				{genStatus.summary && !genStatus.isGenerating && !genStatus.error && (
+				{/* Generation summary — live after generation or persisted from DB */}
+				{effectiveSummary && !genStatus.isGenerating && !genStatus.error && (
 					<div className="flex items-center gap-2 rounded-lg border border-primary bg-primary-light px-4 py-3">
 						<Check className="h-4 w-4 shrink-0 text-primary" />
 						<p className="flex-1 text-body-sm text-primary">
-							Report generated — {genStatus.summary.totalFieldsFilled} fields auto-filled
-							{genStatus.summary.damageMarkersPlaced > 0 && `, ${genStatus.summary.damageMarkersPlaced} damage markers placed`}
+							Report generated — {effectiveSummary.totalFieldsFilled} fields auto-filled
+							{effectiveSummary.damageMarkersPlaced > 0 && `, ${effectiveSummary.damageMarkersPlaced} damage markers placed`}
 						</p>
-						<button
-							type="button"
-							onClick={reset}
-							className="shrink-0 cursor-pointer text-primary hover:text-primary/80"
-							aria-label="Dismiss message"
-						>
-							<X className="h-4 w-4" />
-						</button>
+						{hasLiveSummary && (
+							<button
+								type="button"
+								onClick={reset}
+								className="shrink-0 cursor-pointer text-primary hover:text-primary/80"
+								aria-label="Dismiss message"
+							>
+								<X className="h-4 w-4" />
+							</button>
+						)}
 					</div>
 				)}
 
@@ -205,14 +231,18 @@ function GalleryPage() {
 								onDelete={() => selectedPhoto && handleDelete(selectedPhoto.id)}
 								onAnnotate={() => selectedPhoto && handleAnnotate(selectedPhoto.id)}
 							/>
-							{/* Classification badge overlay */}
-							{selectedPhoto && genStatus.classifications.has(selectedPhoto.id) && (
-								<div className="absolute left-3 top-3">
-									<ClassificationBadge
-										classification={genStatus.classifications.get(selectedPhoto.id)!.type}
-									/>
-								</div>
-							)}
+							{/* Classification badge overlay — live during generation, persisted after */}
+							{selectedPhoto && (() => {
+								const liveClassification = genStatus.classifications.get(selectedPhoto.id)?.type
+								const persistedClassification = selectedPhoto.aiClassification as PhotoClassificationType | null
+								const classification = liveClassification || persistedClassification
+								if (!classification) return null
+								return (
+									<div className="absolute left-3 top-3">
+										<ClassificationBadge classification={classification} />
+									</div>
+								)
+							})()}
 						</div>
 
 						<Filmstrip

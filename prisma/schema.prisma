@@ -34,14 +34,15 @@ model User {
 }
 
 model Business {
-  id          String @id @default(uuid())
-  userId      String @unique
+  id          String  @id @default(uuid())
+  userId      String  @unique
   companyName String
   street      String
   postcode    String
   city        String
   taxId       String
   vatId       String?
+  logoUrl     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -69,6 +70,7 @@ model Report {
   status               ReportStatus @default(DRAFT)
   completionPercentage Int          @default(0)
   isLocked             Boolean      @default(false)
+  aiGenerationSummary  Json?
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
@@ -101,10 +103,13 @@ model Photo {
   previewUrl    String?
   aiUrl         String?
   filename      String
-  type          PhotoType?
-  aiDescription String?
-  order         Int          @default(0)
-  uploadedAt    DateTime     @default(now())
+  type              PhotoType?
+  aiClassification  String?
+  aiDescription     String?
+  order           Int          @default(0)
+  uploadedAt      DateTime     @default(now())
+  aiProcessedAt   DateTime?
+  aiProcessedHash String?
 
   report      Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)
   annotations Annotation[]
@@ -266,6 +271,7 @@ model VehicleCondition {
   generalCondition          String?
   bodyCondition             String?
   interiorCondition         String?
+  vehicleColor              String?
   drivingAbility            String?
   specialFeatures           String?
   parkingSensors            Boolean @default(false)
@@ -338,6 +344,8 @@ model Tire {
   profileLevel String?
   manufacturer String?
   usability    Int    @default(1)
+  dotCode      String?
+  tireType     String?
 
   tireSet TireSet @relation(fields: [tireSetId], references: [id], onDelete: Cascade)
 }

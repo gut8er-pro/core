@@ -11,6 +11,9 @@ Return JSON with:
 1. "description": Brief professional description of the interior visible in the photo (1-2 sentences)
 2. "condition": Overall interior condition: "excellent", "good", "fair", "poor", or null if not assessable
 3. "features": Array of notable features visible (e.g., "leather seats", "navigation system", "sunroof", "heated seats", "parking sensors display", "automatic climate control"). Empty array if none identifiable.
+4. "mileage": If an odometer/dashboard is visible, extract the mileage reading as a number (in km). Use null if not visible.
+5. "parkingSensors": true if parking sensor indicators or PDC display are visible, false if dashboard visible but no sensors, null if cannot determine.
+6. "airbagsDeployed": true if deployed airbags are visible, false if airbags appear intact, null if cannot determine.
 
 Return ONLY valid JSON.`
 
@@ -57,6 +60,9 @@ function parseInteriorResponse(photoId: string, rawResponse: string): InteriorAn
 		description: 'Vehicle interior photo.',
 		condition: null,
 		features: [],
+		mileage: null,
+		parkingSensors: null,
+		airbagsDeployed: null,
 	}
 
 	try {
@@ -71,6 +77,9 @@ function parseInteriorResponse(photoId: string, rawResponse: string): InteriorAn
 			description: typeof parsed.description === 'string' ? parsed.description : fallback.description,
 			condition: typeof parsed.condition === 'string' ? parsed.condition : null,
 			features: Array.isArray(parsed.features) ? parsed.features.filter((f): f is string => typeof f === 'string') : [],
+			mileage: typeof parsed.mileage === 'number' ? Math.round(parsed.mileage) : null,
+			parkingSensors: typeof parsed.parkingSensors === 'boolean' ? parsed.parkingSensors : null,
+			airbagsDeployed: typeof parsed.airbagsDeployed === 'boolean' ? parsed.airbagsDeployed : null,
 		}
 	} catch {
 		console.error('Failed to parse interior response:', rawResponse)

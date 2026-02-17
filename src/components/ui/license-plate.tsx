@@ -6,20 +6,30 @@ type LicensePlateProps = {
   className?: string
 }
 
-function LicensePlate({ plate, country = 'D', className }: LicensePlateProps) {
+function LicensePlate({ plate, className }: LicensePlateProps) {
+  // Split plate into city code and rest (e.g. "ES 1315" → "XX" + "ES 1315")
+  // German plates: "XX · ES 1315" format in Figma
+  const parts = plate.split(' ')
+  const cityCode = parts.length >= 2 ? parts[0] : 'XX'
+  const rest = parts.length >= 2 ? parts.slice(1).join(' ') : plate
+
   return (
     <div
       className={cn(
-        'inline-flex items-center rounded-sm border-2 border-black bg-white overflow-hidden',
+        'inline-flex h-8 items-center overflow-hidden rounded-[4px] border border-black/12 bg-white shadow-[0px_4px_14px_rgba(0,0,0,0.1)]',
         className,
       )}
       aria-label={`License plate: ${plate}`}
     >
-      <div className="flex h-8 w-7 flex-col items-center justify-center bg-info-blue text-white">
-        <span className="text-[8px] leading-none">EU</span>
-        <span className="text-caption font-bold leading-none">{country}</span>
+      <div className="flex h-8 w-[14px] shrink-0 items-center justify-center rounded-l-[4px] bg-[#0066CC]" />
+      <div className="flex items-center gap-1.5 px-3">
+        <span className="text-[16px] font-medium leading-[18px] text-[#121312]">{cityCode}</span>
+        <div className="flex flex-col gap-1">
+          <div className="h-1 w-1 rounded-full bg-[#121312]" />
+          <div className="h-1 w-1 rounded-full bg-[#121312]" />
+        </div>
+        <span className="text-[16px] font-medium leading-[18px] text-[#121312]">{rest}</span>
       </div>
-      <span className="px-3 py-1 text-body-sm font-bold tracking-wider text-black">{plate}</span>
     </div>
   )
 }

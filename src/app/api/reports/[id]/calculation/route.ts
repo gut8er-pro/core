@@ -117,6 +117,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		if (data.calculation.rentalCarClass !== undefined) updateData.rentalCarClass = data.calculation.rentalCarClass
 		if (data.calculation.repairTimeDays !== undefined) updateData.repairTimeDays = data.calculation.repairTimeDays
 		if (data.calculation.replacementTimeDays !== undefined) updateData.replacementTimeDays = data.calculation.replacementTimeDays
+		if (data.calculation.datCalculationResult !== undefined) updateData.datCalculationResult = data.calculation.datCalculationResult
 
 		if (Object.keys(updateData).length > 0) {
 			results.calculation = await prisma.calculation.update({

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useCallback } from 'react'
 import { ExternalLink, Info } from 'lucide-react'
 import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
@@ -7,9 +8,19 @@ import { TextField } from '@/components/ui/text-field'
 import { SelectField } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 
+type DatFormData = {
+	location: string
+	dekraUsed: boolean
+	mechanics: string
+	body: string
+	paintwork: string
+}
+
 type DatModalProps = {
 	open: boolean
 	onClose: () => void
+	initialData?: Partial<DatFormData>
+	onSave?: (data: DatFormData) => void
 }
 
 const LOCATION_OPTIONS = [
@@ -17,9 +28,24 @@ const LOCATION_OPTIONS = [
 	{ value: 'berlin', label: 'Berlin' },
 	{ value: 'munich', label: 'Munich' },
 	{ value: 'frankfurt', label: 'Frankfurt' },
+	{ value: 'cologne', label: 'Cologne' },
+	{ value: 'dusseldorf', label: 'Dusseldorf' },
+	{ value: 'stuttgart', label: 'Stuttgart' },
+	{ value: 'hannover', label: 'Hannover' },
 ]
 
-function DatModal({ open, onClose }: DatModalProps) {
+function DatModal({ open, onClose, initialData, onSave }: DatModalProps) {
+	const [location, setLocation] = useState(initialData?.location ?? '')
+	const [dekraUsed, setDekraUsed] = useState(initialData?.dekraUsed ?? false)
+	const [mechanics, setMechanics] = useState(initialData?.mechanics ?? '')
+	const [body, setBody] = useState(initialData?.body ?? '')
+	const [paintwork, setPaintwork] = useState(initialData?.paintwork ?? '')
+
+	const handleSave = useCallback(() => {
+		onSave?.({ location, dekraUsed, mechanics, body, paintwork })
+		onClose()
+	}, [location, dekraUsed, mechanics, body, paintwork, onSave, onClose])
+
 	return (
 		<Modal
 			title="Repair Cost Calculator"
@@ -32,7 +58,7 @@ function DatModal({ open, onClose }: DatModalProps) {
 						type="button"
 						variant="primary"
 						size="md"
-						onClick={onClose}
+						onClick={handleSave}
 					>
 						Save
 					</Button>
@@ -42,9 +68,12 @@ function DatModal({ open, onClose }: DatModalProps) {
 			<div className="flex flex-col gap-6">
 				{/* DAT Logo */}
 				<div className="flex justify-center">
-					<div className="flex h-24 w-24 items-center justify-center rounded-lg bg-[#FFCC00] text-[#003366]">
-						<span className="text-h3 font-bold">DAT</span>
-					</div>
+					{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img
+						src="/images/dat-logo.png"
+						alt="DAT"
+						className="h-[169px] w-[105px] object-contain"
+					/>
 				</div>
 
 				{/* Workshop Section */}
@@ -54,35 +83,48 @@ function DatModal({ open, onClose }: DatModalProps) {
 						<Info className="h-4 w-4 text-grey-100" />
 					</div>
 
-					<div className="flex items-center justify-between gap-4">
-						<label className="flex items-center gap-2 cursor-pointer">
-							<Checkbox />
-							<span className="text-body-sm text-black">DEKRA set are used</span>
-						</label>
+					<div className="flex flex-col gap-2 rounded-[20px] border border-[#e8e9eb] p-4">
+						<div className="flex items-end justify-between gap-4">
+							<label className="flex h-[53px] items-center gap-2 cursor-pointer">
+								<Checkbox
+									checked={dekraUsed}
+									onCheckedChange={(checked) => setDekraUsed(checked === true)}
+								/>
+								<span className="text-body-sm text-black">DEKRA set are used</span>
+							</label>
 
-						<div className="w-48">
-							<SelectField
-								label="Location"
-								options={LOCATION_OPTIONS}
-								placeholder="Choose"
-							/>
+							<div className="flex-1">
+								<SelectField
+									label="Location"
+									options={LOCATION_OPTIONS}
+									placeholder="Choose"
+									value={location}
+									onValueChange={setLocation}
+								/>
+							</div>
 						</div>
+
+						<TextField
+							label="Mechanics"
+							placeholder="Mechanics name"
+							value={mechanics}
+							onChange={(e) => setMechanics(e.target.value)}
+						/>
+
+						<TextField
+							label="Body"
+							placeholder="Vehicle body"
+							value={body}
+							onChange={(e) => setBody(e.target.value)}
+						/>
+
+						<TextField
+							label="Paintwork"
+							placeholder="Vehicle paintwork"
+							value={paintwork}
+							onChange={(e) => setPaintwork(e.target.value)}
+						/>
 					</div>
-
-					<TextField
-						label="Mechanics"
-						placeholder="Mechanics name"
-					/>
-
-					<TextField
-						label="Body"
-						placeholder="Vehicle body"
-					/>
-
-					<TextField
-						label="Paintwork"
-						placeholder="Vehicle paintwork"
-					/>
 				</div>
 
 				{/* Market Value Section */}
@@ -92,18 +134,23 @@ function DatModal({ open, onClose }: DatModalProps) {
 						<Info className="h-4 w-4 text-grey-100" />
 					</div>
 
-					<button
-						type="button"
-						className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-border bg-white px-4 py-3 transition-colors hover:bg-grey-25"
-					>
-						<div className="flex items-center gap-3">
-							<div className="flex h-8 w-8 items-center justify-center rounded bg-[#FFCC00] text-[#003366]">
-								<span className="text-caption font-bold">DAT</span>
+					<div className="rounded-[20px] border border-[#e8e9eb] p-4">
+						<button
+							type="button"
+							className="flex w-full cursor-pointer items-center justify-between transition-colors hover:opacity-80"
+						>
+							<div className="flex items-center gap-3">
+								{/* eslint-disable-next-line @next/next/no-img-element */}
+								<img
+									src="/images/dat-logo.png"
+									alt="DAT"
+									className="h-[34px] w-[21px] object-contain"
+								/>
+								<span className="text-body font-medium text-black">DAT SilverDAT3</span>
 							</div>
-							<span className="text-body-sm font-medium text-black">DAT nesto</span>
-						</div>
-						<ExternalLink className="h-4 w-4 text-grey-100" />
-					</button>
+							<ExternalLink className="h-5 w-5 text-grey-100" />
+						</button>
+					</div>
 				</div>
 			</div>
 		</Modal>
@@ -111,3 +158,4 @@ function DatModal({ open, onClose }: DatModalProps) {
 }
 
 export { DatModal }
+export type { DatFormData, DatModalProps }

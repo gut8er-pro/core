@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -14,6 +14,9 @@ import {
 	Linkedin,
 	Download,
 	CreditCard,
+	FileText,
+	Info,
+	X,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { TextField } from '@/components/ui/text-field'
@@ -134,7 +137,7 @@ function ProfileSection() {
 						<User className="h-8 w-8 text-grey-100" />
 					)}
 				</div>
-				<Button type="button" variant="outline" size="sm">
+				<Button type="button" variant="danger" size="sm">
 					Remove
 				</Button>
 			</div>
@@ -227,6 +230,8 @@ function BusinessSection() {
 	const { data: settings, isLoading } = useUserSettings()
 	const saveMutation = useSaveSettings()
 	const toast = useToast()
+	const logoInputRef = useRef<HTMLInputElement>(null)
+	const [logoUploading, setLogoUploading] = useState(false)
 
 	const {
 		register,
@@ -249,6 +254,52 @@ function BusinessSection() {
 			})
 		}
 	}, [settings, reset])
+
+	async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0]
+		if (!file) return
+
+		if (!file.type.startsWith('image/')) {
+			toast.error('Please select an image file')
+			return
+		}
+
+		if (file.size > 5 * 1024 * 1024) {
+			toast.error('Logo must be under 5MB')
+			return
+		}
+
+		setLogoUploading(true)
+		try {
+			const { createClient } = await import('@/lib/supabase/client')
+			const supabase = createClient()
+			const ext = file.name.split('.').pop() ?? 'png'
+			const path = `logos/${crypto.randomUUID()}.${ext}`
+
+			const { error: uploadError } = await supabase.storage
+				.from('photos')
+				.upload(path, file, { contentType: file.type, upsert: true })
+
+			if (uploadError) throw uploadError
+
+			const { data: urlData } = supabase.storage
+				.from('photos')
+				.getPublicUrl(path)
+
+			saveMutation.mutate(
+				{ logoUrl: urlData.publicUrl },
+				{
+					onSuccess: () => toast.success('Logo uploaded successfully'),
+					onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to save logo'),
+				},
+			)
+		} catch {
+			toast.error('Failed to upload logo')
+		} finally {
+			setLogoUploading(false)
+			if (logoInputRef.current) logoInputRef.current.value = ''
+		}
+	}
 
 	function onSubmit(data: BusinessSettingsInput) {
 		saveMutation.mutate(
@@ -274,10 +325,31 @@ function BusinessSection() {
 
 			{/* Logo upload */}
 			<div className="flex items-center gap-4">
-				<div className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-grey-50">
-					<span className="text-caption text-grey-50">Empty</span>
+				<div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-grey-50">
+					{settings?.business?.logoUrl ? (
+						<img
+							src={settings.business.logoUrl}
+							alt="Company logo"
+							className="h-full w-full object-contain"
+						/>
+					) : (
+						<Building2 className="h-6 w-6 text-grey-50" />
+					)}
 				</div>
-				<Button type="button" variant="outline" size="sm">
+				<input
+					ref={logoInputRef}
+					type="file"
+					accept="image/*"
+					className="hidden"
+					onChange={handleLogoUpload}
+				/>
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					onClick={() => logoInputRef.current?.click()}
+					loading={logoUploading}
+				>
 					Upload Logo
 				</Button>
 			</div>
@@ -447,8 +519,8 @@ function IntegrationsSection() {
 			<div className="rounded-xl border border-border bg-white p-5">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-4">
-						<div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-white">
-							<span className="text-caption font-bold text-warning">DAT</span>
+						<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-border bg-white">
+							<img src="/images/dat-logo.png" alt="DAT" className="h-10 w-10 object-contain" />
 						</div>
 						<div>
 							<p className="text-body-sm font-semibold text-black">DAT</p>
@@ -589,7 +661,7 @@ function BillingSection() {
 						<p className="mt-1 text-body-sm text-white/70">
 							{isTrialing
 								? 'Trial period active'
-								: 'EUR 49.00 / month - Renews on Feb 14, 2026'}
+								: '€49.00 / month · Renews on Feb 14, 2026'}
 						</p>
 					</div>
 					<div>
@@ -662,7 +734,7 @@ function BillingSection() {
 								<tr key={item.date} className="text-body-sm">
 									<td className="py-3 pr-4 text-grey-100">{item.date}</td>
 									<td className="py-3 pr-4 text-black">{item.description}</td>
-									<td className="py-3 pr-4 font-medium text-black">EUR {item.amount}</td>
+									<td className="py-3 pr-4 font-medium text-black">€{item.amount}</td>
 									<td className="py-3 pr-4">
 										<Badge variant="success">
 											{item.status}
@@ -683,24 +755,161 @@ function BillingSection() {
 	)
 }
 
+type Template = {
+	id: string
+	title: string
+	date: string
+	subject: string
+	body: string
+}
+
+const MOCK_TEMPLATES: Template[] = [
+	{ id: '1', title: 'Random Title for This Template', date: '05/07/2026', subject: '', body: '' },
+	{ id: '2', title: 'Random Title for This Template', date: '05/07/2026', subject: '', body: '' },
+	{ id: '3', title: 'Random Title for This Template', date: '05/07/2026', subject: '', body: '' },
+	{ id: '4', title: 'Random Title for This Template', date: '05/07/2026', subject: '', body: '' },
+]
+
 function TemplatesSection() {
+	const [templates, setTemplates] = useState<Template[]>(MOCK_TEMPLATES)
+	const [editingTemplate, setEditingTemplate] = useState<Template | null>(null)
+	const [isNewTemplate, setIsNewTemplate] = useState(false)
+	const [editSubject, setEditSubject] = useState('')
+	const [editBody, setEditBody] = useState('')
+
+	function handleEdit(template: Template) {
+		setEditingTemplate(template)
+		setIsNewTemplate(false)
+		setEditSubject(template.subject)
+		setEditBody(template.body)
+	}
+
+	function handleSave() {
+		if (!editingTemplate) return
+		setTemplates((prev) =>
+			prev.map((t) =>
+				t.id === editingTemplate.id
+					? { ...t, subject: editSubject, body: editBody }
+					: t,
+			),
+		)
+		setEditingTemplate(null)
+	}
+
+	function handleRemove(id: string) {
+		setTemplates((prev) => prev.filter((t) => t.id !== id))
+	}
+
+	function handleAdd() {
+		const newTemplate: Template = {
+			id: String(Date.now()),
+			title: 'New Template',
+			date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+			subject: '',
+			body: '',
+		}
+		setTemplates((prev) => [...prev, newTemplate])
+		setEditingTemplate(newTemplate)
+		setIsNewTemplate(true)
+		setEditSubject('')
+		setEditBody('')
+	}
+
 	return (
-		<div className="flex flex-col gap-6">
-			<div>
-				<h2 className="text-h3 font-semibold text-black">Report Templates</h2>
-				<p className="mt-1 text-body-sm text-grey-100">
-					Manage your report templates and default settings
-				</p>
+		<div className="relative flex flex-col gap-4">
+			{/* Template cards */}
+			{templates.map((template) => (
+				<div
+					key={template.id}
+					className="flex cursor-pointer items-center justify-between rounded-xl border border-border bg-white px-5 py-4"
+					onClick={() => handleEdit(template)}
+				>
+					<div className="flex items-center gap-4">
+						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+							<FileText className="h-5 w-5 text-primary" />
+						</div>
+						<div>
+							<p className="text-body-sm font-medium text-black">{template.title}</p>
+							<p className="text-caption text-grey-100">{template.date}</p>
+						</div>
+					</div>
+					<Button
+						type="button"
+						variant="danger"
+						size="sm"
+						onClick={(e) => {
+							e.stopPropagation()
+							handleRemove(template.id)
+						}}
+					>
+						Remove
+					</Button>
+				</div>
+			))}
+
+			{/* Add Template button */}
+			<div className="flex justify-center pt-2">
+				<Button type="button" variant="primary" size="md" onClick={handleAdd}>
+					Add Template
+				</Button>
 			</div>
-			<div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-16">
-				<Bookmark className="h-12 w-12 text-grey-50" />
-				<p className="mt-4 text-body-sm font-medium text-grey-100">
-					Coming soon
-				</p>
-				<p className="mt-1 text-caption text-grey-100">
-					Template management will be available in a future update.
-				</p>
-			</div>
+
+			{/* Edit Template Panel */}
+			{editingTemplate && (
+				<div className="fixed inset-0 z-50 flex justify-end bg-black/30">
+					<div className="flex h-full w-full max-w-md flex-col bg-white shadow-xl">
+						{/* Header */}
+						<div className="flex items-center gap-2 border-b border-border px-6 py-4">
+							<h3 className="text-h4 font-semibold text-black">{isNewTemplate ? 'New Template' : 'Edit Template'}</h3>
+							<Info className="h-4 w-4 text-grey-100" />
+							<button
+								type="button"
+								className="ml-auto cursor-pointer text-grey-100 hover:text-black"
+								onClick={() => setEditingTemplate(null)}
+							>
+								<X className="h-5 w-5" />
+							</button>
+						</div>
+
+						{/* Body */}
+						<div className="flex flex-1 flex-col gap-4 overflow-y-auto p-6">
+							<div className="flex flex-col gap-1">
+								<label className="text-body-sm font-medium text-black">Subject</label>
+								<input
+									type="text"
+									className="rounded-lg border border-border bg-white px-4 py-3 text-body-sm text-black placeholder:text-placeholder focus:border-border-focus focus:outline-none"
+									placeholder="Title"
+									value={editSubject}
+									onChange={(e) => setEditSubject(e.target.value)}
+								/>
+							</div>
+							<div className="flex flex-1 flex-col gap-1">
+								<label className="text-body-sm font-medium text-black">Body</label>
+								<textarea
+									className="flex-1 rounded-lg border border-border bg-white px-4 py-3 text-body-sm text-black placeholder:text-placeholder focus:border-border-focus focus:outline-none"
+									placeholder="Write Something"
+									value={editBody}
+									onChange={(e) => setEditBody(e.target.value)}
+								/>
+							</div>
+						</div>
+
+						{/* Footer */}
+						<div className="flex justify-end gap-3 border-t border-border px-6 py-4">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setEditingTemplate(null)}
+							>
+								Cancel
+							</Button>
+							<Button type="button" variant="primary" onClick={handleSave}>
+								{isNewTemplate ? 'Create' : 'Save'}
+							</Button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }

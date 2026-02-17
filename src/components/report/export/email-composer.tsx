@@ -1,14 +1,21 @@
 'use client'
 
-import { User, Users, FileText, ChevronDown } from 'lucide-react'
-import type { UseFormRegister, FieldErrors } from 'react-hook-form'
+import { useState, useCallback, useEffect } from 'react'
+import { User, Users, FileText, X } from 'lucide-react'
+import type { UseFormRegister, UseFormSetValue, FieldErrors } from 'react-hook-form'
 import { TextField } from '@/components/ui/text-field'
 import { RichTextEditor } from '@/components/ui/rich-text-editor.dynamic'
 import { cn } from '@/lib/utils'
 import type { ExportFormData } from './types'
 
+type Recipient = {
+	name: string
+	email: string
+}
+
 type EmailComposerProps = {
 	register: UseFormRegister<ExportFormData>
+	setValue: UseFormSetValue<ExportFormData>
 	errors: FieldErrors<ExportFormData>
 	onSend: () => void
 	isSending?: boolean
@@ -17,9 +24,35 @@ type EmailComposerProps = {
 
 function EmailComposer({
 	register,
+	setValue,
 	errors,
 	className,
 }: EmailComposerProps) {
+	const [recipients, setRecipients] = useState<Recipient[]>([])
+	const [recipientInput, setRecipientInput] = useState('')
+
+	// Sync recipients to form fields
+	useEffect(() => {
+		if (recipients.length > 0) {
+			setValue('recipientEmail', recipients.map((r) => r.email).join(', '))
+			setValue('recipientName', recipients.map((r) => r.name).join(', '))
+		} else {
+			setValue('recipientEmail', '')
+			setValue('recipientName', '')
+		}
+	}, [recipients, setValue])
+
+	const addRecipient = useCallback((email: string) => {
+		const trimmed = email.trim()
+		if (!trimmed || recipients.some((r) => r.email === trimmed)) return
+		setRecipients((prev) => [...prev, { name: trimmed.split('@')[0] ?? trimmed, email: trimmed }])
+		setRecipientInput('')
+	}, [recipients])
+
+	const removeRecipient = useCallback((email: string) => {
+		setRecipients((prev) => prev.filter((r) => r.email !== email))
+	}, [])
+
 	return (
 		<div className={cn('flex flex-col gap-6 rounded-xl border border-border bg-white p-6', className)}>
 			<h3 className="text-h4 font-semibold text-black">Email</h3>
@@ -56,24 +89,59 @@ function EmailComposer({
 					</div>
 				</div>
 
-				{/* Recipient dropdown */}
-				<button
-					type="button"
-					className="flex w-full cursor-pointer items-center gap-3 rounded-lg border border-border bg-white px-4 py-3 text-left transition-colors hover:bg-grey-25"
-				>
-					<div className="flex h-10 w-10 items-center justify-center rounded-full bg-grey-25">
-						<User className="h-5 w-5 text-grey-100" />
-					</div>
-					<div className="flex flex-1 flex-col">
-						<span className="text-body-sm font-medium text-black">
-							Select Recipient
-						</span>
-						<span className="text-caption text-grey-100">
-							Choose a recipient
-						</span>
-					</div>
-					<ChevronDown className="h-4 w-4 text-grey-100" />
-				</button>
+				{/* Recipient chips + input */}
+				<div className="flex min-h-12 flex-wrap items-center gap-2 rounded-lg border border-border bg-white px-3 py-2">
+					{recipients.map((r) => (
+						<div
+							key={r.email}
+							className="flex items-center gap-1.5 rounded-full bg-grey-25 py-1 pl-3 pr-1.5"
+						>
+							<div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white">
+								<User className="h-3 w-3" />
+							</div>
+							<span className="text-caption font-medium text-black">{r.email}</span>
+							<button
+								type="button"
+								onClick={() => removeRecipient(r.email)}
+								className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-full text-grey-100 hover:bg-grey-50 hover:text-black"
+								aria-label={`Remove ${r.email}`}
+							>
+								<X className="h-3 w-3" />
+							</button>
+						</div>
+					))}
+					<input
+						type="email"
+						className="min-w-32 flex-1 border-none bg-transparent text-body-sm text-black placeholder:text-placeholder outline-none"
+						placeholder={recipients.length === 0 ? 'Add recipient email...' : ''}
+						value={recipientInput}
+						onChange={(e) => setRecipientInput(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === 'Enter' || e.key === ',') {
+								e.preventDefault()
+								addRecipient(recipientInput)
+							}
+							if (e.key === 'Backspace' && !recipientInput && recipients.length > 0) {
+								const last = recipients[recipients.length - 1]
+								if (last) removeRecipient(last.email)
+							}
+						}}
+						onBlur={() => {
+							if (recipientInput.trim()) addRecipient(recipientInput)
+						}}
+					/>
+				</div>
+
+				{errors.recipientEmail && (
+					<p className="text-caption text-error">{errors.recipientEmail.message}</p>
+				)}
+
+				{/* Empty state hint */}
+				{recipients.length === 0 && !recipientInput && !errors.recipientEmail && (
+					<p className="text-caption text-grey-100">
+						Type an email address and press Enter to add a recipient
+					</p>
+				)}
 			</div>
 
 			{/* Subject */}

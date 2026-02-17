@@ -47,7 +47,9 @@ const tireSchema = z.object({
 	size: z.string().max(50).nullable().optional(),
 	profileLevel: z.string().max(50).nullable().optional(),
 	manufacturer: z.string().max(100).nullable().optional(),
-	usability: z.number().int().min(1).max(3).optional(),
+	usability: z.number().int().min(1).max(5).optional(),
+	dotCode: z.string().max(20).nullable().optional(),
+	tireType: z.string().max(20).nullable().optional(),
 })
 
 const tireSetSchema = z.object({

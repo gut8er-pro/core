@@ -17,6 +17,7 @@ const calculationSchema = z.object({
 	rentalCarClass: z.string().max(10).nullable().optional(),
 	repairTimeDays: z.number().int().nonnegative().nullable().optional(),
 	replacementTimeDays: z.number().int().nonnegative().nullable().optional(),
+	datCalculationResult: z.record(z.string(), z.unknown()).nullable().optional(),
 })
 
 const additionalCostSchema = z.object({
