@@ -22,7 +22,7 @@ function VehiclePage() {
 	const { data: report } = useReport(reportId)
 	const [showMissing, setShowMissing] = useState(false)
 
-	const { saveField, state: autoSaveState } = useAutoSave({
+	const { saveField, flushNow, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'vehicle',
 		disabled: report?.isLocked,
@@ -249,7 +249,7 @@ function VehiclePage() {
 
 			{/* Update Report button */}
 			<div className="flex justify-end">
-				<Button variant="primary" size="lg">
+				<Button variant="primary" size="lg" onClick={flushNow} loading={autoSaveState.status === 'saving'}>
 					Update Report
 				</Button>
 			</div>

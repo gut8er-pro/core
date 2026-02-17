@@ -8,6 +8,7 @@ import {
 	Square,
 	ArrowBigRight,
 	Trash2,
+	Check,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -19,6 +20,7 @@ type AnnotationToolbarProps = {
 	onColorChange: (color: string) => void
 	onToolChange: (tool: AnnotationTool) => void
 	onClear: () => void
+	onSave?: () => void
 	className?: string
 }
 
@@ -45,6 +47,7 @@ function AnnotationToolbar({
 	onColorChange,
 	onToolChange,
 	onClear,
+	onSave,
 	className,
 }: AnnotationToolbarProps) {
 	const [showColorPicker, setShowColorPicker] = useState(false)
@@ -140,6 +143,22 @@ function AnnotationToolbar({
 				>
 					<Trash2 className="h-5 w-5" />
 				</button>
+
+				{/* Save button */}
+				{onSave && (
+					<>
+						<div className="mx-0.5 h-6 w-px bg-border" />
+						<button
+							type="button"
+							aria-label="Save annotations"
+							onClick={onSave}
+							className="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-primary px-4 text-white transition-colors hover:bg-primary/90"
+						>
+							<Check className="h-4 w-4" />
+							<span className="text-body-sm font-medium">Save</span>
+						</button>
+					</>
+				)}
 			</div>
 		</div>
 	)

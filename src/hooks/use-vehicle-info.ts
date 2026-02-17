@@ -61,6 +61,8 @@ function useVehicleInfo(reportId: string) {
 		queryKey: ['report', reportId, 'vehicle'],
 		queryFn: () => fetchVehicleInfo(reportId),
 		enabled: !!reportId,
+		staleTime: 30_000,
+		refetchOnMount: 'always',
 	})
 }
 

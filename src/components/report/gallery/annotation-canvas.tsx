@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as fabric from 'fabric'
 import { cn } from '@/lib/utils'
 import type { AnnotationTool } from './annotation-toolbar'
@@ -14,11 +14,6 @@ type AnnotationCanvasProps = {
 	className?: string
 }
 
-/**
- * Canvas is sized to the image's "contain" fit dimensions, then positioned
- * at the exact center of the container using absolute pixel coordinates.
- * This avoids relying on CSS flexbox which Fabric.js's wrapper div interferes with.
- */
 function AnnotationCanvas({
 	photoUrl,
 	activeTool,
@@ -35,146 +30,137 @@ function AnnotationCanvas({
 	const activeShapeRef = useRef<fabric.FabricObject | null>(null)
 	const activeToolRef = useRef<AnnotationTool>(activeTool)
 	const activeColorRef = useRef<string>(activeColor)
+	const containerSizeRef = useRef<{ w: number; h: number } | null>(null)
 
-	const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null)
+	const [ready, setReady] = useState(false)
 
 	activeToolRef.current = activeTool
 	activeColorRef.current = activeColor
 
-	// Step 1: Pre-load image to get natural dimensions
-	useEffect(() => {
-		setNaturalSize(null)
-		const img = new Image()
-		img.crossOrigin = 'anonymous'
-		img.onload = () => {
-			setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight })
-		}
-		img.src = photoUrl
-	}, [photoUrl])
-
-	// Position the Fabric.js wrapper element at the center of the container
-	const positionCanvasWrapper = useCallback(
-		(containerW: number, containerH: number, displayW: number, displayH: number) => {
-			const canvasEl = canvasElRef.current
-			if (!canvasEl) return
-
-			// Fabric.js wraps the canvas in a div.canvas-container
-			const wrapper = canvasEl.parentElement
-			if (wrapper) {
-				wrapper.style.position = 'absolute'
-				wrapper.style.left = `${(containerW - displayW) / 2}px`
-				wrapper.style.top = `${(containerH - displayH) / 2}px`
-			}
-		},
-		[],
-	)
-
-	// Step 2: Create canvas once we have natural dimensions + container size
+	// Single effect: measure container, load image, create canvas
 	useEffect(() => {
 		const container = containerRef.current
 		const canvasEl = canvasElRef.current
-		if (!container || !canvasEl || !naturalSize) return
+		if (!container || !canvasEl) return
 
 		let disposed = false
-		let timerId: ReturnType<typeof setTimeout> | null = null
 
-		function setup() {
+		// Load image first, then create canvas with fresh container measurements
+		const img = new window.Image()
+		img.crossOrigin = 'anonymous'
+		img.onload = () => {
 			if (disposed) return
 
-			const rect = container!.getBoundingClientRect()
-			if (rect.width === 0 || rect.height === 0) {
-				timerId = setTimeout(setup, 50)
-				return
-			}
+			// Measure container NOW (after image loaded, layout is fully settled)
+			const cw = container!.offsetWidth
+			const ch = container!.offsetHeight
 
-			const scale = Math.min(rect.width / naturalSize!.w, rect.height / naturalSize!.h)
-			const displayW = naturalSize!.w * scale
-			const displayH = naturalSize!.h * scale
+			if (cw < 100 || ch < 100) return
 
+			containerSizeRef.current = { w: cw, h: ch }
+
+			const natW = img.naturalWidth
+			const natH = img.naturalHeight
+
+			// Calculate "contain" fit
+			const scale = Math.min(cw / natW, ch / natH)
+			const imgW = Math.round(natW * scale)
+			const imgH = Math.round(natH * scale)
+			const offsetX = Math.round((cw - imgW) / 2)
+			const offsetY = Math.round((ch - imgH) / 2)
+
+			// Create canvas at FULL container size
 			const canvas = new fabric.Canvas(canvasEl!, {
-				width: displayW,
-				height: displayH,
+				width: cw,
+				height: ch,
 				selection: false,
 			})
-
 			fabricCanvasRef.current = canvas
 
-			// Position wrapper at center of container
-			positionCanvasWrapper(rect.width, rect.height, displayW, displayH)
+			// Fabric wraps the <canvas> in a div — make it fill the container
+			const wrapper = canvasEl!.parentElement
+			if (wrapper) {
+				wrapper.style.position = 'absolute'
+				wrapper.style.left = '0'
+				wrapper.style.top = '0'
+			}
 
-			// Load image as background filling the canvas from (0,0)
-			fabric.FabricImage.fromURL(photoUrl, { crossOrigin: 'anonymous' }).then(
-				(bgImg) => {
-					if (disposed || !fabricCanvasRef.current) return
-					const c = fabricCanvasRef.current
+			// Create FabricImage from the already-loaded img element
+			const bgImg = new fabric.FabricImage(img, {
+				scaleX: scale,
+				scaleY: scale,
+				left: offsetX,
+				top: offsetY,
+				selectable: false,
+				evented: false,
+			})
 
-					bgImg.set({
-						scaleX: displayW / (bgImg.width ?? 1),
-						scaleY: displayH / (bgImg.height ?? 1),
-						left: 0,
-						top: 0,
-						selectable: false,
-						evented: false,
-					})
+			canvas.backgroundImage = bgImg
+			canvas.renderAll()
 
-					c.backgroundImage = bgImg
-					c.renderAll()
+			// Restore saved annotations if any
+			if (initialAnnotations) {
+				const json = { ...initialAnnotations } as Record<string, unknown>
+				delete json.width
+				delete json.height
+				delete json.backgroundImage
+				delete json.background
 
-					if (initialAnnotations) {
-						c.loadFromJSON(JSON.stringify(initialAnnotations)).then(() => {
-							c.backgroundImage = bgImg
-							c.renderAll()
-						})
-					}
-				},
-			)
+				canvas.loadFromJSON(JSON.stringify(json)).then(() => {
+					canvas.setDimensions({ width: cw, height: ch })
+					canvas.backgroundImage = bgImg
+					canvas.renderAll()
+				})
+			}
 
 			onCanvasReady?.(canvas)
+			setReady(true)
 		}
-
-		timerId = setTimeout(setup, 50)
+		img.src = photoUrl
 
 		// Handle resize
 		const observer = new ResizeObserver(() => {
 			const canvas = fabricCanvasRef.current
-			if (!canvas || !naturalSize) return
+			if (!canvas || disposed) return
 
-			const rect = container!.getBoundingClientRect()
-			if (rect.width === 0 || rect.height === 0) return
+			const newW = container!.offsetWidth
+			const newH = container!.offsetHeight
+			if (newW < 100 || newH < 100) return
 
-			const scale = Math.min(rect.width / naturalSize.w, rect.height / naturalSize.h)
-			const displayW = naturalSize.w * scale
-			const displayH = naturalSize.h * scale
+			const prev = containerSizeRef.current
+			if (prev && Math.abs(prev.w - newW) < 2 && Math.abs(prev.h - newH) < 2) return
+			containerSizeRef.current = { w: newW, h: newH }
 
-			canvas.setDimensions({ width: displayW, height: displayH })
-			positionCanvasWrapper(rect.width, rect.height, displayW, displayH)
+			canvas.setDimensions({ width: newW, height: newH })
 
+			// Re-center background image
 			const bgImg = canvas.backgroundImage
 			if (bgImg && bgImg instanceof fabric.FabricImage) {
+				const natW = bgImg.width ?? 1
+				const natH = bgImg.height ?? 1
+				const scale = Math.min(newW / natW, newH / natH)
 				bgImg.set({
-					scaleX: displayW / (bgImg.width ?? 1),
-					scaleY: displayH / (bgImg.height ?? 1),
-					left: 0,
-					top: 0,
+					scaleX: scale,
+					scaleY: scale,
+					left: Math.round((newW - natW * scale) / 2),
+					top: Math.round((newH - natH * scale) / 2),
 				})
 			}
-
 			canvas.renderAll()
 		})
 		observer.observe(container)
 
 		return () => {
 			disposed = true
-			if (timerId) clearTimeout(timerId)
 			observer.disconnect()
-			const canvas = fabricCanvasRef.current
-			if (canvas) {
-				canvas.dispose()
+			if (fabricCanvasRef.current) {
+				fabricCanvasRef.current.dispose()
+				fabricCanvasRef.current = null
 			}
-			fabricCanvasRef.current = null
+			setReady(false)
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [photoUrl, naturalSize])
+	}, [photoUrl])
 
 	// Handle tool changes
 	useEffect(() => {
@@ -326,7 +312,7 @@ function AnnotationCanvas({
 			canvas.off('mouse:move')
 			canvas.off('mouse:up')
 		}
-	}, [activeTool, activeColor])
+	}, [activeTool, activeColor, ready])
 
 	useEffect(() => {
 		const canvas = fabricCanvasRef.current

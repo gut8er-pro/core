@@ -1,5 +1,6 @@
 import { useRef, useCallback, useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useToastStore } from '@/stores/toast-store'
 
 type UseAutoSaveOptions = {
 	reportId: string
@@ -16,7 +17,33 @@ type AutoSaveState = {
 type UseAutoSaveReturn = {
 	saveField: (field: string, value: unknown) => void
 	saveFields: (data: Record<string, unknown>) => void
+	flushNow: () => void
 	state: AutoSaveState
+}
+
+/**
+ * Expand dot-notation keys into nested objects.
+ * e.g. { 'claimantInfo.firstName': 'John' } → { claimantInfo: { firstName: 'John' } }
+ */
+function expandDotKeys(flat: Record<string, unknown>): Record<string, unknown> {
+	const result: Record<string, unknown> = {}
+	for (const [key, value] of Object.entries(flat)) {
+		const parts = key.split('.')
+		if (parts.length === 1) {
+			result[key] = value
+		} else {
+			let current = result
+			for (let i = 0; i < parts.length - 1; i++) {
+				const part = parts[i]!
+				if (!(part in current) || typeof current[part] !== 'object' || current[part] === null) {
+					current[part] = {}
+				}
+				current = current[part] as Record<string, unknown>
+			}
+			current[parts[parts.length - 1]!] = value
+		}
+	}
+	return result
 }
 
 async function patchSection(
@@ -24,10 +51,11 @@ async function patchSection(
 	section: string,
 	data: Record<string, unknown>,
 ): Promise<unknown> {
+	const expanded = expandDotKeys(data)
 	const response = await fetch(`/api/reports/${reportId}/${section}`, {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(data),
+		body: JSON.stringify(expanded),
 	})
 
 	if (!response.ok) {
@@ -47,12 +75,19 @@ function useAutoSave({
 	disabled = false,
 }: UseAutoSaveOptions): UseAutoSaveReturn {
 	const queryClient = useQueryClient()
+	const toast = useToastStore()
 	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 	const pendingRef = useRef<Record<string, unknown>>({})
 	const [state, setState] = useState<AutoSaveState>({
 		status: 'idle',
 		error: null,
 	})
+
+	// Use refs for the flush so we can call it from cleanup without stale closures
+	const reportIdRef = useRef(reportId)
+	const sectionRef = useRef(section)
+	reportIdRef.current = reportId
+	sectionRef.current = section
 
 	const mutation = useMutation({
 		mutationFn: (data: Record<string, unknown>) =>
@@ -62,12 +97,14 @@ function useAutoSave({
 		},
 		onSuccess: () => {
 			setState({ status: 'saved', error: null })
+			toast.success('Changes saved', 2000)
 			queryClient.invalidateQueries({
 				queryKey: ['report', reportId, section],
 			})
 		},
 		onError: (error: Error) => {
 			setState({ status: 'error', error: error.message })
+			toast.error(`Failed to save: ${error.message}`)
 		},
 	})
 
@@ -79,6 +116,15 @@ function useAutoSave({
 
 		mutation.mutate(data)
 	}, [mutation])
+
+	// Immediately cancel any pending debounce and flush now
+	const flushNow = useCallback(() => {
+		if (timerRef.current) {
+			clearTimeout(timerRef.current)
+			timerRef.current = null
+		}
+		flush()
+	}, [flush])
 
 	const scheduleFlush = useCallback(() => {
 		if (timerRef.current) {
@@ -108,6 +154,36 @@ function useAutoSave({
 		[scheduleFlush, disabled],
 	)
 
+	// Flush pending changes on unmount (tab switch)
+	useEffect(() => {
+		return () => {
+			// Trigger blur on the focused input to capture its current value
+			// before we read pendingRef. The blur handler runs synchronously,
+			// calling saveField which writes to pendingRef.
+			const activeEl = document.activeElement
+			if (
+				activeEl instanceof HTMLInputElement ||
+				activeEl instanceof HTMLTextAreaElement ||
+				activeEl instanceof HTMLSelectElement
+			) {
+				activeEl.blur()
+			}
+
+			if (timerRef.current) {
+				clearTimeout(timerRef.current)
+				timerRef.current = null
+			}
+			const data = { ...pendingRef.current }
+			pendingRef.current = {}
+			if (Object.keys(data).length > 0) {
+				// Fire-and-forget save on unmount — use raw fetch since mutation may not be available
+				patchSection(reportIdRef.current, sectionRef.current, data).catch(() => {
+					// Silent fail on unmount flush
+				})
+			}
+		}
+	}, [])
+
 	useEffect(() => {
 		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
 			if (Object.keys(pendingRef.current).length > 0 || mutation.isPending) {
@@ -118,7 +194,7 @@ function useAutoSave({
 		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
 	}, [mutation.isPending])
 
-	return { saveField, saveFields, state }
+	return { saveField, saveFields, flushNow, state }
 }
 
 export { useAutoSave }

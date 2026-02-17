@@ -19,6 +19,7 @@ const createPhotoSchema = z.object({
 
 const updatePhotoSchema = z.object({
 	aiDescription: z.string().optional(),
+	annotatedUrl: z.string().url().nullable().optional(),
 	order: z.number().int().min(0).optional(),
 	type: z.enum(['VEHICLE_DIAGONAL', 'DAMAGE_OVERVIEW', 'DOCUMENT', 'OTHER']).optional(),
 	annotations: z.array(z.object({

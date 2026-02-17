@@ -112,6 +112,8 @@ function useAccidentInfo(reportId: string) {
 		queryKey: ['report', reportId, 'accident-info'],
 		queryFn: () => fetchAccidentInfo(reportId),
 		enabled: !!reportId,
+		staleTime: 30_000,
+		refetchOnMount: 'always',
 	})
 }
 

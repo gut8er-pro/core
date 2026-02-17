@@ -39,6 +39,8 @@ function useCondition(reportId: string) {
 		queryKey: ['report', reportId, 'condition'],
 		queryFn: () => fetchCondition(reportId),
 		enabled: !!reportId,
+		staleTime: 30_000,
+		refetchOnMount: 'always',
 	})
 }
 

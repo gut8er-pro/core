@@ -27,7 +27,7 @@ function AccidentInfoPage() {
 	const { data: report } = useReport(reportId)
 	const saveSignature = useSaveSignature(reportId)
 
-	const { saveField, state: autoSaveState } = useAutoSave({
+	const { saveField, flushNow, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'accident-info',
 		disabled: report?.isLocked,
@@ -303,7 +303,9 @@ function AccidentInfoPage() {
 
 			{/* Update Report button */}
 			<div className="flex justify-end">
-				<Button variant="primary">Update Report</Button>
+				<Button variant="primary" onClick={flushNow} loading={autoSaveState.status === 'saving'}>
+					Update Report
+				</Button>
 			</div>
 		</div>
 	)
