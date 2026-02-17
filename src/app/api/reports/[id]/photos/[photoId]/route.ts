@@ -61,16 +61,18 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		)
 	}
 
-	const { annotations, ...photoData } = parsed.data
+	const { annotations, annotatedUrl, ...photoData } = parsed.data
 
 	const photo = await prisma.photo.update({
 		where: { id: photoId },
-		data: photoData,
+		data: {
+			...photoData,
+			...(annotatedUrl !== undefined ? { annotatedUrl } : {}),
+		},
 	})
 
-	// Handle annotations if provided
-	if (annotations && annotations.length > 0) {
-		// Replace existing annotations for this photo
+	// Handle annotations if provided (including empty array to clear)
+	if (annotations !== undefined) {
 		await prisma.annotation.deleteMany({ where: { photoId } })
 		for (const ann of annotations) {
 			await prisma.annotation.create({

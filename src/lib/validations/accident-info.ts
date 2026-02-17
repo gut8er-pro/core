@@ -1,7 +1,26 @@
 import { z } from 'zod'
 
+// Accept YYYY-MM-DD, full ISO datetime, or empty string (treated as null)
+const dateString = z
+	.string()
+	.transform((v) => (v === '' ? null : v))
+	.pipe(
+		z
+			.string()
+			.refine((v) => /^\d{4}-\d{2}-\d{2}/.test(v), {
+				message: 'Must be a valid date string',
+			})
+			.nullable(),
+	)
+
+// Accept empty strings or valid emails
+const emailOrEmpty = z
+	.string()
+	.transform((v) => (v === '' ? null : v))
+	.pipe(z.string().email().nullable())
+
 const accidentInfoSchema = z.object({
-	accidentDay: z.string().datetime({ offset: true }).nullable().optional(),
+	accidentDay: dateString.nullable().optional(),
 	accidentScene: z.string().max(500).nullable().optional(),
 })
 
@@ -18,7 +37,7 @@ const claimantInfoSchema = z.object({
 		.nullable()
 		.optional(),
 	location: z.string().max(200).nullable().optional(),
-	email: z.string().email('Please enter a valid email').nullable().optional(),
+	email: emailOrEmpty.nullable().optional(),
 	phone: z.string().max(50).nullable().optional(),
 	vehicleMake: z.string().max(100).nullable().optional(),
 	licensePlate: z.string().max(20).nullable().optional(),
@@ -41,7 +60,7 @@ const opponentInfoSchema = z.object({
 		.nullable()
 		.optional(),
 	location: z.string().max(200).nullable().optional(),
-	email: z.string().email('Please enter a valid email').nullable().optional(),
+	email: emailOrEmpty.nullable().optional(),
 	phone: z.string().max(50).nullable().optional(),
 	insuranceCompany: z.string().max(200).nullable().optional(),
 	insuranceNumber: z.string().max(100).nullable().optional(),
@@ -60,7 +79,7 @@ const visitSchema = z.object({
 		.nullable()
 		.optional(),
 	location: z.string().max(200).nullable().optional(),
-	date: z.string().datetime({ offset: true }).nullable().optional(),
+	date: dateString.nullable().optional(),
 	expert: z.string().max(200).nullable().optional(),
 	vehicleCondition: z.string().max(500).nullable().optional(),
 })
@@ -68,9 +87,9 @@ const visitSchema = z.object({
 const expertOpinionSchema = z.object({
 	expertName: z.string().max(200).nullable().optional(),
 	fileNumber: z.string().max(100).nullable().optional(),
-	caseDate: z.string().datetime({ offset: true }).nullable().optional(),
+	caseDate: dateString.nullable().optional(),
 	orderWasPlacement: z.string().max(200).nullable().optional(),
-	issuedDate: z.string().datetime({ offset: true }).nullable().optional(),
+	issuedDate: dateString.nullable().optional(),
 	orderByClaimant: z.boolean().optional(),
 	mediator: z.string().max(200).nullable().optional(),
 })
@@ -81,7 +100,7 @@ const signatureSchema = z.object({
 	id: z.string().uuid().optional(),
 	type: signatureTypeEnum,
 	imageUrl: z.string().url().nullable().optional(),
-	signedAt: z.string().datetime({ offset: true }).nullable().optional(),
+	signedAt: dateString.nullable().optional(),
 })
 
 const accidentInfoPatchSchema = z.object({

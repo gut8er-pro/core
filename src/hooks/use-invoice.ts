@@ -64,6 +64,8 @@ function useInvoice(reportId: string) {
 		queryKey: ['report', reportId, 'invoice'],
 		queryFn: () => fetchInvoice(reportId),
 		enabled: !!reportId,
+		staleTime: 30_000,
+		refetchOnMount: 'always',
 	})
 }
 

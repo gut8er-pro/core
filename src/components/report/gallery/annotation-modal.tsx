@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react'
 import type * as fabric from 'fabric'
-import { ChevronLeft, ChevronRight, Image as ImageIcon, X, Pencil } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Image as ImageIcon, X } from 'lucide-react'
 import type { Photo } from '@/hooks/use-photos'
 import { AnnotationToolbar, type AnnotationTool } from './annotation-toolbar'
 import { AnnotationCanvas } from './annotation-canvas'
@@ -12,7 +12,7 @@ type AnnotationModalProps = {
 	photos?: Photo[]
 	open: boolean
 	onClose: () => void
-	onSave?: (fabricJson: Record<string, unknown>) => void
+	onSave?: (fabricJson: Record<string, unknown>, dataUrl: string | null) => void
 	onNavigate?: (photoId: string) => void
 }
 
@@ -44,7 +44,20 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 		if (!canvas || !onSave) return
 
 		const json = canvas.toJSON() as Record<string, unknown>
-		onSave(json)
+		const hasObjects = canvas.getObjects().length > 0
+
+		let dataUrl: string | null = null
+		if (hasObjects) {
+			// Calculate multiplier to export at original image resolution
+			let multiplier = 1
+			const bgImg = canvas.backgroundImage
+			if (bgImg && 'width' in bgImg && typeof bgImg.width === 'number' && canvas.width) {
+				multiplier = Math.max(1, bgImg.width / canvas.width)
+			}
+			dataUrl = canvas.toDataURL({ format: 'jpeg', quality: 0.9, multiplier })
+		}
+
+		onSave(json, dataUrl)
 		onClose()
 	}, [onSave, onClose])
 
@@ -138,9 +151,9 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 				</div>
 
 				{/* Content: Photo + Description */}
-				<div className="flex flex-1 min-h-0">
+				<div className="flex flex-1 min-h-0 overflow-hidden">
 					{/* Photo canvas area */}
-					<div className="relative flex-1 min-w-0">
+					<div className="relative flex-1 min-w-0 overflow-hidden">
 						{/* Navigation arrow - left */}
 						{hasPrev && (
 							<button
@@ -165,19 +178,9 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 							</button>
 						)}
 
-						{/* Green save/edit button - top right of photo */}
-						<button
-							type="button"
-							onClick={handleSave}
-							className="absolute right-4 top-4 z-10 flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg bg-primary text-white shadow-md transition-colors hover:bg-primary/90"
-							aria-label="Save annotations"
-						>
-							<Pencil className="h-4 w-4 text-white" />
-						</button>
-
 						{/* Canvas */}
 						<AnnotationCanvas
-							photoUrl={photo.previewUrl ?? photo.url}
+							photoUrl={photo.url}
 							activeTool={activeTool}
 							activeColor={activeColor}
 							initialAnnotations={initialAnnotations}
@@ -250,6 +253,7 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 						onToolChange={setActiveTool}
 						onColorChange={setActiveColor}
 						onClear={handleClear}
+						onSave={onSave ? handleSave : undefined}
 					/>
 				</div>
 			</div>

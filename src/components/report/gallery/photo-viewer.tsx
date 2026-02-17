@@ -38,7 +38,7 @@ function PhotoViewer({
 		<div className={cn('relative overflow-hidden rounded-2xl', className)}>
 			{/* Photo - clickable to open annotation */}
 			<img
-				src={photo.previewUrl ?? photo.url}
+				src={photo.annotatedUrl ?? photo.previewUrl ?? photo.url}
 				alt={photo.filename}
 				className="aspect-video w-full cursor-pointer rounded-2xl object-cover"
 				loading="lazy"

@@ -119,6 +119,8 @@ function useReport(id: string) {
 		queryKey: ['report', id],
 		queryFn: () => fetchReport(id),
 		enabled: !!id,
+		staleTime: 30_000,
+		refetchOnMount: 'always',
 		select: (data) => data.report,
 	})
 }

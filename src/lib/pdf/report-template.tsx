@@ -3,6 +3,7 @@ import {
 	Page,
 	Text,
 	View,
+	Image,
 	StyleSheet,
 } from '@react-pdf/renderer'
 
@@ -118,6 +119,14 @@ type ReportData = {
 		includeVehicleValuation: boolean
 		includeInvoice: boolean
 	}
+	photos: {
+		id: string
+		url: string
+		annotatedUrl: string | null
+		filename: string
+		aiClassification: string | null
+		aiDescription: string | null
+	}[]
 	expert: {
 		firstName: string | null
 		lastName: string | null
@@ -312,6 +321,37 @@ const styles = StyleSheet.create({
 	footerRight: {
 		fontSize: 8,
 		color: GREY_TEXT,
+	},
+	// Photo gallery
+	photoGrid: {
+		flexDirection: 'row',
+		flexWrap: 'wrap',
+		gap: 8,
+	},
+	photoItem: {
+		width: '48%',
+		marginBottom: 8,
+	},
+	photoImage: {
+		width: '100%',
+		height: 180,
+		objectFit: 'cover',
+		borderRadius: 4,
+		borderWidth: 0.5,
+		borderColor: BORDER_COLOR,
+	},
+	photoCaption: {
+		fontSize: 7,
+		color: GREY_TEXT,
+		marginTop: 3,
+		maxLines: 2,
+	},
+	photoCategoryTitle: {
+		fontSize: 10,
+		fontFamily: 'Helvetica-Bold',
+		color: DARK_TEXT,
+		marginBottom: 6,
+		marginTop: 8,
 	},
 	// Utility
 	textBold: {
@@ -707,6 +747,95 @@ function InvoiceSection({ invoice }: { invoice: ReportData['invoice'] }) {
 	)
 }
 
+const PHOTO_CATEGORIES: { key: string; label: string; matchTypes: string[] }[] = [
+	{ key: 'vehicle', label: 'Vehicle Overview', matchTypes: ['overview'] },
+	{ key: 'damage', label: 'Damage Photos', matchTypes: ['damage'] },
+	{ key: 'tire', label: 'Tire Photos', matchTypes: ['tire'] },
+	{ key: 'interior', label: 'Interior Photos', matchTypes: ['interior'] },
+	{ key: 'document', label: 'Documents', matchTypes: ['document', 'vin', 'plate'] },
+]
+
+function PhotoGallerySection({ photos }: { photos: ReportData['photos'] }) {
+	if (photos.length === 0) return null
+
+	// Group photos by classification
+	const categorized = new Map<string, ReportData['photos']>()
+	const uncategorized: ReportData['photos'] = []
+
+	for (const photo of photos) {
+		const cls = photo.aiClassification
+		let placed = false
+		if (cls) {
+			for (const cat of PHOTO_CATEGORIES) {
+				if (cat.matchTypes.includes(cls)) {
+					const existing = categorized.get(cat.key) ?? []
+					existing.push(photo)
+					categorized.set(cat.key, existing)
+					placed = true
+					break
+				}
+			}
+		}
+		if (!placed) uncategorized.push(photo)
+	}
+
+	return (
+		<View style={styles.section} break>
+			<Text style={styles.sectionTitle}>Photo Documentation</Text>
+
+			{PHOTO_CATEGORIES.map((cat) => {
+				const catPhotos = categorized.get(cat.key)
+				if (!catPhotos || catPhotos.length === 0) return null
+				return (
+					<View key={cat.key} wrap={false}>
+						<Text style={styles.photoCategoryTitle}>
+							{cat.label} ({catPhotos.length})
+						</Text>
+						<View style={styles.photoGrid}>
+							{catPhotos.map((photo) => (
+								<View key={photo.id} style={styles.photoItem}>
+									<Image
+										src={photo.annotatedUrl ?? photo.url}
+										style={styles.photoImage}
+									/>
+									{photo.aiDescription && (
+										<Text style={styles.photoCaption}>
+											{photo.aiDescription}
+										</Text>
+									)}
+								</View>
+							))}
+						</View>
+					</View>
+				)
+			})}
+
+			{uncategorized.length > 0 && (
+				<View wrap={false}>
+					<Text style={styles.photoCategoryTitle}>
+						Other Photos ({uncategorized.length})
+					</Text>
+					<View style={styles.photoGrid}>
+						{uncategorized.map((photo) => (
+							<View key={photo.id} style={styles.photoItem}>
+								<Image
+									src={photo.annotatedUrl ?? photo.url}
+									style={styles.photoImage}
+								/>
+								{photo.aiDescription && (
+									<Text style={styles.photoCaption}>
+										{photo.aiDescription}
+									</Text>
+								)}
+							</View>
+						))}
+					</View>
+				</View>
+			)}
+		</View>
+	)
+}
+
 function FooterSection({ expert }: { expert: ReportData['expert'] }) {
 	const expertName = expert
 		? [expert.firstName, expert.lastName].filter(Boolean).join(' ')
@@ -762,6 +891,7 @@ function ReportPdfDocument({ data }: { data: ReportData }) {
 				{includeInvoice && (
 					<InvoiceSection invoice={data.invoice} />
 				)}
+				<PhotoGallerySection photos={data.photos} />
 				<FooterSection expert={data.expert} />
 			</Page>
 		</Document>

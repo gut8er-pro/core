@@ -65,6 +65,8 @@ function useCalculation(reportId: string) {
 		queryKey: ['report', reportId, 'calculation'],
 		queryFn: () => fetchCalculation(reportId),
 		enabled: !!reportId,
+		staleTime: 30_000,
+		refetchOnMount: 'always',
 	})
 }
 

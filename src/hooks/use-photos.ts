@@ -20,6 +20,7 @@ type Photo = {
 	thumbnailUrl: string | null
 	previewUrl: string | null
 	aiUrl: string | null
+	annotatedUrl: string | null
 	filename: string
 	type: string | null
 	aiClassification: string | null
@@ -67,6 +68,8 @@ function usePhotos(reportId: string) {
 		queryKey: ['report', reportId, 'photos'],
 		queryFn: () => fetchPhotos(reportId),
 		enabled: !!reportId,
+		staleTime: 30_000,
+		refetchOnMount: 'always',
 	})
 }
 

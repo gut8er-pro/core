@@ -11,6 +11,7 @@ const mockPhoto: Photo = {
 	thumbnailUrl: 'https://example.com/thumb1.jpg',
 	previewUrl: null,
 	aiUrl: null,
+	annotatedUrl: null,
 	filename: 'damage-front.jpg',
 	type: 'DAMAGE_OVERVIEW',
 	aiClassification: null,

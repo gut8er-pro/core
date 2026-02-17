@@ -9,12 +9,14 @@ import {
 	Check,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useQueryClient } from '@tanstack/react-query'
 import { usePhotos, useDeletePhoto } from '@/hooks/use-photos'
 import { usePhotoUpload } from '@/hooks/use-photo-upload'
 import { useGenerateReport } from '@/hooks/use-generate-report'
 import { useReport } from '@/hooks/use-reports'
 import type { AiGenerationSummary } from '@/hooks/use-reports'
 
+import { uploadToStorage, getStoragePath } from '@/lib/storage/photos'
 import { MAX_PHOTOS_PER_REPORT } from '@/lib/validations/photos'
 import { UploadZone } from '@/components/report/gallery/upload-zone'
 import { PhotoGrid } from '@/components/report/gallery/photo-grid'
@@ -35,6 +37,7 @@ function GalleryPage() {
 	const { data: report } = useReport(reportId)
 	const deletePhoto = useDeletePhoto(reportId)
 	const { uploadState, uploadPhotos } = usePhotoUpload(reportId)
+	const queryClient = useQueryClient()
 	const { status: genStatus, generate, cancel, reset } = useGenerateReport(reportId)
 	const [viewMode] = useState<ViewMode>('single')
 	const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null)
@@ -270,21 +273,36 @@ function GalleryPage() {
 				open={annotationPhotoId !== null}
 				onClose={() => setAnnotationPhotoId(null)}
 				onNavigate={setAnnotationPhotoId}
-				onSave={async (fabricJson) => {
+				onSave={async (fabricJson, dataUrl) => {
 					if (!annotationPhotoId) return
 					try {
+						let annotatedUrl: string | null = null
+						if (dataUrl) {
+							// Upload flattened annotated image to storage
+							const response = await fetch(dataUrl)
+							const blob = await response.blob()
+							const storagePath = getStoragePath(reportId, annotationPhotoId, 'annotated')
+							annotatedUrl = await uploadToStorage(blob, storagePath)
+						}
+
+						const hasAnnotations = ((fabricJson as { objects?: unknown[] }).objects?.length ?? 0) > 0
+
 						await fetch(`/api/reports/${reportId}/photos/${annotationPhotoId}`, {
 							method: 'PATCH',
 							headers: { 'Content-Type': 'application/json' },
 							body: JSON.stringify({
-								annotations: [{
+								// Explicitly set to URL or null (clears previous annotation)
+								annotatedUrl,
+								annotations: hasAnnotations ? [{
 									type: 'fabric',
 									color: '#ff0000',
 									coordinates: {},
 									fabricJson,
-								}],
+								}] : [],
 							}),
 						})
+						// Invalidate photos query so the change is visible immediately
+						queryClient.invalidateQueries({ queryKey: ['report', reportId, 'photos'] })
 						setAnnotationPhotoId(null)
 					} catch {
 						// Annotation save failed silently -- photo still accessible

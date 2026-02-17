@@ -108,6 +108,7 @@ model Photo {
   aiDescription     String?
   order           Int          @default(0)
   uploadedAt      DateTime     @default(now())
+  annotatedUrl    String?
   aiProcessedAt   DateTime?
   aiProcessedHash String?
 

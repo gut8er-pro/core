@@ -19,6 +19,17 @@ async function generateReportPdfBuffer(
 			vehicleInfo: true,
 			condition: true,
 			calculation: true,
+			photos: {
+				orderBy: { order: 'asc' },
+				select: {
+					id: true,
+					url: true,
+					annotatedUrl: true,
+					filename: true,
+					aiClassification: true,
+					aiDescription: true,
+				},
+			},
 			invoice: {
 				include: {
 					lineItems: {
@@ -164,6 +175,14 @@ async function generateReportPdfBuffer(
 					})),
 				}
 			: null,
+		photos: report.photos.map((p) => ({
+			id: p.id,
+			url: p.url,
+			annotatedUrl: p.annotatedUrl,
+			filename: p.filename,
+			aiClassification: p.aiClassification,
+			aiDescription: p.aiDescription,
+		})),
 		exportConfig: {
 			includeVehicleValuation: exportConfig.includeVehicleValuation,
 			includeInvoice: exportConfig.includeInvoice,

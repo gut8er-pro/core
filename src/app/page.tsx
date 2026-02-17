@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
@@ -160,20 +161,22 @@ function LandingPage() {
 			{/* Hero Image + Stats Section */}
 			<section className="px-6 pb-20">
 				<div className="mx-auto max-w-6xl">
-					<div className="relative">
-						{/* Placeholder for hero image — replace with actual image of person using tablet on car */}
-						<div className="flex h-105 items-center justify-center rounded-xl bg-grey-25">
-							<p className="text-body text-grey-100">
-								{/* Hero image: person using tablet to assess vehicle damage */}
-							</p>
-						</div>
+					<div className="relative overflow-hidden rounded-xl">
+						<Image
+							src="/images/landing-hero.jpg"
+							alt="Vehicle assessor using tablet to inspect car damage"
+							width={1920}
+							height={1097}
+							className="h-105 w-full object-cover"
+							priority
+						/>
 
 						{/* Stats overlay — positioned on the right side of the image */}
 						<div className="absolute right-4 top-1/2 flex -translate-y-1/2 flex-col gap-3 md:right-8">
 							{STATS.map((stat) => (
 								<div
 									key={stat.label}
-									className="flex items-center gap-3 rounded-lg bg-white px-4 py-3 shadow-card"
+									className="flex items-center gap-3 rounded-lg bg-white/95 px-4 py-3 shadow-card backdrop-blur-sm"
 								>
 									<SparkleIcon className="h-5 w-5 shrink-0 text-primary" />
 									<div>

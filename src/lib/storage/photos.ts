@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/client'
 
 const STORAGE_BUCKET = 'photos'
 
-type StorageVariant = 'original' | 'thumbnail' | 'preview' | 'ai'
+type StorageVariant = 'original' | 'thumbnail' | 'preview' | 'ai' | 'annotated'
 
 function getStoragePath(
 	reportId: string,
