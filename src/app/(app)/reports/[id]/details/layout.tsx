@@ -4,20 +4,24 @@ import { type ReactNode, useState } from 'react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { TabBar } from '@/components/ui/tab-bar'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
-
-const DETAIL_TABS = [
-	{ key: 'accident-info', label: 'Accident Info' },
-	{ key: 'vehicle', label: 'Vehicle' },
-	{ key: 'condition', label: 'Condition' },
-	{ key: 'calculation', label: 'Calculation' },
-	{ key: 'invoice', label: 'Invoice' },
-]
+import { useReport } from '@/hooks/use-reports'
 
 function DetailsLayout({ children }: { children: ReactNode }) {
 	const params = useParams<{ id: string }>()
 	const pathname = usePathname()
 	const router = useRouter()
 	const [showMissing, setShowMissing] = useState(false)
+	const { data: report } = useReport(params.id)
+
+	const calculationLabel = report?.reportType === 'BE' ? 'Valuation' : 'Calculation'
+
+	const DETAIL_TABS = [
+		{ key: 'accident-info', label: 'Accident Info' },
+		{ key: 'vehicle', label: 'Vehicle' },
+		{ key: 'condition', label: 'Condition' },
+		{ key: 'calculation', label: calculationLabel },
+		{ key: 'invoice', label: 'Invoice' },
+	]
 
 	const activeTab =
 		DETAIL_TABS.find((t) => pathname.endsWith(`/${t.key}`))?.key ?? 'accident-info'

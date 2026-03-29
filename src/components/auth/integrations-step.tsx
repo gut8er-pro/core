@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -7,27 +8,19 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { signupIntegrationsSchema, type SignupIntegrationsInput } from '@/lib/validations/auth'
 import { useSignupStore } from '@/stores/signup-store'
 import { completeSignup } from '@/lib/auth/actions'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { TextField } from '@/components/ui/text-field'
 import { cn } from '@/lib/utils'
 
 type Provider = 'dat' | 'audatex' | 'gt_motive'
 
-const PROVIDERS: Array<{
-	id: Provider
-	name: string
-	logo: string
-	available: boolean
-}> = [
-	{ id: 'dat', name: 'DAT', logo: 'DAT', available: true },
-	{ id: 'audatex', name: 'Coming Soon', logo: 'A', available: false },
-	{ id: 'gt_motive', name: 'Coming Soon', logo: 'gt', available: false },
-]
+const INPUT_CLS =
+	'h-[58px] w-full rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-3.5 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none'
+const LABEL_CLS = 'text-[16px] font-medium text-black'
+const FIELD_CLS = 'flex flex-col gap-3'
 
 function IntegrationsStep() {
 	const router = useRouter()
-	const { account, personal, business, plan, integrations, setIntegrations, completeStep, setCurrentStep, reset } = useSignupStore()
+	const { account, personal, business, integrations, setIntegrations, setCurrentStep, reset } =
+		useSignupStore()
 	const [selectedProvider, setSelectedProvider] = useState<Provider | null>(
 		(integrations.provider as Provider) || null,
 	)
@@ -84,13 +77,8 @@ function IntegrationsStep() {
 				return
 			}
 
-			// Capture display data before clearing the store
 			const email = account.email || ''
-
-			// Clear signup store immediately — account creation is done
 			reset()
-
-			// Navigate to complete step with display data in URL params
 			const params = new URLSearchParams()
 			params.set('plan', 'pro')
 			if (email) params.set('email', email)
@@ -123,120 +111,157 @@ function IntegrationsStep() {
 		router.push('/signup/plan')
 	}
 
-	function selectProvider(provider: Provider) {
-		if (!PROVIDERS.find((p) => p.id === provider)?.available) return
-		setSelectedProvider((prev) => (prev === provider ? null : provider))
-	}
-
 	return (
-		<div>
-			<h2 className="mb-1 text-h2 font-bold text-black">Connect your tools</h2>
-			<p className="mb-8 text-body text-grey-100">
-				Link your calculation provider. You can add more later in settings.
-			</p>
+		<div className="flex flex-col gap-10">
+			{/* Header */}
+			<div className="flex flex-col gap-3.5">
+				<h2 className="text-[44px] font-medium leading-none text-black">Connect your tools</h2>
+				<p className="text-[18px] leading-snug tracking-[0.18px] text-black/70">
+					Link your calculation provider. You can add more later in settings.
+				</p>
+			</div>
 
 			{error && (
-				<div className="mb-4 rounded-lg bg-error-light px-4 py-2 text-body-sm text-error">
+				<div className="rounded-[15px] bg-error-light px-4 py-2.5 text-[16px] text-error">
 					{error}
 				</div>
 			)}
 
-			<div className="mb-6">
-				<p className="mb-2 text-body-sm font-semibold text-black">Calculation provider</p>
-				<div className="grid grid-cols-3 gap-4">
-					{PROVIDERS.map((provider) => (
-						<Card
-							key={provider.id}
-							variant={selectedProvider === provider.id ? 'selected' : 'selectable'}
-							padding="md"
-							onClick={() => selectProvider(provider.id)}
+			<div className="flex flex-col gap-6">
+				{/* Provider cards */}
+				<div className="flex flex-col gap-3">
+					<label className="text-[18px] font-medium text-black">Calculation provider</label>
+					<div className="flex gap-3.5">
+						{/* DAT */}
+						<button
+							type="button"
+							onClick={() => setSelectedProvider((prev) => (prev === 'dat' ? null : 'dat'))}
 							className={cn(
-								'flex flex-col items-center justify-center gap-1 text-center',
-								!provider.available && 'cursor-not-allowed opacity-60',
+								'flex flex-1 flex-col items-center justify-center gap-2.5 rounded-[15px] border py-[18px] px-3.5 transition-colors',
+								selectedProvider === 'dat'
+									? 'border-primary bg-primary/5'
+									: 'border-[#e5e7eb] bg-white hover:bg-grey-25',
 							)}
-							aria-pressed={selectedProvider === provider.id}
-							aria-disabled={!provider.available}
 						>
-							<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-secondary text-h4 font-bold text-grey-100">
-								{provider.logo}
+							<div className="relative h-[60px] w-[60px] overflow-hidden rounded-[14px]">
+								<Image src="/images/dat-logo.png" alt="DAT" fill className="object-contain" />
 							</div>
-							<p className="text-body-sm font-medium text-black">{provider.name}</p>
-						</Card>
-					))}
-				</div>
-			</div>
+							<span className="text-[18px] font-medium text-black">DAT</span>
+						</button>
 
-			{selectedProvider === 'dat' ? (
-				<form onSubmit={handleSubmit(onSubmit)}>
-					<div className="rounded-lg border border-border p-6">
-						<h3 className="mb-4 text-h4 font-semibold text-black">
-							DAT SilverDAT3 Credentials
-						</h3>
-						<div className="grid grid-cols-2 gap-4">
-							<TextField
-								label="Username"
-								placeholder="Your username"
-								error={errors.username?.message}
-								{...register('username')}
-							/>
-							<TextField
-								label="Password"
-								type="password"
-								placeholder="••••••••"
-								error={errors.password?.message}
-								{...register('password')}
-							/>
+						{/* Audatex - Coming Soon */}
+						<div className="flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-2.5 rounded-[15px] border border-[#e5e7eb] bg-white py-[18px] px-3.5">
+							<div className="flex h-[60px] w-[60px] items-center justify-center rounded-[14px] bg-[#f3f4f6] opacity-20">
+								<span className="text-[20px] font-bold italic text-[#6b7280]">A</span>
+							</div>
+							<span className="text-[18px] font-medium text-black">Coming Soon</span>
 						</div>
-						<p className="mt-2 text-caption text-grey-100">
-							Don't have an account?{' '}
-							<a
-								href="https://www.dat.de"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-primary hover:underline"
-							>
-								Register with DAT
-							</a>
-						</p>
-					</div>
 
-					<p className="mt-4 text-caption text-grey-100">
-						You can skip this step and configure integrations later in Settings.
-
-					</p>
-
-					<div className="mt-6 flex items-center gap-4">
-						<Button type="button" variant="outline" onClick={handleBack} className="flex-1">
-							Back
-						</Button>
-						<Button type="submit" loading={isSubmitting} className="flex-1">
-							Create an Account
-						</Button>
-					</div>
-				</form>
-			) : (
-				<div>
-					<div className="rounded-lg border border-border bg-surface-secondary p-4 text-center">
-						<p className="text-body-sm text-grey-100">
-							Select a provider above to enter your credentials
-						</p>
-					</div>
-
-					<p className="mt-4 text-caption text-grey-100">
-						You can skip this step and configure integrations later in Settings.
-
-					</p>
-
-					<div className="mt-6 flex items-center gap-4">
-						<Button type="button" variant="outline" onClick={handleBack} className="flex-1">
-							Back
-						</Button>
-						<Button type="button" onClick={handleSkip} loading={isSubmitting} className="flex-1">
-							Create an Account
-						</Button>
+						{/* GT Motive - Coming Soon */}
+						<div className="flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-2.5 rounded-[15px] border border-[#e5e7eb] bg-white py-[18px] px-3.5">
+							<div className="flex h-[60px] w-[60px] items-center justify-center rounded-[14px] bg-[#f3f4f6] opacity-20">
+								<span className="text-[16px] font-bold text-[#6b7280]">gt</span>
+							</div>
+							<span className="text-[18px] font-medium text-black">Coming Soon</span>
+						</div>
 					</div>
 				</div>
-			)}
+
+				{/* Credentials / placeholder section */}
+				{selectedProvider === 'dat' ? (
+					<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+						<div className="flex flex-col gap-6 rounded-[15px] bg-[#f3f4f6] p-6">
+							<h3 className="text-[23px] font-medium text-black">DAT SilverDAT3 Credentials</h3>
+							<div className="grid grid-cols-2 gap-6">
+								<div className={FIELD_CLS}>
+									<label className={LABEL_CLS}>Username</label>
+									<input
+										type="text"
+										placeholder="Your username"
+										autoComplete="username"
+										className={INPUT_CLS}
+										{...register('username')}
+									/>
+									{errors.username && (
+										<p className="text-[14px] text-error">{errors.username.message}</p>
+									)}
+								</div>
+								<div className={FIELD_CLS}>
+									<label className={LABEL_CLS}>Password</label>
+									<input
+										type="password"
+										placeholder="••••••••"
+										autoComplete="current-password"
+										className={INPUT_CLS}
+										{...register('password')}
+									/>
+									{errors.password && (
+										<p className="text-[14px] text-error">{errors.password.message}</p>
+									)}
+								</div>
+							</div>
+							<p className="text-[16px] text-black">
+								Don&apos;t have an account?{" "}
+								<a
+									href="https://www.dat.de"
+									target="_blank"
+									rel="noopener noreferrer"
+									className="font-medium text-primary underline hover:text-primary-hover"
+								>
+									Register with DAT
+								</a>
+							</p>
+						</div>
+						<p className="text-center text-[16px] text-black/45">
+							💡 You can skip this step and configure integrations later in Settings.
+						</p>
+						<div className="flex gap-3.5">
+							<button
+								type="button"
+								onClick={handleBack}
+								className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] border border-[#e5e7eb] bg-white px-[30px] text-[18px] font-medium text-black transition-colors hover:bg-grey-25"
+							>
+								Back
+							</button>
+							<button
+								type="submit"
+								disabled={isSubmitting}
+								className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] bg-primary px-[30px] text-[18px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
+							>
+								{isSubmitting ? 'Creating...' : 'Create an Account'}
+							</button>
+						</div>
+					</form>
+				) : (
+					<div className="flex flex-col gap-6">
+						<div className="rounded-[15px] bg-[#f3f4f6] px-3.5 py-[14px] text-center">
+							<p className="text-[18px] text-black/70">
+								Select a provider above to enter your credentials
+							</p>
+						</div>
+						<p className="text-center text-[16px] text-black/45">
+							💡 You can skip this step and configure integrations later in Settings.
+						</p>
+						<div className="flex gap-3.5">
+							<button
+								type="button"
+								onClick={handleBack}
+								className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] border border-[#e5e7eb] bg-white px-[30px] text-[18px] font-medium text-black transition-colors hover:bg-grey-25"
+							>
+								Back
+							</button>
+							<button
+								type="button"
+								onClick={handleSkip}
+								disabled={isSubmitting}
+								className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] bg-primary px-[30px] text-[18px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
+							>
+								{isSubmitting ? 'Creating...' : 'Create an Account'}
+							</button>
+						</div>
+					</div>
+				)}
+			</div>
 		</div>
 	)
 }

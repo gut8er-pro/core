@@ -24,9 +24,11 @@ async function login(formData: FormData): Promise<{ error?: string }> {
 	})
 
 	if (error) {
+		console.warn('[login] Failed login attempt:', { email: parsed.data.email, code: error.code })
 		return { error: 'Email or password is incorrect' }
 	}
 
+	console.log('[login] Successful login:', parsed.data.email)
 	redirect('/dashboard')
 }
 
@@ -85,7 +87,16 @@ async function completeSignup(
 ): Promise<{ error?: string }> {
 	const { account, personal, business, plan, integrations } = input
 
+	console.log('[completeSignup] START', {
+		email: account.email,
+		hasPersonal: !!(personal.firstName || personal.lastName),
+		hasBusinessName: !!business.companyName,
+		hasIntegration: !!integrations.provider,
+		timestamp: new Date().toISOString(),
+	})
+
 	if (!account.email || !account.password) {
+		console.error('[completeSignup] BLOCKED — missing email or password')
 		return { error: 'Email and password are required' }
 	}
 
@@ -99,11 +110,18 @@ async function completeSignup(
 		})
 
 	if (authError) {
+		console.error('[completeSignup] Supabase auth error:', {
+			code: authError.code,
+			message: authError.message,
+			email: account.email,
+		})
 		if (authError.message.includes('already been registered')) {
 			return { error: 'An account with this email already exists' }
 		}
 		return { error: authError.message }
 	}
+
+	console.log('[completeSignup] Supabase auth user created:', authData.user.id)
 
 	const authUserId = authData.user.id
 
@@ -216,10 +234,20 @@ async function completeSignup(
 
 	// 3. Sign in the user so they get a session
 	const supabase = await createClient()
-	await supabase.auth.signInWithPassword({
+	const { error: signInError } = await supabase.auth.signInWithPassword({
 		email: account.email,
 		password: account.password,
 	})
+
+	if (signInError) {
+		console.error('[completeSignup] Auto sign-in failed (account created but session not started):', {
+			message: signInError.message,
+			email: account.email,
+		})
+		// Non-fatal — user can log in manually
+	} else {
+		console.log('[completeSignup] SUCCESS — user signed in:', account.email)
+	}
 
 	return {}
 }

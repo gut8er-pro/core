@@ -1,17 +1,19 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Eye, EyeOff } from 'lucide-react'
 import { signupAccountSchema, type SignupAccountInput } from '@/lib/validations/auth'
 import { useSignupStore } from '@/stores/signup-store'
-import { Button } from '@/components/ui/button'
-import { TextField } from '@/components/ui/text-field'
 import Link from 'next/link'
 
 function AccountStep() {
 	const router = useRouter()
 	const { account, setAccount, completeStep, setCurrentStep } = useSignupStore()
+	const [showPassword, setShowPassword] = useState(false)
+	const [showConfirm, setShowConfirm] = useState(false)
 
 	const {
 		register,
@@ -34,44 +36,104 @@ function AccountStep() {
 	}
 
 	return (
-		<div>
-			<h2 className="mb-1 text-h2 font-bold text-black">Create your account</h2>
-			<p className="mb-8 text-body text-grey-100">
-				Enter your email and create a secure password.
-			</p>
+		<div className="flex flex-col gap-8">
+			{/* Header */}
+			<div className="flex flex-col gap-3.5">
+				<h2 className="text-[44px] font-medium leading-none text-black">Create your account</h2>
+				<p className="text-[18px] leading-snug tracking-[0.18px] text-black/70">
+					Enter your email and create a secure password.
+				</p>
+			</div>
 
-			<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-				<TextField
-					label="Email address"
-					type="email"
-					placeholder="you@example.com"
-					error={errors.email?.message}
-					{...register('email')}
-				/>
-				<TextField
-					label="Password"
-					type="password"
-					placeholder="Min. 8 characters"
-					error={errors.password?.message}
-					{...register('password')}
-				/>
-				<TextField
-					label="Confirm password"
-					type="password"
-					placeholder="Repeat password"
-					error={errors.confirmPassword?.message}
-					{...register('confirmPassword')}
-				/>
+			<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
+				<div className="flex flex-col gap-6">
+					{/* Email */}
+					<div className="flex flex-col gap-3">
+						<label className="text-[16px] font-medium text-black">Email address</label>
+						<input
+							{...register('email')}
+							type="email"
+							placeholder="you@example.com"
+							autoComplete="email"
+							className="h-[54px] w-full rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-3.5 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
+						/>
+						{errors.email && <p className="text-[14px] text-error">{errors.email.message}</p>}
+					</div>
 
-				<div className="mt-4 flex items-center gap-4">
+					{/* Password */}
+					<div className="flex flex-col gap-3">
+						<label className="text-[16px] font-medium text-black">Password</label>
+						<div className="relative">
+							<input
+								{...register('password')}
+								type={showPassword ? 'text' : 'password'}
+								placeholder="Min. 8 characters"
+								autoComplete="new-password"
+								className="h-[53px] w-full rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-3.5 pr-12 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
+							/>
+							<button
+								type="button"
+								tabIndex={-1}
+								className="absolute right-3.5 top-1/2 -translate-y-1/2 text-grey-100 hover:text-black"
+								onClick={() => setShowPassword((p) => !p)}
+								aria-label={showPassword ? 'Hide password' : 'Show password'}
+							>
+								{showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+							</button>
+						</div>
+						{errors.password && <p className="text-[14px] text-error">{errors.password.message}</p>}
+					</div>
+
+					{/* Confirm password */}
+					<div className="flex flex-col gap-3">
+						<label className="text-[16px] font-medium text-black">Confirm password</label>
+						<div className="relative">
+							<input
+								{...register('confirmPassword')}
+								type={showConfirm ? 'text' : 'password'}
+								placeholder="Repeat password"
+								autoComplete="new-password"
+								className="h-[54px] w-full rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-3.5 pr-12 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
+							/>
+							<button
+								type="button"
+								tabIndex={-1}
+								className="absolute right-3.5 top-1/2 -translate-y-1/2 text-grey-100 hover:text-black"
+								onClick={() => setShowConfirm((p) => !p)}
+								aria-label={showConfirm ? 'Hide password' : 'Show password'}
+							>
+								{showConfirm ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+							</button>
+						</div>
+						{errors.confirmPassword && <p className="text-[14px] text-error">{errors.confirmPassword.message}</p>}
+					</div>
+				</div>
+
+
+				{/* Generic fallback — catches any field error not shown above */}
+				{Object.keys(errors).length > 0 && (
+					<div className="rounded-[15px] bg-error-light px-4 py-2.5 text-[14px] text-error">
+						Please fill in all required fields above.
+					</div>
+				)}
+
+				{/* Buttons */}
+				<div className="flex gap-3.5">
 					<Link href="/login" className="flex-1">
-						<Button type="button" variant="outline" fullWidth>
+						<button
+							type="button"
+							className="flex h-[58px] w-full items-center justify-center rounded-[15px] border border-[#e5e7eb] bg-white px-[30px] text-[18px] font-medium text-black transition-colors hover:bg-grey-25"
+						>
 							Cancel
-						</Button>
+						</button>
 					</Link>
-					<Button type="submit" loading={isSubmitting} className="flex-1">
-						Continue
-					</Button>
+					<button
+						type="submit"
+						disabled={isSubmitting}
+						className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] bg-primary px-[30px] text-[18px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
+					>
+						{isSubmitting ? 'Saving...' : 'Continue'}
+					</button>
 				</div>
 			</form>
 		</div>
