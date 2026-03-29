@@ -1,3 +1,5 @@
+import Image from 'next/image'
+import Link from 'next/link'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -17,80 +19,78 @@ type StepperSidebarProps = {
 function StepperSidebar({ steps, currentStep, completedSteps, className }: StepperSidebarProps) {
 	return (
 		<aside
-			className={cn(
-				'hidden w-[320px] shrink-0 flex-col bg-surface-secondary p-8 lg:flex',
-				className,
-			)}
+			className={cn('hidden lg:flex shrink-0 w-[491px] h-screen sticky top-0 pt-10 pb-6 pl-20 pr-0', className)}
 			aria-label="Signup progress"
 		>
-			<div className="mb-8">
-				<span className="text-h3 font-bold">
-					Gut8er<span className="text-primary">PRO</span>
-				</span>
-			</div>
+			{/* Green-tinted rounded card */}
+			<div className="flex w-full flex-col overflow-hidden rounded-[40px] bg-primary/10 px-10 pb-6 pt-10">
+				{/* Logo */}
+				<div className="mb-10 shrink-0">
+					<Link href="/">
+						<Image src="/images/logo.svg" alt="Gut8erPRO" width={131} height={31} priority />
+					</Link>
+				</div>
 
-			<nav>
-				<ol className="flex flex-col gap-2" aria-label="Signup steps">
-					{steps.map((step, index) => {
-						const isCompleted = completedSteps.includes(step.number)
-						const isCurrent = step.number === currentStep
-						const isLast = index === steps.length - 1
+				{/* Steps */}
+				<nav className="shrink-0">
+					<ol className="flex flex-col gap-6" aria-label="Signup steps">
+						{steps.map((step) => {
+							const isCompleted = completedSteps.includes(step.number)
+							const isCurrent = step.number === currentStep
 
-						return (
-							<li key={step.number} className="flex gap-4">
-								<div className="flex flex-col items-center">
+							return (
+								<li key={step.number} className="flex items-center gap-3.5">
 									<div
 										className={cn(
-											'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-body-sm font-semibold',
+											'flex h-[45px] w-[45px] shrink-0 items-center justify-center rounded-[14px] text-[16px] font-medium',
 											isCompleted && 'bg-primary text-white',
-											isCurrent && !isCompleted && 'bg-primary text-white',
-											!isCurrent &&
-												!isCompleted &&
-												'border border-border bg-grey-25 text-grey-100',
+											isCurrent && !isCompleted && 'border-2 border-primary bg-white text-black',
+											!isCurrent && !isCompleted && 'bg-white text-black',
 										)}
 										aria-current={isCurrent ? 'step' : undefined}
 									>
 										{isCompleted ? (
-											<Check className="h-4 w-4" aria-label="Completed" />
+											<Check className="h-3.5 w-3.5" aria-label="Completed" />
 										) : (
 											step.number
 										)}
 									</div>
-									{!isLast && (
-										<div
-											className={cn(
-												'mt-1 min-h-[24px] w-0.5 flex-1',
-												isCompleted ? 'bg-primary' : 'bg-border',
-											)}
-										/>
-									)}
-								</div>
-								<div className="pb-6">
-									<p
-										className={cn(
-											'text-body-sm font-medium',
-											isCurrent || isCompleted ? 'text-black' : 'text-grey-100',
+									<div className="flex flex-col gap-0.5">
+										<p className="text-[18px] font-medium leading-snug text-black">
+											{step.title}
+										</p>
+										{step.subtitle && (
+											<p className="text-[14px] leading-snug text-grey-100">
+												{step.subtitle}
+											</p>
 										)}
-									>
-										{step.title}
-									</p>
-									{step.subtitle && (
-										<p className="text-caption text-grey-100">{step.subtitle}</p>
-									)}
-								</div>
-							</li>
-						)
-					})}
-				</ol>
-			</nav>
+									</div>
+								</li>
+							)
+						})}
+					</ol>
+				</nav>
 
-			<div className="mt-auto pt-8">
-				<p className="text-body-sm text-grey-100">
-					Already have an account?{' '}
-					<a href="/login" className="font-medium text-primary hover:text-primary-hover">
-						Log in
-					</a>
-				</p>
+				{/* Car illustration — grows to fill remaining space, min-h-0 allows shrinking */}
+				<div className="mt-6 min-h-0 flex-1 -mx-10">
+					<Image
+						src="/images/login-car-illustration.png"
+						alt=""
+						width={411}
+						height={300}
+						className="h-full w-full object-contain object-bottom"
+					/>
+				</div>
+
+				{/* Divider + login link — always visible */}
+				<div className="shrink-0 border-t border-border/40 pt-4 mt-4">
+					<p className="text-center text-[16px] text-black">
+						Already have an account?{' '}
+						<Link href="/login" className="font-medium text-primary underline hover:text-primary-hover">
+							Log in
+						</Link>
+					</p>
+				</div>
 			</div>
 		</aside>
 	)
@@ -110,10 +110,8 @@ function StepperProgress({ steps, currentStep, completedSteps, className }: Step
 							className={cn(
 								'flex h-6 w-6 items-center justify-center rounded-full text-caption font-semibold',
 								isCompleted && 'bg-primary text-white',
-								isCurrent && !isCompleted && 'bg-primary text-white',
-								!isCurrent &&
-									!isCompleted &&
-									'border border-border bg-grey-25 text-grey-100',
+								isCurrent && !isCompleted && 'border-2 border-primary bg-white text-black',
+								!isCurrent && !isCompleted && 'border border-border bg-grey-25 text-grey-100',
 							)}
 							aria-current={isCurrent ? 'step' : undefined}
 							aria-label={`Step ${step.number}: ${step.title}`}

@@ -2,10 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, X, Shield } from 'lucide-react'
+import { Check, X, CreditCard } from 'lucide-react'
 import { useSignupStore } from '@/stores/signup-store'
-import { Button } from '@/components/ui/button'
-import { TextField } from '@/components/ui/text-field'
 import { cn } from '@/lib/utils'
 
 const FREE_FEATURES = [
@@ -26,15 +24,30 @@ const PRO_FEATURES = [
 	{ text: 'Custom branding', included: true },
 ]
 
-type PlanType = 'pro'
+type PlanType = 'free' | 'pro'
+
+function formatCardNumber(value: string) {
+	const digits = value.replace(/\D/g, '').slice(0, 16)
+	return digits.replace(/(.{4})/g, '$1 ').trim()
+}
+
+function formatExpiry(value: string) {
+	const digits = value.replace(/\D/g, '').slice(0, 4)
+	if (digits.length >= 3) return `${digits.slice(0, 2)}/${digits.slice(2)}`
+	return digits
+}
 
 function PlanStep() {
 	const router = useRouter()
 	const { setPlan, completeStep, setCurrentStep } = useSignupStore()
-	const [selectedPlan] = useState<PlanType>('pro')
+	const [selectedPlan, setSelectedPlan] = useState<PlanType>('pro')
+	const [cardNumber, setCardNumber] = useState('')
+	const [expiry, setExpiry] = useState('')
+	const [cvc, setCvc] = useState('')
+	const [cardholderName, setCardholderName] = useState('')
 
 	function handleContinue() {
-		setPlan({ plan: selectedPlan })
+		setPlan({ plan: 'pro' })
 		completeStep(4)
 		setCurrentStep(5)
 		router.push('/signup/integrations')
@@ -46,118 +59,209 @@ function PlanStep() {
 	}
 
 	return (
-		<div>
-			<h2 className="mb-1 text-h2 font-bold text-black">Choose your plan</h2>
-			<p className="mb-8 text-body text-grey-100">
-				Select the plan that works best for you.
-			</p>
+		<div className="flex flex-col gap-8">
+			{/* Header */}
+			<div className="flex flex-col gap-3.5">
+				<h2 className="text-[44px] font-medium leading-none text-black">Choose your plan</h2>
+				<p className="text-[18px] leading-snug tracking-[0.18px] text-black/70">
+					Select the plan that works best for you.
+				</p>
+			</div>
 
-			{/* Plan cards side by side */}
-			<div className="mb-6 grid grid-cols-2 gap-4">
+			{/* Plan cards */}
+			<div className="grid grid-cols-2 gap-3">
 				{/* Free plan */}
-				<div className="relative rounded-xl border border-border p-5">
-					<div className="absolute right-4 top-4">
-						<div className="h-5 w-5 rounded-full border-2 border-grey-50" />
-					</div>
-					<div className="flex flex-col gap-3">
-						<div>
-							<h3 className="text-h4 font-semibold text-black">Free</h3>
-							<p className="text-caption text-grey-100">For getting started</p>
+				<button
+					type="button"
+					onClick={() => setSelectedPlan('free')}
+					className={cn(
+						'relative flex flex-col gap-4 rounded-[24px] border-2 p-6 text-left transition-colors',
+						selectedPlan === 'free' ? 'border-primary' : 'border-[#e5e7eb]',
+					)}
+				>
+					{/* Radio */}
+					<div className="absolute right-5 top-5">
+						<div
+							className={cn(
+								'flex h-6 w-6 items-center justify-center rounded-full border-2',
+								selectedPlan === 'free'
+									? 'border-primary bg-primary'
+									: 'border-[#e5e7eb] bg-white',
+							)}
+						>
+							{selectedPlan === 'free' && <Check className="h-3.5 w-3.5 text-white" />}
 						</div>
-						<div>
-							<span className="text-h2 font-bold text-black">€0</span>
-							<span className="text-caption text-grey-100"> forever</span>
-						</div>
-						<ul className="flex flex-col gap-1">
-							{FREE_FEATURES.map((f) => (
-								<li key={f.text} className="flex items-center gap-1.5 text-caption">
-									{f.included ? (
-										<Check className="h-3.5 w-3.5 shrink-0 text-primary" />
-									) : (
-										<X className="h-3.5 w-3.5 shrink-0 text-grey-50" />
-									)}
-									<span className={f.included ? 'text-black' : 'text-grey-100'}>{f.text}</span>
-								</li>
-							))}
-						</ul>
 					</div>
-				</div>
+
+					<div className="flex flex-col gap-1">
+						<h3 className="text-[23px] font-medium text-black">Free</h3>
+						<p className="text-[16px] text-black/70">For getting started</p>
+					</div>
+
+					<div className="flex flex-col gap-0.5">
+						<div className="flex items-baseline gap-1.5">
+							<span className="text-[35px] font-medium leading-none text-black">€0</span>
+							<span className="text-[16px] text-black/70">forever</span>
+						</div>
+					</div>
+
+					<ul className="flex flex-col gap-[7px]">
+						{FREE_FEATURES.map((f) => (
+							<li key={f.text} className="flex items-center gap-2">
+								{f.included ? (
+									<Check className="h-3.5 w-3.5 shrink-0 text-primary" />
+								) : (
+									<X className="h-3.5 w-3.5 shrink-0 text-black/30" />
+								)}
+								<span className={cn('text-[16px]', f.included ? 'text-black' : 'text-black/45')}>
+									{f.text}
+								</span>
+							</li>
+						))}
+					</ul>
+				</button>
 
 				{/* Pro plan */}
-				<div className="relative rounded-xl border-2 border-primary p-5">
-					<div className="absolute -top-3 right-4 rounded-full bg-primary px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-						Most Popular
+				<div className="relative">
+					{/* Most Popular badge — centered on top border */}
+					<div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-1000">
+						<span className="rounded-[15px] bg-primary px-3.5 py-1.5 text-[14px] font-medium uppercase text-white">
+							Most Popular
+						</span>
 					</div>
-					<div className="absolute right-4 top-4">
-						<div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary">
-							<Check className="h-3 w-3 text-white" />
+
+					<button
+						type="button"
+						onClick={() => setSelectedPlan('pro')}
+						className={cn(
+							'relative flex w-full flex-col gap-4 rounded-[24px] border-2 p-6 text-left transition-colors',
+							selectedPlan === 'pro' ? 'border-primary' : 'border-[#e5e7eb]',
+						)}
+					>
+						{/* Radio */}
+						<div className="absolute right-5 top-5">
+							<div
+								className={cn(
+									'flex h-6 w-6 items-center justify-center rounded-full border-2',
+									selectedPlan === 'pro'
+										? 'border-primary bg-primary'
+										: 'border-[#e5e7eb] bg-white',
+								)}
+							>
+								{selectedPlan === 'pro' && <Check className="h-3.5 w-3.5 text-white" />}
+							</div>
 						</div>
-					</div>
-					<div className="flex flex-col gap-3">
-						<div>
-							<h3 className="text-h4 font-semibold text-black">Pro</h3>
-							<p className="text-caption text-grey-100">For professionals</p>
+
+						<div className="flex flex-col gap-1">
+							<h3 className="text-[23px] font-medium text-black">Pro</h3>
+							<p className="text-[16px] text-black/70">For professionals</p>
 						</div>
-						<div>
-							<span className="text-h2 font-bold text-black">€49</span>
-							<span className="text-caption text-grey-100"> /month</span>
-							<p className="text-caption text-primary">14 days free</p>
+
+						<div className="flex flex-col gap-0.5">
+							<div className="flex items-baseline gap-1.5">
+								<span className="text-[35px] font-medium leading-none text-black">€49</span>
+								<span className="text-[16px] text-black/70">/month</span>
+							</div>
+							<p className="text-[14px] font-medium text-primary/70">14 days free</p>
 						</div>
-						<ul className="flex flex-col gap-1">
+
+						<ul className="flex flex-col gap-[7px]">
 							{PRO_FEATURES.map((f) => (
-								<li key={f.text} className="flex items-center gap-1.5 text-caption">
+								<li key={f.text} className="flex items-center gap-2">
 									<Check className="h-3.5 w-3.5 shrink-0 text-primary" />
-									<span className="text-black">{f.text}</span>
+									<span className="text-[16px] text-black">{f.text}</span>
 								</li>
 							))}
 						</ul>
-					</div>
+					</button>
 				</div>
 			</div>
 
 			{/* Payment details */}
-			<div className="rounded-xl border border-border p-6">
-				<div className="mb-4 flex items-center justify-between">
-					<h3 className="text-h4 font-semibold text-black">Payment details</h3>
-					<div className="flex items-center gap-1.5 text-caption text-grey-100">
-						<span>Secured by</span>
-						<span className="font-bold text-black">Stripe</span>
+			<div className="flex flex-col gap-5 rounded-[15px] bg-[#f3f4f6] p-6">
+				{/* Header */}
+				<div className="flex items-center justify-between">
+					<h3 className="text-[23px] font-medium text-black">Payment details</h3>
+					<p className="text-[16px] text-black/70">
+						Secured by <span className="font-medium text-black">Stripe</span>
+					</p>
+				</div>
+
+				{/* Card number */}
+				<div className="flex flex-col gap-3">
+					<label className="text-[16px] font-medium text-black">Card number</label>
+					<div className="relative">
+						<input
+							type="text"
+							inputMode="numeric"
+							placeholder="1234 5678 9012 3456"
+							value={cardNumber}
+							onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+							className="h-[58px] w-full rounded-[15px] border-2 border-[#f3f4f6] bg-white px-3.5 pr-12 text-[18px] font-light text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
+						/>
+						<CreditCard className="pointer-events-none absolute right-3.5 top-1/2 h-6 w-6 -translate-y-1/2 text-black/30" />
 					</div>
 				</div>
 
-				<div className="flex flex-col gap-4">
-					<TextField
-						label="Card number"
-						placeholder="1234 5678 9012 3456"
-					/>
-					<div className="grid grid-cols-2 gap-4">
-						<TextField
-							label="Expiry date"
+				{/* Expiry + CVC */}
+				<div className="grid grid-cols-2 gap-3">
+					<div className="flex flex-col gap-3">
+						<label className="text-[16px] font-medium text-black">Expiry date</label>
+						<input
+							type="text"
+							inputMode="numeric"
 							placeholder="MM/YY"
-						/>
-						<TextField
-							label="CVC"
-							placeholder="123"
+							value={expiry}
+							onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+							className="h-[58px] w-full rounded-[15px] border-2 border-[#f3f4f6] bg-white px-3.5 text-[18px] font-light text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
 						/>
 					</div>
-					<TextField
-						label="Cardholder name"
+					<div className="flex flex-col gap-3">
+						<label className="text-[16px] font-medium text-black">CVC</label>
+						<input
+							type="text"
+							inputMode="numeric"
+							placeholder="123"
+							value={cvc}
+							onChange={(e) => setCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
+							className="h-[58px] w-full rounded-[15px] border-2 border-[#f3f4f6] bg-white px-3.5 text-[18px] font-light text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
+						/>
+					</div>
+				</div>
+
+				{/* Cardholder name */}
+				<div className="flex flex-col gap-3">
+					<label className="text-[16px] font-medium text-black">Cardholder name</label>
+					<input
+						type="text"
 						placeholder="Name on card"
+						value={cardholderName}
+						onChange={(e) => setCardholderName(e.target.value)}
+						className="h-[58px] w-full rounded-[15px] border-2 border-[#f3f4f6] bg-white px-3.5 text-[18px] font-light text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
 					/>
 				</div>
 
-				<p className="mt-4 text-caption text-grey-100">
+				<p className="text-center text-[16px] text-grey-100">
 					You won't be charged until your 14-day trial ends. Cancel anytime.
 				</p>
 			</div>
 
-			<div className="mt-6 flex items-center gap-4">
-				<Button type="button" variant="outline" onClick={handleBack} className="flex-1">
+			{/* Navigation buttons */}
+			<div className="flex gap-3.5">
+				<button
+					type="button"
+					onClick={handleBack}
+					className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] border border-[#e5e7eb] bg-white px-[30px] text-[18px] font-medium text-black transition-colors hover:bg-grey-25"
+				>
 					Back
-				</Button>
-				<Button type="button" onClick={handleContinue} className="flex-1">
+				</button>
+				<button
+					type="button"
+					onClick={handleContinue}
+					className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] bg-primary px-[30px] text-[18px] font-medium text-white transition-colors hover:bg-primary-hover"
+				>
 					Continue
-				</Button>
+				</button>
 			</div>
 		</div>
 	)

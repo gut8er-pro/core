@@ -45,7 +45,9 @@ function ReportLayout({ children }: { children: ReactNode }) {
 					<h1 className="text-h2 font-bold text-black">
 						{report?.title ?? 'Create New Report'}
 					</h1>
-					<Badge variant="success">KG</Badge>
+					{report?.reportType && (
+					<Badge variant="success">{report.reportType}</Badge>
+				)}
 					{report?.isLocked && (
 						<Badge variant="default">
 							<Lock className="mr-1 h-3 w-3" />

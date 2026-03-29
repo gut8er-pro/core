@@ -27,19 +27,10 @@ const signupPersonalSchema = z.object({
 const signupBusinessSchema = z.object({
 	companyName: z.string().min(1, 'Company name is required'),
 	street: z.string().min(1, 'Street is required'),
-	postcode: z
-		.string()
-		.min(5, 'Postcode must be 5 digits')
-		.max(5, 'Postcode must be 5 digits')
-		.regex(/^\d{5}$/, 'Postcode must be 5 digits'),
+	postcode: z.string().min(1, 'Postcode is required'),
 	city: z.string().min(1, 'City is required'),
 	taxId: z.string().min(1, 'Tax ID (Steuernummer) is required'),
-	vatId: z
-		.string()
-		.optional()
-		.refine((val) => !val || /^DE\d{9}$/.test(val), {
-			message: 'VAT ID must be in format DE + 9 digits',
-		}),
+	vatId: z.string().optional(),
 })
 
 const signupPlanSchema = z.object({

@@ -18,6 +18,7 @@ type Report = {
 	id: string
 	userId: string
 	title: string
+	reportType?: 'HS' | 'BE' | 'KG' | 'OT'
 	status: 'DRAFT' | 'COMPLETED' | 'SENT' | 'LOCKED'
 	completionPercentage: number
 	isLocked: boolean

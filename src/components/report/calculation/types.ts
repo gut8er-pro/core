@@ -22,6 +22,17 @@ type CalculationFormData = {
 	replacementTimeDays: string
 	// Additional costs
 	additionalCosts: Array<{ description: string; amount: string }>
+	// BE Valuation fields
+	generalCondition: string
+	taxation: string
+	dataSource: string
+	valuationMax: string
+	valuationAvg: string
+	valuationMin: string
+	valuationDate: string
+	// Correction Calculation results (shared HS + BE)
+	correctionResultWithout: string
+	correctionResultWith: string
 }
 
 type CalculationSectionProps = {

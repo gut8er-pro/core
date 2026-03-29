@@ -7,6 +7,7 @@ import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAuth } from '@/hooks/use-auth'
+import { cn } from '@/lib/utils'
 
 const FEATURES = [
 	{
@@ -102,12 +103,14 @@ function LandingPage() {
 			{/* Navigation */}
 			<header className="border-b border-border">
 				<div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-					<h1
-						className="cursor-pointer text-h3 font-bold text-black"
+					<button
+						type="button"
+						className="cursor-pointer"
 						onClick={() => router.push(isAuthenticated ? '/dashboard' : '/')}
+						aria-label="Gut8erPRO home"
 					>
-						Gut8er<span className="text-primary">PRO</span>
-					</h1>
+						<Image src="/images/logo.svg" alt="Gut8erPRO" width={131} height={31} priority />
+					</button>
 					<nav className="flex items-center gap-4">
 						{!loading && isAuthenticated ? (
 							<Button size="md" onClick={() => router.push('/dashboard')}>
@@ -195,32 +198,162 @@ function LandingPage() {
 				<div className="mx-auto max-w-6xl">
 					<div className="mb-12 text-center">
 						<h3 className="text-h2 font-bold text-black">
-							Gut8erPRO Features
+							Gut8er<span className="text-primary">PRO</span> Features
 						</h3>
 						<p className="mx-auto mt-3 max-w-2xl text-body text-grey-100">
-							From smart analytics to seamless workflow tools, Gut8erPro gives
+							From smart analysis to seamless workflow tools, Gut8erPro gives
 							you the clarity and control you need to make faster, better
 							decisions.
 						</p>
 					</div>
-					<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-						{FEATURES.map((feature) => (
-							<Card key={feature.title} padding="lg">
-								<CardContent className="flex flex-col gap-4">
-									<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-light">
-										{feature.icon}
-									</div>
+
+					{/* Row 1: Narrow (DAT) + Wide (Analytics) */}
+					<div className="flex flex-col gap-6 md:flex-row">
+						{/* DAT Integration — narrow card */}
+						<div className="flex h-[332px] w-full shrink-0 flex-col justify-between rounded-3xl border-2 border-grey-50 bg-white p-6 md:w-[338px]">
+							<div className="flex flex-1 items-center justify-center">
+								<div className="flex h-[183px] w-[113px] flex-col items-center justify-center rounded-2xl bg-[#f5c800] shadow-card">
+									<span className="text-[36px] font-bold leading-none text-[#003087]">DAT</span>
+									<span className="mt-1 text-[11px] font-medium text-[#003087]">SilverDAT3</span>
+								</div>
+							</div>
+							<div className="flex flex-col gap-2">
+								<h4 className="text-h4 font-semibold text-black">DAT Integration</h4>
+								<p className="text-body-sm text-grey-100">
+									Real-time vehicle data and valuations directly within your workflow.
+								</p>
+							</div>
+						</div>
+
+						{/* Real-Time Analytics — wide card */}
+						<div className="flex h-[332px] flex-1 flex-col justify-between overflow-hidden rounded-3xl border-2 border-grey-50 bg-white p-6">
+							{/* Mini chart preview */}
+							<div className="flex-1 overflow-hidden rounded-2xl bg-black px-4 pt-4">
+								<div className="mb-2 flex items-center justify-between">
 									<div>
-										<h4 className="text-h4 font-semibold text-black">
-											{feature.title}
-										</h4>
-										<p className="mt-1 text-body-sm text-grey-100">
-											{feature.description}
+										<p className="text-caption text-white/50">Total Revenue</p>
+										<p className="text-h4 font-bold text-white">€5,430</p>
+									</div>
+									<div className="flex gap-1">
+										{['Yearly', 'Monthly', 'Weekly'].map((v, i) => (
+											<span
+												key={v}
+												className={cn(
+													'rounded-md px-2 py-0.5 text-caption font-medium',
+													i === 0 ? 'bg-white text-black' : 'text-white/40',
+												)}
+											>
+												{v}
+											</span>
+										))}
+									</div>
+								</div>
+								{/* Bar chart */}
+								<div className="flex items-end gap-1 pt-2" style={{ height: 80 }}>
+									{[50, 40, 40, 72, 72, 40, 40, 72, 20, 20, 40, 20].map((h, i) => (
+										<div
+											key={i}
+											className={cn(
+												'flex-1 rounded-sm',
+												i === 10 ? 'bg-primary' : 'bg-white/10',
+											)}
+											style={{ height: h }}
+										/>
+									))}
+								</div>
+								<div className="mt-1 flex justify-between">
+									{['J','F','M','A','M','J','J','A','S','O','N','D'].map((m, i) => (
+										<span key={i} className="text-[9px] text-white/30">{m}</span>
+									))}
+								</div>
+							</div>
+							<div className="mt-4 flex flex-col gap-2">
+								<h4 className="text-h4 font-semibold text-black">Real-Time Analytics</h4>
+								<p className="text-body-sm text-grey-100">
+									Track revenue, payments, and performance as they happen.
+									Now the chart actually makes sense.
+								</p>
+							</div>
+						</div>
+					</div>
+
+					{/* Row 2: Wide (AI Tool) + Narrow (Editing Photos) */}
+					<div className="mt-6 flex flex-col gap-6 md:flex-row">
+						{/* AI Evaluation Tool — wide card */}
+						<div className="flex h-[332px] flex-1 flex-col justify-between rounded-3xl border-2 border-grey-50 bg-white p-6">
+							{/* Floating stat cards */}
+							<div className="relative flex-1">
+								{[
+									{ label: 'Total Revenue', value: '€11,280', change: '+12.5%', positive: true, top: 8, left: 0 },
+									{ label: 'Avg. Report Value', value: '€268', change: '-3.1%', positive: false, top: 8, left: 170 },
+									{ label: 'Total Reports', value: '42', change: '+8.2%', positive: true, top: 90, left: 60 },
+									{ label: 'Completion Rate', value: '68%', change: '+5.4%', positive: true, top: 90, left: 230 },
+								].map((card) => (
+									<div
+										key={card.label}
+										className="absolute rounded-2xl bg-white px-4 py-3 shadow-card"
+										style={{ top: card.top, left: card.left }}
+									>
+										<p className="text-caption text-grey-100">{card.label}</p>
+										<p className="text-h4 font-bold text-black">{card.value}</p>
+										<p className={cn('text-caption font-medium', card.positive ? 'text-primary' : 'text-error')}>
+											{card.positive ? '↑' : '↓'} {card.change}
 										</p>
 									</div>
-								</CardContent>
-							</Card>
-						))}
+								))}
+							</div>
+							<div className="flex flex-col gap-2">
+								<h4 className="text-h4 font-semibold text-black">AI Evaluation Tool</h4>
+								<p className="text-body-sm text-grey-100">
+									Automatically analyzes reports and key metrics using AI.
+									Directly tied to the cards and numbers shown.
+								</p>
+							</div>
+						</div>
+
+						{/* Editing Photos — narrow card */}
+						<div className="flex h-[332px] w-full shrink-0 flex-col justify-between rounded-3xl border-2 border-grey-50 bg-white p-6 md:w-[338px]">
+							{/* Icon grid */}
+							<div className="grid grid-cols-3 gap-2">
+								{[
+									{ bg: 'bg-primary-light', color: 'text-primary' },
+									{ bg: 'bg-grey-25', color: 'text-black' },
+									{ bg: 'bg-grey-25', color: 'text-black' },
+									{ bg: 'bg-grey-25', color: 'text-black' },
+									{ bg: 'bg-grey-25', color: 'text-black' },
+									{ bg: 'bg-grey-25', color: 'text-black' },
+								].map((style, i) => (
+									<div
+										key={i}
+										className={cn(
+											'flex h-[88px] items-center justify-center rounded-[14px] shadow-sm',
+											style.bg,
+										)}
+									>
+										<svg
+											className={cn('h-8 w-8', style.color)}
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+											strokeWidth={1.5}
+										>
+											{i === 0 && <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />}
+											{i === 1 && <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42" />}
+											{i === 2 && <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />}
+											{i === 3 && <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 3.75H6A2.25 2.25 0 0 0 3.75 6v1.5M16.5 3.75H18A2.25 2.25 0 0 1 20.25 6v1.5m0 9V18A2.25 2.25 0 0 1 18 20.25h-1.5M3.75 15.75V18A2.25 2.25 0 0 0 6 20.25h1.5" />}
+											{i === 4 && <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />}
+											{i === 5 && <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487 18.549 2.8a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />}
+										</svg>
+									</div>
+								))}
+							</div>
+							<div className="mt-4 flex flex-col gap-2">
+								<h4 className="text-h4 font-semibold text-black">Editing Photos</h4>
+								<p className="text-body-sm text-grey-100">
+									Crop, adjust, and prepare images directly within the platform.
+								</p>
+							</div>
+						</div>
 					</div>
 				</div>
 			</section>

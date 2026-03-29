@@ -1,4 +1,5 @@
-import { BarChart3, Bell, Home, LogOut, Settings, User } from 'lucide-react'
+import Image from 'next/image'
+import { BarChart3, Bell, CheckCircle2, CreditCard, FileText, Home, LogOut, Settings, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
 	DropdownMenu,
@@ -21,6 +22,46 @@ const CENTER_NAV_ITEMS: NavItem[] = [
 	{ path: '/settings', icon: Settings, label: 'Settings' },
 ]
 
+type Notification = {
+	id: string
+	icon: typeof CheckCircle2
+	iconColor: string
+	title: string
+	description: string
+	timestamp: string
+	unread: boolean
+}
+
+const STATIC_NOTIFICATIONS: Notification[] = [
+	{
+		id: '1',
+		icon: CheckCircle2,
+		iconColor: 'text-primary',
+		title: 'Report Completed',
+		description: 'GH-331-02 has been marked as completed',
+		timestamp: '2 hours ago',
+		unread: true,
+	},
+	{
+		id: '2',
+		icon: CreditCard,
+		iconColor: 'text-black',
+		title: 'New invoice generated',
+		description: 'Invoice INV-2026-002 is ready',
+		timestamp: '4 hours ago',
+		unread: true,
+	},
+	{
+		id: '3',
+		icon: FileText,
+		iconColor: 'text-black',
+		title: 'Payment received',
+		description: 'Payment of €185.50 received from Marko Jovanović',
+		timestamp: '4 hours ago',
+		unread: false,
+	},
+]
+
 type TopNavBarProps = {
 	userName?: string
 	userRole?: string
@@ -31,6 +72,8 @@ type TopNavBarProps = {
 }
 
 function TopNavBar({ userName, userRole, activePath, onNavigate, onLogout, className }: TopNavBarProps) {
+	const unreadCount = STATIC_NOTIFICATIONS.filter((n) => n.unread).length
+
 	return (
 		<header
 			className={cn(
@@ -40,15 +83,14 @@ function TopNavBar({ userName, userRole, activePath, onNavigate, onLogout, class
 		>
 			{/* Left: Logo */}
 			<div className="flex items-center">
-				<span
-					className="cursor-pointer text-h4 font-bold"
+				<button
+					type="button"
+					className="cursor-pointer"
 					onClick={() => onNavigate?.('/dashboard')}
-					role="button"
-					tabIndex={0}
-					onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.('/dashboard') }}
+					aria-label="Gut8erPRO home"
 				>
-					Gut8er<span className="text-primary">PRO</span>
-				</span>
+					<Image src="/images/logo.svg" alt="Gut8erPRO" width={131} height={31} priority />
+				</button>
 			</div>
 
 			{/* Center: Navigation items */}
@@ -69,15 +111,72 @@ function TopNavBar({ userName, userRole, activePath, onNavigate, onLogout, class
 
 			{/* Right: Notification bell + User avatar */}
 			<div className="flex items-center gap-2.5">
-				<button
-					type="button"
-					onClick={() => onNavigate?.('/notifications')}
-					className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
-					aria-label="Notifications"
-				>
-					<Bell className="h-6 w-6" />
-				</button>
+				{/* Notifications dropdown */}
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<button
+							type="button"
+							className="relative flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
+							aria-label="Notifications"
+						>
+							<Bell className="h-6 w-6" />
+							{unreadCount > 0 && (
+								<span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-primary" />
+							)}
+						</button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end" className="w-80 p-0">
+						{/* Header */}
+						<div className="flex items-center justify-between px-4 py-3">
+							<span className="text-body-sm font-semibold text-black">Notifications</span>
+							<button
+								type="button"
+								className="text-caption font-medium text-primary hover:underline"
+							>
+								Mark all as read
+							</button>
+						</div>
+						<DropdownMenuSeparator className="my-0" />
 
+						{/* Notification items */}
+						{STATIC_NOTIFICATIONS.map((notification) => {
+							const Icon = notification.icon
+							return (
+								<div
+									key={notification.id}
+									className="flex items-start gap-3 border-b border-border px-4 py-3 last:border-0"
+								>
+									<div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-grey-25">
+										<Icon className={cn('h-4 w-4', notification.iconColor)} />
+									</div>
+									<div className="flex-1 min-w-0">
+										<div className="flex items-start justify-between gap-2">
+											<p className="text-body-sm font-semibold text-black">{notification.title}</p>
+											{notification.unread && (
+												<span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
+											)}
+										</div>
+										<p className="text-caption text-grey-100">{notification.description}</p>
+										<p className="mt-0.5 text-caption text-grey-100">{notification.timestamp}</p>
+									</div>
+								</div>
+							)
+						})}
+
+						{/* Footer */}
+						<div className="px-4 py-3">
+							<button
+								type="button"
+								onClick={() => onNavigate?.('/notifications')}
+								className="w-full text-center text-body-sm font-medium text-primary hover:underline"
+							>
+								View all notifications
+							</button>
+						</div>
+					</DropdownMenuContent>
+				</DropdownMenu>
+
+				{/* User dropdown */}
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<button

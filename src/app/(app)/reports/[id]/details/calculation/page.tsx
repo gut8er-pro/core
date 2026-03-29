@@ -14,8 +14,11 @@ import { ValueSection } from '@/components/report/calculation/value-section'
 import { RepairSection } from '@/components/report/calculation/repair-section'
 import { LossSection } from '@/components/report/calculation/loss-section'
 import { DatModal } from '@/components/report/calculation/dat-modal'
+import { CorrectionSection } from '@/components/report/calculation/correction-section'
+import { ValuationSection } from '@/components/report/calculation/valuation-section'
 import type { DatFormData } from '@/components/report/calculation/dat-modal'
 import type { CalculationFormData } from '@/components/report/calculation/types'
+import type { CorrectionMode } from '@/components/report/calculation/correction-section'
 
 function CalculationPage() {
 	const params = useParams<{ id: string }>()
@@ -27,6 +30,9 @@ function CalculationPage() {
 	const [isAutoFilling, setIsAutoFilling] = useState(false)
 	const [autoFillMessage, setAutoFillMessage] = useState<string | null>(null)
 	const [datModalOpen, setDatModalOpen] = useState(false)
+	const [correctionMode, setCorrectionMode] = useState<CorrectionMode>('dat')
+
+	const isValuationReport = report?.reportType === 'BE'
 
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
@@ -58,10 +64,20 @@ function CalculationPage() {
 			repairTimeDays: '',
 			replacementTimeDays: '',
 			additionalCosts: [],
+			// BE valuation
+			generalCondition: '',
+			taxation: '2.4',
+			dataSource: '',
+			valuationMax: '',
+			valuationAvg: '',
+			valuationMin: '',
+			valuationDate: '',
+			// Correction results
+			correctionResultWithout: '',
+			correctionResultWith: '',
 		},
 	})
 
-	// Populate form when data loads
 	useEffect(() => {
 		if (!data?.calculation) return
 
@@ -98,12 +114,14 @@ function CalculationPage() {
 			if (!el) return
 			const value = el.type === 'checkbox' ? el.checked : el.value
 
-			// Map numeric fields
 			const floatFields = [
 				'replacementValue',
 				'residualValue',
 				'diminutionInValue',
 				'costPerDay',
+				'valuationMax',
+				'valuationAvg',
+				'valuationMin',
 			]
 			const intFields = ['repairTimeDays', 'replacementTimeDays']
 
@@ -147,12 +165,12 @@ function CalculationPage() {
 				body: JSON.stringify({}),
 			})
 			if (!response.ok) {
-				const data = await response.json().catch(() => ({ error: 'Auto-fill failed' }))
-				setAutoFillMessage(data.error || 'Auto-fill failed')
+				const resData = await response.json().catch(() => ({ error: 'Auto-fill failed' }))
+				setAutoFillMessage(resData.error || 'Auto-fill failed')
 				return
 			}
-			const data = await response.json() as { fieldsUpdated: string[] }
-			setAutoFillMessage(`Auto-filled ${data.fieldsUpdated.length} fields`)
+			const resData = await response.json() as { fieldsUpdated: string[] }
+			setAutoFillMessage(`Auto-filled ${resData.fieldsUpdated.length} fields`)
 			queryClient.invalidateQueries({ queryKey: ['report', reportId, 'calculation'] })
 		} catch {
 			setAutoFillMessage('Auto-fill failed')
@@ -168,6 +186,8 @@ function CalculationPage() {
 			</div>
 		)
 	}
+
+	const sectionTitle = isValuationReport ? 'Value and Repair Calculation' : 'Value and Repair Calculation'
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -238,36 +258,56 @@ function CalculationPage() {
 			<div className="flex flex-col gap-5 rounded-[20px] bg-white p-5">
 				{/* Section heading with completion badge */}
 				<div className="flex items-center justify-between">
-					<h3 className="text-h3 font-semibold text-black">Value and Repair Calculation</h3>
+					<h3 className="text-h3 font-semibold text-black">{sectionTitle}</h3>
 					<CompletionBadge percentage={30} />
 				</div>
 
-				{/* Two-column layout: Value (left) + Repair (right) */}
-				<div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-					<ValueSection
+				{isValuationReport ? (
+					/* BE — DAT Valuation + Manual Valuation side by side */
+					<ValuationSection
 						register={register}
 						control={control}
 						errors={errors}
 						onFieldBlur={handleFieldBlur}
-						className="rounded-3xl border-2 border-[#f5f5f5] p-5"
 					/>
+				) : (
+					/* HS (and others) — Value + Repair + Loss of Use */
+					<>
+						<div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+							<ValueSection
+								register={register}
+								control={control}
+								errors={errors}
+								onFieldBlur={handleFieldBlur}
+								className="rounded-3xl border-2 border-[#f5f5f5] p-5"
+							/>
+							<RepairSection
+								register={register}
+								control={control}
+								errors={errors}
+								onFieldBlur={handleFieldBlur}
+								className="rounded-3xl border-2 border-[#f5f5f5] p-5"
+							/>
+						</div>
+						<LossSection
+							register={register}
+							control={control}
+							errors={errors}
+							onFieldBlur={handleFieldBlur}
+							className="rounded-3xl border-2 border-[#f5f5f5] p-5"
+						/>
+					</>
+				)}
 
-					<RepairSection
-						register={register}
-						control={control}
-						errors={errors}
-						onFieldBlur={handleFieldBlur}
-						className="rounded-3xl border-2 border-[#f5f5f5] p-5"
-					/>
-				</div>
-
-				{/* Loss of Use - full width below */}
-				<LossSection
-					register={register}
-					control={control}
-					errors={errors}
-					onFieldBlur={handleFieldBlur}
-					className="rounded-3xl border-2 border-[#f5f5f5] p-5"
+				{/* Correction Calculation — shared by all report types */}
+				<CorrectionSection
+					mode={correctionMode}
+					onModeChange={setCorrectionMode}
+					onOpenDat={() => setDatModalOpen(true)}
+					resultWithoutLabel={isValuationReport ? 'Valuation Results - Manual' : 'Results without repair'}
+					resultWithLabel={isValuationReport ? 'Valuation after Correction' : 'Results with repair'}
+					resultWithoutValue="—"
+					resultWithValue="—"
 				/>
 			</div>
 		</div>

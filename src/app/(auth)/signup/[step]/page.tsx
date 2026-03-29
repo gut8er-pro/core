@@ -1,7 +1,7 @@
 'use client'
 
 import { notFound, useParams } from 'next/navigation'
-import { StepperSidebar, StepperProgress } from '@/components/ui/stepper-sidebar'
+import { StepperSidebar } from '@/components/ui/stepper-sidebar'
 import { useSignupStore } from '@/stores/signup-store'
 import { AccountStep } from '@/components/auth/account-step'
 import { PersonalStep } from '@/components/auth/personal-step'
@@ -28,7 +28,7 @@ const STEP_MAP: Record<string, number> = {
 }
 
 function SignupStepPage() {
-	const params = useParams<{ step: string }>()
+	const params = useParams<{ id: string; step: string }>()
 	const stepKey = params.step
 	const stepNumber = STEP_MAP[stepKey]
 	const { completedSteps } = useSignupStore()
@@ -41,30 +41,38 @@ function SignupStepPage() {
 		return <CompleteStep />
 	}
 
+	const progressPercent = Math.min((stepNumber / 5) * 100, 100)
+
 	return (
-		<div className="flex min-h-screen">
+		<div className="flex h-screen">
 			<StepperSidebar
 				steps={STEPS}
 				currentStep={stepNumber}
 				completedSteps={completedSteps}
 			/>
 
+			{/* Right panel: progress bar pinned at top, content scrolls below */}
 			<div className="flex flex-1 flex-col">
-				<div className="px-6 pt-4 lg:hidden">
-					<StepperProgress
-						steps={STEPS}
-						currentStep={stepNumber}
-						completedSteps={completedSteps}
-					/>
+				{/* Progress bar — always visible at top */}
+				<div className="shrink-0 pt-8 pb-6">
+					<div className="h-[3px] w-full bg-[#e5e7eb]">
+						<div
+							className="h-full bg-primary transition-all duration-500"
+							style={{ width: `${progressPercent}%` }}
+						/>
+					</div>
 				</div>
 
-				<div className="flex flex-1 items-start justify-center px-6 py-8">
-					<div className="w-full max-w-lg">
-						{stepKey === 'account' && <AccountStep />}
-						{stepKey === 'personal' && <PersonalStep />}
-						{stepKey === 'business' && <BusinessStep />}
-						{stepKey === 'plan' && <PlanStep />}
-						{stepKey === 'integrations' && <IntegrationsStep />}
+				{/* Scrollable form area */}
+				<div className="flex-1 overflow-y-auto">
+					<div className="flex min-h-full items-center justify-center px-12 py-16 pt-12">
+						<div className="w-full max-w-[600px]">
+							{stepKey === 'account' && <AccountStep />}
+							{stepKey === 'personal' && <PersonalStep />}
+							{stepKey === 'business' && <BusinessStep />}
+							{stepKey === 'plan' && <PlanStep />}
+							{stepKey === 'integrations' && <IntegrationsStep />}
+						</div>
 					</div>
 				</div>
 			</div>
