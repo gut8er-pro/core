@@ -53,6 +53,7 @@ function useNotifications() {
 				}
 			})
 			await fetch(`/api/notifications/${id}`, { method: 'PATCH' })
+			queryClient.invalidateQueries({ queryKey: ['notifications'] })
 		},
 		[queryClient],
 	)
@@ -67,6 +68,7 @@ function useNotifications() {
 			}
 		})
 		await fetch('/api/notifications', { method: 'PATCH' })
+		queryClient.invalidateQueries({ queryKey: ['notifications'] })
 	}, [queryClient])
 
 	return {

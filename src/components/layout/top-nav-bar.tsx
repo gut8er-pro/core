@@ -34,6 +34,19 @@ const NOTIFICATION_ICON: Record<NotificationEventType, typeof FileText> = {
 	PAYMENT_RECEIVED: CreditCard,
 }
 
+// Map event types to navigation paths
+function getNotificationPath(eventType: NotificationEventType, reportId: string | null): string {
+	if (!reportId) return '/notifications'
+	switch (eventType) {
+		case 'INVOICE_GENERATED':
+			return `/reports/${reportId}/details/invoice`
+		case 'PAYMENT_RECEIVED':
+			return '/statistics'
+		default:
+			return `/reports/${reportId}`
+	}
+}
+
 type NavItem = {
 	path: string
 	icon: typeof Home
@@ -118,15 +131,14 @@ function TopNavBar({
 						{/* Header */}
 						<div className="flex items-center justify-between border-b border-border px-3.5 py-3">
 							<span className="text-body font-medium text-black">Notifications</span>
-							{unreadCount > 0 && (
-								<button
-									type="button"
-									onClick={markAllRead}
-									className="text-body-sm font-medium text-primary hover:underline"
-								>
-									Mark all as read
-								</button>
-							)}
+							<button
+								type="button"
+								onClick={markAllRead}
+								disabled={unreadCount === 0}
+								className="text-body-sm font-medium text-primary hover:underline disabled:opacity-40 disabled:cursor-default"
+							>
+								Mark all as read
+							</button>
 						</div>
 
 						{/* Notification items */}
@@ -142,9 +154,15 @@ function TopNavBar({
 									<div
 										key={n.id}
 										className="flex cursor-pointer items-start gap-3.5 border-b border-border px-3.5 py-3 last:border-0 hover:bg-grey-25"
-										onClick={() => markRead(n.id)}
+										onClick={() => {
+											markRead(n.id)
+											onNavigate?.(getNotificationPath(n.eventType, n.reportId))
+										}}
 										onKeyDown={(e) => {
-											if (e.key === 'Enter' || e.key === ' ') markRead(n.id)
+											if (e.key === 'Enter' || e.key === ' ') {
+												markRead(n.id)
+												onNavigate?.(getNotificationPath(n.eventType, n.reportId))
+											}
 										}}
 										role="button"
 										tabIndex={0}
