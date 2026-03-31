@@ -60,6 +60,18 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		data: parsed.data,
 	})
 
+	// Trigger notification when report is marked as completed
+	if (parsed.data.status === 'COMPLETED' && existing.status !== 'COMPLETED') {
+		const { createNotification } = await import('@/lib/notifications/create')
+		await createNotification({
+			userId: user!.id,
+			eventType: 'REPORT_COMPLETED',
+			title: 'Report Completed',
+			description: `Report "${report.title}" has been marked as completed.`,
+			reportId: id,
+		})
+	}
+
 	return NextResponse.json({ report })
 }
 

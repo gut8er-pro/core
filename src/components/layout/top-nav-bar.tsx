@@ -1,14 +1,38 @@
+'use client'
+
 import Image from 'next/image'
-import { BarChart3, Bell, CheckCircle2, CreditCard, FileText, Home, LogOut, Settings, User } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
+import {
+	BarChart3,
+	Bell,
+	CheckCircle2,
+	CreditCard,
+	FileText,
+	HelpCircle,
+	Home,
+	Lock,
+	LogOut,
+	Settings,
+	User,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useNotifications } from '@/hooks/use-notifications'
+import type { NotificationEventType } from '@/hooks/use-notifications'
+
+// Map event types to lucide icons
+const NOTIFICATION_ICON: Record<NotificationEventType, typeof FileText> = {
+	REPORT_COMPLETED: CheckCircle2,
+	REPORT_SENT: FileText,
+	REPORT_LOCKED: Lock,
+	REPORT_CREATED: FileText,
+	INVOICE_GENERATED: CreditCard,
+	PAYMENT_RECEIVED: CreditCard,
+}
 
 type NavItem = {
 	path: string
@@ -22,48 +46,9 @@ const CENTER_NAV_ITEMS: NavItem[] = [
 	{ path: '/settings', icon: Settings, label: 'Settings' },
 ]
 
-type Notification = {
-	id: string
-	icon: typeof CheckCircle2
-	iconColor: string
-	title: string
-	description: string
-	timestamp: string
-	unread: boolean
-}
-
-const STATIC_NOTIFICATIONS: Notification[] = [
-	{
-		id: '1',
-		icon: CheckCircle2,
-		iconColor: 'text-primary',
-		title: 'Report Completed',
-		description: 'GH-331-02 has been marked as completed',
-		timestamp: '2 hours ago',
-		unread: true,
-	},
-	{
-		id: '2',
-		icon: CreditCard,
-		iconColor: 'text-black',
-		title: 'New invoice generated',
-		description: 'Invoice INV-2026-002 is ready',
-		timestamp: '4 hours ago',
-		unread: true,
-	},
-	{
-		id: '3',
-		icon: FileText,
-		iconColor: 'text-black',
-		title: 'Payment received',
-		description: 'Payment of €185.50 received from Marko Jovanović',
-		timestamp: '4 hours ago',
-		unread: false,
-	},
-]
-
 type TopNavBarProps = {
 	userName?: string
+	userEmail?: string
 	userRole?: string
 	activePath?: string
 	onNavigate?: (path: string) => void
@@ -71,16 +56,20 @@ type TopNavBarProps = {
 	className?: string
 }
 
-function TopNavBar({ userName, userRole, activePath, onNavigate, onLogout, className }: TopNavBarProps) {
-	const unreadCount = STATIC_NOTIFICATIONS.filter((n) => n.unread).length
+function TopNavBar({
+	userName,
+	userEmail,
+	userRole,
+	activePath,
+	onNavigate,
+	onLogout,
+	className,
+}: TopNavBarProps) {
+	const { notifications, unreadCount, markAllRead, markRead } = useNotifications()
+	const recentNotifications = notifications.slice(0, 3)
 
 	return (
-		<header
-			className={cn(
-				'flex items-center justify-between px-6 py-4',
-				className,
-			)}
-		>
+		<header className={cn('flex items-center justify-between px-6 py-4', className)}>
 			{/* Left: Logo */}
 			<div className="flex items-center">
 				<button
@@ -93,7 +82,7 @@ function TopNavBar({ userName, userRole, activePath, onNavigate, onLogout, class
 				</button>
 			</div>
 
-			{/* Center: Navigation items */}
+			{/* Center: Navigation */}
 			<nav className="flex items-center gap-2.5">
 				{CENTER_NAV_ITEMS.map((item) => {
 					const isActive = activePath === item.path
@@ -109,7 +98,7 @@ function TopNavBar({ userName, userRole, activePath, onNavigate, onLogout, class
 				})}
 			</nav>
 
-			{/* Right: Notification bell + User avatar */}
+			{/* Right: Bell + User */}
 			<div className="flex items-center gap-2.5">
 				{/* Notifications dropdown */}
 				<DropdownMenu>
@@ -125,50 +114,63 @@ function TopNavBar({ userName, userRole, activePath, onNavigate, onLogout, class
 							)}
 						</button>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end" className="w-80 p-0">
+					<DropdownMenuContent align="end" className="w-[275px] p-0 overflow-hidden">
 						{/* Header */}
-						<div className="flex items-center justify-between px-4 py-3">
-							<span className="text-body-sm font-semibold text-black">Notifications</span>
-							<button
-								type="button"
-								className="text-caption font-medium text-primary hover:underline"
-							>
-								Mark all as read
-							</button>
+						<div className="flex items-center justify-between border-b border-border px-3.5 py-3">
+							<span className="text-[16px] font-medium text-black">Notifications</span>
+							{unreadCount > 0 && (
+								<button
+									type="button"
+									onClick={markAllRead}
+									className="text-[14px] font-medium text-primary hover:underline"
+								>
+									Mark all as read
+								</button>
+							)}
 						</div>
-						<DropdownMenuSeparator className="my-0" />
 
 						{/* Notification items */}
-						{STATIC_NOTIFICATIONS.map((notification) => {
-							const Icon = notification.icon
-							return (
-								<div
-									key={notification.id}
-									className="flex items-start gap-3 border-b border-border px-4 py-3 last:border-0"
-								>
-									<div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-grey-25">
-										<Icon className={cn('h-4 w-4', notification.iconColor)} />
-									</div>
-									<div className="flex-1 min-w-0">
-										<div className="flex items-start justify-between gap-2">
-											<p className="text-body-sm font-semibold text-black">{notification.title}</p>
-											{notification.unread && (
-												<span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
-											)}
+						{recentNotifications.length === 0 ? (
+							<div className="px-3.5 py-6 text-center text-[14px] text-black/45">
+								No notifications yet
+							</div>
+						) : (
+							recentNotifications.map((n) => {
+								const Icon = NOTIFICATION_ICON[n.eventType] ?? FileText
+								const timeAgo = formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })
+								return (
+									<div
+										key={n.id}
+										className="flex cursor-pointer items-start gap-3.5 border-b border-border px-3.5 py-3 last:border-0 hover:bg-grey-25"
+										onClick={() => markRead(n.id)}
+										onKeyDown={(e) => {
+											if (e.key === 'Enter' || e.key === ' ') markRead(n.id)
+										}}
+										role="button"
+										tabIndex={0}
+									>
+										<Icon className="mt-0.5 h-[17px] w-[17px] shrink-0 text-primary" />
+										<div className="flex min-w-0 flex-1 flex-col gap-1.5">
+											<p className="text-[14px] font-medium leading-[18px] text-black">
+												{n.title}
+											</p>
+											<p className="text-[14px] leading-5 text-black/70">{n.description}</p>
+											<p className="text-[12px] text-black/45">{timeAgo}</p>
 										</div>
-										<p className="text-caption text-grey-100">{notification.description}</p>
-										<p className="mt-0.5 text-caption text-grey-100">{notification.timestamp}</p>
+										{!n.isRead && (
+											<span className="mt-1 h-[9px] w-[9px] shrink-0 rounded-full bg-primary" />
+										)}
 									</div>
-								</div>
-							)
-						})}
+								)
+							})
+						)}
 
 						{/* Footer */}
-						<div className="px-4 py-3">
+						<div className="flex items-center justify-center px-3.5 py-3">
 							<button
 								type="button"
 								onClick={() => onNavigate?.('/notifications')}
-								className="w-full text-center text-body-sm font-medium text-primary hover:underline"
+								className="text-[14px] font-medium text-primary hover:underline"
 							>
 								View all notifications
 							</button>
@@ -183,36 +185,92 @@ function TopNavBar({ userName, userRole, activePath, onNavigate, onLogout, class
 							type="button"
 							className="ml-2 flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-grey-25"
 						>
-							<div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-body-sm font-semibold text-white">
+							<div className="flex h-[52px] w-[52px] items-center justify-center rounded-[15px] bg-primary text-body-sm font-semibold text-white">
 								{userName?.charAt(0)?.toUpperCase() || 'U'}
 							</div>
 							<div className="hidden text-left lg:block">
-								<p className="text-body-sm font-medium text-black">{userName || 'User'}</p>
-								{userRole && <p className="text-caption text-grey-100">{userRole}</p>}
+								<p className="text-[18px] font-medium tracking-[0.18px] text-black">
+									{userName || 'User'}
+								</p>
+								{userRole && (
+									<p className="text-[14px] tracking-[0.14px] text-black/60">{userRole}</p>
+								)}
 							</div>
 						</button>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end" className="w-56">
-						<DropdownMenuLabel>
-							<div className="flex flex-col gap-0.5">
-								<span className="text-body-sm font-medium">{userName || 'User'}</span>
-								{userRole && <span className="text-caption font-normal text-grey-100">{userRole}</span>}
-							</div>
-						</DropdownMenuLabel>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem onClick={() => onNavigate?.('/settings')}>
-							<User className="mr-2 h-4 w-4" />
-							Settings
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem onClick={onLogout} className="text-error focus:text-error">
-							<LogOut className="mr-2 h-4 w-4" />
-							Log out
-						</DropdownMenuItem>
+					<DropdownMenuContent align="end" className="w-[218px] p-0 overflow-hidden">
+						{/* Header: name + email */}
+						<div className="border-b-2 border-border px-3.5 py-3">
+							<p className="text-[14px] font-medium leading-[18px] text-black">
+								{userName || 'User'}
+							</p>
+							{userEmail && (
+								<p className="mt-1.5 text-[14px] leading-5 text-black/70">{userEmail}</p>
+							)}
+						</div>
+
+						{/* Profile */}
+						<ProfileMenuItem
+							icon={User}
+							label="Profile"
+							onClick={() => onNavigate?.('/settings/profile')}
+						/>
+
+						{/* Settings */}
+						<ProfileMenuItem
+							icon={Settings}
+							label="Settings"
+							onClick={() => onNavigate?.('/settings')}
+						/>
+
+						{/* Analytics */}
+						<ProfileMenuItem
+							icon={BarChart3}
+							label="Analytics"
+							onClick={() => onNavigate?.('/statistics')}
+						/>
+
+						{/* Help & Support */}
+						<ProfileMenuItem
+							icon={HelpCircle}
+							label="Help & Support"
+							onClick={() => onNavigate?.('/help')}
+						/>
+
+						{/* Log Out */}
+						<button
+							type="button"
+							onClick={onLogout}
+							className="flex w-full items-center gap-2.5 border-t border-border px-3.5 py-3 text-[14px] font-medium text-error transition-colors hover:bg-grey-25"
+						>
+							<LogOut className="h-[17px] w-[17px]" />
+							Log Out
+						</button>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</div>
 		</header>
+	)
+}
+
+function ProfileMenuItem({
+	icon: Icon,
+	label,
+	onClick,
+}: {
+	icon: typeof User
+	label: string
+	onClick?: () => void
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			className="flex w-full items-center gap-2.5 border-t border-border px-3.5 py-4 text-[14px] font-medium text-black transition-colors hover:bg-grey-25"
+		>
+			<Icon className="h-[17px] w-[17px]" />
+			{label}
+		</button>
 	)
 }
 

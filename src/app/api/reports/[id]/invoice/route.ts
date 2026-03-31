@@ -111,6 +111,18 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 				where: { id: invoice.id },
 				data: updateData,
 			})
+
+			// Notify when invoice number is first assigned
+			if (data.invoice?.invoiceNumber && !invoice.invoiceNumber) {
+				const { createNotification } = await import('@/lib/notifications/create')
+				await createNotification({
+					userId: user!.id,
+					eventType: 'INVOICE_GENERATED',
+					title: 'Invoice Generated',
+					description: `Invoice ${data.invoice.invoiceNumber} has been generated.`,
+					reportId: id,
+				})
+			}
 		}
 	}
 

@@ -3,24 +3,37 @@
 import { useState } from 'react'
 import { Plus, Search, ListFilter, Info, ChevronDown } from 'lucide-react'
 import { useReports, useCreateReport, useDeleteReport } from '@/hooks/use-reports'
+import { useStats } from '@/hooks/use-stats'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { ReportTable, EmptyState, Pagination } from '@/components/dashboard/report-list'
 import { cn } from '@/lib/utils'
 
 const CHART_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const CHART_VALUES = [45, 55, 70, 60, 85, 50, 65, 80, 75, 90, 40, 35]
 
 type ChartPeriod = 'yearly' | 'monthly' | 'weekly'
+
+function formatRevenue(amount: number): string {
+	return new Intl.NumberFormat('de-DE', {
+		style: 'currency',
+		currency: 'EUR',
+		minimumFractionDigits: 2,
+	}).format(amount)
+}
 
 function DashboardPage() {
 	const [page, setPage] = useState(1)
 	const [search, setSearch] = useState('')
 	const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('yearly')
 	const { data, isLoading, error } = useReports({ page, limit: 10 })
+	const { data: stats } = useStats()
 	const createReport = useCreateReport()
 	const deleteReport = useDeleteReport()
 	const toast = useToast()
+
+	const chartValues = stats?.monthlyRevenue ?? Array(12).fill(0)
+	const maxChartValue = Math.max(...chartValues, 1)
+	const currentYear = new Date().getFullYear()
 
 	function handleCreateReport() {
 		createReport.mutate('Untitled Report', {
@@ -61,25 +74,27 @@ function DashboardPage() {
 			<h1 className="mb-6 text-h1 font-bold text-black">Dashboard</h1>
 
 			{/* Revenue Chart Card */}
-			<div className="mb-8 overflow-hidden rounded-2xl bg-linear-to-br from-[#0D2818] via-[#14532D] to-[#166534] p-6">
+			<div className="mb-8 overflow-hidden rounded-[20px] bg-linear-to-br from-[#0D2818] via-[#14532D] to-[#166534] p-6">
 				{/* Top section: revenue + tabs */}
-				<div className="mb-8 flex items-start justify-between">
+				<div className="mb-6 flex items-start justify-between border-b border-white/40 pb-3">
 					<div>
-						<p className="text-body-sm font-medium text-white/70">Total Revenue</p>
-						<p className="mt-1 text-display font-bold text-white">$5.430,50</p>
+						<p className="text-[23px] font-medium text-white/50">Total Revenue</p>
+						<p className="mt-3 text-[44px] font-medium capitalize leading-none tracking-[-0.44px] text-white">
+							{stats ? formatRevenue(stats.totalRevenue) : '€0,00'}
+						</p>
 					</div>
 					<div className="flex items-center gap-3">
-						<div className="flex rounded-lg bg-white/10 p-0.5">
+						<div className="flex items-center gap-1 rounded-none">
 							{(['yearly', 'monthly', 'weekly'] as const).map((period) => (
 								<button
 									key={period}
 									type="button"
 									onClick={() => setChartPeriod(period)}
 									className={cn(
-										'cursor-pointer rounded-md px-4 py-1.5 text-body-sm font-medium capitalize transition-colors',
+										'cursor-pointer rounded-[12px] px-3 py-2 text-[14px] font-medium capitalize transition-colors',
 										chartPeriod === period
-											? 'bg-white text-black'
-											: 'text-white/60 hover:text-white',
+											? 'bg-white text-black shadow-sm'
+											: 'text-white/30 hover:text-white',
 									)}
 								>
 									{period.charAt(0).toUpperCase() + period.slice(1)}
@@ -88,60 +103,60 @@ function DashboardPage() {
 						</div>
 						<button
 							type="button"
-							className="flex cursor-pointer items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-body-sm font-medium text-white"
+							className="flex cursor-pointer items-center gap-2 rounded-[8px] border border-white px-3.5 py-2.5 text-[14px] text-[#f6f6f6]"
 						>
-							2025
-							<ChevronDown className="h-4 w-4" />
+							{currentYear}
+							<ChevronDown className="h-5 w-5" />
 						</button>
 					</div>
 				</div>
 
 				{/* Bar chart */}
-				<div className="mb-6 flex items-end gap-1.5" style={{ height: '140px' }}>
-					{CHART_VALUES.map((value, i) => (
-						<div
-							key={CHART_MONTHS[i]}
-							className="relative flex-1"
-							style={{ height: `${value}%` }}
-						>
-							{/* Tooltip on highlighted bar (Oct = index 9) */}
-							{i === 9 && (
-								<div className="absolute -top-12 left-1/2 -translate-x-1/2">
-									<div className="rounded-lg bg-white px-4 py-2 text-body-sm font-bold text-black shadow-md">
-										$240
-									</div>
-									<div className="mx-auto h-0 w-0 border-x-[6px] border-t-[6px] border-x-transparent border-t-white" />
-								</div>
-							)}
+				<div className="mb-4 flex items-end gap-1.5" style={{ height: '199px' }}>
+					{chartValues.map((value, i) => {
+						const heightPct = maxChartValue > 0 ? (value / maxChartValue) * 100 : 2
+						return (
 							<div
-								className={cn(
-									'h-full w-full rounded-t-sm transition-all',
-									i === 9 ? 'bg-white/40' : 'bg-white/20 hover:bg-white/30',
-								)}
-							/>
-						</div>
-					))}
+								key={CHART_MONTHS[i]}
+								className="relative flex-1"
+								style={{ height: `${Math.max(heightPct, 2)}%` }}
+							>
+								<div
+									className={cn(
+										'h-full w-full rounded-t-sm transition-all',
+										'bg-white/20 hover:bg-white/30',
+									)}
+								/>
+							</div>
+						)
+					})}
 				</div>
 
 				{/* Bottom section: stats + month labels */}
 				<div className="flex items-end justify-between">
 					<div className="flex items-center gap-8">
 						<div>
-							<p className="text-caption text-white/50">Completed Payments:</p>
-							<p className="text-h3 font-bold text-white">5</p>
+							<p className="text-[14px] tracking-[0.14px] text-white/50">Completed Payments:</p>
+							<p className="text-[24px] font-medium tracking-[0.24px] text-white">
+								{stats?.completedPayments ?? 0}
+							</p>
 						</div>
 						<div>
-							<p className="text-caption text-white/50">Pending Payments:</p>
-							<p className="text-h3 font-bold text-white">10</p>
+							<p className="text-[14px] tracking-[0.14px] text-white/50">Pending Payments:</p>
+							<p className="text-[24px] font-medium tracking-[0.24px] text-white">
+								{stats?.pendingPayments ?? 0}
+							</p>
 						</div>
 						<div>
-							<p className="text-caption text-white/50">Delayed Payments:</p>
-							<p className="text-h3 font-bold text-white">4</p>
+							<p className="text-[14px] tracking-[0.14px] text-white/50">Delayed Payments:</p>
+							<p className="text-[24px] font-medium tracking-[0.24px] text-white">
+								{stats?.delayedPayments ?? 0}
+							</p>
 						</div>
 					</div>
-					<div className="flex items-center gap-3">
+					<div className="flex items-center gap-4 px-4">
 						{CHART_MONTHS.map((month) => (
-							<span key={month} className="text-caption text-white/50">
+							<span key={month} className="text-[14px] text-white/50">
 								{month}
 							</span>
 						))}
@@ -152,10 +167,10 @@ function DashboardPage() {
 			{/* Recent Reports Header */}
 			<div className="mb-4 flex items-center justify-between">
 				<div className="flex items-center gap-2">
-					<h2 className="text-h3 font-bold text-black">Recent Reports</h2>
+					<h2 className="text-[22px] font-medium text-black">Recent Reports</h2>
 					<Info className="h-4 w-4 text-grey-100" />
 					{data?.pagination.total != null && (
-						<span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-2 text-caption font-semibold text-white">
+						<span className="flex h-6 min-w-6 items-center justify-center rounded-[8px] bg-primary/10 px-2 text-[14px] font-medium text-primary">
 							{data.pagination.total}
 						</span>
 					)}
@@ -163,7 +178,7 @@ function DashboardPage() {
 				<div className="flex items-center gap-3">
 					<button
 						type="button"
-						className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
+						className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-[12px] border border-border bg-white text-grey-100 opacity-80 transition-colors hover:bg-grey-25 hover:text-black"
 						aria-label="Filter reports"
 					>
 						<ListFilter className="h-5 w-5" />
@@ -172,10 +187,10 @@ function DashboardPage() {
 						<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-grey-100" />
 						<input
 							type="text"
-							placeholder="Search.."
+							placeholder="Search..."
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="h-11 w-[320px] rounded-lg border border-border bg-white pl-9 pr-3 text-body-sm text-black outline-none placeholder:text-grey-100 focus:border-primary focus:ring-1 focus:ring-primary"
+							className="h-11 w-[320px] rounded-[12px] border border-border bg-white pl-9 pr-3 text-[14px] text-black outline-none placeholder:text-grey-100 focus:border-primary focus:ring-1 focus:ring-primary"
 						/>
 					</div>
 					<Button
