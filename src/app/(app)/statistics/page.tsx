@@ -44,14 +44,14 @@ function StatisticsPage() {
 			{/* Header */}
 			<div className="flex items-start justify-between">
 				<div>
-					<h1 className="text-[32px] font-medium leading-none text-black">Financial Analytics</h1>
-					<p className="mt-2 text-[18px] tracking-[0.18px] text-black/70">
+					<h1 className="text-page-title font-medium leading-none text-black">Financial Analytics</h1>
+					<p className="mt-2 text-input tracking-[0.18px] text-black/70">
 						Overview of your revenue and report activity
 					</p>
 				</div>
 				<button
 					type="button"
-					className="flex items-center gap-2 rounded-[12px] border border-border bg-white px-3 py-2.5 text-[14px] text-black opacity-80 hover:bg-grey-25"
+					className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 text-body-sm text-black opacity-80 hover:bg-grey-25"
 				>
 					Last 6 months
 					<ChevronDown className="h-3.5 w-3.5 text-grey-100" />
@@ -87,11 +87,11 @@ function StatisticsPage() {
 			</div>
 
 			{/* Revenue chart */}
-			<div className="rounded-[20px] border border-[#eaeaea] bg-white p-5">
+			<div className="rounded-card border border-border-card bg-white p-5">
 				<div className="mb-6 flex items-center justify-between">
 					<div>
-						<h2 className="text-[20px] font-medium leading-[30px] text-black">Revenue Overview</h2>
-						<p className="text-[16px] leading-6 text-black/60">
+						<h2 className="text-h3 font-medium leading-[30px] text-black">Revenue Overview</h2>
+						<p className="text-body leading-6 text-black/60">
 							Revenue overview for past weeks, months and year
 						</p>
 					</div>
@@ -102,7 +102,7 @@ function StatisticsPage() {
 								type="button"
 								onClick={() => setChartView(view)}
 								className={cn(
-									'cursor-pointer rounded-[12px] px-3 py-2 text-[16px] capitalize transition-colors',
+									'cursor-pointer rounded-lg px-3 py-2 text-body capitalize transition-colors',
 									chartView === view
 										? 'border border-primary bg-white font-medium text-black'
 										: 'text-black/30 hover:text-black/60',
@@ -116,7 +116,7 @@ function StatisticsPage() {
 
 				<div className="flex gap-6" style={{ height: '282px' }}>
 					{/* Y-axis */}
-					<div className="flex w-9 flex-col items-end justify-between py-3 text-[14px] font-medium text-black">
+					<div className="flex w-9 flex-col items-end justify-between py-3 text-body-sm font-medium text-black">
 						{Y_LABELS.map((v) => (
 							<span key={v}>{v >= 1000 ? `${v / 1000}k` : v}</span>
 						))}
@@ -129,7 +129,7 @@ function StatisticsPage() {
 				</div>
 
 				{/* X-axis */}
-				<div className="mt-3 flex justify-between pl-[60px] pr-[30px] text-[16px] text-black">
+				<div className="mt-3 flex justify-between pl-[60px] pr-[30px] text-body text-black">
 					{MONTHS.map((m) => (
 						<span key={m}>{m}</span>
 					))}
@@ -140,13 +140,13 @@ function StatisticsPage() {
 			<div>
 				<div className="mb-4 flex items-center justify-between">
 					<div className="flex items-center gap-2">
-						<h2 className="text-[22px] font-medium text-black">Invoice History</h2>
+						<h2 className="text-subsection font-medium text-black">Invoice History</h2>
 						<Info className="h-4 w-4 text-grey-100" />
 					</div>
 					<div className="flex items-center gap-3">
 						<button
 							type="button"
-							className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-[12px] border border-border bg-white text-grey-100 opacity-80 hover:bg-grey-25"
+							className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 opacity-80 hover:bg-grey-25"
 						>
 							<SlidersHorizontal className="h-5 w-5" />
 						</button>
@@ -157,12 +157,12 @@ function StatisticsPage() {
 								placeholder="Search..."
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
-								className="h-11 w-[320px] rounded-[12px] border border-border bg-white pl-10 pr-3 text-[14px] text-black opacity-80 outline-none placeholder:text-grey-100 focus:border-primary"
+								className="h-11 w-[320px] rounded-lg border border-border bg-white pl-10 pr-3 text-body-sm text-black opacity-80 outline-none placeholder:text-grey-100 focus:border-primary"
 							/>
 						</div>
 						<button
 							type="button"
-							className="flex h-11 cursor-pointer items-center gap-2.5 rounded-[16px] bg-primary px-6 text-[16px] font-medium text-white hover:bg-primary-hover"
+							className="flex h-11 cursor-pointer items-center gap-2.5 rounded-xl bg-primary px-6 text-body font-medium text-white hover:bg-primary-hover"
 						>
 							Download Report
 							<Download className="h-4 w-4" />
@@ -170,32 +170,32 @@ function StatisticsPage() {
 					</div>
 				</div>
 
-				<div className="overflow-hidden rounded-[16px] border-2 border-[#ededed] bg-white">
+				<div className="overflow-hidden rounded-xl border-2 border-border-card bg-white">
 					<table className="w-full">
 						<thead>
-							<tr className="border-b border-[#e2e2e2] bg-[#f6f6f6]">
-								<th className="px-6 py-3 text-left text-[12px] font-medium text-grey-100">Clients</th>
-								<th className="px-6 py-3 text-left text-[12px] font-medium text-grey-100">Invoice ID</th>
-								<th className="px-6 py-3 text-left text-[12px] font-medium text-grey-100">Date Created</th>
-								<th className="px-6 py-3 text-left text-[12px] font-medium text-grey-100">Amount</th>
-								<th className="px-6 py-3 text-left text-[12px] font-medium text-grey-100">Status</th>
+							<tr className="border-b border-border-card bg-surface-secondary">
+								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">Clients</th>
+								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">Invoice ID</th>
+								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">Date Created</th>
+								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">Amount</th>
+								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">Status</th>
 								<th className="w-14 px-3 py-3" />
 							</tr>
 						</thead>
 						<tbody>
 							{filteredInvoices.map((inv) => (
-								<tr key={inv.id} className="border-b border-[#e2e2e2] last:border-0 hover:bg-grey-25">
+								<tr key={inv.id} className="border-b border-border-card last:border-0 hover:bg-grey-25">
 									<td className="px-6 py-3">
 										<div className="flex items-center gap-3">
-											<div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-grey-25 text-[12px] font-medium text-grey-100">
+											<div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-grey-25 text-caption font-medium text-grey-100">
 												{inv.client.split(' ').map((n) => n[0]).join('')}
 											</div>
-											<span className="text-[14px] font-medium text-black">{inv.client}</span>
+											<span className="text-body-sm font-medium text-black">{inv.client}</span>
 										</div>
 									</td>
-									<td className="px-6 py-3 text-[14px] text-grey-100">{inv.id}</td>
-									<td className="px-6 py-3 text-[14px] text-grey-100">{inv.date}</td>
-									<td className={cn('px-6 py-3 text-[14px] font-medium', inv.amount < 0 ? 'text-[#ff383c]' : 'text-black')}>
+									<td className="px-6 py-3 text-body-sm text-grey-100">{inv.id}</td>
+									<td className="px-6 py-3 text-body-sm text-grey-100">{inv.date}</td>
+									<td className={cn('px-6 py-3 text-body-sm font-medium', inv.amount < 0 ? 'text-negative' : 'text-black')}>
 										{inv.amount < 0 ? `-€${Math.abs(inv.amount)}` : `€${inv.amount}`}
 									</td>
 									<td className="px-6 py-3">
@@ -228,12 +228,12 @@ function StatCard({
 	positive: boolean
 }) {
 	return (
-		<div className="flex items-center rounded-[20px] border border-border bg-white p-6">
+		<div className="flex items-center rounded-card border border-border bg-white p-6">
 			<div className="flex flex-col gap-10">
-				<p className="text-[16px] font-medium text-[#3e4541]">{label}</p>
+				<p className="text-body font-medium text-text-secondary">{label}</p>
 				<div className="flex flex-col gap-1.5">
-					<p className="text-[32px] font-medium leading-none text-black">{value}</p>
-					<p className={cn('text-[14px] font-medium', positive ? 'text-primary' : 'text-error')}>
+					<p className="text-page-title font-medium leading-none text-black">{value}</p>
+					<p className={cn('text-body-sm font-medium', positive ? 'text-primary' : 'text-error')}>
 						{positive ? '↑' : '↓'} {positive ? '+' : ''}{change}%
 					</p>
 				</div>
@@ -283,20 +283,20 @@ function AreaChart({ data, maxValue }: { data: number[]; maxValue: number }) {
 function InvoiceStatusBadge({ status }: { status: 'Completed' | 'Pending' | 'Rejected' }) {
 	if (status === 'Completed') {
 		return (
-			<span className="inline-flex items-center justify-center rounded-[8px] border border-[0.5px] border-[#019447] bg-[rgba(0,177,55,0.1)] px-1.5 py-1 text-[12px] text-[#126147]">
+			<span className="inline-flex items-center justify-center rounded-md border border-[0.5px] border-primary bg-primary/10 px-1.5 py-1 text-caption text-success-dark">
 				Completed
 			</span>
 		)
 	}
 	if (status === 'Pending') {
 		return (
-			<span className="inline-flex items-center justify-center rounded-[8px] border border-[#eec200] bg-[rgba(238,194,0,0.1)] px-1.5 py-1 text-[12px] text-[#a78700]">
+			<span className="inline-flex items-center justify-center rounded-md border border-warning-border bg-warning/10 px-1.5 py-1 text-caption text-warning-dark">
 				Pending
 			</span>
 		)
 	}
 	return (
-		<span className="inline-flex items-center justify-center rounded-[8px] border border-[0.5px] border-[#d52f2f] bg-[rgba(213,47,47,0.1)] px-1.5 py-1 text-[12px] text-[#c50000]">
+		<span className="inline-flex items-center justify-center rounded-md border border-[0.5px] border-danger bg-error/10 px-1.5 py-1 text-caption text-danger">
 			Rejected
 		</span>
 	)

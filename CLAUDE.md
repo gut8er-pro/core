@@ -194,6 +194,56 @@ src/
 
 ---
 
+## Design Token Rules — MANDATORY
+
+All styles MUST use Tailwind design tokens from `src/app/globals.css`. **Never hardcode hex colors, rgba values, or arbitrary px sizes when a token exists or can be created.**
+
+### Token → Utility class mapping (Tailwind v4 `@theme inline`)
+| Token | Utility | Value |
+|-------|---------|-------|
+| `--color-primary` | `bg-primary` / `text-primary` / `border-primary` | `#019447` |
+| `--color-primary-hover` | `bg-primary-hover` | `#017A3C` |
+| `--color-black` | `text-black` | `#121312` |
+| `--color-grey-100` | `text-grey-100` | `#6B7280` |
+| `--color-danger` | `text-danger` / `border-danger` | `#DF0808` |
+| `--color-text-secondary` | `text-text-secondary` | `#3E4541` |
+| `--color-border` | `border-border` | `#E5E7EB` |
+| `--color-border-card` | `border-border-card` | `#EAEAEA` |
+| `--color-border-subtle` | `border-border-subtle` | `#EEF0F3` |
+| `--color-success-dark` | `text-success-dark` | `#126147` |
+| `--color-warning-dark` | `text-warning-dark` | `#A78700` |
+| `--color-warning-border` | `border-warning-border` | `#EEC200` |
+| `--color-negative` | `text-negative` | `#FF383C` |
+| `--color-overlay` | `bg-overlay` | `#202020` |
+| `--color-surface-secondary` | `bg-surface-secondary` | `#F6F6F6` |
+| `--radius-md` | `rounded-md` | 8px |
+| `--radius-lg` | `rounded-lg` | 12px |
+| `--radius-xl` | `rounded-xl` | 16px |
+| `--radius-btn` | `rounded-btn` | 15px |
+| `--radius-card` | `rounded-card` | 20px |
+| `--radius-2xl` | `rounded-2xl` | 24px |
+| `--radius-section` | `rounded-section` | 32px |
+| `--text-caption` | `text-caption` | 12px |
+| `--text-body-sm` | `text-body-sm` | 14px |
+| `--text-body` | `text-body` | 16px |
+| `--text-input` | `text-input` | 18px |
+| `--text-h3` | `text-h3` | 20px |
+| `--text-section-title` | `text-section-title` | 21px |
+| `--text-subsection` | `text-subsection` | 22px |
+| `--text-plan-label` | `text-plan-label` | 23px |
+| `--text-h2` | `text-h2` | 24px |
+| `--text-page-title` | `text-page-title` | 32px |
+| `--text-hero` | `text-hero` | 44px |
+
+### Rules
+1. **Always use tokens.** Before writing `text-[#fff]` or `rounded-[12px]`, check this table.
+2. **Create tokens when missing.** If the Figma uses a value not in the table above, add it to `src/app/globals.css` under the appropriate section (`@theme inline`), then use the generated utility class.
+3. **Opacity modifiers are fine** — `bg-primary/10`, `bg-overlay/50`, `bg-grey-25/50` etc. are all valid.
+4. **SVG attributes are exempt** — `stroke="#019447"` and `stopColor="#019447"` inside `<svg>` cannot use Tailwind classes.
+5. **Never edit base components** (`input.tsx`, `label.tsx`, `button.tsx`) to match one screen's design. Instead use `className` prop overrides or create a variant.
+
+---
+
 ## Coding Conventions (once we start)
 
 - TypeScript strict mode — no `any`
