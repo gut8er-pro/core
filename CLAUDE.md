@@ -258,6 +258,13 @@ All styles MUST use Tailwind design tokens from `src/app/globals.css`. **Never h
 
 ---
 
+## Git Rules — STRICT
+
+- **NEVER commit or push without explicit user approval.** Always show what will be committed and wait for the user to say "commit" or "push" before running those commands.
+- Never add `Co-Authored-By: Claude` to commit messages.
+
+---
+
 ## What NOT to Do
 
 - Do NOT write code until the tech stack is confirmed
