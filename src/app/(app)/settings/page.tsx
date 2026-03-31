@@ -52,7 +52,7 @@ function SettingsSidebar({
 	onTabChange: (tab: SettingsTab) => void
 }) {
 	return (
-		<div className="flex w-[302px] shrink-0 flex-col gap-4 rounded-[24px] bg-white p-6">
+		<div className="flex w-[302px] shrink-0 flex-col gap-4 rounded-2xl bg-white p-6">
 			{SETTINGS_TABS.map((tab) => {
 				const Icon = tab.icon
 				const isActive = activeTab === tab.key
@@ -64,12 +64,12 @@ function SettingsSidebar({
 						className={cn(
 							'flex cursor-pointer items-center gap-[10px] px-[14px] py-3 transition-colors',
 							isActive
-								? 'rounded-[12px] bg-[rgba(245,245,245,0.5)]'
-								: 'rounded-[16px] hover:bg-grey-25',
+								? 'rounded-lg bg-grey-25/50'
+								: 'rounded-xl hover:bg-grey-25',
 						)}
 					>
-						<Icon className={cn('h-6 w-6 shrink-0', isActive ? 'text-primary' : 'text-[#121312]')} />
-						<span className={cn('text-[16px] tracking-[0.16px]', isActive ? 'font-medium text-primary' : 'text-[#121312]')}>
+						<Icon className={cn('h-6 w-6 shrink-0', isActive ? 'text-primary' : 'text-black')} />
+						<span className={cn('text-body tracking-[0.16px]', isActive ? 'font-medium text-primary' : 'text-black')}>
 							{tab.label}
 						</span>
 					</button>
@@ -128,12 +128,12 @@ function ProfileSection() {
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end gap-6">
 			{/* White card */}
-			<div className="flex w-full flex-col gap-6 rounded-[32px] bg-white p-8">
-				<h2 className="text-[21px] font-medium leading-none text-[#121312]">Personal Information</h2>
+			<div className="flex w-full flex-col gap-6 rounded-section bg-white p-8">
+				<h2 className="text-section-title font-medium leading-none text-black">Personal Information</h2>
 
 				{/* Avatar */}
 				<div className="flex items-center gap-6">
-					<div className="h-[100px] w-[100px] shrink-0 overflow-hidden rounded-[16px] bg-grey-25 flex items-center justify-center">
+					<div className="h-[100px] w-[100px] shrink-0 overflow-hidden rounded-xl bg-grey-25 flex items-center justify-center">
 						{settings?.avatarUrl ? (
 							<img
 								src={settings.avatarUrl}
@@ -146,7 +146,7 @@ function ProfileSection() {
 					</div>
 					<button
 						type="button"
-						className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#df0808] text-[16px] font-medium text-[#df0808]"
+						className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-danger text-body font-medium text-danger"
 					>
 						Remove
 					</button>
@@ -220,14 +220,14 @@ function ProfileSection() {
 				<button
 					type="button"
 					onClick={() => reset()}
-					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-[18px] font-medium tracking-[0.18px] text-[#121312]"
+					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-white text-input font-medium tracking-[0.18px] text-black"
 				>
 					Cancel
 				</button>
 				<button
 					type="submit"
 					disabled={saveMutation.isPending}
-					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] text-[18px] font-medium tracking-[0.18px] text-white disabled:opacity-60"
+					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 				>
 					{saveMutation.isPending ? 'Saving…' : 'Update'}
 				</button>
@@ -332,20 +332,20 @@ function BusinessSection() {
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end gap-6">
 			{/* White card */}
-			<div className="flex w-full flex-col gap-8 rounded-[32px] bg-white p-8">
-				<h2 className="text-[21px] font-medium leading-none text-[#121312]">Business Information</h2>
+			<div className="flex w-full flex-col gap-8 rounded-section bg-white p-8">
+				<h2 className="text-section-title font-medium leading-none text-black">Business Information</h2>
 
 				{/* Logo upload */}
 				<div className="flex items-center gap-4">
-					<div className="flex h-[100px] w-[186px] shrink-0 items-center justify-center rounded-[16px] border-2 border-dashed border-[#d9d9d9]">
+					<div className="flex h-[100px] w-[186px] shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-border-card">
 						{settings?.business?.logoUrl ? (
 							<img
 								src={settings.business.logoUrl}
 								alt="Company logo"
-								className="h-full w-full rounded-[16px] object-contain"
+								className="h-full w-full rounded-xl object-contain"
 							/>
 						) : (
-							<span className="text-[14px] font-medium tracking-[0.14px] text-[#d9d9d9]">Empty</span>
+							<span className="text-body-sm font-medium tracking-[0.14px] text-grey-50">Empty</span>
 						)}
 					</div>
 					<input
@@ -359,7 +359,7 @@ function BusinessSection() {
 						type="button"
 						onClick={() => logoInputRef.current?.click()}
 						disabled={logoUploading}
-						className="flex h-[50px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#eef0f3] bg-white px-[13px] text-[16px] font-medium tracking-[0.16px] text-[#121312] opacity-45 hover:opacity-70 disabled:cursor-not-allowed"
+						className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-border-subtle bg-white px-[13px] text-body font-medium tracking-[0.16px] text-black opacity-45 hover:opacity-70 disabled:cursor-not-allowed"
 					>
 						{logoUploading ? 'Uploading…' : 'Upload Logo'}
 					</button>
@@ -440,14 +440,14 @@ function BusinessSection() {
 				<button
 					type="button"
 					onClick={() => reset()}
-					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-[18px] font-medium tracking-[0.18px] text-[#121312]"
+					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-white text-input font-medium tracking-[0.18px] text-black"
 				>
 					Cancel
 				</button>
 				<button
 					type="submit"
 					disabled={saveMutation.isPending}
-					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] text-[18px] font-medium tracking-[0.18px] text-white disabled:opacity-60"
+					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 				>
 					{saveMutation.isPending ? 'Saving…' : 'Update'}
 				</button>
@@ -520,24 +520,24 @@ function IntegrationsSection() {
 	return (
 		<div className="flex flex-col items-end gap-6">
 			{/* White card */}
-			<div className="flex w-full flex-col gap-8 rounded-[32px] bg-white p-8">
+			<div className="flex w-full flex-col gap-8 rounded-section bg-white p-8">
 				<div className="flex flex-col gap-3">
-					<h2 className="text-[21px] font-medium leading-none text-[#121312]">Connected Services</h2>
-					<p className="text-[16px] tracking-[0.16px] text-[#121312] opacity-70">
+					<h2 className="text-section-title font-medium leading-none text-black">Connected Services</h2>
+					<p className="text-body tracking-[0.16px] text-black opacity-70">
 						Connect third-party services to streamline your workflow
 					</p>
 				</div>
 
 				{/* DAT Integration Card */}
-				<div className="flex items-center gap-[14px] rounded-[20px] border-2 border-[#eaeaea] px-[14px] py-3">
+				<div className="flex items-center gap-[14px] rounded-card border-2 border-border-card px-[14px] py-3">
 					<img src="/images/dat-logo.png" alt="DAT" className="h-[88px] w-[55px] object-contain shrink-0" />
 					<div className="flex flex-col gap-[7px]">
-						<p className="text-[14px] font-medium leading-[18px] text-[#3e4541]">DAT</p>
-						<p className="text-[14px] leading-5 text-[#121312] opacity-70">
+						<p className="text-body-sm font-medium leading-[18px] text-text-secondary">DAT</p>
+						<p className="text-body-sm leading-5 text-black opacity-70">
 							Automatically backup reports from DAT
 						</p>
 						{datIntegration?.isActive && (
-							<p className="text-[12px] font-medium leading-none text-[#019447]">
+							<p className="text-caption font-medium leading-none text-primary">
 								Last sync: 2 hours ago
 							</p>
 						)}
@@ -547,7 +547,7 @@ function IntegrationsSection() {
 							<>
 								<button
 									type="button"
-									className="flex h-[50px] flex-1 cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#eef0f3] bg-white px-[13px] text-[18px] font-medium tracking-[0.18px] text-[#121312] opacity-45 hover:opacity-70"
+									className="flex h-[50px] flex-1 cursor-pointer items-center justify-center rounded-btn border-2 border-border-subtle bg-white px-[13px] text-input font-medium tracking-[0.18px] text-black opacity-45 hover:opacity-70"
 								>
 									Configure
 								</button>
@@ -555,7 +555,7 @@ function IntegrationsSection() {
 									type="button"
 									onClick={handleDisconnect}
 									disabled={saveMutation.isPending}
-									className="flex h-[50px] flex-1 cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#df0808] px-[13px] text-[18px] font-medium tracking-[0.18px] text-[#df0808] disabled:opacity-60"
+									className="flex h-[50px] flex-1 cursor-pointer items-center justify-center rounded-btn border-2 border-danger px-[13px] text-input font-medium tracking-[0.18px] text-danger disabled:opacity-60"
 								>
 									{saveMutation.isPending ? '…' : 'Disconnect'}
 								</button>
@@ -564,7 +564,7 @@ function IntegrationsSection() {
 							<button
 								type="button"
 								onClick={() => setShowDatForm(!showDatForm)}
-								className="flex h-[50px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] px-6 text-[18px] font-medium tracking-[0.18px] text-white"
+								className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn bg-primary px-6 text-input font-medium tracking-[0.18px] text-white"
 							>
 								Connect
 							</button>
@@ -575,7 +575,7 @@ function IntegrationsSection() {
 				{showDatForm && !datIntegration?.isActive && (
 					<form
 						onSubmit={datForm.handleSubmit(handleConnect)}
-						className="border-t border-[#eaeaea] pt-6"
+						className="border-t border-border-card pt-6"
 					>
 						<div className="grid grid-cols-2 gap-6">
 							<TextField
@@ -594,14 +594,14 @@ function IntegrationsSection() {
 							<button
 								type="button"
 								onClick={() => setShowDatForm(false)}
-								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-[18px] font-medium tracking-[0.18px] text-[#121312]"
+								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-white text-input font-medium tracking-[0.18px] text-black"
 							>
 								Cancel
 							</button>
 							<button
 								type="submit"
 								disabled={saveMutation.isPending}
-								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] text-[18px] font-medium tracking-[0.18px] text-white disabled:opacity-60"
+								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 							>
 								{saveMutation.isPending ? 'Saving…' : 'Save'}
 							</button>
@@ -614,13 +614,13 @@ function IntegrationsSection() {
 			<div className="flex gap-[7px]">
 				<button
 					type="button"
-					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-[18px] font-medium tracking-[0.18px] text-[#121312]"
+					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-white text-input font-medium tracking-[0.18px] text-black"
 				>
 					Cancel
 				</button>
 				<button
 					type="button"
-					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] text-[18px] font-medium tracking-[0.18px] text-white"
+					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-input font-medium tracking-[0.18px] text-white"
 				>
 					Update
 				</button>
@@ -666,16 +666,16 @@ function BillingSection() {
 	return (
 		<div className="flex flex-col gap-6">
 			{/* Current Plan Card - dark green gradient */}
-			<div className="overflow-hidden rounded-[24px] bg-linear-to-b from-dark-green to-black p-6 text-white">
+			<div className="overflow-hidden rounded-2xl bg-linear-to-b from-dark-green to-black p-6 text-white">
 				<div className="flex items-start justify-between">
 					<div className="flex flex-col gap-6">
 						<div>
-							<p className="text-[23px] font-medium text-white/50">Current Plan</p>
-							<p className="mt-6 text-[44px] font-medium capitalize leading-none tracking-[-0.44px]">
+							<p className="text-plan-label font-medium text-white/50">Current Plan</p>
+							<p className="mt-6 text-hero font-medium capitalize leading-none tracking-[-0.44px]">
 								Pro Plan
 							</p>
 						</div>
-						<p className="text-[16px] tracking-[0.16px] text-white">
+						<p className="text-body tracking-[0.16px] text-white">
 							{isTrialing
 								? 'Trial period active'
 								: '€49.00 / month • Renews on Feb 14, 2026'}
@@ -688,13 +688,13 @@ function BillingSection() {
 									type="button"
 									onClick={() => portalMutation.mutate()}
 									disabled={portalMutation.isPending}
-									className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-[15px] text-[18px] font-medium tracking-[0.18px] text-white disabled:opacity-60"
+									className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 								>
 									{portalMutation.isPending ? '…' : 'Cancel Plan'}
 								</button>
 								<button
 									type="button"
-									className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-white/25 text-[18px] font-medium tracking-[0.18px] text-white"
+									className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-white/25 text-input font-medium tracking-[0.18px] text-white"
 								>
 									Upgrade
 								</button>
@@ -704,7 +704,7 @@ function BillingSection() {
 								type="button"
 								onClick={() => checkoutMutation.mutate()}
 								disabled={checkoutMutation.isPending}
-								className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-white/25 text-[18px] font-medium tracking-[0.18px] text-white disabled:opacity-60"
+								className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-white/25 text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 							>
 								{checkoutMutation.isPending ? '…' : 'Set up payment'}
 							</button>
@@ -716,36 +716,36 @@ function BillingSection() {
 				{/* Usage stats */}
 				<div className="flex gap-3">
 					<div className="flex flex-1 flex-col gap-[6px]">
-						<p className="text-[14px] tracking-[0.14px] text-white">Reports this month</p>
-						<p className="text-[24px] font-medium tracking-[0.24px] text-white">5 / 100</p>
+						<p className="text-body-sm tracking-[0.14px] text-white">Reports this month</p>
+						<p className="text-h2 font-medium tracking-[0.24px] text-white">5 / 100</p>
 					</div>
 					<div className="flex flex-1 flex-col gap-[6px]">
-						<p className="text-[14px] tracking-[0.14px] text-white">AI Auto-fills</p>
-						<p className="text-[24px] font-medium tracking-[0.24px] text-white">Unlimited</p>
+						<p className="text-body-sm tracking-[0.14px] text-white">AI Auto-fills</p>
+						<p className="text-h2 font-medium tracking-[0.24px] text-white">Unlimited</p>
 					</div>
 					<div className="flex flex-1 flex-col gap-[6px]">
-						<p className="text-[14px] tracking-[0.14px] text-white">Cloud Storage</p>
-						<p className="text-[24px] font-medium tracking-[0.24px] text-white">50 GB</p>
+						<p className="text-body-sm tracking-[0.14px] text-white">Cloud Storage</p>
+						<p className="text-h2 font-medium tracking-[0.24px] text-white">50 GB</p>
 					</div>
 				</div>
 			</div>
 
 			{/* Payment Method */}
-			<div className="flex flex-col gap-4 rounded-[32px] bg-white p-8">
-				<h3 className="text-[21px] font-medium leading-none text-[#121312]">Payment Method</h3>
-				<div className="flex items-center justify-between rounded-[20px] border-2 border-[#eaeaea] px-[14px] py-3">
+			<div className="flex flex-col gap-4 rounded-section bg-white p-8">
+				<h3 className="text-section-title font-medium leading-none text-black">Payment Method</h3>
+				<div className="flex items-center justify-between rounded-card border-2 border-border-card px-[14px] py-3">
 					<div className="flex items-center gap-6">
 						<div className="flex h-8 w-[51px] shrink-0 items-center justify-center">
 							<CreditCard className="h-7 w-7 text-info-blue" />
 						</div>
 						<div className="flex flex-col gap-1">
-							<p className="text-[14px] font-medium leading-[18px] text-[#3e4541]">Visa ending in 4242</p>
-							<p className="text-[12px] leading-5 text-[#121312] opacity-70">Expires 12/2027</p>
+							<p className="text-body-sm font-medium leading-[18px] text-text-secondary">Visa ending in 4242</p>
+							<p className="text-caption leading-5 text-black opacity-70">Expires 12/2027</p>
 						</div>
 					</div>
 					<button
 						type="button"
-						className="flex h-[50px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#df0808] px-6 text-[18px] font-medium tracking-[0.18px] text-[#df0808]"
+						className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-danger px-6 text-input font-medium tracking-[0.18px] text-danger"
 					>
 						Remove
 					</button>
@@ -753,23 +753,23 @@ function BillingSection() {
 			</div>
 
 			{/* Billing History */}
-			<div className="flex flex-col gap-6 rounded-[32px] bg-white p-8">
-				<h3 className="text-[21px] font-medium leading-none text-[#121312]">Billing History</h3>
-				<div className="overflow-hidden rounded-[16px] border-2 border-[#ededed]">
+			<div className="flex flex-col gap-6 rounded-section bg-white p-8">
+				<h3 className="text-section-title font-medium leading-none text-black">Billing History</h3>
+				<div className="overflow-hidden rounded-xl border-2 border-border-card">
 					<table className="w-full">
 						<tbody>
 							{billingHistory.map((item) => (
-								<tr key={item.date} className="border-b border-[#e2e2e2] last:border-0">
-									<td className="h-[54px] px-6 text-[14px] leading-5 text-[#6b7280]">{item.date}</td>
-									<td className="h-[54px] px-6 text-[14px] leading-5 text-[#6b7280]">{item.description}</td>
-									<td className="h-[54px] px-6 text-[14px] font-medium leading-5 text-[#121312]">€{item.amount}</td>
+								<tr key={item.date} className="border-b border-border-card last:border-0">
+									<td className="h-[54px] px-6 text-body-sm leading-5 text-grey-100">{item.date}</td>
+									<td className="h-[54px] px-6 text-body-sm leading-5 text-grey-100">{item.description}</td>
+									<td className="h-[54px] px-6 text-body-sm font-medium leading-5 text-black">€{item.amount}</td>
 									<td className="h-[54px] px-6">
-										<span className="inline-flex items-center justify-center rounded-[8px] border border-[0.5px] border-[#019447] bg-[rgba(0,177,55,0.1)] p-[6px] text-[12px] leading-none text-[#126147]">
+										<span className="inline-flex items-center justify-center rounded-md border border-[0.5px] border-primary bg-primary/10 p-[6px] text-caption leading-none text-success-dark">
 											{item.status}
 										</span>
 									</td>
 									<td className="h-[54px] w-[54px] p-3 text-center">
-										<button type="button" className="cursor-pointer text-[#121312] opacity-60 hover:opacity-100">
+										<button type="button" className="cursor-pointer text-black opacity-60 hover:opacity-100">
 											<Download className="h-4 w-4" />
 										</button>
 									</td>
@@ -846,25 +846,25 @@ function TemplatesSection() {
 	return (
 		<div className="relative flex flex-col items-end gap-6">
 			{/* Template list card */}
-			<div className="flex w-full flex-col gap-6 rounded-[32px] bg-white p-8">
+			<div className="flex w-full flex-col gap-6 rounded-section bg-white p-8">
 				{templates.map((template) => (
 					<div
 						key={template.id}
-						className="flex cursor-pointer items-center justify-between rounded-[20px] border-2 border-[#eaeaea] px-[14px] py-3"
+						className="flex cursor-pointer items-center justify-between rounded-card border-2 border-border-card px-[14px] py-3"
 						onClick={() => handleEdit(template)}
 					>
 						<div className="flex items-center gap-4">
-							<div className="flex items-center justify-center rounded-[15px] bg-[rgba(1,148,71,0.05)] p-[14px]">
+							<div className="flex items-center justify-center rounded-btn bg-primary/5 p-[14px]">
 								<FileText className="h-6 w-6 text-primary" />
 							</div>
 							<div>
-								<p className="text-[14px] font-medium leading-[18px] text-[#3e4541]">{template.title}</p>
-								<p className="text-[14px] leading-5 text-[#121312] opacity-70">{template.date}</p>
+								<p className="text-body-sm font-medium leading-[18px] text-text-secondary">{template.title}</p>
+								<p className="text-body-sm leading-5 text-black opacity-70">{template.date}</p>
 							</div>
 						</div>
 						<button
 							type="button"
-							className="flex h-[50px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#df0808] px-[13px] text-[18px] font-medium text-[#df0808] hover:bg-[#df0808]/5"
+							className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-danger px-[13px] text-input font-medium text-danger hover:bg-danger/5"
 							onClick={(e) => {
 								e.stopPropagation()
 								handleRemove(template.id)
@@ -879,7 +879,7 @@ function TemplatesSection() {
 			{/* Add Template button */}
 			<button
 				type="button"
-				className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] text-[18px] font-medium text-white hover:bg-[#017a3c]"
+				className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-input font-medium text-white hover:bg-primary-hover"
 				onClick={handleAdd}
 			>
 				Add Template
@@ -887,11 +887,11 @@ function TemplatesSection() {
 
 			{/* Edit Template Panel */}
 			{editingTemplate && (
-				<div className="fixed inset-0 z-50 flex justify-end bg-[#202020]/50">
+				<div className="fixed inset-0 z-50 flex justify-end bg-overlay/50">
 					<div className="flex h-full w-[550px] flex-col gap-6 bg-white p-5">
 						{/* Header */}
 						<div className="flex items-center gap-2">
-							<h3 className="text-[18px] font-medium text-[#121312]">{isNewTemplate ? 'New Template' : 'Edit Template'}</h3>
+							<h3 className="text-input font-medium text-black">{isNewTemplate ? 'New Template' : 'Edit Template'}</h3>
 							<Info className="h-4 w-4 text-grey-100" />
 							<button
 								type="button"
@@ -905,19 +905,19 @@ function TemplatesSection() {
 						{/* Body */}
 						<div className="flex flex-1 flex-col gap-6 overflow-y-auto">
 							<div className="flex flex-col gap-3">
-								<label className="text-[16px] font-medium text-[#121312]">Subject</label>
+								<label className="text-body font-medium text-black">Subject</label>
 								<input
 									type="text"
-									className="flex h-[53px] w-full rounded-[16px] border-[1.5px] border-[#eaeaea] bg-white px-[14px] text-[18px] text-[#121312] placeholder:text-[#6b7280] focus:border-primary focus:outline-none"
+									className="flex h-[53px] w-full rounded-xl border-[1.5px] border-border-card bg-white px-[14px] text-input text-black placeholder:text-grey-100 focus:border-primary focus:outline-none"
 									placeholder="Title"
 									value={editSubject}
 									onChange={(e) => setEditSubject(e.target.value)}
 								/>
 							</div>
 							<div className="flex flex-1 flex-col gap-3">
-								<label className="text-[16px] font-medium text-[#121312]">Body</label>
+								<label className="text-body font-medium text-black">Body</label>
 								<textarea
-									className="flex-1 rounded-[16px] border-[1.5px] border-[#eaeaea] bg-white px-[14px] py-[14px] text-[18px] text-[#121312] placeholder:text-[#6b7280] focus:border-primary focus:outline-none"
+									className="flex-1 rounded-xl border-[1.5px] border-border-card bg-white px-[14px] py-[14px] text-input text-black placeholder:text-grey-100 focus:border-primary focus:outline-none"
 									placeholder="Write Something"
 									value={editBody}
 									onChange={(e) => setEditBody(e.target.value)}
@@ -929,14 +929,14 @@ function TemplatesSection() {
 						<div className="flex justify-end gap-[7px]">
 							<button
 								type="button"
-								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#e5e7eb] text-[16px] font-medium text-[#121312] hover:bg-grey-25"
+								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn border-2 border-border text-body font-medium text-black hover:bg-grey-25"
 								onClick={() => setEditingTemplate(null)}
 							>
 								Cancel
 							</button>
 							<button
 								type="button"
-								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] text-[16px] font-medium text-white hover:bg-[#017a3c]"
+								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-body font-medium text-white hover:bg-primary-hover"
 								onClick={handleSave}
 							>
 								{isNewTemplate ? 'Create' : 'Save'}
@@ -955,7 +955,7 @@ function SettingsPage() {
 	return (
 		<ErrorBoundary>
 			<div className="flex flex-col gap-6">
-				<h1 className="text-[32px] font-medium leading-none text-[#121312]">Account Settings</h1>
+				<h1 className="text-page-title font-medium leading-none text-black">Account Settings</h1>
 
 				<div className="flex items-start gap-6">
 					{/* Sidebar Navigation */}

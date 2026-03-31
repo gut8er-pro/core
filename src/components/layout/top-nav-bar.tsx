@@ -105,7 +105,7 @@ function TopNavBar({
 					<DropdownMenuTrigger asChild>
 						<button
 							type="button"
-							className="relative flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
+							className="relative flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
 							aria-label="Notifications"
 						>
 							<Bell className="h-6 w-6" />
@@ -117,12 +117,12 @@ function TopNavBar({
 					<DropdownMenuContent align="end" className="w-[275px] p-0 overflow-hidden">
 						{/* Header */}
 						<div className="flex items-center justify-between border-b border-border px-3.5 py-3">
-							<span className="text-[16px] font-medium text-black">Notifications</span>
+							<span className="text-body font-medium text-black">Notifications</span>
 							{unreadCount > 0 && (
 								<button
 									type="button"
 									onClick={markAllRead}
-									className="text-[14px] font-medium text-primary hover:underline"
+									className="text-body-sm font-medium text-primary hover:underline"
 								>
 									Mark all as read
 								</button>
@@ -131,7 +131,7 @@ function TopNavBar({
 
 						{/* Notification items */}
 						{recentNotifications.length === 0 ? (
-							<div className="px-3.5 py-6 text-center text-[14px] text-black/45">
+							<div className="px-3.5 py-6 text-center text-body-sm text-black/45">
 								No notifications yet
 							</div>
 						) : (
@@ -151,11 +151,11 @@ function TopNavBar({
 									>
 										<Icon className="mt-0.5 h-[17px] w-[17px] shrink-0 text-primary" />
 										<div className="flex min-w-0 flex-1 flex-col gap-1.5">
-											<p className="text-[14px] font-medium leading-[18px] text-black">
+											<p className="text-body-sm font-medium leading-[18px] text-black">
 												{n.title}
 											</p>
-											<p className="text-[14px] leading-5 text-black/70">{n.description}</p>
-											<p className="text-[12px] text-black/45">{timeAgo}</p>
+											<p className="text-body-sm leading-5 text-black/70">{n.description}</p>
+											<p className="text-caption text-black/45">{timeAgo}</p>
 										</div>
 										{!n.isRead && (
 											<span className="mt-1 h-[9px] w-[9px] shrink-0 rounded-full bg-primary" />
@@ -170,7 +170,7 @@ function TopNavBar({
 							<button
 								type="button"
 								onClick={() => onNavigate?.('/notifications')}
-								className="text-[14px] font-medium text-primary hover:underline"
+								className="text-body-sm font-medium text-primary hover:underline"
 							>
 								View all notifications
 							</button>
@@ -185,15 +185,15 @@ function TopNavBar({
 							type="button"
 							className="ml-2 flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-grey-25"
 						>
-							<div className="flex h-[52px] w-[52px] items-center justify-center rounded-[15px] bg-primary text-body-sm font-semibold text-white">
+							<div className="flex h-[52px] w-[52px] items-center justify-center rounded-btn bg-primary text-body-sm font-semibold text-white">
 								{userName?.charAt(0)?.toUpperCase() || 'U'}
 							</div>
 							<div className="hidden text-left lg:block">
-								<p className="text-[18px] font-medium tracking-[0.18px] text-black">
+								<p className="text-input font-medium tracking-[0.18px] text-black">
 									{userName || 'User'}
 								</p>
 								{userRole && (
-									<p className="text-[14px] tracking-[0.14px] text-black/60">{userRole}</p>
+									<p className="text-body-sm tracking-[0.14px] text-black/60">{userRole}</p>
 								)}
 							</div>
 						</button>
@@ -201,11 +201,11 @@ function TopNavBar({
 					<DropdownMenuContent align="end" className="w-[218px] p-0 overflow-hidden">
 						{/* Header: name + email */}
 						<div className="border-b-2 border-border px-3.5 py-3">
-							<p className="text-[14px] font-medium leading-[18px] text-black">
+							<p className="text-body-sm font-medium leading-[18px] text-black">
 								{userName || 'User'}
 							</p>
 							{userEmail && (
-								<p className="mt-1.5 text-[14px] leading-5 text-black/70">{userEmail}</p>
+								<p className="mt-1.5 text-body-sm leading-5 text-black/70">{userEmail}</p>
 							)}
 						</div>
 
@@ -241,7 +241,7 @@ function TopNavBar({
 						<button
 							type="button"
 							onClick={onLogout}
-							className="flex w-full items-center gap-2.5 border-t border-border px-3.5 py-3 text-[14px] font-medium text-error transition-colors hover:bg-grey-25"
+							className="flex w-full items-center gap-2.5 border-t border-border px-3.5 py-3 text-body-sm font-medium text-error transition-colors hover:bg-grey-25"
 						>
 							<LogOut className="h-[17px] w-[17px]" />
 							Log Out
@@ -266,7 +266,7 @@ function ProfileMenuItem({
 		<button
 			type="button"
 			onClick={onClick}
-			className="flex w-full items-center gap-2.5 border-t border-border px-3.5 py-4 text-[14px] font-medium text-black transition-colors hover:bg-grey-25"
+			className="flex w-full items-center gap-2.5 border-t border-border px-3.5 py-4 text-body-sm font-medium text-black transition-colors hover:bg-grey-25"
 		>
 			<Icon className="h-[17px] w-[17px]" />
 			{label}
@@ -290,7 +290,7 @@ function CenterNavItem({
 			<button
 				type="button"
 				onClick={onClick}
-				className="flex h-[50px] cursor-pointer items-center gap-2.5 rounded-[15px] bg-black px-3.5 text-body-sm font-medium text-white transition-colors"
+				className="flex h-[50px] cursor-pointer items-center gap-2.5 rounded-btn bg-black px-3.5 text-body-sm font-medium text-white transition-colors"
 				aria-label={label}
 				aria-current="page"
 			>
@@ -304,7 +304,7 @@ function CenterNavItem({
 		<button
 			type="button"
 			onClick={onClick}
-			className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
+			className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
 			aria-label={label}
 		>
 			<Icon className="h-6 w-6" />

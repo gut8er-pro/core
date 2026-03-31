@@ -74,12 +74,12 @@ function DashboardPage() {
 			<h1 className="mb-6 text-h1 font-bold text-black">Dashboard</h1>
 
 			{/* Revenue Chart Card */}
-			<div className="mb-8 overflow-hidden rounded-[20px] bg-linear-to-br from-[#0D2818] via-[#14532D] to-[#166534] p-6">
+			<div className="mb-8 overflow-hidden rounded-card bg-linear-to-br from-chart-from via-chart-mid to-dark-green p-6">
 				{/* Top section: revenue + tabs */}
 				<div className="mb-6 flex items-start justify-between border-b border-white/40 pb-3">
 					<div>
-						<p className="text-[23px] font-medium text-white/50">Total Revenue</p>
-						<p className="mt-3 text-[44px] font-medium capitalize leading-none tracking-[-0.44px] text-white">
+						<p className="text-plan-label font-medium text-white/50">Total Revenue</p>
+						<p className="mt-3 text-hero font-medium capitalize leading-none tracking-[-0.44px] text-white">
 							{stats ? formatRevenue(stats.totalRevenue) : '€0,00'}
 						</p>
 					</div>
@@ -91,7 +91,7 @@ function DashboardPage() {
 									type="button"
 									onClick={() => setChartPeriod(period)}
 									className={cn(
-										'cursor-pointer rounded-[12px] px-3 py-2 text-[14px] font-medium capitalize transition-colors',
+										'cursor-pointer rounded-lg px-3 py-2 text-body-sm font-medium capitalize transition-colors',
 										chartPeriod === period
 											? 'bg-white text-black shadow-sm'
 											: 'text-white/30 hover:text-white',
@@ -103,7 +103,7 @@ function DashboardPage() {
 						</div>
 						<button
 							type="button"
-							className="flex cursor-pointer items-center gap-2 rounded-[8px] border border-white px-3.5 py-2.5 text-[14px] text-[#f6f6f6]"
+							className="flex cursor-pointer items-center gap-2 rounded-md border border-white px-3.5 py-2.5 text-body-sm text-surface-secondary"
 						>
 							{currentYear}
 							<ChevronDown className="h-5 w-5" />
@@ -136,27 +136,27 @@ function DashboardPage() {
 				<div className="flex items-end justify-between">
 					<div className="flex items-center gap-8">
 						<div>
-							<p className="text-[14px] tracking-[0.14px] text-white/50">Completed Payments:</p>
-							<p className="text-[24px] font-medium tracking-[0.24px] text-white">
+							<p className="text-body-sm tracking-[0.14px] text-white/50">Completed Payments:</p>
+							<p className="text-h2 font-medium tracking-[0.24px] text-white">
 								{stats?.completedPayments ?? 0}
 							</p>
 						</div>
 						<div>
-							<p className="text-[14px] tracking-[0.14px] text-white/50">Pending Payments:</p>
-							<p className="text-[24px] font-medium tracking-[0.24px] text-white">
+							<p className="text-body-sm tracking-[0.14px] text-white/50">Pending Payments:</p>
+							<p className="text-h2 font-medium tracking-[0.24px] text-white">
 								{stats?.pendingPayments ?? 0}
 							</p>
 						</div>
 						<div>
-							<p className="text-[14px] tracking-[0.14px] text-white/50">Delayed Payments:</p>
-							<p className="text-[24px] font-medium tracking-[0.24px] text-white">
+							<p className="text-body-sm tracking-[0.14px] text-white/50">Delayed Payments:</p>
+							<p className="text-h2 font-medium tracking-[0.24px] text-white">
 								{stats?.delayedPayments ?? 0}
 							</p>
 						</div>
 					</div>
 					<div className="flex items-center gap-4 px-4">
 						{CHART_MONTHS.map((month) => (
-							<span key={month} className="text-[14px] text-white/50">
+							<span key={month} className="text-body-sm text-white/50">
 								{month}
 							</span>
 						))}
@@ -167,10 +167,10 @@ function DashboardPage() {
 			{/* Recent Reports Header */}
 			<div className="mb-4 flex items-center justify-between">
 				<div className="flex items-center gap-2">
-					<h2 className="text-[22px] font-medium text-black">Recent Reports</h2>
+					<h2 className="text-subsection font-medium text-black">Recent Reports</h2>
 					<Info className="h-4 w-4 text-grey-100" />
 					{data?.pagination.total != null && (
-						<span className="flex h-6 min-w-6 items-center justify-center rounded-[8px] bg-primary/10 px-2 text-[14px] font-medium text-primary">
+						<span className="flex h-6 min-w-6 items-center justify-center rounded-md bg-primary/10 px-2 text-body-sm font-medium text-primary">
 							{data.pagination.total}
 						</span>
 					)}
@@ -178,7 +178,7 @@ function DashboardPage() {
 				<div className="flex items-center gap-3">
 					<button
 						type="button"
-						className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-[12px] border border-border bg-white text-grey-100 opacity-80 transition-colors hover:bg-grey-25 hover:text-black"
+						className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 opacity-80 transition-colors hover:bg-grey-25 hover:text-black"
 						aria-label="Filter reports"
 					>
 						<ListFilter className="h-5 w-5" />
@@ -190,7 +190,7 @@ function DashboardPage() {
 							placeholder="Search..."
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="h-11 w-[320px] rounded-[12px] border border-border bg-white pl-9 pr-3 text-[14px] text-black outline-none placeholder:text-grey-100 focus:border-primary focus:ring-1 focus:ring-primary"
+							className="h-11 w-[320px] rounded-lg border border-border bg-white pl-9 pr-3 text-body-sm text-black outline-none placeholder:text-grey-100 focus:border-primary focus:ring-1 focus:ring-primary"
 						/>
 					</div>
 					<Button
