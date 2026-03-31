@@ -45,6 +45,7 @@ function AppLayout({ children }: { children: ReactNode }) {
 					(user?.user_metadata?.['first_name'] as string | undefined) ??
 					(user?.email?.split('@')[0] ?? undefined)
 				}
+				userEmail={user?.email ?? undefined}
 				userRole={
 					(user?.user_metadata?.['professional_qualification'] as string | undefined) ??
 					'Sachverständiger'

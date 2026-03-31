@@ -66,11 +66,10 @@ describe('TopNavBar', () => {
 		expect(screen.getByLabelText('Settings')).not.toHaveAttribute('aria-current')
 	})
 
-	it('calls onNavigate for notifications bell', async () => {
+	it('opens notifications dropdown when bell is clicked', async () => {
 		const user = userEvent.setup()
-		const onNavigate = vi.fn()
-		render(<TopNavBar onNavigate={onNavigate} />)
+		render(<TopNavBar />)
 		await user.click(screen.getByLabelText('Notifications'))
-		expect(onNavigate).toHaveBeenCalledWith('/notifications')
+		expect(screen.getByText('Notifications')).toBeInTheDocument()
 	})
 })

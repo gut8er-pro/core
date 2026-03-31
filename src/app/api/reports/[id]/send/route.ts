@@ -145,6 +145,16 @@ async function POST(request: NextRequest, context: RouteContext) {
 		})
 	}
 
+	// Create notification for sent/locked report
+	const { createNotification } = await import('@/lib/notifications/create')
+	await createNotification({
+		userId: user!.id,
+		eventType: 'REPORT_SENT',
+		title: 'Report Sent',
+		description: `Report "${report.title}" was sent to ${data.recipientEmail}.`,
+		reportId: id,
+	})
+
 	return NextResponse.json({
 		success: true,
 		message: `Report sent successfully to ${data.recipientEmail}`,
