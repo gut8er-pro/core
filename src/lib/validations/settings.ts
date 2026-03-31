@@ -5,6 +5,9 @@ const profileSettingsSchema = z.object({
 	firstName: z.string().min(1, 'First name is required').optional().nullable(),
 	lastName: z.string().min(1, 'Last name is required').optional().nullable(),
 	phone: z.string().optional().nullable(),
+	instagram: z.string().optional().nullable(),
+	facebook: z.string().optional().nullable(),
+	linkedin: z.string().optional().nullable(),
 })
 
 const businessSettingsSchema = z.object({

@@ -21,7 +21,7 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-')
 
     return (
-      <div className={cn('flex flex-col gap-1', className)}>
+      <div className={cn('flex flex-col gap-3', className)}>
         {label && <Label htmlFor={inputId}>{label}</Label>}
         <div className="relative">
           {prefix && (
@@ -30,7 +30,7 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             </span>
           )}
           {icon && (
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-grey-100">{icon}</span>
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-grey-100">{icon}</span>
           )}
           <Input
             ref={ref}
