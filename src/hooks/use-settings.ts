@@ -13,6 +13,9 @@ type UserSettings = {
 	lastName: string | null
 	phone: string | null
 	avatarUrl: string | null
+	instagram: string | null
+	facebook: string | null
+	linkedin: string | null
 	plan: 'FREE' | 'PRO'
 	stripeCustomerId: string | null
 	stripeSubscriptionId: string | null

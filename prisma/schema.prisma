@@ -18,6 +18,9 @@ model User {
   phone                     String?
   professionalQualification String?
   avatarUrl                 String?
+  instagram                 String?
+  facebook                  String?
+  linkedin                  String?
   role                      UserRole      @default(USER)
   plan                      Plan          @default(PRO)
   stripeCustomerId          String?       @unique

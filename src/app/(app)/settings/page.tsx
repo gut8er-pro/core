@@ -52,7 +52,7 @@ function SettingsSidebar({
 	onTabChange: (tab: SettingsTab) => void
 }) {
 	return (
-		<nav className="flex w-55 shrink-0 flex-col gap-1">
+		<div className="flex w-[302px] shrink-0 flex-col gap-4 rounded-[24px] bg-white p-6">
 			{SETTINGS_TABS.map((tab) => {
 				const Icon = tab.icon
 				const isActive = activeTab === tab.key
@@ -62,18 +62,20 @@ function SettingsSidebar({
 						type="button"
 						onClick={() => onTabChange(tab.key)}
 						className={cn(
-							'flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-body-sm font-medium transition-colors',
+							'flex cursor-pointer items-center gap-[10px] px-[14px] py-3 transition-colors',
 							isActive
-								? 'bg-primary-light text-primary'
-								: 'text-black hover:bg-grey-25',
+								? 'rounded-[12px] bg-[rgba(245,245,245,0.5)]'
+								: 'rounded-[16px] hover:bg-grey-25',
 						)}
 					>
-						<Icon className="h-5 w-5" />
-						{tab.label}
+						<Icon className={cn('h-6 w-6 shrink-0', isActive ? 'text-primary' : 'text-[#121312]')} />
+						<span className={cn('text-[16px] tracking-[0.16px]', isActive ? 'font-medium text-primary' : 'text-[#121312]')}>
+							{tab.label}
+						</span>
 					</button>
 				)
 			})}
-		</nav>
+		</div>
 	)
 }
 
@@ -98,6 +100,9 @@ function ProfileSection() {
 				firstName: settings.firstName ?? '',
 				lastName: settings.lastName ?? '',
 				phone: settings.phone ?? '',
+				instagram: settings.instagram ?? '',
+				facebook: settings.facebook ?? '',
+				linkedin: settings.linkedin ?? '',
 			})
 		}
 	}, [settings, reset])
@@ -121,106 +126,111 @@ function ProfileSection() {
 	}
 
 	return (
-		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-			<h2 className="text-h3 font-semibold text-black">Personal Information</h2>
+		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end gap-6">
+			{/* White card */}
+			<div className="flex w-full flex-col gap-6 rounded-[32px] bg-white p-8">
+				<h2 className="text-[21px] font-medium leading-none text-[#121312]">Personal Information</h2>
 
-			{/* Avatar */}
-			<div className="flex items-center gap-4">
-				<div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-grey-25">
-					{settings?.avatarUrl ? (
-						<img
-							src={settings.avatarUrl}
-							alt="Profile"
-							className="h-full w-full object-cover"
-						/>
-					) : (
-						<User className="h-8 w-8 text-grey-100" />
-					)}
+				{/* Avatar */}
+				<div className="flex items-center gap-6">
+					<div className="h-[100px] w-[100px] shrink-0 overflow-hidden rounded-[16px] bg-grey-25 flex items-center justify-center">
+						{settings?.avatarUrl ? (
+							<img
+								src={settings.avatarUrl}
+								alt="Profile"
+								className="h-full w-full object-cover"
+							/>
+						) : (
+							<User className="h-10 w-10 text-grey-100" />
+						)}
+					</div>
+					<button
+						type="button"
+						className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#df0808] text-[16px] font-medium text-[#df0808]"
+					>
+						Remove
+					</button>
 				</div>
-				<Button type="button" variant="danger" size="sm">
-					Remove
-				</Button>
+
+				{/* First Name / Last Name */}
+				<div className="grid grid-cols-2 gap-6">
+					<TextField
+						label="First name"
+						placeholder="Ketn"
+						{...register('firstName')}
+						error={errors.firstName?.message}
+					/>
+					<TextField
+						label="Last name"
+						placeholder="Torres"
+						{...register('lastName')}
+						error={errors.lastName?.message}
+					/>
+				</div>
+
+				{/* Title */}
+				<TextField
+					label="Title"
+					placeholder="Kfz-Sachverständiger"
+					{...register('title')}
+					error={errors.title?.message}
+				/>
+
+				{/* Email / Phone */}
+				<div className="grid grid-cols-2 gap-6">
+					<TextField
+						label="Email"
+						value={settings?.email ?? ''}
+						disabled
+						placeholder="ketn.torres@example.com"
+					/>
+					<TextField
+						label="Phone number"
+						placeholder="+49 151 23456789"
+						{...register('phone')}
+						error={errors.phone?.message}
+					/>
+				</div>
+
+				{/* Social links */}
+				<div className="grid grid-cols-3 gap-6">
+					<TextField
+						label="Instagram"
+						placeholder="@username"
+						icon={<Instagram className="h-6 w-6" />}
+						{...register('instagram')}
+					/>
+					<TextField
+						label="Facebook"
+						placeholder="facebook.com/username"
+						icon={<Facebook className="h-6 w-6" />}
+						{...register('facebook')}
+					/>
+					<TextField
+						label="Linkedin"
+						placeholder="linkedin.com/username"
+						icon={<Linkedin className="h-6 w-6" />}
+						{...register('linkedin')}
+					/>
+				</div>
 			</div>
 
-			{/* First Name / Last Name */}
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-				<TextField
-					label="First Name"
-					placeholder="Ketn"
-					{...register('firstName')}
-					error={errors.firstName?.message}
-				/>
-				<TextField
-					label="Last Name"
-					placeholder="Torres"
-					{...register('lastName')}
-					error={errors.lastName?.message}
-				/>
-			</div>
-
-			{/* Title */}
-			<TextField
-				label="Title"
-				placeholder="Kfz-Sachverständiger"
-				{...register('title')}
-				error={errors.title?.message}
-			/>
-
-			{/* Email / Phone */}
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-				<TextField
-					label="Email"
-					value={settings?.email ?? ''}
-					disabled
-					placeholder="ketn.torres@example.com"
-				/>
-				<TextField
-					label="Phone"
-					placeholder="+49 151 23456789"
-					{...register('phone')}
-					error={errors.phone?.message}
-				/>
-			</div>
-
-			{/* Social links */}
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-				<TextField
-					label="Instagram"
-					placeholder="@username"
-					icon={<Instagram className="h-5 w-5" />}
-					disabled
-				/>
-				<TextField
-					label="Facebook"
-					placeholder="facebook.com/username"
-					icon={<Facebook className="h-5 w-5" />}
-					disabled
-				/>
-				<TextField
-					label="LinkedIn"
-					placeholder="linkedin.com/username"
-					icon={<Linkedin className="h-5 w-5" />}
-					disabled
-				/>
-			</div>
-
-			{/* Action buttons */}
-			<div className="flex justify-end gap-3">
-				<Button
+			{/* Action buttons — outside card */}
+			<div className="flex gap-[7px]">
+				<button
 					type="button"
-					variant="outline"
 					onClick={() => reset()}
-					disabled={!isDirty}
+					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-[18px] font-medium tracking-[0.18px] text-[#121312]"
 				>
 					Cancel
-				</Button>
-				<Button
+				</button>
+				<button
 					type="submit"
-					disabled={!isDirty || saveMutation.isPending}
-					loading={saveMutation.isPending}
+					disabled={saveMutation.isPending}
+					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] text-[18px] font-medium tracking-[0.18px] text-white disabled:opacity-60"
 				>
-					Update
-				</Button>
+					{saveMutation.isPending ? 'Saving…' : 'Update'}
+				</button>
 			</div>
 		</form>
 	)
@@ -320,126 +330,127 @@ function BusinessSection() {
 	}
 
 	return (
-		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-			<h2 className="text-h3 font-semibold text-black">Business Information</h2>
+		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end gap-6">
+			{/* White card */}
+			<div className="flex w-full flex-col gap-8 rounded-[32px] bg-white p-8">
+				<h2 className="text-[21px] font-medium leading-none text-[#121312]">Business Information</h2>
 
-			{/* Logo upload */}
-			<div className="flex items-center gap-4">
-				<div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-grey-50">
-					{settings?.business?.logoUrl ? (
-						<img
-							src={settings.business.logoUrl}
-							alt="Company logo"
-							className="h-full w-full object-contain"
-						/>
-					) : (
-						<Building2 className="h-6 w-6 text-grey-50" />
-					)}
+				{/* Logo upload */}
+				<div className="flex items-center gap-4">
+					<div className="flex h-[100px] w-[186px] shrink-0 items-center justify-center rounded-[16px] border-2 border-dashed border-[#d9d9d9]">
+						{settings?.business?.logoUrl ? (
+							<img
+								src={settings.business.logoUrl}
+								alt="Company logo"
+								className="h-full w-full rounded-[16px] object-contain"
+							/>
+						) : (
+							<span className="text-[14px] font-medium tracking-[0.14px] text-[#d9d9d9]">Empty</span>
+						)}
+					</div>
+					<input
+						ref={logoInputRef}
+						type="file"
+						accept="image/*"
+						className="hidden"
+						onChange={handleLogoUpload}
+					/>
+					<button
+						type="button"
+						onClick={() => logoInputRef.current?.click()}
+						disabled={logoUploading}
+						className="flex h-[50px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#eef0f3] bg-white px-[13px] text-[16px] font-medium tracking-[0.16px] text-[#121312] opacity-45 hover:opacity-70 disabled:cursor-not-allowed"
+					>
+						{logoUploading ? 'Uploading…' : 'Upload Logo'}
+					</button>
 				</div>
-				<input
-					ref={logoInputRef}
-					type="file"
-					accept="image/*"
-					className="hidden"
-					onChange={handleLogoUpload}
+
+				{/* Company Name / Website */}
+				<div className="grid grid-cols-2 gap-6">
+					<TextField
+						label="Company Name"
+						placeholder="Kfz-Sachverständiger"
+						{...register('companyName')}
+						error={errors.companyName?.message}
+					/>
+					<TextField
+						label="Website"
+						placeholder="www.kfz.de"
+						disabled
+					/>
+				</div>
+
+				{/* Email / Phone number */}
+				<div className="grid grid-cols-2 gap-6">
+					<TextField
+						label="Email"
+						placeholder="sales.contact@kfz.com"
+						disabled
+					/>
+					<TextField
+						label="Phone number"
+						placeholder="+3513331253"
+						disabled
+					/>
+				</div>
+
+				{/* Street & Number */}
+				<TextField
+					label="Street & Number"
+					placeholder="Musterstraße 123"
+					{...register('street')}
+					error={errors.street?.message}
 				/>
-				<Button
+
+				{/* Postcode / City */}
+				<div className="grid grid-cols-2 gap-6">
+					<TextField
+						label="Postcode"
+						placeholder="10115"
+						{...register('postcode')}
+						error={errors.postcode?.message}
+					/>
+					<TextField
+						label="City"
+						placeholder="Berlin"
+						{...register('city')}
+						error={errors.city?.message}
+					/>
+				</div>
+
+				{/* Tax ID / VAT ID */}
+				<div className="grid grid-cols-2 gap-6">
+					<TextField
+						label="Tax ID (Steuernummer)"
+						placeholder="123/456/78901"
+						{...register('taxId')}
+						error={errors.taxId?.message}
+					/>
+					<TextField
+						label="VAT ID (USt-IdNr.)"
+						placeholder="DE123456789"
+						{...register('vatId')}
+						error={errors.vatId?.message}
+					/>
+				</div>
+			</div>
+
+			{/* Action buttons — outside card */}
+			<div className="flex gap-[7px]">
+				<button
 					type="button"
-					variant="outline"
-					size="sm"
-					onClick={() => logoInputRef.current?.click()}
-					loading={logoUploading}
-				>
-					Upload Logo
-				</Button>
-			</div>
-
-			{/* Company Name / Website */}
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-				<TextField
-					label="Company Name"
-					placeholder="Kfz-Sachverständiger"
-					{...register('companyName')}
-					error={errors.companyName?.message}
-				/>
-				<TextField
-					label="Website"
-					placeholder="www.kfz.de"
-					disabled
-				/>
-			</div>
-
-			{/* Email / Phone number */}
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-				<TextField
-					label="Email"
-					placeholder="sales.contact@kfz.com"
-					disabled
-				/>
-				<TextField
-					label="Phone number"
-					placeholder="+3513331253"
-					disabled
-				/>
-			</div>
-
-			{/* Street & Number */}
-			<TextField
-				label="Street & Number"
-				placeholder="Musterstraße 123"
-				{...register('street')}
-				error={errors.street?.message}
-			/>
-
-			{/* Postcode / City */}
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-				<TextField
-					label="Postcode"
-					placeholder="10115"
-					{...register('postcode')}
-					error={errors.postcode?.message}
-				/>
-				<TextField
-					label="City"
-					placeholder="Berlin"
-					{...register('city')}
-					error={errors.city?.message}
-				/>
-			</div>
-
-			{/* Tax ID / VAT ID */}
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-				<TextField
-					label="Tax ID (Steuernummer)"
-					placeholder="123/456/78901"
-					{...register('taxId')}
-					error={errors.taxId?.message}
-				/>
-				<TextField
-					label="VAT ID (USt-IdNr.)"
-					placeholder="DE123456789"
-					{...register('vatId')}
-					error={errors.vatId?.message}
-				/>
-			</div>
-
-			{/* Action buttons */}
-			<div className="flex justify-end gap-3">
-				<Button
-					type="button"
-					variant="outline"
 					onClick={() => reset()}
-					disabled={!isDirty}
+					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-[18px] font-medium tracking-[0.18px] text-[#121312]"
 				>
 					Cancel
-				</Button>
-				<Button
+				</button>
+				<button
 					type="submit"
-					disabled={!isDirty || saveMutation.isPending}
-					loading={saveMutation.isPending}
+					disabled={saveMutation.isPending}
+					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] text-[18px] font-medium tracking-[0.18px] text-white disabled:opacity-60"
 				>
-					Update
-				</Button>
+					{saveMutation.isPending ? 'Saving…' : 'Update'}
+				</button>
 			</div>
 		</form>
 	)
@@ -507,110 +518,112 @@ function IntegrationsSection() {
 	}
 
 	return (
-		<div className="flex flex-col gap-6">
-			<div>
-				<h2 className="text-h3 font-semibold text-black">Connected Services</h2>
-				<p className="mt-1 text-body-sm text-grey-100">
-					Connect third-party services to streamline your workflow
-				</p>
-			</div>
+		<div className="flex flex-col items-end gap-6">
+			{/* White card */}
+			<div className="flex w-full flex-col gap-8 rounded-[32px] bg-white p-8">
+				<div className="flex flex-col gap-3">
+					<h2 className="text-[21px] font-medium leading-none text-[#121312]">Connected Services</h2>
+					<p className="text-[16px] tracking-[0.16px] text-[#121312] opacity-70">
+						Connect third-party services to streamline your workflow
+					</p>
+				</div>
 
-			{/* DAT Integration Card */}
-			<div className="rounded-xl border border-border bg-white p-5">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-4">
-						<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-border bg-white">
-							<img src="/images/dat-logo.png" alt="DAT" className="h-10 w-10 object-contain" />
-						</div>
-						<div>
-							<p className="text-body-sm font-semibold text-black">DAT</p>
-							<p className="text-caption text-grey-100">
-								Automatically backup reports from DAT
+				{/* DAT Integration Card */}
+				<div className="flex items-center gap-[14px] rounded-[20px] border-2 border-[#eaeaea] px-[14px] py-3">
+					<img src="/images/dat-logo.png" alt="DAT" className="h-[88px] w-[55px] object-contain shrink-0" />
+					<div className="flex flex-col gap-[7px]">
+						<p className="text-[14px] font-medium leading-[18px] text-[#3e4541]">DAT</p>
+						<p className="text-[14px] leading-5 text-[#121312] opacity-70">
+							Automatically backup reports from DAT
+						</p>
+						{datIntegration?.isActive && (
+							<p className="text-[12px] font-medium leading-none text-[#019447]">
+								Last sync: 2 hours ago
 							</p>
-							{datIntegration?.isActive && (
-								<p className="text-caption font-medium text-primary">
-									Last sync: 2 hours ago
-								</p>
-							)}
-						</div>
+						)}
 					</div>
-					<div className="flex items-center gap-3">
+					<div className="ml-auto flex gap-[14px]">
 						{datIntegration?.isActive ? (
 							<>
-								<Button variant="outline" size="sm">
-									Configure
-								</Button>
-								<Button
-									variant="danger"
-									size="sm"
-									onClick={handleDisconnect}
-									loading={saveMutation.isPending}
+								<button
+									type="button"
+									className="flex h-[50px] flex-1 cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#eef0f3] bg-white px-[13px] text-[18px] font-medium tracking-[0.18px] text-[#121312] opacity-45 hover:opacity-70"
 								>
-									Disconnect
-								</Button>
+									Configure
+								</button>
+								<button
+									type="button"
+									onClick={handleDisconnect}
+									disabled={saveMutation.isPending}
+									className="flex h-[50px] flex-1 cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#df0808] px-[13px] text-[18px] font-medium tracking-[0.18px] text-[#df0808] disabled:opacity-60"
+								>
+									{saveMutation.isPending ? '…' : 'Disconnect'}
+								</button>
 							</>
 						) : (
-							<Button
-								variant="primary"
-								size="sm"
+							<button
+								type="button"
 								onClick={() => setShowDatForm(!showDatForm)}
+								className="flex h-[50px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] px-6 text-[18px] font-medium tracking-[0.18px] text-white"
 							>
 								Connect
-							</Button>
+							</button>
 						)}
 					</div>
 				</div>
+
 				{showDatForm && !datIntegration?.isActive && (
 					<form
 						onSubmit={datForm.handleSubmit(handleConnect)}
-						className="mt-4 border-t border-border pt-4"
+						className="border-t border-[#eaeaea] pt-6"
 					>
-						<div className="grid grid-cols-2 gap-4">
+						<div className="grid grid-cols-2 gap-6">
 							<TextField
 								label="Username"
 								placeholder="DAT username"
-								{...datForm.register('username', {
-									required: 'Required',
-								})}
+								{...datForm.register('username', { required: 'Required' })}
 							/>
 							<TextField
 								label="Password"
 								type="password"
 								placeholder="DAT password"
-								{...datForm.register('password', {
-									required: 'Required',
-								})}
+								{...datForm.register('password', { required: 'Required' })}
 							/>
 						</div>
-						<div className="mt-4 flex justify-end gap-2">
-							<Button
+						<div className="mt-6 flex justify-end gap-[7px]">
+							<button
 								type="button"
-								variant="ghost"
-								size="sm"
 								onClick={() => setShowDatForm(false)}
+								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-[18px] font-medium tracking-[0.18px] text-[#121312]"
 							>
 								Cancel
-							</Button>
-							<Button
+							</button>
+							<button
 								type="submit"
-								size="sm"
-								loading={saveMutation.isPending}
+								disabled={saveMutation.isPending}
+								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] text-[18px] font-medium tracking-[0.18px] text-white disabled:opacity-60"
 							>
-								Save Credentials
-							</Button>
+								{saveMutation.isPending ? 'Saving…' : 'Save'}
+							</button>
 						</div>
 					</form>
 				)}
 			</div>
 
-			{/* Action buttons */}
-			<div className="flex justify-end gap-3">
-				<Button type="button" variant="outline">
+			{/* Action buttons — outside card */}
+			<div className="flex gap-[7px]">
+				<button
+					type="button"
+					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-white text-[18px] font-medium tracking-[0.18px] text-[#121312]"
+				>
 					Cancel
-				</Button>
-				<Button type="button">
+				</button>
+				<button
+					type="button"
+					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] text-[18px] font-medium tracking-[0.18px] text-white"
+				>
 					Update
-				</Button>
+				</button>
 			</div>
 		</div>
 	)
@@ -652,96 +665,111 @@ function BillingSection() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{/* Current Plan Card - Dark gradient */}
-			<div className="overflow-hidden rounded-xl bg-linear-to-b from-dark-green to-black p-6 text-white">
+			{/* Current Plan Card - dark green gradient */}
+			<div className="overflow-hidden rounded-[24px] bg-linear-to-b from-dark-green to-black p-6 text-white">
 				<div className="flex items-start justify-between">
-					<div>
-						<p className="text-caption font-medium text-primary">Current Plan</p>
-						<h2 className="mt-1 text-h2 font-bold">Pro Plan</h2>
-						<p className="mt-1 text-body-sm text-white/70">
+					<div className="flex flex-col gap-6">
+						<div>
+							<p className="text-[23px] font-medium text-white/50">Current Plan</p>
+							<p className="mt-6 text-[44px] font-medium capitalize leading-none tracking-[-0.44px]">
+								Pro Plan
+							</p>
+						</div>
+						<p className="text-[16px] tracking-[0.16px] text-white">
 							{isTrialing
 								? 'Trial period active'
-								: '€49.00 / month · Renews on Feb 14, 2026'}
+								: '€49.00 / month • Renews on Feb 14, 2026'}
 						</p>
 					</div>
-					<div>
+					<div className="flex gap-4">
 						{settings?.stripeCustomerId ? (
-							<Button
-								variant="outline"
-								size="sm"
-								className="border-white/30 bg-transparent text-white hover:bg-white/10"
-								onClick={() => portalMutation.mutate()}
-								loading={portalMutation.isPending}
-							>
-								Cancel Plan
-							</Button>
+							<>
+								<button
+									type="button"
+									onClick={() => portalMutation.mutate()}
+									disabled={portalMutation.isPending}
+									className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-[15px] text-[18px] font-medium tracking-[0.18px] text-white disabled:opacity-60"
+								>
+									{portalMutation.isPending ? '…' : 'Cancel Plan'}
+								</button>
+								<button
+									type="button"
+									className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-white/25 text-[18px] font-medium tracking-[0.18px] text-white"
+								>
+									Upgrade
+								</button>
+							</>
 						) : (
-							<Button
-								variant="outline"
-								size="sm"
-								className="border-white/30 bg-transparent text-white hover:bg-white/10"
+							<button
+								type="button"
 								onClick={() => checkoutMutation.mutate()}
-								loading={checkoutMutation.isPending}
+								disabled={checkoutMutation.isPending}
+								className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-white/25 text-[18px] font-medium tracking-[0.18px] text-white disabled:opacity-60"
 							>
-								Set up payment
-							</Button>
+								{checkoutMutation.isPending ? '…' : 'Set up payment'}
+							</button>
 						)}
 					</div>
 				</div>
+				{/* Divider */}
+				<div className="my-6 border-t border-white/20" />
 				{/* Usage stats */}
-				<div className="mt-6 grid grid-cols-3 gap-4 border-t border-white/20 pt-4">
-					<div>
-						<p className="text-caption text-white/60">Reports this month</p>
-						<p className="mt-1 text-h4 font-bold">5 / 100</p>
+				<div className="flex gap-3">
+					<div className="flex flex-1 flex-col gap-[6px]">
+						<p className="text-[14px] tracking-[0.14px] text-white">Reports this month</p>
+						<p className="text-[24px] font-medium tracking-[0.24px] text-white">5 / 100</p>
 					</div>
-					<div>
-						<p className="text-caption text-white/60">AI Auto-fills</p>
-						<p className="mt-1 text-h4 font-bold">Unlimited</p>
+					<div className="flex flex-1 flex-col gap-[6px]">
+						<p className="text-[14px] tracking-[0.14px] text-white">AI Auto-fills</p>
+						<p className="text-[24px] font-medium tracking-[0.24px] text-white">Unlimited</p>
 					</div>
-					<div>
-						<p className="text-caption text-white/60">Cloud Storage</p>
-						<p className="mt-1 text-h4 font-bold">50 GB</p>
+					<div className="flex flex-1 flex-col gap-[6px]">
+						<p className="text-[14px] tracking-[0.14px] text-white">Cloud Storage</p>
+						<p className="text-[24px] font-medium tracking-[0.24px] text-white">50 GB</p>
 					</div>
 				</div>
 			</div>
 
 			{/* Payment Method */}
-			<div className="rounded-xl border border-border bg-white p-6">
-				<h3 className="text-h4 font-semibold text-black">Payment Method</h3>
-				<div className="mt-4 flex items-center justify-between">
-					<div className="flex items-center gap-4">
-						<div className="flex h-10 w-14 items-center justify-center rounded-md border border-border bg-white">
-							<CreditCard className="h-5 w-5 text-info-blue" />
+			<div className="flex flex-col gap-4 rounded-[32px] bg-white p-8">
+				<h3 className="text-[21px] font-medium leading-none text-[#121312]">Payment Method</h3>
+				<div className="flex items-center justify-between rounded-[20px] border-2 border-[#eaeaea] px-[14px] py-3">
+					<div className="flex items-center gap-6">
+						<div className="flex h-8 w-[51px] shrink-0 items-center justify-center">
+							<CreditCard className="h-7 w-7 text-info-blue" />
 						</div>
-						<div>
-							<p className="text-body-sm font-medium text-black">Visa ending in 4242</p>
-							<p className="text-caption text-grey-100">Expires 12/2027</p>
+						<div className="flex flex-col gap-1">
+							<p className="text-[14px] font-medium leading-[18px] text-[#3e4541]">Visa ending in 4242</p>
+							<p className="text-[12px] leading-5 text-[#121312] opacity-70">Expires 12/2027</p>
 						</div>
 					</div>
-					<Button variant="danger" size="sm">
+					<button
+						type="button"
+						className="flex h-[50px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#df0808] px-6 text-[18px] font-medium tracking-[0.18px] text-[#df0808]"
+					>
 						Remove
-					</Button>
+					</button>
 				</div>
 			</div>
 
 			{/* Billing History */}
-			<div className="rounded-xl border border-border bg-white p-6">
-				<h3 className="text-h4 font-semibold text-black">Billing History</h3>
-				<div className="mt-4">
+			<div className="flex flex-col gap-6 rounded-[32px] bg-white p-8">
+				<h3 className="text-[21px] font-medium leading-none text-[#121312]">Billing History</h3>
+				<div className="overflow-hidden rounded-[16px] border-2 border-[#ededed]">
 					<table className="w-full">
-						<tbody className="divide-y divide-border">
+						<tbody>
 							{billingHistory.map((item) => (
-								<tr key={item.date} className="text-body-sm">
-									<td className="py-3 pr-4 text-grey-100">{item.date}</td>
-									<td className="py-3 pr-4 text-black">{item.description}</td>
-									<td className="py-3 pr-4 font-medium text-black">€{item.amount}</td>
-									<td className="py-3 pr-4">
-										<Badge variant="success">
+								<tr key={item.date} className="border-b border-[#e2e2e2] last:border-0">
+									<td className="h-[54px] px-6 text-[14px] leading-5 text-[#6b7280]">{item.date}</td>
+									<td className="h-[54px] px-6 text-[14px] leading-5 text-[#6b7280]">{item.description}</td>
+									<td className="h-[54px] px-6 text-[14px] font-medium leading-5 text-[#121312]">€{item.amount}</td>
+									<td className="h-[54px] px-6">
+										<span className="inline-flex items-center justify-center rounded-[8px] border border-[0.5px] border-[#019447] bg-[rgba(0,177,55,0.1)] p-[6px] text-[12px] leading-none text-[#126147]">
 											{item.status}
-										</Badge>
+										</span>
 									</td>
-									<td className="py-3 text-right">
-										<button type="button" className="cursor-pointer text-grey-100 hover:text-black">
+									<td className="h-[54px] w-[54px] p-3 text-center">
+										<button type="button" className="cursor-pointer text-[#121312] opacity-60 hover:opacity-100">
 											<Download className="h-4 w-4" />
 										</button>
 									</td>
@@ -816,51 +844,54 @@ function TemplatesSection() {
 	}
 
 	return (
-		<div className="relative flex flex-col gap-4">
-			{/* Template cards */}
-			{templates.map((template) => (
-				<div
-					key={template.id}
-					className="flex cursor-pointer items-center justify-between rounded-xl border border-border bg-white px-5 py-4"
-					onClick={() => handleEdit(template)}
-				>
-					<div className="flex items-center gap-4">
-						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-							<FileText className="h-5 w-5 text-primary" />
-						</div>
-						<div>
-							<p className="text-body-sm font-medium text-black">{template.title}</p>
-							<p className="text-caption text-grey-100">{template.date}</p>
-						</div>
-					</div>
-					<Button
-						type="button"
-						variant="danger"
-						size="sm"
-						onClick={(e) => {
-							e.stopPropagation()
-							handleRemove(template.id)
-						}}
+		<div className="relative flex flex-col items-end gap-6">
+			{/* Template list card */}
+			<div className="flex w-full flex-col gap-6 rounded-[32px] bg-white p-8">
+				{templates.map((template) => (
+					<div
+						key={template.id}
+						className="flex cursor-pointer items-center justify-between rounded-[20px] border-2 border-[#eaeaea] px-[14px] py-3"
+						onClick={() => handleEdit(template)}
 					>
-						Remove
-					</Button>
-				</div>
-			))}
+						<div className="flex items-center gap-4">
+							<div className="flex items-center justify-center rounded-[15px] bg-[rgba(1,148,71,0.05)] p-[14px]">
+								<FileText className="h-6 w-6 text-primary" />
+							</div>
+							<div>
+								<p className="text-[14px] font-medium leading-[18px] text-[#3e4541]">{template.title}</p>
+								<p className="text-[14px] leading-5 text-[#121312] opacity-70">{template.date}</p>
+							</div>
+						</div>
+						<button
+							type="button"
+							className="flex h-[50px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#df0808] px-[13px] text-[18px] font-medium text-[#df0808] hover:bg-[#df0808]/5"
+							onClick={(e) => {
+								e.stopPropagation()
+								handleRemove(template.id)
+							}}
+						>
+							Remove
+						</button>
+					</div>
+				))}
+			</div>
 
 			{/* Add Template button */}
-			<div className="flex justify-center pt-2">
-				<Button type="button" variant="primary" size="md" onClick={handleAdd}>
-					Add Template
-				</Button>
-			</div>
+			<button
+				type="button"
+				className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] text-[18px] font-medium text-white hover:bg-[#017a3c]"
+				onClick={handleAdd}
+			>
+				Add Template
+			</button>
 
 			{/* Edit Template Panel */}
 			{editingTemplate && (
-				<div className="fixed inset-0 z-50 flex justify-end bg-black/30">
-					<div className="flex h-full w-full max-w-md flex-col bg-white shadow-xl">
+				<div className="fixed inset-0 z-50 flex justify-end bg-[#202020]/50">
+					<div className="flex h-full w-[550px] flex-col gap-6 bg-white p-5">
 						{/* Header */}
-						<div className="flex items-center gap-2 border-b border-border px-6 py-4">
-							<h3 className="text-h4 font-semibold text-black">{isNewTemplate ? 'New Template' : 'Edit Template'}</h3>
+						<div className="flex items-center gap-2">
+							<h3 className="text-[18px] font-medium text-[#121312]">{isNewTemplate ? 'New Template' : 'Edit Template'}</h3>
 							<Info className="h-4 w-4 text-grey-100" />
 							<button
 								type="button"
@@ -872,21 +903,21 @@ function TemplatesSection() {
 						</div>
 
 						{/* Body */}
-						<div className="flex flex-1 flex-col gap-4 overflow-y-auto p-6">
-							<div className="flex flex-col gap-1">
-								<label className="text-body-sm font-medium text-black">Subject</label>
+						<div className="flex flex-1 flex-col gap-6 overflow-y-auto">
+							<div className="flex flex-col gap-3">
+								<label className="text-[16px] font-medium text-[#121312]">Subject</label>
 								<input
 									type="text"
-									className="rounded-lg border border-border bg-white px-4 py-3 text-body-sm text-black placeholder:text-placeholder focus:border-border-focus focus:outline-none"
+									className="flex h-[53px] w-full rounded-[16px] border-[1.5px] border-[#eaeaea] bg-white px-[14px] text-[18px] text-[#121312] placeholder:text-[#6b7280] focus:border-primary focus:outline-none"
 									placeholder="Title"
 									value={editSubject}
 									onChange={(e) => setEditSubject(e.target.value)}
 								/>
 							</div>
-							<div className="flex flex-1 flex-col gap-1">
-								<label className="text-body-sm font-medium text-black">Body</label>
+							<div className="flex flex-1 flex-col gap-3">
+								<label className="text-[16px] font-medium text-[#121312]">Body</label>
 								<textarea
-									className="flex-1 rounded-lg border border-border bg-white px-4 py-3 text-body-sm text-black placeholder:text-placeholder focus:border-border-focus focus:outline-none"
+									className="flex-1 rounded-[16px] border-[1.5px] border-[#eaeaea] bg-white px-[14px] py-[14px] text-[18px] text-[#121312] placeholder:text-[#6b7280] focus:border-primary focus:outline-none"
 									placeholder="Write Something"
 									value={editBody}
 									onChange={(e) => setEditBody(e.target.value)}
@@ -895,17 +926,21 @@ function TemplatesSection() {
 						</div>
 
 						{/* Footer */}
-						<div className="flex justify-end gap-3 border-t border-border px-6 py-4">
-							<Button
+						<div className="flex justify-end gap-[7px]">
+							<button
 								type="button"
-								variant="outline"
+								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-[#e5e7eb] text-[16px] font-medium text-[#121312] hover:bg-grey-25"
 								onClick={() => setEditingTemplate(null)}
 							>
 								Cancel
-							</Button>
-							<Button type="button" variant="primary" onClick={handleSave}>
+							</button>
+							<button
+								type="button"
+								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-[15px] bg-[#019447] text-[16px] font-medium text-white hover:bg-[#017a3c]"
+								onClick={handleSave}
+							>
 								{isNewTemplate ? 'Create' : 'Save'}
-							</Button>
+							</button>
 						</div>
 					</div>
 				</div>
@@ -919,16 +954,12 @@ function SettingsPage() {
 
 	return (
 		<ErrorBoundary>
-			<div className="mx-auto max-w-5xl">
-				<div className="mb-8">
-					<h1 className="text-h1 font-bold text-black">Account Settings</h1>
-				</div>
+			<div className="flex flex-col gap-6">
+				<h1 className="text-[32px] font-medium leading-none text-[#121312]">Account Settings</h1>
 
-				<div className="flex gap-8">
+				<div className="flex items-start gap-6">
 					{/* Sidebar Navigation */}
-					<div className="rounded-xl border border-border bg-white p-4">
-						<SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
-					</div>
+					<SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
 					{/* Content Area */}
 					<div className="min-w-0 flex-1">
