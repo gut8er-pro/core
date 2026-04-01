@@ -30,10 +30,15 @@ function AnnotationModal({
 	const [isEditingDescription, setIsEditingDescription] = useState(false)
 	const [editDescriptionValue, setEditDescriptionValue] = useState('')
 	const canvasRef = useRef<fabric.Canvas | null>(null)
+	const exportFnRef = useRef<(() => string | null) | null>(null)
 
-	const handleCanvasReady = useCallback((canvas: fabric.Canvas) => {
-		canvasRef.current = canvas
-	}, [])
+	const handleCanvasReady = useCallback(
+		(canvas: fabric.Canvas, exportFn: () => string | null) => {
+			canvasRef.current = canvas
+			exportFnRef.current = exportFn
+		},
+		[],
+	)
 
 	const handleClear = useCallback(() => {
 		const canvas = canvasRef.current
@@ -53,16 +58,8 @@ function AnnotationModal({
 		const json = canvas.toJSON() as Record<string, unknown>
 		const hasObjects = canvas.getObjects().length > 0
 
-		let dataUrl: string | null = null
-		if (hasObjects) {
-			// Calculate multiplier to export at original image resolution
-			let multiplier = 1
-			const bgImg = canvas.backgroundImage
-			if (bgImg && 'width' in bgImg && typeof bgImg.width === 'number' && canvas.width) {
-				multiplier = Math.max(1, bgImg.width / canvas.width)
-			}
-			dataUrl = canvas.toDataURL({ format: 'jpeg', quality: 0.9, multiplier })
-		}
+		// Use the composite export function for full-resolution output
+		const dataUrl = hasObjects ? (exportFnRef.current?.() ?? null) : null
 
 		onSave(json, dataUrl)
 		onClose()
@@ -70,6 +67,7 @@ function AnnotationModal({
 
 	const handleClose = useCallback(() => {
 		canvasRef.current = null
+		exportFnRef.current = null
 		onClose()
 	}, [onClose])
 
@@ -158,9 +156,9 @@ function AnnotationModal({
 				</div>
 
 				{/* Content: Photo + Description */}
-				<div className="flex flex-1 min-h-0 overflow-hidden">
+				<div className="flex flex-1 min-h-0 gap-5 overflow-hidden px-4 pb-2">
 					{/* Photo canvas area */}
-					<div className="relative flex-1 min-w-0 overflow-hidden">
+					<div className="relative flex-1 min-w-0 overflow-hidden rounded-xl">
 						{/* Navigation arrow - left */}
 						{hasPrev && (
 							<button
@@ -185,7 +183,7 @@ function AnnotationModal({
 							</button>
 						)}
 
-						{/* Canvas */}
+						{/* Canvas with image underneath */}
 						<AnnotationCanvas
 							photoUrl={photo.url}
 							activeTool={activeTool}
@@ -201,7 +199,7 @@ function AnnotationModal({
 					</div>
 
 					{/* Description panel */}
-					<div className="hidden w-90 shrink-0 flex-col gap-5 p-5 lg:flex">
+					<div className="hidden w-90 shrink-0 flex-col gap-5 lg:flex">
 						<div className="flex items-center justify-between">
 							<h3 className="text-input font-medium text-black">Description</h3>
 						</div>

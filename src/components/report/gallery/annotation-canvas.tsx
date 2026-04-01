@@ -1,7 +1,7 @@
 'use client'
 
 import * as fabric from 'fabric'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import type { AnnotationTool } from './annotation-toolbar'
 
@@ -10,10 +10,16 @@ type AnnotationCanvasProps = {
 	activeTool: AnnotationTool
 	activeColor: string
 	initialAnnotations?: Record<string, unknown>
-	onCanvasReady?: (canvas: fabric.Canvas) => void
+	onCanvasReady?: (canvas: fabric.Canvas, exportFn: () => string | null) => void
 	className?: string
 }
 
+/**
+ * Hybrid annotation canvas:
+ * - An <img> element handles image display via CSS object-contain (always works)
+ * - A transparent Fabric.js canvas is overlaid for annotations
+ * - Export composites the image + annotations at full resolution
+ */
 function AnnotationCanvas({
 	photoUrl,
 	activeTool,
@@ -24,125 +30,153 @@ function AnnotationCanvas({
 }: AnnotationCanvasProps) {
 	const containerRef = useRef<HTMLDivElement>(null)
 	const canvasElRef = useRef<HTMLCanvasElement>(null)
+	const imgElRef = useRef<HTMLImageElement>(null)
 	const fabricCanvasRef = useRef<fabric.Canvas | null>(null)
 	const isDrawingShapeRef = useRef(false)
 	const shapeStartRef = useRef<{ x: number; y: number } | null>(null)
 	const activeShapeRef = useRef<fabric.FabricObject | null>(null)
 	const activeToolRef = useRef<AnnotationTool>(activeTool)
 	const activeColorRef = useRef<string>(activeColor)
-	// Store the natural image dimensions for export
-	const naturalSizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 })
 
-	const [_ready, setReady] = useState(false)
+	const [ready, setReady] = useState(false)
+	const [imgLoaded, setImgLoaded] = useState(false)
 
 	activeToolRef.current = activeTool
 	activeColorRef.current = activeColor
 
-	// Core effect: load image, create canvas sized to fit image
+	// Reset imgLoaded when photo changes
 	useEffect(() => {
+		setImgLoaded(false)
+	}, [photoUrl])
+
+	const handleImgLoad = useCallback(() => {
+		setImgLoaded(true)
+	}, [])
+
+	// Export: composite image + annotations at full resolution
+	const getExportDataUrl = useCallback((): string | null => {
+		const img = imgElRef.current
+		const canvas = fabricCanvasRef.current
+		if (!img || !canvas) return null
+
+		const natW = img.naturalWidth
+		const natH = img.naturalHeight
+		if (!natW || !natH) return null
+
+		const tempCanvas = document.createElement('canvas')
+		tempCanvas.width = natW
+		tempCanvas.height = natH
+		const ctx = tempCanvas.getContext('2d')
+		if (!ctx) return null
+
+		// Draw original image at full resolution
+		ctx.drawImage(img, 0, 0, natW, natH)
+
+		// Draw annotations scaled up to match full resolution
+		const objects = canvas.getObjects()
+		if (objects.length > 0 && canvas.width) {
+			const multiplier = natW / canvas.width
+			const annotationCanvas = canvas.toCanvasElement(multiplier)
+			ctx.drawImage(annotationCanvas, 0, 0)
+		}
+
+		return tempCanvas.toDataURL('image/jpeg', 0.9)
+	}, [])
+
+	// Initialize/resize Fabric canvas overlay to match image position
+	useEffect(() => {
+		if (!imgLoaded) return
+
 		const container = containerRef.current
 		const canvasEl = canvasElRef.current
-		if (!container || !canvasEl) return
+		const img = imgElRef.current
+		if (!container || !canvasEl || !img) return
+
+		const natW = img.naturalWidth
+		const natH = img.naturalHeight
+		if (!natW || !natH) return
 
 		let disposed = false
+		let initialized = false
 
-		const img = new window.Image()
-		img.crossOrigin = 'anonymous'
-		img.onload = () => {
-			if (disposed) return
+		function layout() {
+			if (disposed || !container || !canvasEl) return
 
-			const cw = container.offsetWidth
-			const ch = container.offsetHeight
+			const cw = container.clientWidth
+			const ch = container.clientHeight
 			if (cw < 50 || ch < 50) return
 
-			const natW = img.naturalWidth
-			const natH = img.naturalHeight
-			naturalSizeRef.current = { w: natW, h: natH }
-
-			// "Contain" fit — canvas size = displayed image size
+			// Contain-fit: same math as CSS object-contain
 			const scale = Math.min(cw / natW, ch / natH)
 			const canvasW = Math.round(natW * scale)
 			const canvasH = Math.round(natH * scale)
+			const offsetX = Math.round((cw - canvasW) / 2)
+			const offsetY = Math.round((ch - canvasH) / 2)
 
-			const canvas = new fabric.Canvas(canvasEl, {
-				width: canvasW,
-				height: canvasH,
-				selection: false,
-			})
-			fabricCanvasRef.current = canvas
+			if (!initialized) {
+				initialized = true
 
-			// Center the canvas wrapper inside the container
-			const wrapper = canvasEl.parentElement
-			if (wrapper) {
-				wrapper.style.position = 'absolute'
-				wrapper.style.left = `${Math.round((cw - canvasW) / 2)}px`
-				wrapper.style.top = `${Math.round((ch - canvasH) / 2)}px`
-			}
+				if (fabricCanvasRef.current) {
+					fabricCanvasRef.current.dispose()
+					fabricCanvasRef.current = null
+				}
 
-			// Background image fills the entire canvas (no offset)
-			const bgImg = new fabric.FabricImage(img, {
-				scaleX: scale,
-				scaleY: scale,
-				left: 0,
-				top: 0,
-				selectable: false,
-				evented: false,
-			})
-			canvas.backgroundImage = bgImg
-			canvas.renderAll()
-
-			// Restore saved annotations
-			if (initialAnnotations) {
-				const json = { ...initialAnnotations } as Record<string, unknown>
-				delete json.width
-				delete json.height
-				delete json.backgroundImage
-				delete json.background
-
-				canvas.loadFromJSON(JSON.stringify(json)).then(() => {
-					canvas.setDimensions({ width: canvasW, height: canvasH })
-					canvas.backgroundImage = bgImg
-					canvas.renderAll()
+				const canvas = new fabric.Canvas(canvasEl, {
+					width: canvasW,
+					height: canvasH,
+					selection: false,
 				})
-			}
+				fabricCanvasRef.current = canvas
 
-			onCanvasReady?.(canvas)
-			setReady(true)
+				// Position Fabric wrapper exactly over the image
+				const wrapper = canvasEl.parentElement
+				if (wrapper) {
+					wrapper.style.position = 'absolute'
+					wrapper.style.left = `${offsetX}px`
+					wrapper.style.top = `${offsetY}px`
+					wrapper.style.width = `${canvasW}px`
+					wrapper.style.height = `${canvasH}px`
+					wrapper.style.zIndex = '2'
+				}
+
+				canvas.renderAll()
+
+				// Restore saved annotations
+				if (initialAnnotations) {
+					const json = { ...initialAnnotations } as Record<string, unknown>
+					delete json.width
+					delete json.height
+					delete json.backgroundImage
+					delete json.background
+
+					canvas.loadFromJSON(JSON.stringify(json)).then(() => {
+						canvas.setDimensions({ width: canvasW, height: canvasH })
+						canvas.renderAll()
+					})
+				}
+
+				onCanvasReady?.(canvas, getExportDataUrl)
+				setReady(true)
+			} else {
+				const c = fabricCanvasRef.current
+				if (!c) return
+
+				c.setDimensions({ width: canvasW, height: canvasH })
+
+				const wrapper = canvasEl.parentElement
+				if (wrapper) {
+					wrapper.style.left = `${offsetX}px`
+					wrapper.style.top = `${offsetY}px`
+					wrapper.style.width = `${canvasW}px`
+					wrapper.style.height = `${canvasH}px`
+				}
+
+				c.renderAll()
+			}
 		}
-		img.src = photoUrl
 
-		// Handle container resize
 		const observer = new ResizeObserver(() => {
-			const c = fabricCanvasRef.current
-			if (!c || disposed) return
-
-			const newCW = container.offsetWidth
-			const newCH = container.offsetHeight
-			if (newCW < 50 || newCH < 50) return
-
-			const { w: natW, h: natH } = naturalSizeRef.current
-			if (!natW || !natH) return
-
-			const newScale = Math.min(newCW / natW, newCH / natH)
-			const newW = Math.round(natW * newScale)
-			const newH = Math.round(natH * newScale)
-
-			c.setDimensions({ width: newW, height: newH })
-
-			// Re-center wrapper
-			const wrapper = canvasEl.parentElement
-			if (wrapper) {
-				wrapper.style.left = `${Math.round((newCW - newW) / 2)}px`
-				wrapper.style.top = `${Math.round((newCH - newH) / 2)}px`
-			}
-
-			// Update background image scale
-			const bgImg = c.backgroundImage
-			if (bgImg && bgImg instanceof fabric.FabricImage) {
-				bgImg.set({ scaleX: newScale, scaleY: newScale, left: 0, top: 0 })
-			}
-
-			c.renderAll()
+			if (!disposed) layout()
 		})
 		observer.observe(container)
 
@@ -156,12 +190,12 @@ function AnnotationCanvas({
 			setReady(false)
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [photoUrl, initialAnnotations, onCanvasReady])
+	}, [imgLoaded, photoUrl])
 
 	// Tool handling
 	useEffect(() => {
 		const canvas = fabricCanvasRef.current
-		if (!canvas) return
+		if (!canvas || !ready) return
 
 		canvas.isDrawingMode = false
 		canvas.selection = false
@@ -302,7 +336,7 @@ function AnnotationCanvas({
 			canvas.off('mouse:move')
 			canvas.off('mouse:up')
 		}
-	}, [activeTool, activeColor])
+	}, [activeTool, activeColor, ready])
 
 	// Sync drawing brush color
 	useEffect(() => {
@@ -314,7 +348,23 @@ function AnnotationCanvas({
 	}, [activeColor])
 
 	return (
-		<div ref={containerRef} className={cn('relative h-full w-full overflow-hidden', className)}>
+		<div
+			ref={containerRef}
+			className={cn(
+				'absolute inset-0 overflow-hidden rounded-xl',
+				className,
+			)}
+		>
+			{/* Image layer: CSS object-contain handles display reliably */}
+			<img
+				ref={imgElRef}
+				src={photoUrl}
+				alt=""
+				className="absolute inset-0 h-full w-full rounded-xl object-contain"
+				crossOrigin="anonymous"
+				onLoad={handleImgLoad}
+			/>
+			{/* Transparent Fabric.js canvas overlaid on image for annotations */}
 			<canvas ref={canvasElRef} />
 		</div>
 	)
