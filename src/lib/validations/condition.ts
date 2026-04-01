@@ -13,7 +13,7 @@ const conditionSchema = z.object({
 	mileageRead: z.number().int().nonnegative().nullable().optional(),
 	estimateMileage: z.number().int().nonnegative().nullable().optional(),
 	unit: z.enum(['km', 'miles']).optional(),
-	nextMot: z.string().datetime({ offset: true }).nullable().optional(),
+	nextMot: z.string().max(30).nullable().optional(),
 	fullServiceHistory: z.boolean().optional(),
 	testDrivePerformed: z.boolean().optional(),
 	errorMemoryRead: z.boolean().optional(),
@@ -23,6 +23,8 @@ const conditionSchema = z.object({
 	previousDamageReported: z.string().max(2000).nullable().optional(),
 	existingDamageNotReported: z.string().max(2000).nullable().optional(),
 	subsequentDamage: z.string().max(2000).nullable().optional(),
+	vehicleColor: z.string().max(50).nullable().optional(),
+	produceGroups: z.array(z.string().max(50)).optional(),
 })
 
 const damageMarkerSchema = z.object({

@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { DetailsSection } from '@/components/report/vehicle/details-section'
 import { IdentificationSection } from '@/components/report/vehicle/identification-section'
@@ -14,12 +14,14 @@ import { ToggleSwitch } from '@/components/ui/toggle-switch'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useReport } from '@/hooks/use-reports'
 import { useVehicleInfo } from '@/hooks/use-vehicle-info'
+import { useToastStore } from '@/stores/toast-store'
 
 function VehiclePage() {
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useVehicleInfo(reportId)
 	const { data: report } = useReport(reportId)
+	const toast = useToastStore()
 	const [showMissing, setShowMissing] = useState(false)
 
 	const {
@@ -67,9 +69,11 @@ function VehiclePage() {
 		},
 	})
 
-	// Populate form when data loads
+	// Populate form on initial load only (not on refetch after auto-save)
+	const initializedRef = useRef(false)
 	useEffect(() => {
-		if (!data) return
+		if (!data || initializedRef.current) return
+		initializedRef.current = true
 
 		const formData: Partial<VehicleFormData> = {
 			vin: data.vin ?? '',
@@ -102,41 +106,15 @@ function VehiclePage() {
 
 	const handleFieldBlur = useCallback(
 		(field: string) => {
-			// Controlled fields (NumberChipSelector, IconSelector, SelectField) do not
-			// render a native <input name="..."> so we read their current value from
-			// React Hook Form state instead of the DOM.
-			const controlledNumericFields = ['axles', 'drivenAxles', 'doors', 'seats', 'previousOwners']
-			const controlledStringFields = ['vehicleType', 'motorType', 'engineDesign', 'transmission']
+			const value = getValues(field as keyof VehicleFormData)
+			if (value === undefined) return
 
-			if (controlledNumericFields.includes(field)) {
-				const value = getValues(field as keyof VehicleFormData)
-				saveField(field, Number(value))
-				return
-			}
+			const numericFields = ['axles', 'drivenAxles', 'doors', 'seats', 'previousOwners', 'powerKw', 'powerHp', 'cylinders', 'displacement']
 
-			if (controlledStringFields.includes(field)) {
-				const value = getValues(field as keyof VehicleFormData)
-				saveField(field, value || null)
-				return
-			}
-
-			// For numeric fields stored as strings in the form, convert to number for the API
-			const numericStringFields = ['powerKw', 'powerHp', 'cylinders', 'displacement']
-
-			if (numericStringFields.includes(field)) {
-				const input = document.querySelector<HTMLInputElement>(`[name="${field}"]`)
-				const rawValue = input?.value
-				if (rawValue !== undefined) {
-					const num = parseFloat(rawValue)
-					saveField(field, rawValue === '' ? null : Number.isNaN(num) ? null : num)
-				}
-				return
-			}
-
-			// String and date fields — read from DOM input
-			const input = document.querySelector<HTMLInputElement>(`[name="${field}"]`)
-			const value = input?.value
-			if (value !== undefined) {
+			if (numericFields.includes(field)) {
+				const num = Number(value)
+				saveField(field, value === '' ? null : Number.isNaN(num) ? null : num)
+			} else {
 				saveField(field, value || null)
 			}
 		},
@@ -277,7 +255,7 @@ function VehiclePage() {
 				<Button
 					variant="primary"
 					size="lg"
-					onClick={flushNow}
+					onClick={() => { flushNow(); toast.success('Report updated', 2000) }}
 					loading={autoSaveState.status === 'saving'}
 				>
 					Update Report

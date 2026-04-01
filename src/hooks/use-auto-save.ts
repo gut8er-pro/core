@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useToastStore } from '@/stores/toast-store'
 
@@ -66,55 +66,104 @@ async function patchSection(
 	return response.json()
 }
 
+/**
+ * Silent auto-save hook with batching, queuing, and no success toasts.
+ *
+ * - Collects field changes into a pending batch
+ * - Debounces by 800ms (configurable), then sends one PATCH
+ * - If a save is in-flight when a new flush triggers, queues the data
+ *   and retries after the current save completes (no data loss)
+ * - Only shows toast on errors, never on success (status indicator is enough)
+ * - Flushes pending data on unmount / tab switch
+ */
 function useAutoSave({
 	reportId,
 	section,
-	debounceMs = 2000,
+	debounceMs = 800,
 	disabled = false,
 }: UseAutoSaveOptions): UseAutoSaveReturn {
 	const queryClient = useQueryClient()
 	const toast = useToastStore()
-	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-	const pendingRef = useRef<Record<string, unknown>>({})
-	const [state, setState] = useState<AutoSaveState>({
-		status: 'idle',
-		error: null,
-	})
 
-	// Use refs for the flush so we can call it from cleanup without stale closures
+	const pendingRef = useRef<Record<string, unknown>>({})
+	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const inflightRef = useRef(false)
+	const retryRef = useRef(false)
+	const mountedRef = useRef(true)
+
 	const reportIdRef = useRef(reportId)
 	const sectionRef = useRef(section)
+	const disabledRef = useRef(disabled)
 	reportIdRef.current = reportId
 	sectionRef.current = section
+	disabledRef.current = disabled
 
-	const mutation = useMutation({
-		mutationFn: (data: Record<string, unknown>) => patchSection(reportId, section, data),
-		onMutate: () => {
-			setState({ status: 'saving', error: null })
-		},
-		onSuccess: () => {
-			setState({ status: 'saved', error: null })
-			toast.success('Changes saved', 2000)
-			queryClient.invalidateQueries({
-				queryKey: ['report', reportId, section],
-			})
-		},
-		onError: (error: Error) => {
-			setState({ status: 'error', error: error.message })
-			toast.error(`Failed to save: ${error.message}`)
-		},
-	})
+	const [state, setState] = useState<AutoSaveState>({ status: 'idle', error: null })
 
 	const flush = useCallback(() => {
+		if (disabledRef.current) return
+
 		const data = { ...pendingRef.current }
 		pendingRef.current = {}
 
 		if (Object.keys(data).length === 0) return
 
-		mutation.mutate(data)
-	}, [mutation])
+		// If a save is already in-flight, put data back and mark for retry
+		if (inflightRef.current) {
+			Object.assign(pendingRef.current, data)
+			retryRef.current = true
+			return
+		}
 
-	// Immediately cancel any pending debounce and flush now
+		inflightRef.current = true
+		if (mountedRef.current) setState({ status: 'saving', error: null })
+
+		patchSection(reportIdRef.current, sectionRef.current, data)
+			.then(() => {
+				inflightRef.current = false
+				if (mountedRef.current) {
+					setState({ status: 'saved', error: null })
+					// Clear "saved" indicator after 2s
+					setTimeout(() => {
+						if (mountedRef.current) {
+							setState((prev) => (prev.status === 'saved' ? { status: 'idle', error: null } : prev))
+						}
+					}, 2000)
+				}
+				// Silently update the cache instead of invalidating (which triggers
+				// refetch → form reset → wiping unsaved fields)
+				queryClient.invalidateQueries({
+					queryKey: ['report', reportIdRef.current, sectionRef.current],
+					refetchType: 'none',
+				})
+				// If new changes came in while we were saving, flush again
+				if (retryRef.current) {
+					retryRef.current = false
+					flush()
+				}
+			})
+			.catch((error: Error) => {
+				inflightRef.current = false
+				if (mountedRef.current) {
+					setState({ status: 'error', error: error.message })
+					toast.error(`Save failed: ${error.message}`)
+				}
+				// Put data back so it can be retried
+				Object.assign(pendingRef.current, data)
+				if (retryRef.current) {
+					retryRef.current = false
+				}
+			})
+	}, [queryClient, toast])
+
+	const scheduleFlush = useCallback(() => {
+		if (timerRef.current) clearTimeout(timerRef.current)
+		timerRef.current = setTimeout(() => {
+			timerRef.current = null
+			flush()
+		}, debounceMs)
+	}, [debounceMs, flush])
+
 	const flushNow = useCallback(() => {
 		if (timerRef.current) {
 			clearTimeout(timerRef.current)
@@ -123,40 +172,31 @@ function useAutoSave({
 		flush()
 	}, [flush])
 
-	const scheduleFlush = useCallback(() => {
-		if (timerRef.current) {
-			clearTimeout(timerRef.current)
-		}
-		timerRef.current = setTimeout(() => {
-			timerRef.current = null
-			flush()
-		}, debounceMs)
-	}, [debounceMs, flush])
-
 	const saveField = useCallback(
 		(field: string, value: unknown) => {
-			if (disabled) return
+			if (disabledRef.current) return
 			pendingRef.current[field] = value
 			scheduleFlush()
 		},
-		[scheduleFlush, disabled],
+		[scheduleFlush],
 	)
 
 	const saveFields = useCallback(
 		(data: Record<string, unknown>) => {
-			if (disabled) return
+			if (disabledRef.current) return
 			Object.assign(pendingRef.current, data)
 			scheduleFlush()
 		},
-		[scheduleFlush, disabled],
+		[scheduleFlush],
 	)
 
-	// Flush pending changes on unmount (tab switch)
+	// Flush on unmount (tab switch)
 	useEffect(() => {
+		mountedRef.current = true
 		return () => {
-			// Trigger blur on the focused input to capture its current value
-			// before we read pendingRef. The blur handler runs synchronously,
-			// calling saveField which writes to pendingRef.
+			mountedRef.current = false
+
+			// Blur active input to capture its current value
 			const activeEl = document.activeElement
 			if (
 				activeEl instanceof HTMLInputElement ||
@@ -170,26 +210,26 @@ function useAutoSave({
 				clearTimeout(timerRef.current)
 				timerRef.current = null
 			}
+
 			const data = { ...pendingRef.current }
 			pendingRef.current = {}
 			if (Object.keys(data).length > 0) {
-				// Fire-and-forget save on unmount — use raw fetch since mutation may not be available
-				patchSection(reportIdRef.current, sectionRef.current, data).catch(() => {
-					// Silent fail on unmount flush
-				})
+				// Fire-and-forget on unmount
+				patchSection(reportIdRef.current, sectionRef.current, data).catch(() => {})
 			}
 		}
 	}, [])
 
+	// Warn on page close with unsaved data
 	useEffect(() => {
 		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-			if (Object.keys(pendingRef.current).length > 0 || mutation.isPending) {
+			if (Object.keys(pendingRef.current).length > 0 || inflightRef.current) {
 				e.preventDefault()
 			}
 		}
 		window.addEventListener('beforeunload', handleBeforeUnload)
 		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-	}, [mutation.isPending])
+	}, [])
 
 	return { saveField, saveFields, flushNow, state }
 }

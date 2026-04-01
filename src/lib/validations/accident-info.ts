@@ -13,11 +13,12 @@ const dateString = z
 			.nullable(),
 	)
 
-// Accept empty strings or valid emails
+// Accept empty strings or any string (email validation is client-side only)
 const emailOrEmpty = z
 	.string()
+	.max(200)
 	.transform((v) => (v === '' ? null : v))
-	.pipe(z.string().email().nullable())
+	.pipe(z.string().nullable())
 
 const accidentInfoSchema = z.object({
 	accidentDay: dateString.nullable().optional(),
@@ -30,12 +31,7 @@ const claimantInfoSchema = z.object({
 	firstName: z.string().max(100).nullable().optional(),
 	lastName: z.string().max(100).nullable().optional(),
 	street: z.string().max(200).nullable().optional(),
-	postcode: z
-		.string()
-		.max(5)
-		.regex(/^\d{0,5}$/, 'Postcode must be up to 5 digits')
-		.nullable()
-		.optional(),
+	postcode: z.string().max(10).nullable().optional(),
 	location: z.string().max(200).nullable().optional(),
 	email: emailOrEmpty.nullable().optional(),
 	phone: z.string().max(50).nullable().optional(),
@@ -53,12 +49,7 @@ const opponentInfoSchema = z.object({
 	firstName: z.string().max(100).nullable().optional(),
 	lastName: z.string().max(100).nullable().optional(),
 	street: z.string().max(200).nullable().optional(),
-	postcode: z
-		.string()
-		.max(5)
-		.regex(/^\d{0,5}$/, 'Postcode must be up to 5 digits')
-		.nullable()
-		.optional(),
+	postcode: z.string().max(10).nullable().optional(),
 	location: z.string().max(200).nullable().optional(),
 	email: emailOrEmpty.nullable().optional(),
 	phone: z.string().max(50).nullable().optional(),
@@ -72,12 +63,7 @@ const visitSchema = z.object({
 	id: z.string().uuid().optional(),
 	type: visitTypeEnum,
 	street: z.string().max(200).nullable().optional(),
-	postcode: z
-		.string()
-		.max(5)
-		.regex(/^\d{0,5}$/, 'Postcode must be up to 5 digits')
-		.nullable()
-		.optional(),
+	postcode: z.string().max(10).nullable().optional(),
 	location: z.string().max(200).nullable().optional(),
 	date: dateString.nullable().optional(),
 	expert: z.string().max(200).nullable().optional(),

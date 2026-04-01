@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { BvskRateTable } from '@/components/report/invoice/bvsk-rate-table'
 import { InvoiceBanner } from '@/components/report/invoice/invoice-banner'
@@ -45,8 +45,10 @@ function InvoicePage() {
 	})
 
 	// Populate form when data loads
+	const initializedRef = useRef(false)
 	useEffect(() => {
-		if (!data) return
+		if (!data || initializedRef.current) return
+		initializedRef.current = true
 
 		const inv = data.invoice
 		const formData: Partial<InvoiceFormData> = {
@@ -71,22 +73,20 @@ function InvoicePage() {
 
 	const handleFieldBlur = useCallback(
 		(field: string) => {
-			const el = document.querySelector<HTMLInputElement>(`[name="${field}"]`)
-			if (!el) return
-			const value = el.type === 'checkbox' ? el.checked : el.value
+			const value = getValues(field as keyof InvoiceFormData)
+			if (value === undefined) return
 
-			// Map numeric fields
 			if (field === 'payoutDelay') {
-				const numVal = parseInt(el.value, 10)
+				const numVal = parseInt(String(value), 10)
 				saveField(`invoice.${field}`, Number.isNaN(numVal) ? null : numVal)
 			} else if (field === 'date') {
-				const dateVal = el.value ? new Date(el.value).toISOString() : null
+				const dateVal = value ? new Date(String(value)).toISOString() : null
 				saveField(`invoice.${field}`, dateVal)
 			} else {
 				saveField(`invoice.${field}`, value)
 			}
 		},
-		[saveField],
+		[saveField, getValues],
 	)
 
 	const handleApplyBvskRate = useCallback(

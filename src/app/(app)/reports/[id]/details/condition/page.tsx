@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { ConditionSection } from '@/components/report/condition/condition-section'
 import { DamageDiagramSection } from '@/components/report/condition/damage-diagram-section'
@@ -26,12 +26,14 @@ import {
 } from '@/hooks/use-condition'
 import { useReport } from '@/hooks/use-reports'
 import { getPaintColor } from '@/lib/validations/condition'
+import { useToastStore } from '@/stores/toast-store'
 
 function ConditionPage() {
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useCondition(reportId)
 	const { data: report } = useReport(reportId)
+	const toast = useToastStore()
 	const saveDamageMarker = useSaveDamageMarker(reportId)
 	const deleteDamageMarker = useDeleteDamageMarker(reportId)
 	const savePaintMarker = useSavePaintMarker(reportId)
@@ -83,9 +85,11 @@ function ConditionPage() {
 		},
 	})
 
-	// Populate form when data loads
+	// Populate form on initial load only
+	const initializedRef = useRef(false)
 	useEffect(() => {
-		if (!data?.condition) return
+		if (!data?.condition || initializedRef.current) return
+		initializedRef.current = true
 
 		const c = data.condition
 		const formData: Partial<ConditionFormData> = {
@@ -118,19 +122,17 @@ function ConditionPage() {
 
 	const handleFieldBlur = useCallback(
 		(field: string) => {
-			const el = document.querySelector<HTMLInputElement>(`[name="${field}"]`)
-			if (!el) return
-			const value = el.type === 'checkbox' ? el.checked : el.value
+			const value = getValues(field as keyof ConditionFormData)
+			if (value === undefined) return
 
-			// Map numeric fields
 			if (field === 'mileageRead' || field === 'estimateMileage') {
-				const numVal = parseInt(el.value, 10)
+				const numVal = parseInt(String(value), 10)
 				saveField(`condition.${field}`, Number.isNaN(numVal) ? null : numVal)
 			} else {
 				saveField(`condition.${field}`, value)
 			}
 		},
-		[saveField],
+		[saveField, getValues],
 	)
 
 	// Damage markers
@@ -357,7 +359,7 @@ function ConditionPage() {
 				<Button
 					variant="primary"
 					size="lg"
-					onClick={flushNow}
+					onClick={() => { flushNow(); toast.success('Report updated', 2000) }}
 					loading={autoSaveState.status === 'saving'}
 				>
 					Update Report
