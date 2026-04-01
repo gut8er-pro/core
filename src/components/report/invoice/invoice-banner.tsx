@@ -3,10 +3,7 @@
 import { useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import {
-	calculateNetTotal,
-	calculateGrossTotal,
-} from '@/lib/utils/invoice-calculations'
+import { calculateGrossTotal, calculateNetTotal } from '@/lib/utils/invoice-calculations'
 import type { InvoiceSectionProps } from './types'
 
 function formatEUR(value: number): string {
@@ -16,10 +13,7 @@ function formatEUR(value: number): string {
 	}).format(value)
 }
 
-function InvoiceBanner({
-	control,
-	className,
-}: Pick<InvoiceSectionProps, 'control' | 'className'>) {
+function InvoiceBanner({ control, className }: Pick<InvoiceSectionProps, 'control' | 'className'>) {
 	const lineItems = useWatch({ control, name: 'lineItems' })
 
 	const parsedItems = (lineItems ?? []).map((item) => ({
@@ -30,23 +24,12 @@ function InvoiceBanner({
 	const grossTotal = calculateGrossTotal(netTotal, 19)
 
 	return (
-		<div
-			className={cn(
-				'rounded-xl bg-linear-to-r from-primary to-primary-hover p-6',
-				className,
-			)}
-		>
+		<div className={cn('rounded-xl bg-linear-to-r from-primary to-primary-hover p-6', className)}>
 			<div className="flex items-center justify-between">
 				<div className="flex flex-col gap-1">
-					<span className="text-body-sm font-medium text-white/80">
-						Invoice Amount
-					</span>
-					<span className="text-3xl font-bold text-white">
-						{formatEUR(grossTotal)}
-					</span>
-					<span className="text-body-sm text-white/70">
-						Before tax {formatEUR(netTotal)}
-					</span>
+					<span className="text-body-sm font-medium text-white/80">Invoice Amount</span>
+					<span className="text-3xl font-bold text-white">{formatEUR(grossTotal)}</span>
+					<span className="text-body-sm text-white/70">Before tax {formatEUR(netTotal)}</span>
 				</div>
 
 				<Button

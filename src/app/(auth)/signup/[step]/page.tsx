@@ -1,14 +1,14 @@
 'use client'
 
 import { notFound, useParams } from 'next/navigation'
+import { AccountStep } from '@/components/auth/account-step'
+import { BusinessStep } from '@/components/auth/business-step'
+import { CompleteStep } from '@/components/auth/complete-step'
+import { IntegrationsStep } from '@/components/auth/integrations-step'
+import { PersonalStep } from '@/components/auth/personal-step'
+import { PlanStep } from '@/components/auth/plan-step'
 import { StepperSidebar } from '@/components/ui/stepper-sidebar'
 import { useSignupStore } from '@/stores/signup-store'
-import { AccountStep } from '@/components/auth/account-step'
-import { PersonalStep } from '@/components/auth/personal-step'
-import { BusinessStep } from '@/components/auth/business-step'
-import { PlanStep } from '@/components/auth/plan-step'
-import { IntegrationsStep } from '@/components/auth/integrations-step'
-import { CompleteStep } from '@/components/auth/complete-step'
 
 const STEPS = [
 	{ number: 1, title: 'Account', subtitle: 'Login credentials' },
@@ -45,11 +45,7 @@ function SignupStepPage() {
 
 	return (
 		<div className="flex h-screen">
-			<StepperSidebar
-				steps={STEPS}
-				currentStep={stepNumber}
-				completedSteps={completedSteps}
-			/>
+			<StepperSidebar steps={STEPS} currentStep={stepNumber} completedSteps={completedSteps} />
 
 			{/* Right panel: progress bar pinned at top, content scrolls below */}
 			<div className="flex flex-1 flex-col">

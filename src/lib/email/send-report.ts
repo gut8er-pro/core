@@ -28,9 +28,7 @@ function buildReportEmailHtml(params: {
 }): string {
 	const { recipientName, body, reportTitle, senderName, senderCompany } = params
 
-	const footerLine = senderCompany
-		? `${senderName} &mdash; ${senderCompany}`
-		: senderName
+	const footerLine = senderCompany ? `${senderName} &mdash; ${senderCompany}` : senderName
 
 	return `<!DOCTYPE html>
 <html lang="en">
@@ -90,10 +88,17 @@ function buildReportEmailHtml(params: {
 </html>`
 }
 
-async function sendReportEmail(
-	params: SendReportEmailParams,
-): Promise<SendReportEmailResult> {
-	const { to, recipientName, subject, body, reportTitle, senderName, senderCompany, pdfAttachment } = params
+async function sendReportEmail(params: SendReportEmailParams): Promise<SendReportEmailResult> {
+	const {
+		to,
+		recipientName,
+		subject,
+		body,
+		reportTitle,
+		senderName,
+		senderCompany,
+		pdfAttachment,
+	} = params
 
 	const html = buildReportEmailHtml({
 		recipientName,
@@ -137,5 +142,5 @@ async function sendReportEmail(
 	}
 }
 
-export { sendReportEmail }
 export type { SendReportEmailParams, SendReportEmailResult }
+export { sendReportEmail }

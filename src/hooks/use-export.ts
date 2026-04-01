@@ -1,8 +1,4 @@
-import {
-	useQuery,
-	useMutation,
-	useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 type ExportConfigResponse = {
 	id: string
@@ -57,9 +53,7 @@ async function sendReport(
 	})
 	if (!response.ok) {
 		const errorBody = await response.json().catch(() => ({}))
-		throw new Error(
-			(errorBody as { error?: string }).error ?? 'Failed to send report',
-		)
+		throw new Error((errorBody as { error?: string }).error ?? 'Failed to send report')
 	}
 	return response.json()
 }
@@ -75,8 +69,7 @@ function useExportConfig(reportId: string) {
 function useSaveExportConfig(reportId: string) {
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationFn: (data: Record<string, unknown>) =>
-			patchExportConfig(reportId, data),
+		mutationFn: (data: Record<string, unknown>) => patchExportConfig(reportId, data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ['report', reportId, 'export'],
@@ -88,8 +81,7 @@ function useSaveExportConfig(reportId: string) {
 function useSendReport(reportId: string) {
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationFn: (data: Record<string, unknown>) =>
-			sendReport(reportId, data),
+		mutationFn: (data: Record<string, unknown>) => sendReport(reportId, data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ['report', reportId],
@@ -98,10 +90,5 @@ function useSendReport(reportId: string) {
 	})
 }
 
-export {
-	useExportConfig,
-	useSaveExportConfig,
-	useSendReport,
-	fetchExportConfig,
-}
 export type { ExportConfigResponse, SendReportResponse }
+export { fetchExportConfig, useExportConfig, useSaveExportConfig, useSendReport }

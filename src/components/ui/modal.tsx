@@ -1,6 +1,6 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
-import { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 type ModalProps = {
@@ -76,5 +76,5 @@ function Modal({ title, open, onClose, size = 'md', children, footer, className 
 	)
 }
 
-export { Modal }
 export type { ModalProps }
+export { Modal }

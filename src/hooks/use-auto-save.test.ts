@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAutoSave } from './use-auto-save'
 
 vi.mock('@tanstack/react-query', () => ({
@@ -12,7 +12,8 @@ vi.mock('@tanstack/react-query', () => ({
 				onError?: (e: Error) => void
 			}
 			opts.onMutate?.()
-			opts.mutationFn(data)
+			opts
+				.mutationFn(data)
 				.then(() => opts.onSuccess?.())
 				.catch((e: Error) => opts.onError?.(e))
 		}),

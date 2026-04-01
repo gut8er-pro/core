@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetchExportConfig } from './use-export'
 
 const mockFetch = vi.fn()
@@ -91,16 +91,12 @@ describe('fetchExportConfig', () => {
 
 	it('throws on non-ok response', async () => {
 		mockFetch.mockResolvedValueOnce({ ok: false, status: 404 })
-		await expect(fetchExportConfig('report-123')).rejects.toThrow(
-			'Failed to fetch export config',
-		)
+		await expect(fetchExportConfig('report-123')).rejects.toThrow('Failed to fetch export config')
 	})
 
 	it('throws on non-ok 500 response', async () => {
 		mockFetch.mockResolvedValueOnce({ ok: false, status: 500 })
-		await expect(fetchExportConfig('report-123')).rejects.toThrow(
-			'Failed to fetch export config',
-		)
+		await expect(fetchExportConfig('report-123')).rejects.toThrow('Failed to fetch export config')
 	})
 })
 

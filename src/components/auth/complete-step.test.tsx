@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@/test/test-utils'
 import { CompleteStep } from './complete-step'
 
 const mockPush = vi.fn()
@@ -25,9 +25,7 @@ describe('CompleteStep', () => {
 
 	it('renders success message', () => {
 		render(<CompleteStep />)
-		expect(
-			screen.getByText('Your account has been created successfully.'),
-		).toBeInTheDocument()
+		expect(screen.getByText('Your account has been created successfully.')).toBeInTheDocument()
 	})
 
 	it('shows Pro plan badge and payment setup section', () => {
@@ -45,9 +43,7 @@ describe('CompleteStep', () => {
 
 	it('renders payment setup and skip buttons', () => {
 		render(<CompleteStep />)
-		expect(
-			screen.getByRole('button', { name: /Set up payment/ }),
-		).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: /Set up payment/ })).toBeInTheDocument()
 		expect(screen.getByRole('button', { name: 'Skip for now' })).toBeInTheDocument()
 	})
 

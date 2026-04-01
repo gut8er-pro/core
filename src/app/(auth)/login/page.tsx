@@ -1,10 +1,10 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Eye, EyeOff } from 'lucide-react'
-import { login, signInWithGoogle, signInWithApple } from '@/lib/auth/actions'
+import { useActionState, useState } from 'react'
+import { login, signInWithApple, signInWithGoogle } from '@/lib/auth/actions'
 
 function LoginPage() {
 	const [error, formAction, isPending] = useActionState(
@@ -31,7 +31,9 @@ function LoginPage() {
 
 					{/* Title */}
 					<h1 className="z-10 mt-12 text-[36px] font-medium leading-[46px] text-black">
-						Professional Vehicle<br />Assessment Web App
+						Professional Vehicle
+						<br />
+						Assessment Web App
 					</h1>
 
 					{/* Stat badges */}
@@ -159,7 +161,9 @@ function LoginPage() {
 								className="flex h-[53px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-5 text-[16px] transition-colors hover:bg-grey-25"
 							>
 								<Image src="/images/icon-google.svg" alt="" width={24} height={24} />
-								<span className="text-black">Login with <span className="font-medium">Google</span></span>
+								<span className="text-black">
+									Login with <span className="font-medium">Google</span>
+								</span>
 							</button>
 						</form>
 						<form action={signInWithApple} className="flex-1">
@@ -168,7 +172,9 @@ function LoginPage() {
 								className="flex h-[53px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-5 text-[16px] transition-colors hover:bg-grey-25"
 							>
 								<Image src="/images/icon-apple.svg" alt="" width={24} height={24} />
-								<span className="text-black">Login with <span className="font-medium">Apple</span></span>
+								<span className="text-black">
+									Login with <span className="font-medium">Apple</span>
+								</span>
 							</button>
 						</form>
 					</div>

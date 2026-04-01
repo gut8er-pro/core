@@ -1,8 +1,8 @@
 'use client'
 
 import { ImageOff, Palette, Trash2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import type { Photo } from '@/hooks/use-photos'
+import { cn } from '@/lib/utils'
 
 type PhotoViewerProps = {
 	photo: Photo | null
@@ -12,12 +12,7 @@ type PhotoViewerProps = {
 	className?: string
 }
 
-function PhotoViewer({
-	photo,
-	onDelete,
-	onAnnotate,
-	className,
-}: PhotoViewerProps) {
+function PhotoViewer({ photo, onDelete, onAnnotate, className }: PhotoViewerProps) {
 	if (!photo) {
 		return (
 			<div
@@ -27,9 +22,7 @@ function PhotoViewer({
 				)}
 			>
 				<ImageOff className="h-10 w-10 text-grey-100" />
-				<p className="text-body text-grey-100">
-					Select a photo to view
-				</p>
+				<p className="text-body text-grey-100">Select a photo to view</p>
 			</div>
 		)
 	}
@@ -77,5 +70,5 @@ function PhotoViewer({
 	)
 }
 
-export { PhotoViewer }
 export type { PhotoViewerProps }
+export { PhotoViewer }

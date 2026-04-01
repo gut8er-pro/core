@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
-import { PhotoGrid } from './photo-grid'
+import { describe, expect, it, vi } from 'vitest'
 import type { Photo } from '@/hooks/use-photos'
+import { render, screen } from '@/test/test-utils'
+import { PhotoGrid } from './photo-grid'
 
 const mockPhotos: Photo[] = [
 	{

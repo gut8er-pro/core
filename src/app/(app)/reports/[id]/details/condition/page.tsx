@@ -1,29 +1,29 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import { useForm } from 'react-hook-form'
 import { CheckCircle2, Loader2 } from 'lucide-react'
-import {
-	useCondition,
-	useSaveDamageMarker,
-	useDeleteDamageMarker,
-	useSavePaintMarker,
-	useDeletePaintMarker,
-	useSaveTireSet,
-	useDeleteTireSet,
-} from '@/hooks/use-condition'
-import { useReport } from '@/hooks/use-reports'
-import { useAutoSave } from '@/hooks/use-auto-save'
-import { getPaintColor } from '@/lib/validations/condition'
-import { ToggleSwitch } from '@/components/ui/toggle-switch'
-import { CompletionBadge } from '@/components/ui/completion-badge'
-import { Button } from '@/components/ui/button'
+import { useParams } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { ConditionSection } from '@/components/report/condition/condition-section'
 import { DamageDiagramSection } from '@/components/report/condition/damage-diagram-section'
-import { TireSection } from '@/components/report/condition/tire-section'
 import { PriorDamageSection } from '@/components/report/condition/prior-damage-section'
+import { TireSection } from '@/components/report/condition/tire-section'
 import type { ConditionFormData } from '@/components/report/condition/types'
+import { Button } from '@/components/ui/button'
+import { CompletionBadge } from '@/components/ui/completion-badge'
+import { ToggleSwitch } from '@/components/ui/toggle-switch'
+import { useAutoSave } from '@/hooks/use-auto-save'
+import {
+	useCondition,
+	useDeleteDamageMarker,
+	useDeletePaintMarker,
+	useDeleteTireSet,
+	useSaveDamageMarker,
+	useSavePaintMarker,
+	useSaveTireSet,
+} from '@/hooks/use-condition'
+import { useReport } from '@/hooks/use-reports'
+import { getPaintColor } from '@/lib/validations/condition'
 
 function ConditionPage() {
 	const params = useParams<{ id: string }>()
@@ -38,7 +38,11 @@ function ConditionPage() {
 	const deleteTireSet = useDeleteTireSet(reportId)
 	const [showMissing, setShowMissing] = useState(false)
 
-	const { saveField, flushNow, state: autoSaveState } = useAutoSave({
+	const {
+		saveField,
+		flushNow,
+		state: autoSaveState,
+	} = useAutoSave({
 		reportId,
 		section: 'condition',
 		disabled: report?.isLocked,
@@ -119,7 +123,7 @@ function ConditionPage() {
 			// Map numeric fields
 			if (field === 'mileageRead' || field === 'estimateMileage') {
 				const numVal = parseInt(el.value, 10)
-				saveField(`condition.${field}`, isNaN(numVal) ? null : numVal)
+				saveField(`condition.${field}`, Number.isNaN(numVal) ? null : numVal)
 			} else {
 				saveField(`condition.${field}`, value)
 			}
@@ -193,7 +197,19 @@ function ConditionPage() {
 
 	// Tire sets
 	const handleSaveTireSet = useCallback(
-		(tireSet: { id?: string; setNumber: number; matchAndAlloy: boolean; tires: Array<{ id?: string; position: string; size: string; profileLevel: string; manufacturer: string; usability: number }> }) => {
+		(tireSet: {
+			id?: string
+			setNumber: number
+			matchAndAlloy: boolean
+			tires: Array<{
+				id?: string
+				position: string
+				size: string
+				profileLevel: string
+				manufacturer: string
+				usability: number
+			}>
+		}) => {
 			saveTireSet.mutate(tireSet)
 		},
 		[saveTireSet],
@@ -211,9 +227,17 @@ function ConditionPage() {
 		const values = getValues()
 		let count = 0
 		const stringFields: (keyof ConditionFormData)[] = [
-			'paintType', 'hard', 'paintCondition', 'generalCondition',
-			'bodyCondition', 'interiorCondition', 'drivingAbility',
-			'specialFeatures', 'mileageRead', 'estimateMileage', 'nextMot',
+			'paintType',
+			'hard',
+			'paintCondition',
+			'generalCondition',
+			'bodyCondition',
+			'interiorCondition',
+			'drivingAbility',
+			'specialFeatures',
+			'mileageRead',
+			'estimateMileage',
+			'nextMot',
 		]
 		for (const f of stringFields) {
 			if (!values[f]) count++
@@ -225,9 +249,18 @@ function ConditionPage() {
 	const completionPercentage = (() => {
 		const values = getValues()
 		const allFields: (keyof ConditionFormData)[] = [
-			'paintType', 'hard', 'paintCondition', 'generalCondition',
-			'bodyCondition', 'interiorCondition', 'drivingAbility',
-			'specialFeatures', 'mileageRead', 'estimateMileage', 'nextMot', 'notes',
+			'paintType',
+			'hard',
+			'paintCondition',
+			'generalCondition',
+			'bodyCondition',
+			'interiorCondition',
+			'drivingAbility',
+			'specialFeatures',
+			'mileageRead',
+			'estimateMileage',
+			'nextMot',
+			'notes',
 		]
 		let filled = 0
 		for (const f of allFields) {
@@ -254,11 +287,7 @@ function ConditionPage() {
 						{missingFieldCount} fields need attention
 					</span>
 				</div>
-				<ToggleSwitch
-					label=""
-					checked={showMissing}
-					onCheckedChange={setShowMissing}
-				/>
+				<ToggleSwitch label="" checked={showMissing} onCheckedChange={setShowMissing} />
 			</div>
 
 			{/* Page heading with completion */}
@@ -282,9 +311,7 @@ function ConditionPage() {
 							<span className="text-primary">Saved</span>
 						</>
 					)}
-					{autoSaveState.status === 'error' && (
-						<span className="text-error">Failed to save</span>
-					)}
+					{autoSaveState.status === 'error' && <span className="text-error">Failed to save</span>}
 				</div>
 			)}
 
@@ -313,15 +340,16 @@ function ConditionPage() {
 				onDeleteTireSet={handleDeleteTireSet}
 			/>
 
-			<PriorDamageSection
-				register={register}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
-			/>
+			<PriorDamageSection register={register} errors={errors} onFieldBlur={handleFieldBlur} />
 
 			{/* Update Report button */}
 			<div className="flex justify-end">
-				<Button variant="primary" size="lg" onClick={flushNow} loading={autoSaveState.status === 'saving'}>
+				<Button
+					variant="primary"
+					size="lg"
+					onClick={flushNow}
+					loading={autoSaveState.status === 'saving'}
+				>
 					Update Report
 				</Button>
 			</div>

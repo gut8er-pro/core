@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@/test/test-utils'
 import { UploadZone } from './upload-zone'
 
 describe('UploadZone', () => {
@@ -20,13 +20,9 @@ describe('UploadZone', () => {
 	})
 
 	it('shows "Maximum photos reached" when currentCount >= maxFiles', () => {
-		render(
-			<UploadZone onFilesSelected={vi.fn()} currentCount={20} maxFiles={20} />,
-		)
+		render(<UploadZone onFilesSelected={vi.fn()} currentCount={20} maxFiles={20} />)
 		expect(screen.getByText('Maximum photos reached')).toBeInTheDocument()
-		expect(
-			screen.queryByText('Drag & drop photos here'),
-		).not.toBeInTheDocument()
+		expect(screen.queryByText('Drag & drop photos here')).not.toBeInTheDocument()
 	})
 
 	it('upload button is disabled when disabled prop is true', () => {
@@ -43,9 +39,7 @@ describe('UploadZone', () => {
 		const file = new File(['photo-data'], 'test-photo.jpg', {
 			type: 'image/jpeg',
 		})
-		const input = document.querySelector(
-			'input[type="file"]',
-		) as HTMLInputElement
+		const input = document.querySelector('input[type="file"]') as HTMLInputElement
 		await user.upload(input, file)
 
 		expect(onFilesSelected).toHaveBeenCalledOnce()

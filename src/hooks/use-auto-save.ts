@@ -1,5 +1,5 @@
-import { useRef, useCallback, useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useToastStore } from '@/stores/toast-store'
 
 type UseAutoSaveOptions = {
@@ -60,9 +60,7 @@ async function patchSection(
 
 	if (!response.ok) {
 		const errorBody = await response.json().catch(() => ({}))
-		throw new Error(
-			(errorBody as { error?: string }).error ?? `Failed to save ${section}`,
-		)
+		throw new Error((errorBody as { error?: string }).error ?? `Failed to save ${section}`)
 	}
 
 	return response.json()
@@ -90,8 +88,7 @@ function useAutoSave({
 	sectionRef.current = section
 
 	const mutation = useMutation({
-		mutationFn: (data: Record<string, unknown>) =>
-			patchSection(reportId, section, data),
+		mutationFn: (data: Record<string, unknown>) => patchSection(reportId, section, data),
 		onMutate: () => {
 			setState({ status: 'saving', error: null })
 		},
@@ -197,5 +194,5 @@ function useAutoSave({
 	return { saveField, saveFields, flushNow, state }
 }
 
+export type { AutoSaveState, UseAutoSaveOptions, UseAutoSaveReturn }
 export { useAutoSave }
-export type { UseAutoSaveOptions, AutoSaveState, UseAutoSaveReturn }

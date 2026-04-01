@@ -84,20 +84,20 @@ type TireInput = z.infer<typeof tireSchema>
 type TireSetInput = z.infer<typeof tireSetSchema>
 type ConditionPatchInput = z.infer<typeof conditionPatchSchema>
 
-export {
-	conditionSchema,
-	damageMarkerSchema,
-	paintMarkerSchema,
-	tireSchema,
-	tireSetSchema,
-	conditionPatchSchema,
-	getPaintColor,
-}
 export type {
 	ConditionInput,
+	ConditionPatchInput,
 	DamageMarkerInput,
 	PaintMarkerInput,
 	TireInput,
 	TireSetInput,
-	ConditionPatchInput,
+}
+export {
+	conditionPatchSchema,
+	conditionSchema,
+	damageMarkerSchema,
+	getPaintColor,
+	paintMarkerSchema,
+	tireSchema,
+	tireSetSchema,
 }

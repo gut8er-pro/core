@@ -1,8 +1,4 @@
-import {
-	useQuery,
-	useMutation,
-	useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { VehicleInfoInput } from '@/lib/validations/vehicle'
 
 type VehicleInfoResponse = {
@@ -69,8 +65,7 @@ function useVehicleInfo(reportId: string) {
 function useSaveVehicleInfo(reportId: string) {
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationFn: (data: VehicleInfoInput) =>
-			patchVehicleInfo(reportId, data),
+		mutationFn: (data: VehicleInfoInput) => patchVehicleInfo(reportId, data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ['report', reportId, 'vehicle'],
@@ -79,9 +74,5 @@ function useSaveVehicleInfo(reportId: string) {
 	})
 }
 
-export {
-	useVehicleInfo,
-	useSaveVehicleInfo,
-	fetchVehicleInfo,
-}
 export type { VehicleInfoResponse }
+export { fetchVehicleInfo, useSaveVehicleInfo, useVehicleInfo }

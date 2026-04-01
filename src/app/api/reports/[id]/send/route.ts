@@ -1,9 +1,9 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
-import { sendReportSchema } from '@/lib/validations/export'
 import { sendReportEmail } from '@/lib/email/send-report'
 import { generateReportPdfBuffer } from '@/lib/pdf/generate-buffer'
+import { prisma } from '@/lib/prisma'
+import { sendReportSchema } from '@/lib/validations/export'
 
 type RouteContext = {
 	params: Promise<{ id: string }>
@@ -12,7 +12,10 @@ type RouteContext = {
 async function POST(request: NextRequest, context: RouteContext) {
 	if (!process.env.RESEND_API_KEY) {
 		return NextResponse.json(
-			{ error: 'Email service is not configured. Please add RESEND_API_KEY to your environment variables.' },
+			{
+				error:
+					'Email service is not configured. Please add RESEND_API_KEY to your environment variables.',
+			},
 			{ status: 503 },
 		)
 	}
@@ -23,7 +26,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -31,10 +34,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	}
 
 	if (report.isLocked) {
-		return NextResponse.json(
-			{ error: 'Report is already locked and sent' },
-			{ status: 403 },
-		)
+		return NextResponse.json({ error: 'Report is already locked and sent' }, { status: 403 })
 	}
 
 	const body = await request.json()
@@ -75,7 +75,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	// Generate PDF attachment
 	let pdfAttachment: { filename: string; content: Buffer } | undefined
 	try {
-		const pdfResult = await generateReportPdfBuffer(id, user!.id)
+		const pdfResult = await generateReportPdfBuffer(id, user?.id)
 		if ('buffer' in pdfResult) {
 			pdfAttachment = {
 				filename: pdfResult.filename,
@@ -91,7 +91,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 
 	// Fetch sender details from DB
 	const dbUser = await prisma.user.findUnique({
-		where: { id: user!.id },
+		where: { id: user?.id },
 		select: {
 			firstName: true,
 			lastName: true,
@@ -100,7 +100,8 @@ async function POST(request: NextRequest, context: RouteContext) {
 		},
 	})
 
-	const senderName = [dbUser?.firstName, dbUser?.lastName].filter(Boolean).join(' ') || 'Gut8erPRO User'
+	const senderName =
+		[dbUser?.firstName, dbUser?.lastName].filter(Boolean).join(' ') || 'Gut8erPRO User'
 	const senderCompany = dbUser?.business?.companyName ?? undefined
 
 	// Send email via Resend with PDF attachment
@@ -148,7 +149,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	// Create notification for sent/locked report
 	const { createNotification } = await import('@/lib/notifications/create')
 	await createNotification({
-		userId: user!.id,
+		userId: user?.id,
 		eventType: 'REPORT_SENT',
 		title: 'Report Sent',
 		description: `Report "${report.title}" was sent to ${data.recipientEmail}.`,

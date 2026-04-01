@@ -8,7 +8,12 @@ type SignaturePadProps = {
 	className?: string
 }
 
-function SignaturePad({ mode: initialMode = 'draw', value, onChange, className }: SignaturePadProps) {
+function SignaturePad({
+	mode: initialMode = 'draw',
+	value,
+	onChange,
+	className,
+}: SignaturePadProps) {
 	const [mode, setMode] = useState(initialMode)
 	const canvasRef = useRef<HTMLCanvasElement>(null)
 	const [isDrawing, setIsDrawing] = useState(false)
@@ -76,9 +81,7 @@ function SignaturePad({ mode: initialMode = 'draw', value, onChange, className }
 					onClick={() => setMode('draw')}
 					className={cn(
 						'cursor-pointer rounded-full px-4 py-2 text-body-sm font-medium transition-colors',
-						mode === 'draw'
-							? 'bg-black text-white'
-							: 'text-grey-100 hover:bg-grey-25',
+						mode === 'draw' ? 'bg-black text-white' : 'text-grey-100 hover:bg-grey-25',
 					)}
 				>
 					Draw Signature
@@ -90,9 +93,7 @@ function SignaturePad({ mode: initialMode = 'draw', value, onChange, className }
 					onClick={() => setMode('upload')}
 					className={cn(
 						'cursor-pointer rounded-full px-4 py-2 text-body-sm font-medium transition-colors',
-						mode === 'upload'
-							? 'bg-black text-white'
-							: 'text-grey-100 hover:bg-grey-25',
+						mode === 'upload' ? 'bg-black text-white' : 'text-grey-100 hover:bg-grey-25',
 					)}
 				>
 					Upload Signature
@@ -127,9 +128,7 @@ function SignaturePad({ mode: initialMode = 'draw', value, onChange, className }
 					{value ? (
 						<img src={value} alt="Uploaded signature" className="max-h-32" />
 					) : (
-						<p className="text-body-sm text-grey-100">
-							Upload a signature image (PNG, JPG)
-						</p>
+						<p className="text-body-sm text-grey-100">Upload a signature image (PNG, JPG)</p>
 					)}
 					<label className="cursor-pointer rounded-lg bg-primary px-4 py-2 text-body-sm font-medium text-white hover:bg-primary-hover">
 						Choose File
@@ -150,5 +149,5 @@ function SignaturePad({ mode: initialMode = 'draw', value, onChange, className }
 	)
 }
 
-export { SignaturePad }
 export type { SignaturePadProps }
+export { SignaturePad }

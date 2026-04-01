@@ -1,26 +1,25 @@
 'use client'
 
-import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import { AlertCircle, X, Check } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
-import { usePhotos, useDeletePhoto } from '@/hooks/use-photos'
-import { usePhotoUpload } from '@/hooks/use-photo-upload'
-import { useGenerateReport } from '@/hooks/use-generate-report'
-import { useReport } from '@/hooks/use-reports'
-import type { AiGenerationSummary } from '@/hooks/use-reports'
-
-import { uploadToStorage, getStoragePath } from '@/lib/storage/photos'
-import { MAX_PHOTOS_PER_REPORT } from '@/lib/validations/photos'
-import { UploadZone } from '@/components/report/gallery/upload-zone'
+import { AlertCircle, Check, X } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AnnotationModal } from '@/components/report/gallery/annotation-modal.dynamic'
+import { Filmstrip } from '@/components/report/gallery/filmstrip'
+import { GenerateProgress } from '@/components/report/gallery/generate-progress'
+import { InstructionSidebar } from '@/components/report/gallery/instruction-sidebar'
+import { ClassificationBadge } from '@/components/report/gallery/photo-classification-badge'
 import { PhotoGrid } from '@/components/report/gallery/photo-grid'
 import { PhotoViewer } from '@/components/report/gallery/photo-viewer'
-import { Filmstrip } from '@/components/report/gallery/filmstrip'
-import { InstructionSidebar } from '@/components/report/gallery/instruction-sidebar'
-import { AnnotationModal } from '@/components/report/gallery/annotation-modal.dynamic'
-import { GenerateProgress } from '@/components/report/gallery/generate-progress'
-import { ClassificationBadge } from '@/components/report/gallery/photo-classification-badge'
+import { UploadZone } from '@/components/report/gallery/upload-zone'
+import { useGenerateReport } from '@/hooks/use-generate-report'
+import { usePhotoUpload } from '@/hooks/use-photo-upload'
+import { useDeletePhoto, usePhotos } from '@/hooks/use-photos'
+import type { AiGenerationSummary } from '@/hooks/use-reports'
+import { useReport } from '@/hooks/use-reports'
 import type { PhotoClassificationType } from '@/lib/ai/types'
+import { getStoragePath, uploadToStorage } from '@/lib/storage/photos'
+import { MAX_PHOTOS_PER_REPORT } from '@/lib/validations/photos'
 
 function GalleryPage() {
 	const params = useParams<{ id: string }>()
@@ -39,7 +38,9 @@ function GalleryPage() {
 	const lastGeneratedPhotoIdsRef = useRef<string | null>(null)
 
 	const photos = data?.photos ?? []
-	const selectedPhoto = selectedPhotoId ? photos.find((p) => p.id === selectedPhotoId) ?? null : null
+	const selectedPhoto = selectedPhotoId
+		? (photos.find((p) => p.id === selectedPhotoId) ?? null)
+		: null
 
 	// Persisted AI generation summary from the report
 	const persistedSummary = report?.aiGenerationSummary as AiGenerationSummary | null
@@ -48,16 +49,19 @@ function GalleryPage() {
 	// After generation completes or if report was previously generated, auto-select first photo
 	useEffect(() => {
 		if (hasGenerated && photos.length > 0 && !selectedPhotoId) {
-			setSelectedPhotoId(photos[0]!.id)
+			setSelectedPhotoId(photos[0]?.id)
 		}
 	}, [hasGenerated, photos, selectedPhotoId])
 
 	// Also auto-select when live generation finishes
 	useEffect(() => {
 		if (genStatus.summary && photos.length > 0) {
-			setSelectedPhotoId(photos[0]!.id)
+			setSelectedPhotoId(photos[0]?.id)
 			// Record which photos were generated
-			lastGeneratedPhotoIdsRef.current = photos.map((p) => p.id).sort().join(',')
+			lastGeneratedPhotoIdsRef.current = photos
+				.map((p) => p.id)
+				.sort()
+				.join(',')
 		}
 	}, [genStatus.summary, photos])
 
@@ -67,7 +71,10 @@ function GalleryPage() {
 			if (photos.length === 0 || genStatus.isGenerating) return
 
 			// Prevent re-generation if same photos haven't changed
-			const currentPhotoIds = photos.map((p) => p.id).sort().join(',')
+			const currentPhotoIds = photos
+				.map((p) => p.id)
+				.sort()
+				.join(',')
 			if (lastGeneratedPhotoIdsRef.current === currentPhotoIds) {
 				// Same photos already generated — skip
 				return
@@ -93,7 +100,6 @@ function GalleryPage() {
 
 	// Effective summary: live SSE summary takes priority, then persisted DB summary
 	const effectiveSummary = genStatus.summary || persistedSummary
-
 
 	const handleFilesSelected = useCallback(
 		(files: File[]) => {
@@ -126,12 +132,9 @@ function GalleryPage() {
 		[deletePhoto, selectedPhotoId],
 	)
 
-	const handleAnnotate = useCallback(
-		(photoId: string) => {
-			setAnnotationPhotoId(photoId)
-		},
-		[],
-	)
+	const handleAnnotate = useCallback((photoId: string) => {
+		setAnnotationPhotoId(photoId)
+	}, [])
 
 	if (isLoading) {
 		return (
@@ -155,7 +158,6 @@ function GalleryPage() {
 				multiple
 				onChange={handleFileInputChange}
 				className="hidden"
-				aria-hidden="true"
 			/>
 
 			{/* Left sidebar: only show instruction sidebar during upload/grid phase (before generation).
@@ -163,7 +165,9 @@ function GalleryPage() {
 			{!hasGenerated && !showSingleView && (
 				<InstructionSidebar
 					className="hidden w-75.5 shrink-0 xl:block"
-					classifications={mergedClassifications as Map<string, import('@/lib/ai/types').ClassificationResult>}
+					classifications={
+						mergedClassifications as Map<string, import('@/lib/ai/types').ClassificationResult>
+					}
 					generationSummary={effectiveSummary ?? undefined}
 				/>
 			)}
@@ -171,9 +175,7 @@ function GalleryPage() {
 			{/* Main content area */}
 			<div className="flex flex-1 flex-col gap-6 min-w-0">
 				{/* Generation progress */}
-				{genStatus.isGenerating && (
-					<GenerateProgress status={genStatus} onCancel={cancel} />
-				)}
+				{genStatus.isGenerating && <GenerateProgress status={genStatus} onCancel={cancel} />}
 
 				{/* Generation error */}
 				{genStatus.error && (
@@ -197,7 +199,8 @@ function GalleryPage() {
 						<Check className="h-4 w-4 shrink-0 text-primary" />
 						<p className="flex-1 text-body-sm text-primary">
 							Report generated — {effectiveSummary.totalFieldsFilled} fields auto-filled
-							{effectiveSummary.damageMarkersPlaced > 0 && `, ${effectiveSummary.damageMarkersPlaced} damage markers placed`}
+							{effectiveSummary.damageMarkersPlaced > 0 &&
+								`, ${effectiveSummary.damageMarkersPlaced} damage markers placed`}
 						</p>
 						<button
 							type="button"
@@ -255,17 +258,19 @@ function GalleryPage() {
 								onAnnotate={() => selectedPhoto && handleAnnotate(selectedPhoto.id)}
 							/>
 							{/* Classification badge overlay */}
-							{selectedPhoto && (() => {
-								const liveClassification = genStatus.classifications.get(selectedPhoto.id)?.type
-								const persistedClassification = selectedPhoto.aiClassification as PhotoClassificationType | null
-								const classification = liveClassification || persistedClassification
-								if (!classification) return null
-								return (
-									<div className="absolute left-3 top-3">
-										<ClassificationBadge classification={classification} />
-									</div>
-								)
-							})()}
+							{selectedPhoto &&
+								(() => {
+									const liveClassification = genStatus.classifications.get(selectedPhoto.id)?.type
+									const persistedClassification =
+										selectedPhoto.aiClassification as PhotoClassificationType | null
+									const classification = liveClassification || persistedClassification
+									if (!classification) return null
+									return (
+										<div className="absolute left-3 top-3">
+											<ClassificationBadge classification={classification} />
+										</div>
+									)
+								})()}
 						</div>
 
 						<Filmstrip
@@ -315,19 +320,24 @@ function GalleryPage() {
 							annotatedUrl = await uploadToStorage(blob, storagePath)
 						}
 
-						const hasAnnotations = ((fabricJson as { objects?: unknown[] }).objects?.length ?? 0) > 0
+						const hasAnnotations =
+							((fabricJson as { objects?: unknown[] }).objects?.length ?? 0) > 0
 
 						await fetch(`/api/reports/${reportId}/photos/${annotationPhotoId}`, {
 							method: 'PATCH',
 							headers: { 'Content-Type': 'application/json' },
 							body: JSON.stringify({
 								annotatedUrl,
-								annotations: hasAnnotations ? [{
-									type: 'fabric',
-									color: '#ff0000',
-									coordinates: {},
-									fabricJson,
-								}] : [],
+								annotations: hasAnnotations
+									? [
+											{
+												type: 'fabric',
+												color: '#ff0000',
+												coordinates: {},
+												fabricJson,
+											},
+										]
+									: [],
 							}),
 						})
 						queryClient.invalidateQueries({ queryKey: ['report', reportId, 'photos'] })

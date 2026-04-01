@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils'
 import type { PhotoClassificationType } from '@/lib/ai/types'
+import { cn } from '@/lib/utils'
 
 type ClassificationBadgeProps = {
 	classification: PhotoClassificationType
@@ -33,5 +33,5 @@ function ClassificationBadge({ classification, className }: ClassificationBadgeP
 	)
 }
 
-export { ClassificationBadge }
 export type { ClassificationBadgeProps }
+export { ClassificationBadge }

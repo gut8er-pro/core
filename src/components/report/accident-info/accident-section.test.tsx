@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@/test/test-utils'
 import { useForm } from 'react-hook-form'
+import { describe, expect, it } from 'vitest'
+import { render, screen } from '@/test/test-utils'
 import { AccidentSection } from './accident-section'
 import type { AccidentInfoFormData } from './types'
 
@@ -73,8 +73,6 @@ describe('AccidentSection', () => {
 
 	it('section is open by default', () => {
 		render(<TestWrapper />)
-		expect(
-			screen.getByPlaceholderText('Enter accident location'),
-		).toBeVisible()
+		expect(screen.getByPlaceholderText('Enter accident location')).toBeVisible()
 	})
 })

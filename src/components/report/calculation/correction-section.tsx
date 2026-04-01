@@ -1,4 +1,4 @@
-import { Sparkles, PenLine, Edit } from 'lucide-react'
+import { Edit, PenLine, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type CorrectionMode = 'dat' | 'manual' | 'ai'
@@ -88,16 +88,8 @@ function CorrectionSection({
 
 			{/* Result cards */}
 			<div className="grid grid-cols-2 gap-5">
-				<ResultCard
-					label={resultWithoutLabel}
-					value={resultWithoutValue}
-					onEdit={onEditWithout}
-				/>
-				<ResultCard
-					label={resultWithLabel}
-					value={resultWithValue}
-					onEdit={onEditWith}
-				/>
+				<ResultCard label={resultWithoutLabel} value={resultWithoutValue} onEdit={onEditWithout} />
+				<ResultCard label={resultWithLabel} value={resultWithValue} onEdit={onEditWith} />
 			</div>
 		</div>
 	)
@@ -136,5 +128,5 @@ function ResultCard({
 	)
 }
 
-export { CorrectionSection }
 export type { CorrectionMode, CorrectionSectionProps }
+export { CorrectionSection }

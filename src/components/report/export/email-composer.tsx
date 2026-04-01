@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import { User, Users, FileText, X } from 'lucide-react'
-import type { UseFormRegister, UseFormSetValue, FieldErrors } from 'react-hook-form'
-import { TextField } from '@/components/ui/text-field'
+import { FileText, User, Users, X } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import type { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form'
 import { RichTextEditor } from '@/components/ui/rich-text-editor.dynamic'
+import { TextField } from '@/components/ui/text-field'
 import { cn } from '@/lib/utils'
 import type { ExportFormData } from './types'
 
@@ -22,12 +22,7 @@ type EmailComposerProps = {
 	className?: string
 }
 
-function EmailComposer({
-	register,
-	setValue,
-	errors,
-	className,
-}: EmailComposerProps) {
+function EmailComposer({ register, setValue, errors, className }: EmailComposerProps) {
 	const [recipients, setRecipients] = useState<Recipient[]>([])
 	const [recipientInput, setRecipientInput] = useState('')
 
@@ -42,19 +37,24 @@ function EmailComposer({
 		}
 	}, [recipients, setValue])
 
-	const addRecipient = useCallback((email: string) => {
-		const trimmed = email.trim()
-		if (!trimmed || recipients.some((r) => r.email === trimmed)) return
-		setRecipients((prev) => [...prev, { name: trimmed.split('@')[0] ?? trimmed, email: trimmed }])
-		setRecipientInput('')
-	}, [recipients])
+	const addRecipient = useCallback(
+		(email: string) => {
+			const trimmed = email.trim()
+			if (!trimmed || recipients.some((r) => r.email === trimmed)) return
+			setRecipients((prev) => [...prev, { name: trimmed.split('@')[0] ?? trimmed, email: trimmed }])
+			setRecipientInput('')
+		},
+		[recipients],
+	)
 
 	const removeRecipient = useCallback((email: string) => {
 		setRecipients((prev) => prev.filter((r) => r.email !== email))
 	}, [])
 
 	return (
-		<div className={cn('flex flex-col gap-6 rounded-xl border border-border bg-white p-6', className)}>
+		<div
+			className={cn('flex flex-col gap-6 rounded-xl border border-border bg-white p-6', className)}
+		>
 			<h3 className="text-h4 font-semibold text-black">Email</h3>
 
 			{/* Recipient row with icon buttons */}
@@ -170,5 +170,5 @@ function EmailComposer({
 	)
 }
 
-export { EmailComposer }
 export type { EmailComposerProps }
+export { EmailComposer }

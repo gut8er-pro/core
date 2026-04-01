@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import type { Report } from '@/hooks/use-reports'
 
 type MonthlyDataPoint = {
@@ -44,10 +44,7 @@ function computeStatistics(reports: Report[]): StatisticsData {
 
 	const avgCompletion =
 		totalReports > 0
-			? Math.round(
-					reports.reduce((sum, r) => sum + r.completionPercentage, 0) /
-						totalReports,
-				)
+			? Math.round(reports.reduce((sum, r) => sum + r.completionPercentage, 0) / totalReports)
 			: 0
 
 	const now = new Date()
@@ -62,12 +59,32 @@ function computeStatistics(reports: Report[]): StatisticsData {
 	// Build last 6 months of data
 	const monthlyData: MonthlyDataPoint[] = []
 	const monthNames = [
-		'January', 'February', 'March', 'April', 'May', 'June',
-		'July', 'August', 'September', 'October', 'November', 'December',
+		'January',
+		'February',
+		'March',
+		'April',
+		'May',
+		'June',
+		'July',
+		'August',
+		'September',
+		'October',
+		'November',
+		'December',
 	]
 	const monthShortNames = [
-		'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-		'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+		'Jan',
+		'Feb',
+		'Mar',
+		'Apr',
+		'May',
+		'Jun',
+		'Jul',
+		'Aug',
+		'Sep',
+		'Oct',
+		'Nov',
+		'Dec',
 	]
 
 	for (let i = 5; i >= 0; i--) {
@@ -90,10 +107,7 @@ function computeStatistics(reports: Report[]): StatisticsData {
 
 	// Recent reports: last 10, sorted by createdAt descending
 	const recentReports = [...reports]
-		.sort(
-			(a, b) =>
-				new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-		)
+		.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 		.slice(0, 10)
 
 	return {
@@ -124,5 +138,5 @@ function useStatistics() {
 	}
 }
 
-export { useStatistics, computeStatistics }
-export type { StatisticsData, MonthlyDataPoint }
+export type { MonthlyDataPoint, StatisticsData }
+export { computeStatistics, useStatistics }

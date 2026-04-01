@@ -1,29 +1,26 @@
-import { forwardRef, type HTMLAttributes } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
+import { forwardRef, type HTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
-const cardVariants = cva(
-	'rounded-lg border border-border bg-white transition-colors',
-	{
-		variants: {
-			variant: {
-				default: 'shadow-card',
-				selectable: 'cursor-pointer hover:border-grey-50 hover:shadow-card',
-				selected: 'border-primary bg-primary-light shadow-card',
-				elevated: 'shadow-elevated',
-			},
-			padding: {
-				sm: 'p-2',
-				md: 'p-4',
-				lg: 'p-6',
-			},
+const cardVariants = cva('rounded-lg border border-border bg-white transition-colors', {
+	variants: {
+		variant: {
+			default: 'shadow-card',
+			selectable: 'cursor-pointer hover:border-grey-50 hover:shadow-card',
+			selected: 'border-primary bg-primary-light shadow-card',
+			elevated: 'shadow-elevated',
 		},
-		defaultVariants: {
-			variant: 'default',
-			padding: 'lg',
+		padding: {
+			sm: 'p-2',
+			md: 'p-4',
+			lg: 'p-6',
 		},
 	},
-)
+	defaultVariants: {
+		variant: 'default',
+		padding: 'lg',
+	},
+})
 
 type CardProps = HTMLAttributes<HTMLDivElement> & VariantProps<typeof cardVariants>
 
@@ -62,9 +59,7 @@ const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLPara
 CardDescription.displayName = 'CardDescription'
 
 const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-	({ className, ...props }, ref) => (
-		<div ref={ref} className={cn('', className)} {...props} />
-	),
+	({ className, ...props }, ref) => <div ref={ref} className={cn('', className)} {...props} />,
 )
 CardContent.displayName = 'CardContent'
 
@@ -75,5 +70,5 @@ const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 )
 CardFooter.displayName = 'CardFooter'
 
-export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, cardVariants }
 export type { CardProps }
+export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, cardVariants }

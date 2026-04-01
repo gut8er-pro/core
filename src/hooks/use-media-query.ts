@@ -1,27 +1,27 @@
 import { useEffect, useState } from 'react'
 
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false)
+	const [matches, setMatches] = useState(false)
 
-  useEffect(() => {
-    const media = window.matchMedia(query)
-    setMatches(media.matches)
+	useEffect(() => {
+		const media = window.matchMedia(query)
+		setMatches(media.matches)
 
-    function listener(event: MediaQueryListEvent) {
-      setMatches(event.matches)
-    }
+		function listener(event: MediaQueryListEvent) {
+			setMatches(event.matches)
+		}
 
-    media.addEventListener('change', listener)
-    return () => media.removeEventListener('change', listener)
-  }, [query])
+		media.addEventListener('change', listener)
+		return () => media.removeEventListener('change', listener)
+	}, [query])
 
-  return matches
+	return matches
 }
 
 export function useIsDesktop() {
-  return useMediaQuery('(min-width: 1024px)')
+	return useMediaQuery('(min-width: 1024px)')
 }
 
 export function useIsTablet() {
-  return useMediaQuery('(min-width: 768px) and (max-width: 1023px)')
+	return useMediaQuery('(min-width: 768px) and (max-width: 1023px)')
 }

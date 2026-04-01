@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff } from 'lucide-react'
-import { signupAccountSchema, type SignupAccountInput } from '@/lib/validations/auth'
-import { useSignupStore } from '@/stores/signup-store'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { type SignupAccountInput, signupAccountSchema } from '@/lib/validations/auth'
+import { useSignupStore } from '@/stores/signup-store'
 
 function AccountStep() {
 	const router = useRouter()
@@ -105,10 +105,11 @@ function AccountStep() {
 								{showConfirm ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
 							</button>
 						</div>
-						{errors.confirmPassword && <p className="text-[14px] text-error">{errors.confirmPassword.message}</p>}
+						{errors.confirmPassword && (
+							<p className="text-[14px] text-error">{errors.confirmPassword.message}</p>
+						)}
 					</div>
 				</div>
-
 
 				{/* Generic fallback — catches any field error not shown above */}
 				{Object.keys(errors).length > 0 && (

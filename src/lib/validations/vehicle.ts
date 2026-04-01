@@ -31,5 +31,5 @@ const vehicleInfoSchema = z.object({
 
 type VehicleInfoInput = z.infer<typeof vehicleInfoSchema>
 
-export { vehicleInfoSchema }
 export type { VehicleInfoInput }
+export { vehicleInfoSchema }

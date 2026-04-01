@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
-import { ReportTable, Pagination, EmptyState } from './report-list'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Report } from '@/hooks/use-reports'
+import { render, screen } from '@/test/test-utils'
+import { EmptyState, Pagination, ReportTable } from './report-list'
 
 vi.mock('next/navigation', () => ({
 	useRouter: () => ({ push: vi.fn() }),
@@ -149,9 +149,7 @@ describe('Pagination', () => {
 	})
 
 	it('returns null for single page', () => {
-		const { container } = render(
-			<Pagination page={1} totalPages={1} onPageChange={vi.fn()} />,
-		)
+		const { container } = render(<Pagination page={1} totalPages={1} onPageChange={vi.fn()} />)
 		expect(container.innerHTML).toBe('')
 	})
 })

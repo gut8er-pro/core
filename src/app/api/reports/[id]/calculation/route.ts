@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { prisma } from '@/lib/prisma'
 import { calculationPatchSchema } from '@/lib/validations/calculation'
 
 type RouteContext = {
@@ -14,7 +14,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -62,7 +62,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -101,23 +101,37 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	if (data.calculation) {
 		const updateData: Record<string, unknown> = {}
 
-		if (data.calculation.replacementValue !== undefined) updateData.replacementValue = data.calculation.replacementValue
+		if (data.calculation.replacementValue !== undefined)
+			updateData.replacementValue = data.calculation.replacementValue
 		if (data.calculation.taxRate !== undefined) updateData.taxRate = data.calculation.taxRate
-		if (data.calculation.residualValue !== undefined) updateData.residualValue = data.calculation.residualValue
-		if (data.calculation.diminutionInValue !== undefined) updateData.diminutionInValue = data.calculation.diminutionInValue
-		if (data.calculation.wheelAlignment !== undefined) updateData.wheelAlignment = data.calculation.wheelAlignment
-		if (data.calculation.bodyMeasurements !== undefined) updateData.bodyMeasurements = data.calculation.bodyMeasurements
+		if (data.calculation.residualValue !== undefined)
+			updateData.residualValue = data.calculation.residualValue
+		if (data.calculation.diminutionInValue !== undefined)
+			updateData.diminutionInValue = data.calculation.diminutionInValue
+		if (data.calculation.wheelAlignment !== undefined)
+			updateData.wheelAlignment = data.calculation.wheelAlignment
+		if (data.calculation.bodyMeasurements !== undefined)
+			updateData.bodyMeasurements = data.calculation.bodyMeasurements
 		if (data.calculation.bodyPaint !== undefined) updateData.bodyPaint = data.calculation.bodyPaint
-		if (data.calculation.plasticRepair !== undefined) updateData.plasticRepair = data.calculation.plasticRepair
-		if (data.calculation.repairMethod !== undefined) updateData.repairMethod = data.calculation.repairMethod
+		if (data.calculation.plasticRepair !== undefined)
+			updateData.plasticRepair = data.calculation.plasticRepair
+		if (data.calculation.repairMethod !== undefined)
+			updateData.repairMethod = data.calculation.repairMethod
 		if (data.calculation.risks !== undefined) updateData.risks = data.calculation.risks
-		if (data.calculation.damageClass !== undefined) updateData.damageClass = data.calculation.damageClass
-		if (data.calculation.dropoutGroup !== undefined) updateData.dropoutGroup = data.calculation.dropoutGroup
-		if (data.calculation.costPerDay !== undefined) updateData.costPerDay = data.calculation.costPerDay
-		if (data.calculation.rentalCarClass !== undefined) updateData.rentalCarClass = data.calculation.rentalCarClass
-		if (data.calculation.repairTimeDays !== undefined) updateData.repairTimeDays = data.calculation.repairTimeDays
-		if (data.calculation.replacementTimeDays !== undefined) updateData.replacementTimeDays = data.calculation.replacementTimeDays
-		if (data.calculation.datCalculationResult !== undefined) updateData.datCalculationResult = data.calculation.datCalculationResult
+		if (data.calculation.damageClass !== undefined)
+			updateData.damageClass = data.calculation.damageClass
+		if (data.calculation.dropoutGroup !== undefined)
+			updateData.dropoutGroup = data.calculation.dropoutGroup
+		if (data.calculation.costPerDay !== undefined)
+			updateData.costPerDay = data.calculation.costPerDay
+		if (data.calculation.rentalCarClass !== undefined)
+			updateData.rentalCarClass = data.calculation.rentalCarClass
+		if (data.calculation.repairTimeDays !== undefined)
+			updateData.repairTimeDays = data.calculation.repairTimeDays
+		if (data.calculation.replacementTimeDays !== undefined)
+			updateData.replacementTimeDays = data.calculation.replacementTimeDays
+		if (data.calculation.datCalculationResult !== undefined)
+			updateData.datCalculationResult = data.calculation.datCalculationResult
 
 		if (Object.keys(updateData).length > 0) {
 			results.calculation = await prisma.calculation.update({

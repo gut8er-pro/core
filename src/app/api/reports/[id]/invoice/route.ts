@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { prisma } from '@/lib/prisma'
 import { invoicePatchSchema } from '@/lib/validations/invoice'
 
 type RouteContext = {
@@ -14,7 +14,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -55,7 +55,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -94,7 +94,8 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	if (data.invoice) {
 		const updateData: Record<string, unknown> = {}
 
-		if (data.invoice.invoiceNumber !== undefined) updateData.invoiceNumber = data.invoice.invoiceNumber
+		if (data.invoice.invoiceNumber !== undefined)
+			updateData.invoiceNumber = data.invoice.invoiceNumber
 		if (data.invoice.date !== undefined) {
 			updateData.date = data.invoice.date ? new Date(data.invoice.date) : null
 		}
@@ -116,7 +117,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 			if (data.invoice?.invoiceNumber && !invoice.invoiceNumber) {
 				const { createNotification } = await import('@/lib/notifications/create')
 				await createNotification({
-					userId: user!.id,
+					userId: user?.id,
 					eventType: 'INVOICE_GENERATED',
 					title: 'Invoice Generated',
 					description: `Invoice ${data.invoice.invoiceNumber} has been generated.`,

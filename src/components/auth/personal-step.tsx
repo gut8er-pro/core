@@ -1,10 +1,10 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronDown } from 'lucide-react'
-import { signupPersonalSchema, type SignupPersonalInput } from '@/lib/validations/auth'
+import { useRouter } from 'next/navigation'
+import { Controller, useForm } from 'react-hook-form'
+import { type SignupPersonalInput, signupPersonalSchema } from '@/lib/validations/auth'
 import { useSignupStore } from '@/stores/signup-store'
 
 const TITLE_OPTIONS = [
@@ -15,7 +15,8 @@ const TITLE_OPTIONS = [
 	{ value: 'prof_dr', label: 'Prof. Dr.' },
 ]
 
-const INPUT_CLS = 'h-[53px] w-full rounded-[15px] border-[1.5px] border-[#e5e7eb] bg-white px-3.5 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none'
+const INPUT_CLS =
+	'h-[53px] w-full rounded-[15px] border-[1.5px] border-[#e5e7eb] bg-white px-3.5 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none'
 const LABEL_CLS = 'text-[16px] font-medium text-black'
 const FIELD_CLS = 'flex flex-col gap-3'
 
@@ -56,7 +57,9 @@ function PersonalStep() {
 			{/* Header */}
 			<div className="flex flex-col gap-3.5">
 				<h2 className="text-[44px] font-medium leading-none text-black">Personal details</h2>
-				<p className="text-[18px] leading-snug tracking-[0.18px] text-black/70">Tell us a bit about yourself.</p>
+				<p className="text-[18px] leading-snug tracking-[0.18px] text-black/70">
+					Tell us a bit about yourself.
+				</p>
 			</div>
 
 			<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
@@ -77,7 +80,9 @@ function PersonalStep() {
 										>
 											<option value="">Select</option>
 											{TITLE_OPTIONS.map((o) => (
-												<option key={o.value} value={o.value}>{o.label}</option>
+												<option key={o.value} value={o.value}>
+													{o.label}
+												</option>
 											))}
 										</select>
 									)}
@@ -91,21 +96,30 @@ function PersonalStep() {
 						<div className={FIELD_CLS}>
 							<label className={LABEL_CLS}>First name</label>
 							<input {...register('firstName')} placeholder="Name" className={INPUT_CLS} />
-							{errors.firstName && <p className="text-[14px] text-error">{errors.firstName.message}</p>}
+							{errors.firstName && (
+								<p className="text-[14px] text-error">{errors.firstName.message}</p>
+							)}
 						</div>
 
 						{/* Last name */}
 						<div className={FIELD_CLS}>
 							<label className={LABEL_CLS}>Last name</label>
 							<input {...register('lastName')} placeholder="Last name" className={INPUT_CLS} />
-							{errors.lastName && <p className="text-[14px] text-error">{errors.lastName.message}</p>}
+							{errors.lastName && (
+								<p className="text-[14px] text-error">{errors.lastName.message}</p>
+							)}
 						</div>
 					</div>
 
 					{/* Phone */}
 					<div className={FIELD_CLS}>
 						<label className={LABEL_CLS}>Phone number</label>
-						<input {...register('phone')} type="tel" placeholder="+49 123 456789" className={INPUT_CLS} />
+						<input
+							{...register('phone')}
+							type="tel"
+							placeholder="+49 123 456789"
+							className={INPUT_CLS}
+						/>
 						{errors.phone && <p className="text-[14px] text-error">{errors.phone.message}</p>}
 					</div>
 
@@ -119,7 +133,6 @@ function PersonalStep() {
 						/>
 					</div>
 				</div>
-
 
 				{/* Generic fallback — catches any field error not shown above */}
 				{Object.keys(errors).length > 0 && (

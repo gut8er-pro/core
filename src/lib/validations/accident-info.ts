@@ -122,25 +122,25 @@ type SignatureInput = z.infer<typeof signatureSchema>
 type SignatureType = z.infer<typeof signatureTypeEnum>
 type AccidentInfoPatchInput = z.infer<typeof accidentInfoPatchSchema>
 
-export {
-	accidentInfoSchema,
-	claimantInfoSchema,
-	opponentInfoSchema,
-	visitSchema,
-	visitTypeEnum,
-	expertOpinionSchema,
-	signatureSchema,
-	signatureTypeEnum,
-	accidentInfoPatchSchema,
-}
 export type {
 	AccidentInfoInput,
+	AccidentInfoPatchInput,
 	ClaimantInfoInput,
-	OpponentInfoInput,
-	VisitInput,
-	VisitType,
 	ExpertOpinionInput,
+	OpponentInfoInput,
 	SignatureInput,
 	SignatureType,
-	AccidentInfoPatchInput,
+	VisitInput,
+	VisitType,
+}
+export {
+	accidentInfoPatchSchema,
+	accidentInfoSchema,
+	claimantInfoSchema,
+	expertOpinionSchema,
+	opponentInfoSchema,
+	signatureSchema,
+	signatureTypeEnum,
+	visitSchema,
+	visitTypeEnum,
 }

@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/prisma'
 import { Resend } from 'resend'
+import { prisma } from '@/lib/prisma'
 
 type NotificationEventType =
 	| 'REPORT_COMPLETED'
@@ -75,5 +75,5 @@ async function createNotification({
 	return notification
 }
 
-export { createNotification }
 export type { NotificationEventType }
+export { createNotification }

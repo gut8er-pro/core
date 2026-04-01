@@ -1,9 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import {
-	invoiceSchema,
-	lineItemSchema,
-	invoicePatchSchema,
-} from './invoice'
+import { describe, expect, it } from 'vitest'
+import { invoicePatchSchema, invoiceSchema, lineItemSchema } from './invoice'
 
 describe('invoiceSchema', () => {
 	it('valid full data passes', () => {
@@ -42,9 +38,7 @@ describe('invoiceSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'invoiceNumber',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'invoiceNumber')
 			expect(error).toBeDefined()
 		}
 	})
@@ -55,9 +49,7 @@ describe('invoiceSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'date',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'date')
 			expect(error).toBeDefined()
 		}
 	})
@@ -75,9 +67,7 @@ describe('invoiceSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'payoutDelay',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'payoutDelay')
 			expect(error).toBeDefined()
 		}
 	})
@@ -88,9 +78,7 @@ describe('invoiceSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'payoutDelay',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'payoutDelay')
 			expect(error).toBeDefined()
 		}
 	})
@@ -101,9 +89,7 @@ describe('invoiceSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'totalNet',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'totalNet')
 			expect(error).toBeDefined()
 		}
 	})
@@ -114,9 +100,7 @@ describe('invoiceSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'totalGross',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'totalGross')
 			expect(error).toBeDefined()
 		}
 	})
@@ -127,9 +111,7 @@ describe('invoiceSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'taxRate',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'taxRate')
 			expect(error).toBeDefined()
 		}
 	})
@@ -140,9 +122,7 @@ describe('invoiceSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'taxRate',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'taxRate')
 			expect(error).toBeDefined()
 		}
 	})
@@ -161,9 +141,7 @@ describe('invoiceSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'eInvoice',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'eInvoice')
 			expect(error).toBeDefined()
 		}
 	})
@@ -174,9 +152,7 @@ describe('invoiceSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'recipientId',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'recipientId')
 			expect(error).toBeDefined()
 		}
 	})
@@ -212,9 +188,7 @@ describe('lineItemSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'description',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'description')
 			expect(error).toBeDefined()
 		}
 	})
@@ -226,9 +200,7 @@ describe('lineItemSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'description',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'description')
 			expect(error).toBeDefined()
 		}
 	})
@@ -239,9 +211,7 @@ describe('lineItemSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'amount',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'amount')
 			expect(error).toBeDefined()
 		}
 	})
@@ -253,9 +223,7 @@ describe('lineItemSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'amount',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'amount')
 			expect(error).toBeDefined()
 		}
 	})
@@ -275,9 +243,7 @@ describe('lineItemSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'description',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'description')
 			expect(error).toBeDefined()
 		}
 	})
@@ -290,9 +256,7 @@ describe('lineItemSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'specialFeature',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'specialFeature')
 			expect(error).toBeDefined()
 		}
 	})
@@ -305,9 +269,7 @@ describe('lineItemSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'rate',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'rate')
 			expect(error).toBeDefined()
 		}
 	})
@@ -320,9 +282,7 @@ describe('lineItemSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'quantity',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'quantity')
 			expect(error).toBeDefined()
 		}
 	})
@@ -335,9 +295,7 @@ describe('lineItemSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'order',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'order')
 			expect(error).toBeDefined()
 		}
 	})
@@ -350,9 +308,7 @@ describe('lineItemSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'id',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'id')
 			expect(error).toBeDefined()
 		}
 	})

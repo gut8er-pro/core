@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useCallback } from 'react'
 import { ExternalLink, Info } from 'lucide-react'
-import { Modal } from '@/components/ui/modal'
+import { useCallback, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { TextField } from '@/components/ui/text-field'
-import { SelectField } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Modal } from '@/components/ui/modal'
+import { SelectField } from '@/components/ui/select'
+import { TextField } from '@/components/ui/text-field'
 
 type DatFormData = {
 	location: string
@@ -54,12 +54,7 @@ function DatModal({ open, onClose, initialData, onSave }: DatModalProps) {
 			size="md"
 			footer={
 				<div className="flex w-full justify-start">
-					<Button
-						type="button"
-						variant="primary"
-						size="md"
-						onClick={handleSave}
-					>
+					<Button type="button" variant="primary" size="md" onClick={handleSave}>
 						Save
 					</Button>
 				</div>
@@ -157,5 +152,5 @@ function DatModal({ open, onClose, initialData, onSave }: DatModalProps) {
 	)
 }
 
-export { DatModal }
 export type { DatFormData, DatModalProps }
+export { DatModal }

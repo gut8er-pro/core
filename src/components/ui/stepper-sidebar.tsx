@@ -1,6 +1,6 @@
+import { Check } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type Step = {
@@ -19,7 +19,10 @@ type StepperSidebarProps = {
 function StepperSidebar({ steps, currentStep, completedSteps, className }: StepperSidebarProps) {
 	return (
 		<aside
-			className={cn('hidden lg:flex shrink-0 w-[491px] h-screen sticky top-0 pt-10 pb-6 pl-20 pr-0', className)}
+			className={cn(
+				'hidden lg:flex shrink-0 w-[491px] h-screen sticky top-0 pt-10 pb-6 pl-20 pr-0',
+				className,
+			)}
 			aria-label="Signup progress"
 		>
 			{/* Green-tinted rounded card */}
@@ -56,13 +59,9 @@ function StepperSidebar({ steps, currentStep, completedSteps, className }: Stepp
 										)}
 									</div>
 									<div className="flex flex-col gap-0.5">
-										<p className="text-[18px] font-medium leading-snug text-black">
-											{step.title}
-										</p>
+										<p className="text-[18px] font-medium leading-snug text-black">{step.title}</p>
 										{step.subtitle && (
-											<p className="text-[14px] leading-snug text-grey-100">
-												{step.subtitle}
-											</p>
+											<p className="text-[14px] leading-snug text-grey-100">{step.subtitle}</p>
 										)}
 									</div>
 								</li>
@@ -86,7 +85,10 @@ function StepperSidebar({ steps, currentStep, completedSteps, className }: Stepp
 				<div className="shrink-0 border-t border-border/40 pt-4 mt-4">
 					<p className="text-center text-[16px] text-black">
 						Already have an account?{' '}
-						<Link href="/login" className="font-medium text-primary underline hover:text-primary-hover">
+						<Link
+							href="/login"
+							className="font-medium text-primary underline hover:text-primary-hover"
+						>
 							Log in
 						</Link>
 					</p>
@@ -119,12 +121,7 @@ function StepperProgress({ steps, currentStep, completedSteps, className }: Step
 							{isCompleted ? <Check className="h-3 w-3" /> : step.number}
 						</div>
 						{!isLast && (
-							<div
-								className={cn(
-									'mx-1 h-0.5 w-6',
-									isCompleted ? 'bg-primary' : 'bg-border',
-								)}
-							/>
+							<div className={cn('mx-1 h-0.5 w-6', isCompleted ? 'bg-primary' : 'bg-border')} />
 						)}
 					</div>
 				)
@@ -133,5 +130,5 @@ function StepperProgress({ steps, currentStep, completedSteps, className }: Step
 	)
 }
 
-export { StepperSidebar, StepperProgress }
-export type { StepperSidebarProps, Step }
+export type { Step, StepperSidebarProps }
+export { StepperProgress, StepperSidebar }

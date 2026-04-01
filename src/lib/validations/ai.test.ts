@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
 	aiPhotoRequestSchema,
-	photoAnalysisResponseSchema,
-	vinDetectionResponseSchema,
-	plateDetectionResponseSchema,
 	ocrResponseSchema,
+	photoAnalysisResponseSchema,
+	plateDetectionResponseSchema,
+	vinDetectionResponseSchema,
 } from './ai'
 
 describe('aiPhotoRequestSchema', () => {
@@ -19,9 +19,7 @@ describe('aiPhotoRequestSchema', () => {
 		const result = aiPhotoRequestSchema.safeParse({})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const urlError = result.error.issues.find(
-				(issue) => issue.path[0] === 'photoUrl',
-			)
+			const urlError = result.error.issues.find((issue) => issue.path[0] === 'photoUrl')
 			expect(urlError).toBeDefined()
 		}
 	})
@@ -39,9 +37,7 @@ describe('aiPhotoRequestSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const urlError = result.error.issues.find(
-				(issue) => issue.path[0] === 'photoUrl',
-			)
+			const urlError = result.error.issues.find((issue) => issue.path[0] === 'photoUrl')
 			expect(urlError).toBeDefined()
 			expect(urlError?.message).toBe('A valid photo URL is required')
 		}
@@ -88,9 +84,7 @@ describe('photoAnalysisResponseSchema', () => {
 		const result = photoAnalysisResponseSchema.safeParse({})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const descError = result.error.issues.find(
-				(issue) => issue.path[0] === 'description',
-			)
+			const descError = result.error.issues.find((issue) => issue.path[0] === 'description')
 			expect(descError).toBeDefined()
 		}
 	})
@@ -122,9 +116,7 @@ describe('vinDetectionResponseSchema', () => {
 		const result = vinDetectionResponseSchema.safeParse({})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const vinError = result.error.issues.find(
-				(issue) => issue.path[0] === 'vin',
-			)
+			const vinError = result.error.issues.find((issue) => issue.path[0] === 'vin')
 			expect(vinError).toBeDefined()
 		}
 	})
@@ -156,9 +148,7 @@ describe('plateDetectionResponseSchema', () => {
 		const result = plateDetectionResponseSchema.safeParse({})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const plateError = result.error.issues.find(
-				(issue) => issue.path[0] === 'plate',
-			)
+			const plateError = result.error.issues.find((issue) => issue.path[0] === 'plate')
 			expect(plateError).toBeDefined()
 		}
 	})
@@ -175,8 +165,8 @@ describe('ocrResponseSchema', () => {
 	it('valid OCR key-value pairs pass', () => {
 		const result = ocrResponseSchema.safeParse({
 			'Fahrzeug-Identifizierungsnummer': 'WVWZZZ3CZWE123456',
-			'Erstzulassung': '15.03.2020',
-			'Hersteller': 'Volkswagen',
+			Erstzulassung: '15.03.2020',
+			Hersteller: 'Volkswagen',
 		})
 		expect(result.success).toBe(true)
 	})
@@ -188,7 +178,7 @@ describe('ocrResponseSchema', () => {
 
 	it('single key-value pair passes', () => {
 		const result = ocrResponseSchema.safeParse({
-			'VIN': 'WVWZZZ3CZWE123456',
+			VIN: 'WVWZZZ3CZWE123456',
 		})
 		expect(result.success).toBe(true)
 	})

@@ -33,4 +33,4 @@ function setCachedResult<T = unknown>(key: string, value: T): void {
 	})
 }
 
-export { getCacheKey, getCachedResult, setCachedResult, CACHE_TTL_MS }
+export { CACHE_TTL_MS, getCachedResult, getCacheKey, setCachedResult }

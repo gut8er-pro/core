@@ -1,6 +1,6 @@
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@/test/test-utils'
 import { PhotoCard } from './photo-card'
 
 describe('PhotoCard', () => {
@@ -40,9 +40,7 @@ describe('PhotoCard', () => {
 	})
 
 	it('renders annotate and delete buttons on grid variant', () => {
-		render(
-			<PhotoCard src="/test.jpg" variant="grid" onEdit={() => {}} onDelete={() => {}} />,
-		)
+		render(<PhotoCard src="/test.jpg" variant="grid" onEdit={() => {}} onDelete={() => {}} />)
 		expect(screen.getByLabelText('Annotate photo')).toBeInTheDocument()
 		expect(screen.getByLabelText('Delete photo')).toBeInTheDocument()
 	})
@@ -64,14 +62,7 @@ describe('PhotoCard', () => {
 	})
 
 	it('does not show action buttons on thumbnail variant', () => {
-		render(
-			<PhotoCard
-				src="/test.jpg"
-				variant="thumbnail"
-				onEdit={() => {}}
-				onDelete={() => {}}
-			/>,
-		)
+		render(<PhotoCard src="/test.jpg" variant="thumbnail" onEdit={() => {}} onDelete={() => {}} />)
 		expect(screen.queryByLabelText('Annotate photo')).not.toBeInTheDocument()
 	})
 })

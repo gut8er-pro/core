@@ -1,12 +1,5 @@
-import {
-	useQuery,
-	useMutation,
-	useQueryClient,
-} from '@tanstack/react-query'
-import type {
-	InvoiceInput,
-	LineItemInput,
-} from '@/lib/validations/invoice'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { InvoiceInput, LineItemInput } from '@/lib/validations/invoice'
 
 type InvoiceResponse = {
 	invoice: {
@@ -72,8 +65,7 @@ function useInvoice(reportId: string) {
 function useSaveInvoice(reportId: string) {
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationFn: (data: InvoiceInput) =>
-			patchInvoiceSection(reportId, { invoice: data }),
+		mutationFn: (data: InvoiceInput) => patchInvoiceSection(reportId, { invoice: data }),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ['report', reportId, 'invoice'],
@@ -112,11 +104,5 @@ function useDeleteLineItem(reportId: string) {
 	})
 }
 
-export {
-	useInvoice,
-	useSaveInvoice,
-	useSaveLineItem,
-	useDeleteLineItem,
-	fetchInvoice,
-}
 export type { InvoiceResponse }
+export { fetchInvoice, useDeleteLineItem, useInvoice, useSaveInvoice, useSaveLineItem }

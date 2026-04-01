@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { Check, CreditCard, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Check, X, CreditCard } from 'lucide-react'
-import { useSignupStore } from '@/stores/signup-store'
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { useSignupStore } from '@/stores/signup-store'
 
 const FREE_FEATURES = [
 	{ text: 'Unlimited reports', included: true },
@@ -84,9 +84,7 @@ function PlanStep() {
 						<div
 							className={cn(
 								'flex h-6 w-6 items-center justify-center rounded-full border-2',
-								selectedPlan === 'free'
-									? 'border-primary bg-primary'
-									: 'border-[#e5e7eb] bg-white',
+								selectedPlan === 'free' ? 'border-primary bg-primary' : 'border-[#e5e7eb] bg-white',
 							)}
 						>
 							{selectedPlan === 'free' && <Check className="h-3.5 w-3.5 text-white" />}

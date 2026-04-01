@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { ChevronDown, Eye, FileText, MoreVertical, Pencil, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { MoreVertical, Eye, Pencil, Trash2, ChevronDown } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { LicensePlate } from '@/components/ui/license-plate'
-import { CarBrandLogo } from '@/components/ui/car-brand-logo'
 import { Button } from '@/components/ui/button'
-import { FileText } from 'lucide-react'
+import { CarBrandLogo } from '@/components/ui/car-brand-logo'
+import { LicensePlate } from '@/components/ui/license-plate'
 import type { Report } from '@/hooks/use-reports'
 
 type ReportTableProps = {
@@ -183,9 +182,7 @@ function ReportRow({
 
 			{/* Date Created */}
 			<td className="hidden px-6 py-3 md:table-cell">
-				<span className="text-body-sm text-grey-100">
-					{formatDateGerman(report.createdAt)}
-				</span>
+				<span className="text-body-sm text-grey-100">{formatDateGerman(report.createdAt)}</span>
 			</td>
 
 			{/* Car Model */}
@@ -313,5 +310,5 @@ function Pagination({
 	)
 }
 
-export { ReportTable, EmptyState, Pagination }
 export type { ReportTableProps }
+export { EmptyState, Pagination, ReportTable }

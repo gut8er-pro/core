@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
 import type * as fabric from 'fabric'
-import { ChevronLeft, ChevronRight, Image as ImageIcon, X, Edit } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Edit, Image as ImageIcon, X } from 'lucide-react'
+import { useCallback, useRef, useState } from 'react'
 import type { Photo } from '@/hooks/use-photos'
-import { AnnotationToolbar, type AnnotationTool } from './annotation-toolbar'
 import { AnnotationCanvas } from './annotation-canvas'
+import { type AnnotationTool, AnnotationToolbar } from './annotation-toolbar'
 
 type AnnotationModalProps = {
 	photo: Photo | null
@@ -16,7 +16,14 @@ type AnnotationModalProps = {
 	onNavigate?: (photoId: string) => void
 }
 
-function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: AnnotationModalProps) {
+function AnnotationModal({
+	photo,
+	photos,
+	open,
+	onClose,
+	onSave,
+	onNavigate,
+}: AnnotationModalProps) {
 	const [activeTool, setActiveTool] = useState<AnnotationTool>('pen')
 	const [activeColor, setActiveColor] = useState('#FF0000')
 	const [description, setDescription] = useState<string | null>(null)
@@ -102,13 +109,15 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 	// Format upload date
 	const uploadDate = photo.uploadedAt
 		? new Date(photo.uploadedAt).toLocaleDateString('de-DE', {
-			day: '2-digit',
-			month: '2-digit',
-			year: 'numeric',
-		}) + ' - ' + new Date(photo.uploadedAt).toLocaleTimeString('de-DE', {
-			hour: '2-digit',
-			minute: '2-digit',
-		})
+				day: '2-digit',
+				month: '2-digit',
+				year: 'numeric',
+			}) +
+			' - ' +
+			new Date(photo.uploadedAt).toLocaleTimeString('de-DE', {
+				hour: '2-digit',
+				minute: '2-digit',
+			})
 		: null
 
 	return (
@@ -135,9 +144,7 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 						</div>
 						<div className="flex flex-col">
 							<span className="text-body-sm font-semibold text-black">{photo.filename}</span>
-							{uploadDate && (
-								<span className="text-caption text-grey-100">{uploadDate}</span>
-							)}
+							{uploadDate && <span className="text-caption text-grey-100">{uploadDate}</span>}
 						</div>
 					</div>
 					<button
@@ -206,7 +213,6 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 									onChange={(e) => setEditDescriptionValue(e.target.value)}
 									className="flex-1 resize-none rounded-xl border border-border p-4 text-input tracking-[0.18px] text-black focus:border-primary focus:outline-none"
 									placeholder="Enter a description..."
-									autoFocus
 								/>
 								<div className="flex gap-2">
 									<button
@@ -250,7 +256,8 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 										<p className="whitespace-pre-wrap">{photoDescription}</p>
 									) : (
 										<p className="italic text-grey-100">
-											No description available. Run &quot;Generate Report&quot; to analyze this photo, or click to add one.
+											No description available. Run &quot;Generate Report&quot; to analyze this
+											photo, or click to add one.
 										</p>
 									)}
 								</div>
@@ -292,5 +299,5 @@ function getInitialAnnotations(photo: Photo): Record<string, unknown> | undefine
 	return undefined
 }
 
-export { AnnotationModal }
 export type { AnnotationModalProps }
+export { AnnotationModal }

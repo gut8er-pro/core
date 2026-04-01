@@ -1,12 +1,12 @@
 'use client'
 
+import { Plus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Controller, useFieldArray } from 'react-hook-form'
-import { Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { InvoiceSectionProps } from './types'
 
@@ -42,17 +42,10 @@ function LineItemsSection({
 
 				{/* Column headers */}
 				<div className="hidden border-b border-border pb-2 md:grid md:grid-cols-12 md:gap-4 md:px-1">
-					<span className="col-span-3 text-caption font-medium text-grey-100">
-						Description
-					</span>
-					<span className="col-span-2 text-caption font-medium text-grey-100">
-						Special Feature
-					</span>
-					<span className="col-span-2 text-caption font-medium text-grey-100 text-center">
-					</span>
-					<span className="col-span-2 text-caption font-medium text-grey-100">
-						Rate
-					</span>
+					<span className="col-span-3 text-caption font-medium text-grey-100">Description</span>
+					<span className="col-span-2 text-caption font-medium text-grey-100">Special Feature</span>
+					<span className="col-span-2 text-caption font-medium text-grey-100 text-center"></span>
+					<span className="col-span-2 text-caption font-medium text-grey-100">Rate</span>
 					<span className="col-span-3 text-caption font-medium text-grey-100 text-right">
 						Amount
 					</span>
@@ -60,11 +53,11 @@ function LineItemsSection({
 
 				{/* Line item rows */}
 				{fields.map((field, index) => {
-					const amountVal = parseFloat(
-						(document.querySelector<HTMLInputElement>(
-							`[name="lineItems.${index}.amount"]`,
-						)?.value ?? '0'),
-					) || 0
+					const amountVal =
+						parseFloat(
+							document.querySelector<HTMLInputElement>(`[name="lineItems.${index}.amount"]`)
+								?.value ?? '0',
+						) || 0
 
 					return (
 						<div
@@ -125,9 +118,7 @@ function LineItemsSection({
 
 							{/* Amount */}
 							<div className="md:col-span-3 flex items-center justify-end">
-								<span className="text-body font-semibold text-black">
-									{formatEUR(amountVal)}
-								</span>
+								<span className="text-body font-semibold text-black">{formatEUR(amountVal)}</span>
 							</div>
 						</div>
 					)

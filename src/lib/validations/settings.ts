@@ -49,15 +49,15 @@ type BusinessSettingsInput = z.infer<typeof businessSettingsSchema>
 type IntegrationSettingsInput = z.infer<typeof integrationSettingsSchema>
 type SettingsUpdateInput = z.infer<typeof settingsUpdateSchema>
 
-export {
-	profileSettingsSchema,
-	businessSettingsSchema,
-	integrationSettingsSchema,
-	settingsUpdateSchema,
-}
 export type {
-	ProfileSettingsInput,
 	BusinessSettingsInput,
 	IntegrationSettingsInput,
+	ProfileSettingsInput,
 	SettingsUpdateInput,
+}
+export {
+	businessSettingsSchema,
+	integrationSettingsSchema,
+	profileSettingsSchema,
+	settingsUpdateSchema,
 }

@@ -50,19 +50,19 @@ type SignupBusinessInput = z.infer<typeof signupBusinessSchema>
 type SignupPlanInput = z.infer<typeof signupPlanSchema>
 type SignupIntegrationsInput = z.infer<typeof signupIntegrationsSchema>
 
-export {
-	loginSchema,
-	signupAccountSchema,
-	signupPersonalSchema,
-	signupBusinessSchema,
-	signupPlanSchema,
-	signupIntegrationsSchema,
-}
 export type {
 	LoginInput,
 	SignupAccountInput,
-	SignupPersonalInput,
 	SignupBusinessInput,
-	SignupPlanInput,
 	SignupIntegrationsInput,
+	SignupPersonalInput,
+	SignupPlanInput,
+}
+export {
+	loginSchema,
+	signupAccountSchema,
+	signupBusinessSchema,
+	signupIntegrationsSchema,
+	signupPersonalSchema,
+	signupPlanSchema,
 }

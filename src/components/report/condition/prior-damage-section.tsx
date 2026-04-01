@@ -17,7 +17,12 @@ function PriorDamageSection({
 	const [activeTab, setActiveTab] = useState<PriorDamageTab>('damage-notes')
 
 	return (
-		<CollapsibleSection title="Prior and Existing Damage" info defaultOpen={false} className={className}>
+		<CollapsibleSection
+			title="Prior and Existing Damage"
+			info
+			defaultOpen={false}
+			className={className}
+		>
 			<div className="flex flex-col gap-6">
 				{/* Segmented tab control */}
 				<div className="flex rounded-full border border-border bg-white p-1">

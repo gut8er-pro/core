@@ -121,5 +121,5 @@ function ExportToggles({ control, onToggleChange, className }: ExportTogglesProp
 	)
 }
 
-export { ExportToggles }
 export type { ExportTogglesProps }
+export { ExportToggles }

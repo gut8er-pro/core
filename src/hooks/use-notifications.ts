@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback } from 'react'
 
 type NotificationEventType =
 	| 'REPORT_COMPLETED'
@@ -44,9 +44,7 @@ function useNotifications() {
 			// Optimistic update
 			queryClient.setQueryData<NotificationsResponse>(['notifications'], (old) => {
 				if (!old) return old
-				const updated = old.notifications.map((n) =>
-					n.id === id ? { ...n, isRead: true } : n,
-				)
+				const updated = old.notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n))
 				return {
 					notifications: updated,
 					unreadCount: updated.filter((n) => !n.isRead).length,
@@ -81,5 +79,5 @@ function useNotifications() {
 	}
 }
 
-export { useNotifications }
 export type { Notification, NotificationEventType }
+export { useNotifications }

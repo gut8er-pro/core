@@ -1,9 +1,7 @@
 'use client'
 
-import { type ReactNode } from 'react'
 import { Crown } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { useProStatus } from '@/stores/pro-store'
+import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 
 type ProFeatureGateProps = {
@@ -12,7 +10,7 @@ type ProFeatureGateProps = {
 	className?: string
 }
 
-function DefaultFallback() {
+function _DefaultFallback() {
 	return (
 		<div className="flex items-center gap-2 rounded-md border border-warning bg-warning-light p-4">
 			<Crown className="h-5 w-5 text-warning" />
@@ -22,10 +20,7 @@ function DefaultFallback() {
 				</div>
 				<p className="text-caption text-grey-100">
 					Upgrade to Pro to unlock this feature.{' '}
-					<a
-						href="/settings/billing"
-						className="text-primary underline hover:no-underline"
-					>
+					<a href="/settings/billing" className="text-primary underline hover:no-underline">
 						Upgrade now
 					</a>
 				</p>
@@ -39,5 +34,5 @@ function ProFeatureGate({ children }: ProFeatureGateProps) {
 	return <>{children}</>
 }
 
-export { ProFeatureGate }
 export type { ProFeatureGateProps }
+export { ProFeatureGate }

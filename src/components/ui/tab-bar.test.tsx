@@ -1,6 +1,6 @@
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@/test/test-utils'
 import { TabBar } from './tab-bar'
 
 const tabs = [

@@ -1,16 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
-import {
-	analyzePhoto,
-	detectVin,
-	detectLicensePlate,
-	ocrDocument,
-} from '@/lib/ai/client'
 import type {
-	PhotoAnalysisResult,
-	VinDetectionResult,
-	PlateDetectionResult,
 	OcrResult,
+	PhotoAnalysisResult,
+	PlateDetectionResult,
+	VinDetectionResult,
 } from '@/lib/ai/client'
+import { analyzePhoto, detectLicensePlate, detectVin, ocrDocument } from '@/lib/ai/client'
 
 function usePhotoAnalysis() {
 	return useMutation<PhotoAnalysisResult, Error, string>({
@@ -36,9 +31,4 @@ function useDocumentOcr() {
 	})
 }
 
-export {
-	usePhotoAnalysis,
-	useVinDetection,
-	usePlateDetection,
-	useDocumentOcr,
-}
+export { useDocumentOcr, usePhotoAnalysis, usePlateDetection, useVinDetection }

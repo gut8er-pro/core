@@ -35,4 +35,4 @@ function createAdminClient() {
 	)
 }
 
-export { createClient, createAdminClient }
+export { createAdminClient, createClient }

@@ -1,9 +1,9 @@
 // Tire photo analyzer — extracts brand, size, tread depth, and condition.
 
 import { getAnthropicClient } from './anthropic'
-import { getCacheKey, getCachedResult, setCachedResult } from './cache'
-import type { TireAnalysisResult, VehiclePosition } from './types'
+import { getCachedResult, getCacheKey, setCachedResult } from './cache'
 import type { ImageData } from './fetch-image'
+import type { TireAnalysisResult, VehiclePosition } from './types'
 
 const TIRE_PROMPT = `Analyze this tire photo from a vehicle assessment. Extract as much information as visible.
 
@@ -23,20 +23,33 @@ Return ONLY valid JSON.`
 
 function mapWheelPosition(position: VehiclePosition): 'VL' | 'VR' | 'HL' | 'HR' | null {
 	switch (position) {
-		case 'wheel-fl': return 'VL'
-		case 'wheel-fr': return 'VR'
-		case 'wheel-rl': return 'HL'
-		case 'wheel-rr': return 'HR'
+		case 'wheel-fl':
+			return 'VL'
+		case 'wheel-fr':
+			return 'VR'
+		case 'wheel-rl':
+			return 'HL'
+		case 'wheel-rr':
+			return 'HR'
 		// Map general positions to closest wheel — better than returning null
-		case 'front-left': return 'VL'
-		case 'front-right': return 'VR'
-		case 'front': return 'VL'
-		case 'rear-left': return 'HL'
-		case 'rear-right': return 'HR'
-		case 'rear': return 'HL'
-		case 'left': return 'VL'
-		case 'right': return 'VR'
-		default: return null
+		case 'front-left':
+			return 'VL'
+		case 'front-right':
+			return 'VR'
+		case 'front':
+			return 'VL'
+		case 'rear-left':
+			return 'HL'
+		case 'rear-right':
+			return 'HR'
+		case 'rear':
+			return 'HL'
+		case 'left':
+			return 'VL'
+		case 'right':
+			return 'VR'
+		default:
+			return null
 	}
 }
 
@@ -54,20 +67,22 @@ async function analyzeTire(
 	const message = await client.messages.create({
 		model: 'claude-haiku-4-5-20251001',
 		max_tokens: 512,
-		messages: [{
-			role: 'user',
-			content: [
-				{
-					type: 'image',
-					source: {
-						type: 'base64',
-						media_type: imageData.mediaType,
-						data: imageData.base64,
+		messages: [
+			{
+				role: 'user',
+				content: [
+					{
+						type: 'image',
+						source: {
+							type: 'base64',
+							media_type: imageData.mediaType,
+							data: imageData.base64,
+						},
 					},
-				},
-				{ type: 'text', text: TIRE_PROMPT },
-			],
-		}],
+					{ type: 'text', text: TIRE_PROMPT },
+				],
+			},
+		],
 	})
 
 	const textBlock = message.content.find((block) => block.type === 'text')
@@ -114,9 +129,10 @@ function parseTireResponse(
 			: 2
 
 		// Prefer AI-detected position, fall back to classifier's wheel position
-		const aiPosition = typeof parsed.position === 'string' && validPositions.includes(parsed.position)
-			? (parsed.position as 'VL' | 'VR' | 'HL' | 'HR')
-			: null
+		const aiPosition =
+			typeof parsed.position === 'string' && validPositions.includes(parsed.position)
+				? (parsed.position as 'VL' | 'VR' | 'HL' | 'HR')
+				: null
 		const resolvedPosition = aiPosition || mapWheelPosition(vehiclePosition)
 
 		return {
@@ -124,17 +140,20 @@ function parseTireResponse(
 			manufacturer: typeof parsed.manufacturer === 'string' ? parsed.manufacturer : null,
 			size: typeof parsed.size === 'string' ? parsed.size : null,
 			treadDepth: typeof parsed.treadDepth === 'number' ? parsed.treadDepth : null,
-			profileLevel: typeof parsed.profileLevel === 'string' && validProfileLevels.includes(parsed.profileLevel)
-				? (parsed.profileLevel as TireAnalysisResult['profileLevel'])
-				: null,
+			profileLevel:
+				typeof parsed.profileLevel === 'string' && validProfileLevels.includes(parsed.profileLevel)
+					? (parsed.profileLevel as TireAnalysisResult['profileLevel'])
+					: null,
 			condition: typeof parsed.condition === 'string' ? parsed.condition : null,
 			usability,
-			tireType: typeof parsed.tireType === 'string' && validTireTypes.includes(parsed.tireType)
-				? (parsed.tireType as TireAnalysisResult['tireType'])
-				: null,
+			tireType:
+				typeof parsed.tireType === 'string' && validTireTypes.includes(parsed.tireType)
+					? (parsed.tireType as TireAnalysisResult['tireType'])
+					: null,
 			dotCode: typeof parsed.dotCode === 'string' ? parsed.dotCode : null,
 			position: resolvedPosition,
-			confidence: typeof parsed.confidence === 'number' ? Math.min(1, Math.max(0, parsed.confidence)) : 0.5,
+			confidence:
+				typeof parsed.confidence === 'number' ? Math.min(1, Math.max(0, parsed.confidence)) : 0.5,
 		}
 	} catch {
 		console.error('Failed to parse tire response:', rawResponse)

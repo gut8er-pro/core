@@ -1,9 +1,9 @@
 // Overview photo analyzer — extracts general vehicle info from full-body shots.
 
 import { getAnthropicClient } from './anthropic'
-import { getCacheKey, getCachedResult, setCachedResult } from './cache'
-import type { OverviewAnalysisResult } from './types'
+import { getCachedResult, getCacheKey, setCachedResult } from './cache'
 import type { ImageData } from './fetch-image'
+import type { OverviewAnalysisResult } from './types'
 
 const OVERVIEW_PROMPT = `Analyze this vehicle photo for a professional assessment report. Extract any visible information about the vehicle.
 
@@ -31,20 +31,22 @@ async function analyzeOverview(
 	const message = await client.messages.create({
 		model: 'claude-haiku-4-5-20251001',
 		max_tokens: 512,
-		messages: [{
-			role: 'user',
-			content: [
-				{
-					type: 'image',
-					source: {
-						type: 'base64',
-						media_type: imageData.mediaType,
-						data: imageData.base64,
+		messages: [
+			{
+				role: 'user',
+				content: [
+					{
+						type: 'image',
+						source: {
+							type: 'base64',
+							media_type: imageData.mediaType,
+							data: imageData.base64,
+						},
 					},
-				},
-				{ type: 'text', text: OVERVIEW_PROMPT },
-			],
-		}],
+					{ type: 'text', text: OVERVIEW_PROMPT },
+				],
+			},
+		],
 	})
 
 	const textBlock = message.content.find((block) => block.type === 'text')
@@ -76,12 +78,14 @@ function parseOverviewResponse(photoId: string, rawResponse: string): OverviewAn
 
 		return {
 			photoId,
-			description: typeof parsed.description === 'string' ? parsed.description : fallback.description,
+			description:
+				typeof parsed.description === 'string' ? parsed.description : fallback.description,
 			color: typeof parsed.color === 'string' ? parsed.color : null,
 			make: typeof parsed.make === 'string' ? parsed.make : null,
 			model: typeof parsed.model === 'string' ? parsed.model : null,
 			bodyType: typeof parsed.bodyType === 'string' ? parsed.bodyType : null,
-			generalCondition: typeof parsed.generalCondition === 'string' ? parsed.generalCondition : null,
+			generalCondition:
+				typeof parsed.generalCondition === 'string' ? parsed.generalCondition : null,
 			bodyCondition: typeof parsed.bodyCondition === 'string' ? parsed.bodyCondition : null,
 		}
 	} catch {

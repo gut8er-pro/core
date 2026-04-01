@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { exportConfigSchema, sendReportSchema } from './export'
 
 describe('exportConfigSchema', () => {
@@ -55,9 +55,7 @@ describe('exportConfigSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const emailError = result.error.issues.find(
-				(issue) => issue.path[0] === 'recipientEmail',
-			)
+			const emailError = result.error.issues.find((issue) => issue.path[0] === 'recipientEmail')
 			expect(emailError).toBeDefined()
 			expect(emailError?.message).toBe('Invalid email address')
 		}
@@ -69,9 +67,7 @@ describe('exportConfigSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const nameError = result.error.issues.find(
-				(issue) => issue.path[0] === 'recipientName',
-			)
+			const nameError = result.error.issues.find((issue) => issue.path[0] === 'recipientName')
 			expect(nameError).toBeDefined()
 		}
 	})
@@ -82,9 +78,7 @@ describe('exportConfigSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const subjectError = result.error.issues.find(
-				(issue) => issue.path[0] === 'emailSubject',
-			)
+			const subjectError = result.error.issues.find((issue) => issue.path[0] === 'emailSubject')
 			expect(subjectError).toBeDefined()
 		}
 	})
@@ -95,9 +89,7 @@ describe('exportConfigSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const bodyError = result.error.issues.find(
-				(issue) => issue.path[0] === 'emailBody',
-			)
+			const bodyError = result.error.issues.find((issue) => issue.path[0] === 'emailBody')
 			expect(bodyError).toBeDefined()
 		}
 	})
@@ -165,9 +157,7 @@ describe('sendReportSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const emailError = result.error.issues.find(
-				(issue) => issue.path[0] === 'recipientEmail',
-			)
+			const emailError = result.error.issues.find((issue) => issue.path[0] === 'recipientEmail')
 			expect(emailError).toBeDefined()
 		}
 	})
@@ -180,9 +170,7 @@ describe('sendReportSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const emailError = result.error.issues.find(
-				(issue) => issue.path[0] === 'recipientEmail',
-			)
+			const emailError = result.error.issues.find((issue) => issue.path[0] === 'recipientEmail')
 			expect(emailError).toBeDefined()
 			expect(emailError?.message).toBe('A valid recipient email is required')
 		}
@@ -195,9 +183,7 @@ describe('sendReportSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const nameError = result.error.issues.find(
-				(issue) => issue.path[0] === 'recipientName',
-			)
+			const nameError = result.error.issues.find((issue) => issue.path[0] === 'recipientName')
 			expect(nameError).toBeDefined()
 		}
 	})
@@ -210,9 +196,7 @@ describe('sendReportSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const nameError = result.error.issues.find(
-				(issue) => issue.path[0] === 'recipientName',
-			)
+			const nameError = result.error.issues.find((issue) => issue.path[0] === 'recipientName')
 			expect(nameError).toBeDefined()
 			expect(nameError?.message).toBe('Recipient name is required')
 		}
@@ -226,9 +210,7 @@ describe('sendReportSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const nameError = result.error.issues.find(
-				(issue) => issue.path[0] === 'recipientName',
-			)
+			const nameError = result.error.issues.find((issue) => issue.path[0] === 'recipientName')
 			expect(nameError).toBeDefined()
 		}
 	})
@@ -240,9 +222,7 @@ describe('sendReportSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const subjectError = result.error.issues.find(
-				(issue) => issue.path[0] === 'emailSubject',
-			)
+			const subjectError = result.error.issues.find((issue) => issue.path[0] === 'emailSubject')
 			expect(subjectError).toBeDefined()
 		}
 	})
@@ -255,9 +235,7 @@ describe('sendReportSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const subjectError = result.error.issues.find(
-				(issue) => issue.path[0] === 'emailSubject',
-			)
+			const subjectError = result.error.issues.find((issue) => issue.path[0] === 'emailSubject')
 			expect(subjectError).toBeDefined()
 			expect(subjectError?.message).toBe('Subject is required')
 		}
@@ -271,9 +249,7 @@ describe('sendReportSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const subjectError = result.error.issues.find(
-				(issue) => issue.path[0] === 'emailSubject',
-			)
+			const subjectError = result.error.issues.find((issue) => issue.path[0] === 'emailSubject')
 			expect(subjectError).toBeDefined()
 		}
 	})
@@ -287,9 +263,7 @@ describe('sendReportSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const bodyError = result.error.issues.find(
-				(issue) => issue.path[0] === 'emailBody',
-			)
+			const bodyError = result.error.issues.find((issue) => issue.path[0] === 'emailBody')
 			expect(bodyError).toBeDefined()
 		}
 	})

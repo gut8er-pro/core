@@ -1,7 +1,7 @@
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
-import { Car, Zap, Fuel } from 'lucide-react'
+import { Car, Fuel, Zap } from 'lucide-react'
 import { describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@/test/test-utils'
 import { IconSelector } from './icon-selector'
 
 const options = [

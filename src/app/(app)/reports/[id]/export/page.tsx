@@ -1,17 +1,17 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import { useForm } from 'react-hook-form'
 import { CheckCircle2, Loader2, Send } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { EmailComposer } from '@/components/report/export/email-composer'
+import { ExportToggles } from '@/components/report/export/export-toggles'
+import type { ExportFormData } from '@/components/report/export/types'
 import { Button } from '@/components/ui/button'
+import { useAutoSave } from '@/hooks/use-auto-save'
 import { useExportConfig, useSendReport } from '@/hooks/use-export'
 import { useReport } from '@/hooks/use-reports'
 import { useToast } from '@/hooks/use-toast'
-import { useAutoSave } from '@/hooks/use-auto-save'
-import { ExportToggles } from '@/components/report/export/export-toggles'
-import { EmailComposer } from '@/components/report/export/email-composer'
-import type { ExportFormData } from '@/components/report/export/types'
 
 function ExportPage() {
 	const params = useParams<{ id: string }>()
@@ -123,9 +123,7 @@ function ExportPage() {
 								<span className="text-primary">Saved</span>
 							</>
 						)}
-						{autoSaveState.status === 'error' && (
-							<span className="text-error">Failed to save</span>
-						)}
+						{autoSaveState.status === 'error' && <span className="text-error">Failed to save</span>}
 					</div>
 
 					<Button
@@ -145,18 +143,14 @@ function ExportPage() {
 			{sendSuccess && (
 				<div className="flex items-center gap-2 rounded-md border border-success bg-success-light p-4">
 					<CheckCircle2 className="h-5 w-5 text-success" />
-					<span className="text-body-sm text-success">
-						Report sent successfully!
-					</span>
+					<span className="text-body-sm text-success">Report sent successfully!</span>
 				</div>
 			)}
 
 			{/* Send error message */}
 			{sendMutation.isError && (
 				<div className="rounded-md border border-error bg-error-light p-4">
-					<span className="text-body-sm text-error">
-						{sendMutation.error.message}
-					</span>
+					<span className="text-body-sm text-error">{sendMutation.error.message}</span>
 				</div>
 			)}
 
@@ -164,10 +158,7 @@ function ExportPage() {
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
 				{/* Left panel: toggles */}
 				<div className="lg:col-span-1">
-					<ExportToggles
-						control={control}
-						onToggleChange={handleToggleChange}
-					/>
+					<ExportToggles control={control} onToggleChange={handleToggleChange} />
 				</div>
 
 				{/* Right panel: email composer */}

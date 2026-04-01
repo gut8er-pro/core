@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { vehicleInfoSchema } from './vehicle'
 
 describe('vehicleInfoSchema', () => {
@@ -29,9 +29,7 @@ describe('vehicleInfoSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const vinError = result.error.issues.find(
-				(issue) => issue.path[0] === 'vin',
-			)
+			const vinError = result.error.issues.find((issue) => issue.path[0] === 'vin')
 			expect(vinError).toBeDefined()
 		}
 	})
@@ -42,9 +40,7 @@ describe('vehicleInfoSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const kbaError = result.error.issues.find(
-				(issue) => issue.path[0] === 'kbaNumber',
-			)
+			const kbaError = result.error.issues.find((issue) => issue.path[0] === 'kbaNumber')
 			expect(kbaError).toBeDefined()
 		}
 	})
@@ -55,9 +51,7 @@ describe('vehicleInfoSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const vinError = result.error.issues.find(
-				(issue) => issue.path[0] === 'vin',
-			)
+			const vinError = result.error.issues.find((issue) => issue.path[0] === 'vin')
 			expect(vinError).toBeDefined()
 		}
 	})

@@ -1,9 +1,9 @@
 // Interior photo analyzer — extracts condition and features from interior shots.
 
 import { getAnthropicClient } from './anthropic'
-import { getCacheKey, getCachedResult, setCachedResult } from './cache'
-import type { InteriorAnalysisResult } from './types'
+import { getCachedResult, getCacheKey, setCachedResult } from './cache'
 import type { ImageData } from './fetch-image'
+import type { InteriorAnalysisResult } from './types'
 
 const INTERIOR_PROMPT = `Analyze this vehicle interior photo for a professional assessment report.
 
@@ -30,20 +30,22 @@ async function analyzeInterior(
 	const message = await client.messages.create({
 		model: 'claude-haiku-4-5-20251001',
 		max_tokens: 512,
-		messages: [{
-			role: 'user',
-			content: [
-				{
-					type: 'image',
-					source: {
-						type: 'base64',
-						media_type: imageData.mediaType,
-						data: imageData.base64,
+		messages: [
+			{
+				role: 'user',
+				content: [
+					{
+						type: 'image',
+						source: {
+							type: 'base64',
+							media_type: imageData.mediaType,
+							data: imageData.base64,
+						},
 					},
-				},
-				{ type: 'text', text: INTERIOR_PROMPT },
-			],
-		}],
+					{ type: 'text', text: INTERIOR_PROMPT },
+				],
+			},
+		],
 	})
 
 	const textBlock = message.content.find((block) => block.type === 'text')
@@ -74,9 +76,12 @@ function parseInteriorResponse(photoId: string, rawResponse: string): InteriorAn
 
 		return {
 			photoId,
-			description: typeof parsed.description === 'string' ? parsed.description : fallback.description,
+			description:
+				typeof parsed.description === 'string' ? parsed.description : fallback.description,
 			condition: typeof parsed.condition === 'string' ? parsed.condition : null,
-			features: Array.isArray(parsed.features) ? parsed.features.filter((f): f is string => typeof f === 'string') : [],
+			features: Array.isArray(parsed.features)
+				? parsed.features.filter((f): f is string => typeof f === 'string')
+				: [],
 			mileage: typeof parsed.mileage === 'number' ? Math.round(parsed.mileage) : null,
 			parkingSensors: typeof parsed.parkingSensors === 'boolean' ? parsed.parkingSensors : null,
 			airbagsDeployed: typeof parsed.airbagsDeployed === 'boolean' ? parsed.airbagsDeployed : null,

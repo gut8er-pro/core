@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
 import * as fabric from 'fabric'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import type { AnnotationTool } from './annotation-toolbar'
 
@@ -33,7 +33,7 @@ function AnnotationCanvas({
 	// Store the natural image dimensions for export
 	const naturalSizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 })
 
-	const [ready, setReady] = useState(false)
+	const [_ready, setReady] = useState(false)
 
 	activeToolRef.current = activeTool
 	activeColorRef.current = activeColor
@@ -156,7 +156,7 @@ function AnnotationCanvas({
 			setReady(false)
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [photoUrl])
+	}, [photoUrl, initialAnnotations, onCanvasReady])
 
 	// Tool handling
 	useEffect(() => {
@@ -232,15 +232,12 @@ function AnnotationCanvas({
 					canvas.add(rect)
 					activeShapeRef.current = rect
 				} else if (tool === 'arrow') {
-					const line = new fabric.Line(
-						[pointer.x, pointer.y, pointer.x, pointer.y],
-						{
-							stroke: color,
-							strokeWidth: 3,
-							selectable: false,
-							evented: false,
-						},
-					)
+					const line = new fabric.Line([pointer.x, pointer.y, pointer.x, pointer.y], {
+						stroke: color,
+						strokeWidth: 3,
+						selectable: false,
+						evented: false,
+					})
 					canvas.add(line)
 					activeShapeRef.current = line
 				}
@@ -305,7 +302,7 @@ function AnnotationCanvas({
 			canvas.off('mouse:move')
 			canvas.off('mouse:up')
 		}
-	}, [activeTool, activeColor, ready])
+	}, [activeTool, activeColor])
 
 	// Sync drawing brush color
 	useEffect(() => {
@@ -317,20 +314,13 @@ function AnnotationCanvas({
 	}, [activeColor])
 
 	return (
-		<div
-			ref={containerRef}
-			className={cn('relative h-full w-full overflow-hidden', className)}
-		>
+		<div ref={containerRef} className={cn('relative h-full w-full overflow-hidden', className)}>
 			<canvas ref={canvasElRef} />
 		</div>
 	)
 }
 
-function addArrowhead(
-	canvas: fabric.Canvas,
-	line: fabric.Line,
-	color: string,
-) {
+function addArrowhead(canvas: fabric.Canvas, line: fabric.Line, color: string) {
 	const x1 = line.x1 ?? 0
 	const y1 = line.y1 ?? 0
 	const x2 = line.x2 ?? 0
@@ -345,11 +335,7 @@ function addArrowhead(
 	const p2y = y2 - headLength * Math.sin(angle + Math.PI / 6)
 
 	const arrowHead = new fabric.Polygon(
-		[
-			new fabric.Point(x2, y2),
-			new fabric.Point(p1x, p1y),
-			new fabric.Point(p2x, p2y),
-		],
+		[new fabric.Point(x2, y2), new fabric.Point(p1x, p1y), new fabric.Point(p2x, p2y)],
 		{
 			fill: color,
 			stroke: color,
@@ -363,5 +349,5 @@ function addArrowhead(
 	canvas.renderAll()
 }
 
-export { AnnotationCanvas }
 export type { AnnotationCanvasProps }
+export { AnnotationCanvas }

@@ -1,9 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import {
-	createReportSchema,
-	updateReportSchema,
-	reportListParamsSchema,
-} from './reports'
+import { describe, expect, it } from 'vitest'
+import { createReportSchema, reportListParamsSchema, updateReportSchema } from './reports'
 
 describe('createReportSchema', () => {
 	it('passes with valid title', () => {

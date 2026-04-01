@@ -1,8 +1,7 @@
 'use client'
 
-import { type ReactNode, useState } from 'react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
-import { AlertCircle } from 'lucide-react'
+import { type ReactNode, useState } from 'react'
 import { TabBar } from '@/components/ui/tab-bar'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
 import { useReport } from '@/hooks/use-reports'
@@ -25,8 +24,7 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 		{ key: 'invoice', label: 'Invoice', isComplete: false, completion: undefined },
 	]
 
-	const activeTab =
-		DETAIL_TABS.find((t) => pathname.endsWith(`/${t.key}`))?.key ?? 'accident-info'
+	const activeTab = DETAIL_TABS.find((t) => pathname.endsWith(`/${t.key}`))?.key ?? 'accident-info'
 
 	function handleTabChange(key: string) {
 		router.push(`/reports/${params.id}/details/${key}`)
@@ -34,11 +32,7 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 
 	return (
 		<div className="flex flex-col gap-4">
-			<TabBar
-				tabs={DETAIL_TABS}
-				activeTab={activeTab}
-				onTabChange={handleTabChange}
-			/>
+			<TabBar tabs={DETAIL_TABS} activeTab={activeTab} onTabChange={handleTabChange} />
 
 			{/* Show missing information banner */}
 			<div className="flex items-center justify-between rounded-xl bg-white px-5 py-3.5">
@@ -48,11 +42,7 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 						{showMissing ? 'Highlighting empty fields' : 'X fields need attention'}
 					</p>
 				</div>
-				<ToggleSwitch
-					label=""
-					checked={showMissing}
-					onCheckedChange={setShowMissing}
-				/>
+				<ToggleSwitch label="" checked={showMissing} onCheckedChange={setShowMissing} />
 			</div>
 
 			{children}

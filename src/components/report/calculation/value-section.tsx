@@ -1,10 +1,10 @@
 'use client'
 
-import { Controller, useFieldArray } from 'react-hook-form'
 import { Info, Plus, Trash2 } from 'lucide-react'
-import { TextField } from '@/components/ui/text-field'
-import { SelectField } from '@/components/ui/select'
+import { Controller, useFieldArray } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
+import { SelectField } from '@/components/ui/select'
+import { TextField } from '@/components/ui/text-field'
 import { cn } from '@/lib/utils'
 import type { CalculationSectionProps } from './types'
 
@@ -14,7 +14,7 @@ const TAX_RATE_OPTIONS = [
 	{ value: '19', label: '19%' },
 ]
 
-const DAMAGE_CLASS_OPTIONS = [
+const _DAMAGE_CLASS_OPTIONS = [
 	{ value: 'class_1', label: 'Class I' },
 	{ value: 'class_2', label: 'Class II' },
 	{ value: 'class_3', label: 'Class III' },

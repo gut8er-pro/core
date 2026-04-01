@@ -1,9 +1,9 @@
 'use client'
 
-import { useCallback } from 'react'
 import { Palette, Trash2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useCallback } from 'react'
 import type { Photo } from '@/hooks/use-photos'
+import { cn } from '@/lib/utils'
 
 type PhotoGridProps = {
 	photos: Photo[]
@@ -14,13 +14,7 @@ type PhotoGridProps = {
 	className?: string
 }
 
-function PhotoGrid({
-	photos,
-	onEdit,
-	onDelete,
-	onSelect,
-	className,
-}: PhotoGridProps) {
+function PhotoGrid({ photos, onEdit, onDelete, onSelect, className }: PhotoGridProps) {
 	const handleSelect = useCallback(
 		(photoId: string) => {
 			onSelect?.(photoId)
@@ -36,20 +30,13 @@ function PhotoGrid({
 					className,
 				)}
 			>
-				<p className="text-body-sm text-grey-100">
-					No photos uploaded yet
-				</p>
+				<p className="text-body-sm text-grey-100">No photos uploaded yet</p>
 			</div>
 		)
 	}
 
 	return (
-		<div
-			className={cn(
-				'grid grid-cols-2 gap-4 rounded-card bg-white p-6',
-				className,
-			)}
-		>
+		<div className={cn('grid grid-cols-2 gap-4 rounded-card bg-white p-6', className)}>
 			{photos.map((photo) => (
 				<div
 					key={photo.id}
@@ -106,5 +93,5 @@ function PhotoGrid({
 	)
 }
 
-export { PhotoGrid }
 export type { PhotoGridProps }
+export { PhotoGrid }

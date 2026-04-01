@@ -1,6 +1,6 @@
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import { render, screen } from '@/test/test-utils'
 import { SignaturePad } from './signature-pad'
 
 describe('SignaturePad', () => {

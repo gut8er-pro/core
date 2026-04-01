@@ -68,7 +68,9 @@ function CompleteStep() {
 						<Image src="/images/pro-plan-icon.svg" alt="" width={24} height={24} />
 						<span className="text-[18px] font-medium tracking-[0.18px] text-primary">Pro Plan</span>
 						<span className="text-[18px] text-black">•</span>
-						<span className="text-[18px] tracking-[0.18px] text-black">14-day free trial started</span>
+						<span className="text-[18px] tracking-[0.18px] text-black">
+							14-day free trial started
+						</span>
 					</div>
 				</div>
 
@@ -118,7 +120,7 @@ function CompleteStep() {
 
 				{/* Confirmation email */}
 				<p className="mt-8 text-center text-[16px] text-black">
-					We&apos;ve sent a confirmation email to{" "}
+					We&apos;ve sent a confirmation email to{' '}
 					<span className="font-medium">{email ?? 'your email'}</span>
 				</p>
 			</div>

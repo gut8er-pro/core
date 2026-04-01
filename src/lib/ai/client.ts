@@ -63,15 +63,5 @@ async function ocrDocument(photoUrl: string): Promise<OcrResult> {
 	return response.json()
 }
 
-export {
-	analyzePhoto,
-	detectVin,
-	detectLicensePlate,
-	ocrDocument,
-}
-export type {
-	PhotoAnalysisResult,
-	VinDetectionResult,
-	PlateDetectionResult,
-	OcrResult,
-}
+export type { OcrResult, PhotoAnalysisResult, PlateDetectionResult, VinDetectionResult }
+export { analyzePhoto, detectLicensePlate, detectVin, ocrDocument }

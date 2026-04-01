@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen } from '@/test/test-utils'
 import { useForm } from 'react-hook-form'
+import { describe, expect, it } from 'vitest'
+import { render, screen } from '@/test/test-utils'
 import { IdentificationSection } from './identification-section'
 import type { VehicleFormData } from './types'
 

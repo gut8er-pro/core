@@ -1,29 +1,29 @@
 // Pipeline orchestrator — coordinates classification, processing, and auto-fill.
 
+import { getAnthropicClient } from './anthropic'
+import { getCachedResult, getCacheKey, setCachedResult } from './cache'
+import type { CalculationAutoFillResult } from './calculation-extractor'
+import { extractCalculationData } from './calculation-extractor'
 import { classifyPhoto } from './classifier'
 import { analyzeDamage } from './damage-analyzer'
+import type { ImageData } from './fetch-image'
+import { fetchImageAsBase64 } from './fetch-image'
+import { analyzeInterior } from './interior-analyzer'
 import { analyzeOverview } from './overview-analyzer'
 import { analyzeTire } from './tire-analyzer'
-import { analyzeInterior } from './interior-analyzer'
-import { extractCalculationData } from './calculation-extractor'
-import { lookupVehicleByVin, mergeVehicleData } from './vehicle-lookup'
-import { fetchImageAsBase64 } from './fetch-image'
-import { getAnthropicClient } from './anthropic'
-import { getCacheKey, getCachedResult, setCachedResult } from './cache'
-import type { ImageData } from './fetch-image'
 import type {
 	ClassificationResult,
-	PhotoProcessingResult,
+	DiagramPosition,
 	GenerateEvent,
 	GenerationSummary,
-	VehicleLookupResult,
-	OcrExtractionResult,
-	DiagramPosition,
-	TireAnalysisResult,
-	OverviewAnalysisResult,
 	InteriorAnalysisResult,
+	OcrExtractionResult,
+	OverviewAnalysisResult,
+	PhotoProcessingResult,
+	TireAnalysisResult,
+	VehicleLookupResult,
 } from './types'
-import type { CalculationAutoFillResult } from './calculation-extractor'
+import { lookupVehicleByVin, mergeVehicleData } from './vehicle-lookup'
 
 type PhotoInput = {
 	id: string
@@ -49,7 +49,7 @@ function hashUrl(url: string): string {
 	let hash = 0
 	for (let i = 0; i < url.length; i++) {
 		const char = url.charCodeAt(i)
-		hash = ((hash << 5) - hash) + char
+		hash = (hash << 5) - hash + char
 		hash |= 0
 	}
 	return hash.toString(36)
@@ -95,7 +95,7 @@ function filterPhotosForProcessing(
  * Emits progress events via the `emit` callback.
  */
 async function runPipeline(
-	reportId: string,
+	_reportId: string,
 	photos: PhotoInput[],
 	emit: EmitFn,
 	options: PipelineOptions = {},
@@ -135,7 +135,13 @@ async function runPipeline(
 	}
 
 	// --- Step 1: Fetch images and classify ---
-	emit({ type: 'progress', step: 'classify', current: 0, total: toProcess.length, message: 'Classifying photos...' })
+	emit({
+		type: 'progress',
+		step: 'classify',
+		current: 0,
+		total: toProcess.length,
+		message: 'Classifying photos...',
+	})
 
 	const imageDataMap = new Map<string, Awaited<ReturnType<typeof fetchImageAsBase64>>>()
 	const classifications: ClassificationResult[] = []
@@ -197,12 +203,20 @@ async function runPipeline(
 	}
 
 	// --- Step 2: Route and process by type ---
-	emit({ type: 'progress', step: 'process', current: 0, total: classifications.length, message: 'Analyzing photos...' })
+	emit({
+		type: 'progress',
+		step: 'process',
+		current: 0,
+		total: classifications.length,
+		message: 'Analyzing photos...',
+	})
 
 	const processedResults: PhotoProcessingResult[] = []
 	let processedCount = 0
 
-	const processPhoto = async (classification: ClassificationResult): Promise<PhotoProcessingResult> => {
+	const processPhoto = async (
+		classification: ClassificationResult,
+	): Promise<PhotoProcessingResult> => {
 		const imageData = imageDataMap.get(classification.photoId)
 		if (!imageData) return { type: 'other', result: null }
 
@@ -287,30 +301,60 @@ async function runPipeline(
 
 	let vehicleLookup: VehicleLookupResult | null = null
 	if (extractedVin) {
-		emit({ type: 'progress', step: 'lookup', current: 0, total: 1, message: 'Looking up vehicle data...' })
+		emit({
+			type: 'progress',
+			step: 'lookup',
+			current: 0,
+			total: 1,
+			message: 'Looking up vehicle data...',
+		})
 		vehicleLookup = await lookupVehicleByVin(extractedVin)
 		if (vehicleLookup.warnings.length > 0) {
 			summary.warnings.push(...vehicleLookup.warnings)
 		}
-		emit({ type: 'progress', step: 'lookup', current: 1, total: 1, message: 'Vehicle data retrieved' })
+		emit({
+			type: 'progress',
+			step: 'lookup',
+			current: 1,
+			total: 1,
+			message: 'Vehicle data retrieved',
+		})
 	}
 
 	// --- Step 3b: Calculation extraction from damage photos ---
 	let calculationData: CalculationAutoFillResult | null = null
 	const damageImages = collectDamageImages(classifications, imageDataMap)
 	if (damageImages.length > 0) {
-		emit({ type: 'progress', step: 'calculation', current: 0, total: 1, message: 'Extracting calculation data...' })
+		emit({
+			type: 'progress',
+			step: 'calculation',
+			current: 0,
+			total: 1,
+			message: 'Extracting calculation data...',
+		})
 		try {
 			calculationData = await extractCalculationData(damageImages)
 		} catch (err) {
 			console.error('Calculation extraction failed:', err)
 			summary.warnings.push('Could not extract calculation data from damage photos')
 		}
-		emit({ type: 'progress', step: 'calculation', current: 1, total: 1, message: 'Calculation data extracted' })
+		emit({
+			type: 'progress',
+			step: 'calculation',
+			current: 1,
+			total: 1,
+			message: 'Calculation data extracted',
+		})
 	}
 
 	// --- Step 4: Build auto-fill payloads ---
-	emit({ type: 'progress', step: 'autofill', current: 0, total: 5, message: 'Auto-filling report sections...' })
+	emit({
+		type: 'progress',
+		step: 'autofill',
+		current: 0,
+		total: 5,
+		message: 'Auto-filling report sections...',
+	})
 
 	// 4a: Vehicle tab
 	const vehicleData = mergeVehicleData(vehicleLookup, extractedOcr)
@@ -325,7 +369,13 @@ async function runPipeline(
 		summary.autoFilledFields.accident = ['claimantLicensePlate']
 		emit({ type: 'auto_fill', section: 'accident', fields: ['claimantLicensePlate'] })
 	}
-	emit({ type: 'progress', step: 'autofill', current: 2, total: 5, message: 'Accident info filled' })
+	emit({
+		type: 'progress',
+		step: 'autofill',
+		current: 2,
+		total: 5,
+		message: 'Accident info filled',
+	})
 
 	// 4c: Condition tab (damage markers + tire data + overview/interior data)
 	const damageMarkers = collectDamageMarkers(processedResults)
@@ -345,12 +395,21 @@ async function runPipeline(
 	}
 	if (interiorResults.length > 0) {
 		summary.autoFilledFields.condition.push('interiorCondition', 'specialFeatures')
-		if (interiorResults.some((r) => r.mileage !== null)) summary.autoFilledFields.condition.push('mileageRead')
-		if (interiorResults.some((r) => r.parkingSensors !== null)) summary.autoFilledFields.condition.push('parkingSensors')
-		if (interiorResults.some((r) => r.airbagsDeployed !== null)) summary.autoFilledFields.condition.push('airbagsDeployed')
+		if (interiorResults.some((r) => r.mileage !== null))
+			summary.autoFilledFields.condition.push('mileageRead')
+		if (interiorResults.some((r) => r.parkingSensors !== null))
+			summary.autoFilledFields.condition.push('parkingSensors')
+		if (interiorResults.some((r) => r.airbagsDeployed !== null))
+			summary.autoFilledFields.condition.push('airbagsDeployed')
 	}
 	emit({ type: 'auto_fill', section: 'condition', fields: summary.autoFilledFields.condition })
-	emit({ type: 'progress', step: 'autofill', current: 3, total: 5, message: 'Condition data filled' })
+	emit({
+		type: 'progress',
+		step: 'autofill',
+		current: 3,
+		total: 5,
+		message: 'Condition data filled',
+	})
 
 	// 4d: Calculation tab
 	const calculationFields: string[] = []
@@ -367,7 +426,13 @@ async function runPipeline(
 	if (calculationFields.length > 0) {
 		emit({ type: 'auto_fill', section: 'calculation', fields: calculationFields })
 	}
-	emit({ type: 'progress', step: 'autofill', current: 4, total: 5, message: 'Calculation data filled' })
+	emit({
+		type: 'progress',
+		step: 'autofill',
+		current: 4,
+		total: 5,
+		message: 'Calculation data filled',
+	})
 
 	// 4e: Photo descriptions and ordering
 	const photoOrder = buildPhotoOrder(classifications)
@@ -403,7 +468,8 @@ async function runPipeline(
 	}
 
 	// Attach payloads to summary for the route handler to use
-	;(summary as GenerationSummary & { _payloads: typeof autoFillPayloads })._payloads = autoFillPayloads
+	;(summary as GenerationSummary & { _payloads: typeof autoFillPayloads })._payloads =
+		autoFillPayloads
 
 	emit({ type: 'complete', summary })
 	return summary
@@ -447,7 +513,9 @@ function collectDamageMarkers(results: PhotoProcessingResult[]): DiagramPosition
 				r.result.diagramPosition.comment,
 				r.result.severity ? `Severity: ${r.result.severity}` : null,
 				r.result.repairApproach ? `Repair: ${r.result.repairApproach}` : null,
-			].filter(Boolean).join(' | ')
+			]
+				.filter(Boolean)
+				.join(' | ')
 
 			markers.push({
 				...r.result.diagramPosition,
@@ -509,8 +577,7 @@ function deduplicateMarkers(markers: DiagramPosition[], threshold: number = 10):
 	for (const marker of markers) {
 		const nearby = result.find(
 			(existing) =>
-				Math.abs(existing.x - marker.x) < threshold &&
-				Math.abs(existing.y - marker.y) < threshold,
+				Math.abs(existing.x - marker.x) < threshold && Math.abs(existing.y - marker.y) < threshold,
 		)
 
 		if (!nearby) {
@@ -533,7 +600,14 @@ type PhotoUpdate = {
 	photoId: string
 	aiDescription: string | null
 	classification: string
-	boundingBoxes: Array<{ x: number; y: number; width: number; height: number; label: string; color: string }>
+	boundingBoxes: Array<{
+		x: number
+		y: number
+		width: number
+		height: number
+		label: string
+		color: string
+	}>
 }
 
 function buildPhotoUpdates(
@@ -558,11 +632,8 @@ function buildPhotoUpdates(
 			aiDescription = processed.result.description
 		} else if (processed?.type === 'tire' && processed.result) {
 			const tire = processed.result
-			aiDescription = [
-				tire.manufacturer,
-				tire.size,
-				tire.condition,
-			].filter(Boolean).join(' — ') || null
+			aiDescription =
+				[tire.manufacturer, tire.size, tire.condition].filter(Boolean).join(' — ') || null
 		}
 
 		return {
@@ -574,12 +645,15 @@ function buildPhotoUpdates(
 	})
 }
 
-export { runPipeline, hashUrl }
-export type { PhotoInput, PhotoUpdate, EmitFn, PipelineOptions }
+export type { EmitFn, PhotoInput, PhotoUpdate, PipelineOptions }
+export { hashUrl, runPipeline }
 
 // --- Inline VIN/Plate/OCR detection (reuses logic from existing routes) ---
 
-async function detectVinFromImage(photoId: string, imageData: ImageData): Promise<{ photoId: string; vin: string | null }> {
+async function detectVinFromImage(
+	photoId: string,
+	imageData: ImageData,
+): Promise<{ photoId: string; vin: string | null }> {
 	const cacheKey = getCacheKey(photoId, 'detect-vin')
 	const cached = getCachedResult<{ photoId: string; vin: string | null }>(cacheKey)
 	if (cached) return cached
@@ -588,13 +662,21 @@ async function detectVinFromImage(photoId: string, imageData: ImageData): Promis
 	const message = await client.messages.create({
 		model: 'claude-haiku-4-5-20251001',
 		max_tokens: 256,
-		messages: [{
-			role: 'user',
-			content: [
-				{ type: 'image', source: { type: 'base64', media_type: imageData.mediaType, data: imageData.base64 } },
-				{ type: 'text', text: 'Extract the Vehicle Identification Number (VIN) from this image. A VIN is a 17-character alphanumeric code (no I, O, or Q). Return ONLY the VIN string if found, or "null" if not visible.' },
-			],
-		}],
+		messages: [
+			{
+				role: 'user',
+				content: [
+					{
+						type: 'image',
+						source: { type: 'base64', media_type: imageData.mediaType, data: imageData.base64 },
+					},
+					{
+						type: 'text',
+						text: 'Extract the Vehicle Identification Number (VIN) from this image. A VIN is a 17-character alphanumeric code (no I, O, or Q). Return ONLY the VIN string if found, or "null" if not visible.',
+					},
+				],
+			},
+		],
 	})
 
 	const textBlock = message.content.find((b) => b.type === 'text')
@@ -613,7 +695,10 @@ async function detectVinFromImage(photoId: string, imageData: ImageData): Promis
 	return result
 }
 
-async function detectPlateFromImage(photoId: string, imageData: ImageData): Promise<{ photoId: string; plate: string | null }> {
+async function detectPlateFromImage(
+	photoId: string,
+	imageData: ImageData,
+): Promise<{ photoId: string; plate: string | null }> {
 	const cacheKey = getCacheKey(photoId, 'detect-plate')
 	const cached = getCachedResult<{ photoId: string; plate: string | null }>(cacheKey)
 	if (cached) return cached
@@ -622,13 +707,21 @@ async function detectPlateFromImage(photoId: string, imageData: ImageData): Prom
 	const message = await client.messages.create({
 		model: 'claude-haiku-4-5-20251001',
 		max_tokens: 256,
-		messages: [{
-			role: 'user',
-			content: [
-				{ type: 'image', source: { type: 'base64', media_type: imageData.mediaType, data: imageData.base64 } },
-				{ type: 'text', text: "Extract the license plate number from this vehicle image. Return ONLY the plate string if found (e.g., 'HB AB 1234'), or \"null\" if not visible." },
-			],
-		}],
+		messages: [
+			{
+				role: 'user',
+				content: [
+					{
+						type: 'image',
+						source: { type: 'base64', media_type: imageData.mediaType, data: imageData.base64 },
+					},
+					{
+						type: 'text',
+						text: 'Extract the license plate number from this vehicle image. Return ONLY the plate string if found (e.g., \'HB AB 1234\'), or "null" if not visible.',
+					},
+				],
+			},
+		],
 	})
 
 	const textBlock = message.content.find((b) => b.type === 'text')
@@ -656,13 +749,21 @@ async function ocrDocument(photoId: string, imageData: ImageData): Promise<OcrEx
 	const message = await client.messages.create({
 		model: 'claude-sonnet-4-5-20250929',
 		max_tokens: 1024,
-		messages: [{
-			role: 'user',
-			content: [
-				{ type: 'image', source: { type: 'base64', media_type: imageData.mediaType, data: imageData.base64 } },
-				{ type: 'text', text: 'Extract vehicle registration information from this German Zulassungsbescheinigung (vehicle registration certificate). Return JSON with: {"manufacturer":"","model":"","vin":"","licensePlate":"","firstRegistration":"YYYY-MM-DD","engineDisplacement":"ccm","power":"kW","fuel":"","mileage":"","kbaNumber":"","previousOwners":"","lastRegistration":"YYYY-MM-DD","vehicleType":"","color":"","seats":"","transmission":""}. Use empty string for fields not found.' },
-			],
-		}],
+		messages: [
+			{
+				role: 'user',
+				content: [
+					{
+						type: 'image',
+						source: { type: 'base64', media_type: imageData.mediaType, data: imageData.base64 },
+					},
+					{
+						type: 'text',
+						text: 'Extract vehicle registration information from this German Zulassungsbescheinigung (vehicle registration certificate). Return JSON with: {"manufacturer":"","model":"","vin":"","licensePlate":"","firstRegistration":"YYYY-MM-DD","engineDisplacement":"ccm","power":"kW","fuel":"","mileage":"","kbaNumber":"","previousOwners":"","lastRegistration":"YYYY-MM-DD","vehicleType":"","color":"","seats":"","transmission":""}. Use empty string for fields not found.',
+					},
+				],
+			},
+		],
 	})
 
 	const textBlock = message.content.find((b) => b.type === 'text')
@@ -689,7 +790,10 @@ async function ocrDocument(photoId: string, imageData: ImageData): Promise<OcrEx
 	}
 
 	try {
-		const jsonString = raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
+		const jsonString = raw
+			.replace(/^```(?:json)?\s*\n?/i, '')
+			.replace(/\n?```\s*$/i, '')
+			.trim()
 		const parsed = JSON.parse(jsonString) as Record<string, unknown>
 
 		const result: OcrExtractionResult = { ...empty }

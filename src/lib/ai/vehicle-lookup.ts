@@ -1,7 +1,7 @@
 // Vehicle data lookup — NHTSA (free) with AI VIN decode fallback for European vehicles.
 
 import { getAnthropicClient } from './anthropic'
-import type { VehicleLookupResult, OcrExtractionResult } from './types'
+import type { OcrExtractionResult, VehicleLookupResult } from './types'
 
 const NHTSA_API_URL = 'https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues'
 
@@ -68,7 +68,7 @@ async function lookupViaNhtsa(vin: string): Promise<VehicleLookupResult> {
 			}
 		}
 
-		const data = await response.json() as {
+		const data = (await response.json()) as {
 			Results?: Array<Record<string, string | null>>
 		}
 		const result = data.Results?.[0]
@@ -105,9 +105,13 @@ async function lookupViaNhtsa(vin: string): Promise<VehicleLookupResult> {
 		const modelYear = getNumber('ModelYear')
 
 		const filledFields = [
-			manufacturer, model, modelYear,
-			getString('BodyClass'), getNumber('DisplacementCC'),
-			getNumber('EngineCylinders'), getString('FuelTypePrimary'),
+			manufacturer,
+			model,
+			modelYear,
+			getString('BodyClass'),
+			getNumber('DisplacementCC'),
+			getNumber('EngineCylinders'),
+			getString('FuelTypePrimary'),
 		].filter(Boolean).length
 		const confidence = Math.min(1, filledFields / 7)
 
@@ -122,7 +126,9 @@ async function lookupViaNhtsa(vin: string): Promise<VehicleLookupResult> {
 			bodyType: getString('BodyClass'),
 			engineDesign: getString('EngineConfiguration'),
 			engineDisplacement: getNumber('DisplacementCC'),
-			cylinders: getNumber('EngineCylinders') ? Math.round(getNumber('EngineCylinders')!) : undefined,
+			cylinders: getNumber('EngineCylinders')
+				? Math.round(getNumber('EngineCylinders')!)
+				: undefined,
 			powerKw: getNumber('EngineKW'),
 			fuelType: getString('FuelTypePrimary'),
 			transmission: getString('TransmissionStyle'),
@@ -163,9 +169,8 @@ async function lookupViaAiDecode(vin: string): Promise<VehicleLookupResult> {
 			.trim()
 		const parsed = JSON.parse(jsonString) as Record<string, unknown>
 
-		const confidence = typeof parsed.confidence === 'number'
-			? Math.min(1, Math.max(0, parsed.confidence))
-			: 0.4
+		const confidence =
+			typeof parsed.confidence === 'number' ? Math.min(1, Math.max(0, parsed.confidence)) : 0.4
 
 		return {
 			source: 'ai-decode',
@@ -197,13 +202,30 @@ async function lookupViaAiDecode(vin: string): Promise<VehicleLookupResult> {
 function normalizeVehicleType(raw: string): string {
 	const lower = raw.toLowerCase().trim()
 	const map: Record<string, string> = {
-		sedan: 'sedan', saloon: 'sedan', limousine: 'sedan',
-		compact: 'compact', hatchback: 'compact', 'compact car': 'compact',
-		suv: 'suv', 'sport utility vehicle': 'suv', crossover: 'suv',
-		wagon: 'wagon', estate: 'wagon', kombi: 'wagon', 'station wagon': 'wagon',
-		coupe: 'coupe', coupé: 'coupe',
-		convertible: 'convertible', cabriolet: 'convertible', cabrio: 'convertible', roadster: 'convertible',
-		van: 'van', minivan: 'van', mpv: 'van', bus: 'van', transporter: 'van',
+		sedan: 'sedan',
+		saloon: 'sedan',
+		limousine: 'sedan',
+		compact: 'compact',
+		hatchback: 'compact',
+		'compact car': 'compact',
+		suv: 'suv',
+		'sport utility vehicle': 'suv',
+		crossover: 'suv',
+		wagon: 'wagon',
+		estate: 'wagon',
+		kombi: 'wagon',
+		'station wagon': 'wagon',
+		coupe: 'coupe',
+		coupé: 'coupe',
+		convertible: 'convertible',
+		cabriolet: 'convertible',
+		cabrio: 'convertible',
+		roadster: 'convertible',
+		van: 'van',
+		minivan: 'van',
+		mpv: 'van',
+		bus: 'van',
+		transporter: 'van',
 	}
 	return map[lower] ?? lower
 }
@@ -214,11 +236,22 @@ function normalizeVehicleType(raw: string): string {
 function normalizeMotorType(raw: string): string {
 	const lower = raw.toLowerCase().trim()
 	const map: Record<string, string> = {
-		gasoline: 'petrol', petrol: 'petrol', benzin: 'petrol', otto: 'petrol',
+		gasoline: 'petrol',
+		petrol: 'petrol',
+		benzin: 'petrol',
+		otto: 'petrol',
 		diesel: 'diesel',
-		electric: 'electric', elektro: 'electric', bev: 'electric',
-		hybrid: 'hybrid', 'plug-in hybrid': 'hybrid', phev: 'hybrid',
-		gas: 'gas', lpg: 'gas', cng: 'gas', 'compressed natural gas': 'gas', 'natural gas': 'gas',
+		electric: 'electric',
+		elektro: 'electric',
+		bev: 'electric',
+		hybrid: 'hybrid',
+		'plug-in hybrid': 'hybrid',
+		phev: 'hybrid',
+		gas: 'gas',
+		lpg: 'gas',
+		cng: 'gas',
+		'compressed natural gas': 'gas',
+		'natural gas': 'gas',
 	}
 	return map[lower] ?? lower
 }
@@ -296,4 +329,4 @@ function mergeVehicleData(
 	return merged
 }
 
-export { lookupVehicleByVin, mergeVehicleData, normalizeVehicleType, normalizeMotorType }
+export { lookupVehicleByVin, mergeVehicleData, normalizeMotorType, normalizeVehicleType }

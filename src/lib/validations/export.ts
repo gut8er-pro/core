@@ -12,10 +12,12 @@ const exportConfigSchema = z.object({
 })
 
 const sendReportSchema = z.object({
-	recipientEmail: z.string().min(1, 'At least one recipient email is required').refine(
-		(val) => val.split(',').every((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim())),
-		{ message: 'All recipient emails must be valid' },
-	),
+	recipientEmail: z
+		.string()
+		.min(1, 'At least one recipient email is required')
+		.refine((val) => val.split(',').every((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim())), {
+			message: 'All recipient emails must be valid',
+		}),
 	recipientName: z.string().min(1, 'Recipient name is required').max(500),
 	emailSubject: z.string().min(1, 'Subject is required').max(500),
 	emailBody: z.string().max(10000).optional(),
@@ -25,5 +27,5 @@ const sendReportSchema = z.object({
 type ExportConfigInput = z.infer<typeof exportConfigSchema>
 type SendReportInput = z.infer<typeof sendReportSchema>
 
-export { exportConfigSchema, sendReportSchema }
 export type { ExportConfigInput, SendReportInput }
+export { exportConfigSchema, sendReportSchema }

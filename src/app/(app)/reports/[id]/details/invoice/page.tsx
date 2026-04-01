@@ -1,17 +1,17 @@
 'use client'
 
-import { useCallback, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import { useForm } from 'react-hook-form'
 import { CheckCircle2, Loader2 } from 'lucide-react'
-import { useInvoice } from '@/hooks/use-invoice'
-import { useReport } from '@/hooks/use-reports'
-import { useAutoSave } from '@/hooks/use-auto-save'
+import { useParams } from 'next/navigation'
+import { useCallback, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { BvskRateTable } from '@/components/report/invoice/bvsk-rate-table'
 import { InvoiceBanner } from '@/components/report/invoice/invoice-banner'
 import { InvoiceSettings } from '@/components/report/invoice/invoice-settings'
 import { LineItemsSection } from '@/components/report/invoice/line-items-section'
-import { BvskRateTable } from '@/components/report/invoice/bvsk-rate-table'
 import type { InvoiceFormData } from '@/components/report/invoice/types'
+import { useAutoSave } from '@/hooks/use-auto-save'
+import { useInvoice } from '@/hooks/use-invoice'
+import { useReport } from '@/hooks/use-reports'
 
 function InvoicePage() {
 	const params = useParams<{ id: string }>()
@@ -78,7 +78,7 @@ function InvoicePage() {
 			// Map numeric fields
 			if (field === 'payoutDelay') {
 				const numVal = parseInt(el.value, 10)
-				saveField(`invoice.${field}`, isNaN(numVal) ? null : numVal)
+				saveField(`invoice.${field}`, Number.isNaN(numVal) ? null : numVal)
 			} else if (field === 'date') {
 				const dateVal = el.value ? new Date(el.value).toISOString() : null
 				saveField(`invoice.${field}`, dateVal)
@@ -144,9 +144,7 @@ function InvoicePage() {
 						<span className="text-primary">Saved</span>
 					</>
 				)}
-				{autoSaveState.status === 'error' && (
-					<span className="text-error">Failed to save</span>
-				)}
+				{autoSaveState.status === 'error' && <span className="text-error">Failed to save</span>}
 			</div>
 
 			{/* Invoice totals banner */}
@@ -171,11 +169,7 @@ function InvoicePage() {
 					control={control}
 					errors={errors}
 					onFieldBlur={handleFieldBlur}
-					bvskContent={
-						<BvskRateTable
-							onApplyRate={handleApplyBvskRate}
-						/>
-					}
+					bvskContent={<BvskRateTable onApplyRate={handleApplyBvskRate} />}
 				/>
 			</div>
 		</div>

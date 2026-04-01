@@ -1,12 +1,8 @@
 // Hook for consuming the Generate Report SSE pipeline.
 
-import { useState, useCallback, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import type {
-	GenerateEvent,
-	GenerationSummary,
-	ClassificationResult,
-} from '@/lib/ai/types'
+import { useCallback, useRef, useState } from 'react'
+import type { ClassificationResult, GenerateEvent, GenerationSummary } from '@/lib/ai/types'
 
 type GenerationStatus = {
 	isGenerating: boolean
@@ -35,103 +31,106 @@ function useGenerateReport(reportId: string) {
 	const abortRef = useRef<AbortController | null>(null)
 	const queryClient = useQueryClient()
 
-	const generate = useCallback(async (options?: { incremental?: boolean }) => {
-		if (status.isGenerating) return
+	const generate = useCallback(
+		async (options?: { incremental?: boolean }) => {
+			if (status.isGenerating) return
 
-		const incremental = options?.incremental ?? false
+			const incremental = options?.incremental ?? false
 
-		setStatus({
-			...INITIAL_STATUS,
-			isGenerating: true,
-			message: incremental ? 'Processing new photos...' : 'Starting report generation...',
-		})
-
-		const controller = new AbortController()
-		abortRef.current = controller
-
-		try {
-			const response = await fetch(`/api/reports/${reportId}/generate`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ incremental }),
-				signal: controller.signal,
+			setStatus({
+				...INITIAL_STATUS,
+				isGenerating: true,
+				message: incremental ? 'Processing new photos...' : 'Starting report generation...',
 			})
 
-			if (!response.ok) {
-				const data = await response.json().catch(() => ({ error: 'Generation failed' }))
-				setStatus((prev) => ({
-					...prev,
-					isGenerating: false,
-					error: data.error || 'Generation failed',
-				}))
-				return
-			}
+			const controller = new AbortController()
+			abortRef.current = controller
 
-			if (!response.body) {
-				setStatus((prev) => ({
-					...prev,
-					isGenerating: false,
-					error: 'No response stream',
-				}))
-				return
-			}
+			try {
+				const response = await fetch(`/api/reports/${reportId}/generate`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ incremental }),
+					signal: controller.signal,
+				})
 
-			const reader = response.body.getReader()
-			const decoder = new TextDecoder()
-			let buffer = ''
+				if (!response.ok) {
+					const data = await response.json().catch(() => ({ error: 'Generation failed' }))
+					setStatus((prev) => ({
+						...prev,
+						isGenerating: false,
+						error: data.error || 'Generation failed',
+					}))
+					return
+				}
 
-			while (true) {
-				const { done, value } = await reader.read()
-				if (done) break
+				if (!response.body) {
+					setStatus((prev) => ({
+						...prev,
+						isGenerating: false,
+						error: 'No response stream',
+					}))
+					return
+				}
 
-				buffer += decoder.decode(value, { stream: true })
+				const reader = response.body.getReader()
+				const decoder = new TextDecoder()
+				let buffer = ''
 
-				// Parse SSE events from buffer
-				const lines = buffer.split('\n')
-				buffer = lines.pop() || ''
+				while (true) {
+					const { done, value } = await reader.read()
+					if (done) break
 
-				for (const line of lines) {
-					if (line.startsWith('data: ')) {
-						try {
-							const event = JSON.parse(line.slice(6)) as GenerateEvent
-							handleEvent(event, setStatus)
-						} catch {
-							// Ignore malformed events
+					buffer += decoder.decode(value, { stream: true })
+
+					// Parse SSE events from buffer
+					const lines = buffer.split('\n')
+					buffer = lines.pop() || ''
+
+					for (const line of lines) {
+						if (line.startsWith('data: ')) {
+							try {
+								const event = JSON.parse(line.slice(6)) as GenerateEvent
+								handleEvent(event, setStatus)
+							} catch {
+								// Ignore malformed events
+							}
 						}
 					}
 				}
-			}
 
-			// Process any remaining buffer
-			if (buffer.startsWith('data: ')) {
-				try {
-					const event = JSON.parse(buffer.slice(6)) as GenerateEvent
-					handleEvent(event, setStatus)
-				} catch {
-					// Ignore
+				// Process any remaining buffer
+				if (buffer.startsWith('data: ')) {
+					try {
+						const event = JSON.parse(buffer.slice(6)) as GenerateEvent
+						handleEvent(event, setStatus)
+					} catch {
+						// Ignore
+					}
 				}
+			} catch (err) {
+				if (controller.signal.aborted) {
+					setStatus((prev) => ({
+						...prev,
+						isGenerating: false,
+						message: 'Generation cancelled',
+					}))
+				} else {
+					const message = err instanceof Error ? err.message : 'Generation failed'
+					setStatus((prev) => ({
+						...prev,
+						isGenerating: false,
+						error: message,
+					}))
+				}
+			} finally {
+				abortRef.current = null
+				// Invalidate all report-related queries to refetch fresh data
+				queryClient.invalidateQueries({ queryKey: ['report', reportId] })
 			}
-		} catch (err) {
-			if (controller.signal.aborted) {
-				setStatus((prev) => ({
-					...prev,
-					isGenerating: false,
-					message: 'Generation cancelled',
-				}))
-			} else {
-				const message = err instanceof Error ? err.message : 'Generation failed'
-				setStatus((prev) => ({
-					...prev,
-					isGenerating: false,
-					error: message,
-				}))
-			}
-		} finally {
-			abortRef.current = null
-			// Invalidate all report-related queries to refetch fresh data
-			queryClient.invalidateQueries({ queryKey: ['report', reportId] })
-		}
-	}, [reportId, status.isGenerating, queryClient])
+		},
+		[reportId, status.isGenerating, queryClient],
+	)
 
 	const cancel = useCallback(() => {
 		abortRef.current?.abort()
@@ -197,5 +196,5 @@ function handleEvent(
 	}
 }
 
-export { useGenerateReport }
 export type { GenerationStatus }
+export { useGenerateReport }

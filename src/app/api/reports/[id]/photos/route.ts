@@ -1,7 +1,7 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
-import { MAX_PHOTOS_PER_REPORT, createPhotoSchema } from '@/lib/validations/photos'
+import { prisma } from '@/lib/prisma'
+import { createPhotoSchema, MAX_PHOTOS_PER_REPORT } from '@/lib/validations/photos'
 
 type RouteContext = {
 	params: Promise<{ id: string }>
@@ -14,7 +14,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -39,7 +39,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {

@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils'
 import { getPaintColor } from '@/lib/design-tokens'
+import { cn } from '@/lib/utils'
 
 type Marker = {
 	id: string
@@ -43,10 +43,7 @@ function VehicleDiagram({
 			<div className="relative rounded-lg border border-border bg-white p-4">
 				<svg
 					viewBox="0 0 400 200"
-					className={cn(
-						'h-auto w-full',
-						editable && 'cursor-crosshair',
-					)}
+					className={cn('h-auto w-full', editable && 'cursor-crosshair')}
 					onClick={handleDiagramClick}
 					aria-label={mode === 'damages' ? 'Vehicle damage diagram' : 'Vehicle paint diagram'}
 					role="img"
@@ -143,10 +140,7 @@ function PaintLegend() {
 		<div className="flex flex-wrap gap-2" aria-label="Paint thickness legend">
 			{legend.map((item) => (
 				<div key={item.label} className="flex items-center gap-1">
-					<div
-						className="h-3 w-3 rounded-full"
-						style={{ backgroundColor: item.color }}
-					/>
+					<div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
 					<span className="text-caption text-grey-100">{item.label}</span>
 				</div>
 			))}
@@ -154,5 +148,5 @@ function PaintLegend() {
 	)
 }
 
-export { VehicleDiagram, PaintLegend }
-export type { VehicleDiagramProps, Marker }
+export type { Marker, VehicleDiagramProps }
+export { PaintLegend, VehicleDiagram }

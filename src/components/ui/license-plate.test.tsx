@@ -1,5 +1,5 @@
-import { render, screen } from '@/test/test-utils'
 import { describe, expect, it } from 'vitest'
+import { render, screen } from '@/test/test-utils'
 import { LicensePlate } from './license-plate'
 
 describe('LicensePlate', () => {

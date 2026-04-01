@@ -1,6 +1,6 @@
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import { Check } from 'lucide-react'
-import { forwardRef, type ComponentPropsWithoutRef, type ElementRef } from 'react'
+import { type ComponentPropsWithoutRef, type ElementRef, forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 
 type Tab = {
@@ -42,17 +42,15 @@ function TabBar({ tabs, activeTab, onTabChange, className }: TabBarProps) {
 							)}
 						>
 							{tab.label}
-							{tab.isComplete && !isActive && (
-								<Check className="h-4 w-4 text-primary" />
-							)}
-							{tab.isComplete && isActive && (
-								<Check className="h-4 w-4 text-white" />
-							)}
+							{tab.isComplete && !isActive && <Check className="h-4 w-4 text-primary" />}
+							{tab.isComplete && isActive && <Check className="h-4 w-4 text-white" />}
 							{tab.completion && !tab.isComplete && (
-								<span className={cn(
-									'text-caption font-medium',
-									isActive ? 'text-white/70' : 'text-grey-100',
-								)}>
+								<span
+									className={cn(
+										'text-caption font-medium',
+										isActive ? 'text-white/70' : 'text-grey-100',
+									)}
+								>
 									{tab.completion}
 								</span>
 							)}
@@ -72,5 +70,5 @@ const TabsContent = forwardRef<
 ))
 TabsContent.displayName = TabsPrimitive.Content.displayName
 
+export type { Tab, TabBarProps }
 export { TabBar, TabsContent }
-export type { TabBarProps, Tab }

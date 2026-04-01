@@ -1,8 +1,4 @@
-import {
-	useQuery,
-	useMutation,
-	useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { SettingsUpdateInput } from '@/lib/validations/settings'
 
 type UserSettings = {
@@ -74,5 +70,5 @@ function useSaveSettings() {
 	})
 }
 
-export { useUserSettings, useSaveSettings, fetchSettings, saveSettings }
 export type { UserSettings }
+export { fetchSettings, saveSettings, useSaveSettings, useUserSettings }

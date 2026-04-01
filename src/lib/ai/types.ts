@@ -1,16 +1,33 @@
 // Shared types for the AI report generation pipeline.
 
 type VehiclePosition =
-	| 'front-left' | 'front' | 'front-right'
-	| 'left' | 'right'
-	| 'rear-left' | 'rear' | 'rear-right'
-	| 'top' | 'interior' | 'engine'
-	| 'wheel-fl' | 'wheel-fr' | 'wheel-rl' | 'wheel-rr'
-	| 'undercarriage' | 'other'
+	| 'front-left'
+	| 'front'
+	| 'front-right'
+	| 'left'
+	| 'right'
+	| 'rear-left'
+	| 'rear'
+	| 'rear-right'
+	| 'top'
+	| 'interior'
+	| 'engine'
+	| 'wheel-fl'
+	| 'wheel-fr'
+	| 'wheel-rl'
+	| 'wheel-rr'
+	| 'undercarriage'
+	| 'other'
 
 type PhotoClassificationType =
-	| 'damage' | 'vin' | 'plate' | 'document'
-	| 'overview' | 'tire' | 'interior' | 'other'
+	| 'damage'
+	| 'vin'
+	| 'plate'
+	| 'document'
+	| 'overview'
+	| 'tire'
+	| 'interior'
+	| 'other'
 
 type ClassificationResult = {
 	photoId: string
@@ -22,9 +39,16 @@ type ClassificationResult = {
 }
 
 type DamageType =
-	| 'dent' | 'scratch' | 'crack' | 'deformation'
-	| 'paint_damage' | 'broken_part' | 'corrosion'
-	| 'glass_damage' | 'plastic_damage' | 'structural'
+	| 'dent'
+	| 'scratch'
+	| 'crack'
+	| 'deformation'
+	| 'paint_damage'
+	| 'broken_part'
+	| 'corrosion'
+	| 'glass_damage'
+	| 'plastic_damage'
+	| 'structural'
 
 type BoundingBox = {
 	x: number
@@ -173,21 +197,21 @@ type GenerationSummary = {
 }
 
 export type {
-	VehiclePosition,
-	PhotoClassificationType,
-	ClassificationResult,
-	DamageType,
 	BoundingBox,
-	DiagramPosition,
+	ClassificationResult,
 	DamageAnalysisResult,
-	OverviewAnalysisResult,
-	TireAnalysisResult,
-	InteriorAnalysisResult,
-	VinDetectionResult,
-	PlateDetectionResult,
-	OcrExtractionResult,
-	VehicleLookupResult,
-	PhotoProcessingResult,
+	DamageType,
+	DiagramPosition,
 	GenerateEvent,
 	GenerationSummary,
+	InteriorAnalysisResult,
+	OcrExtractionResult,
+	OverviewAnalysisResult,
+	PhotoClassificationType,
+	PhotoProcessingResult,
+	PlateDetectionResult,
+	TireAnalysisResult,
+	VehicleLookupResult,
+	VehiclePosition,
+	VinDetectionResult,
 }

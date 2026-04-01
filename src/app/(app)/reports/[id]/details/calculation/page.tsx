@@ -1,24 +1,24 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import { useForm } from 'react-hook-form'
 import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, ChevronRight, Loader2, Sparkles } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import type { CorrectionMode } from '@/components/report/calculation/correction-section'
+import { CorrectionSection } from '@/components/report/calculation/correction-section'
+import type { DatFormData } from '@/components/report/calculation/dat-modal'
+import { DatModal } from '@/components/report/calculation/dat-modal'
+import { LossSection } from '@/components/report/calculation/loss-section'
+import { RepairSection } from '@/components/report/calculation/repair-section'
+import type { CalculationFormData } from '@/components/report/calculation/types'
+import { ValuationSection } from '@/components/report/calculation/valuation-section'
+import { ValueSection } from '@/components/report/calculation/value-section'
 import { Button } from '@/components/ui/button'
 import { CompletionBadge } from '@/components/ui/completion-badge'
+import { useAutoSave } from '@/hooks/use-auto-save'
 import { useCalculation } from '@/hooks/use-calculation'
 import { useReport } from '@/hooks/use-reports'
-import { useAutoSave } from '@/hooks/use-auto-save'
-import { ValueSection } from '@/components/report/calculation/value-section'
-import { RepairSection } from '@/components/report/calculation/repair-section'
-import { LossSection } from '@/components/report/calculation/loss-section'
-import { DatModal } from '@/components/report/calculation/dat-modal'
-import { CorrectionSection } from '@/components/report/calculation/correction-section'
-import { ValuationSection } from '@/components/report/calculation/valuation-section'
-import type { DatFormData } from '@/components/report/calculation/dat-modal'
-import type { CalculationFormData } from '@/components/report/calculation/types'
-import type { CorrectionMode } from '@/components/report/calculation/correction-section'
 
 function CalculationPage() {
 	const params = useParams<{ id: string }>()
@@ -127,10 +127,10 @@ function CalculationPage() {
 
 			if (floatFields.includes(field)) {
 				const numVal = parseFloat(el.value)
-				saveField(`calculation.${field}`, isNaN(numVal) ? null : numVal)
+				saveField(`calculation.${field}`, Number.isNaN(numVal) ? null : numVal)
 			} else if (intFields.includes(field)) {
 				const numVal = parseInt(el.value, 10)
-				saveField(`calculation.${field}`, isNaN(numVal) ? null : numVal)
+				saveField(`calculation.${field}`, Number.isNaN(numVal) ? null : numVal)
 			} else {
 				saveField(`calculation.${field}`, value)
 			}
@@ -138,22 +138,25 @@ function CalculationPage() {
 		[saveField],
 	)
 
-	const handleDatSave = useCallback(async (datData: DatFormData) => {
-		try {
-			await fetch(`/api/reports/${reportId}/calculation`, {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					calculation: {
-						datCalculationResult: datData,
-					},
-				}),
-			})
-			queryClient.invalidateQueries({ queryKey: ['report', reportId, 'calculation'] })
-		} catch {
-			// silently fail — DAT settings are non-critical
-		}
-	}, [reportId, queryClient])
+	const handleDatSave = useCallback(
+		async (datData: DatFormData) => {
+			try {
+				await fetch(`/api/reports/${reportId}/calculation`, {
+					method: 'PATCH',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						calculation: {
+							datCalculationResult: datData,
+						},
+					}),
+				})
+				queryClient.invalidateQueries({ queryKey: ['report', reportId, 'calculation'] })
+			} catch {
+				// silently fail — DAT settings are non-critical
+			}
+		},
+		[reportId, queryClient],
+	)
 
 	const handleAutoFill = useCallback(async () => {
 		setIsAutoFilling(true)
@@ -169,7 +172,7 @@ function CalculationPage() {
 				setAutoFillMessage(resData.error || 'Auto-fill failed')
 				return
 			}
-			const resData = await response.json() as { fieldsUpdated: string[] }
+			const resData = (await response.json()) as { fieldsUpdated: string[] }
 			setAutoFillMessage(`Auto-filled ${resData.fieldsUpdated.length} fields`)
 			queryClient.invalidateQueries({ queryKey: ['report', reportId, 'calculation'] })
 		} catch {
@@ -187,16 +190,16 @@ function CalculationPage() {
 		)
 	}
 
-	const sectionTitle = isValuationReport ? 'Value and Repair Calculation' : 'Value and Repair Calculation'
+	const sectionTitle = isValuationReport
+		? 'Value and Repair Calculation'
+		: 'Value and Repair Calculation'
 
 	return (
 		<div className="flex flex-col gap-6">
 			{/* Top row: auto-save status + auto-fill button */}
 			<div className="flex items-center justify-end gap-3">
 				<div className="flex items-center gap-3">
-					{autoFillMessage && (
-						<span className="text-caption text-grey-100">{autoFillMessage}</span>
-					)}
+					{autoFillMessage && <span className="text-caption text-grey-100">{autoFillMessage}</span>}
 					<div className="flex items-center gap-1 text-caption">
 						{autoSaveState.status === 'saving' && (
 							<>
@@ -210,17 +213,10 @@ function CalculationPage() {
 								<span className="text-primary">Saved</span>
 							</>
 						)}
-						{autoSaveState.status === 'error' && (
-							<span className="text-error">Failed to save</span>
-						)}
+						{autoSaveState.status === 'error' && <span className="text-error">Failed to save</span>}
 					</div>
 				</div>
-				<Button
-					variant="primary"
-					size="lg"
-					onClick={handleAutoFill}
-					disabled={isAutoFilling}
-				>
+				<Button variant="primary" size="lg" onClick={handleAutoFill} disabled={isAutoFilling}>
 					{isAutoFilling ? (
 						<>
 							<Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -242,17 +238,15 @@ function CalculationPage() {
 				className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-border bg-white px-5 py-4 text-left transition-colors hover:bg-grey-25"
 			>
 				<div className="flex flex-col gap-0.5">
-					<span className="text-body-sm font-semibold text-black">Repair and Valuation Providers</span>
+					<span className="text-body-sm font-semibold text-black">
+						Repair and Valuation Providers
+					</span>
 					<span className="text-caption text-grey-100">Select and setup calculation provider</span>
 				</div>
 				<ChevronRight className="h-5 w-5 text-grey-100" />
 			</button>
 
-			<DatModal
-				open={datModalOpen}
-				onClose={() => setDatModalOpen(false)}
-				onSave={handleDatSave}
-			/>
+			<DatModal open={datModalOpen} onClose={() => setDatModalOpen(false)} onSave={handleDatSave} />
 
 			{/* White card wrapping all calculation sections */}
 			<div className="flex flex-col gap-5 rounded-[20px] bg-white p-5">
@@ -304,7 +298,9 @@ function CalculationPage() {
 					mode={correctionMode}
 					onModeChange={setCorrectionMode}
 					onOpenDat={() => setDatModalOpen(true)}
-					resultWithoutLabel={isValuationReport ? 'Valuation Results - Manual' : 'Results without repair'}
+					resultWithoutLabel={
+						isValuationReport ? 'Valuation Results - Manual' : 'Results without repair'
+					}
 					resultWithLabel={isValuationReport ? 'Valuation after Correction' : 'Results with repair'}
 					resultWithoutValue="—"
 					resultWithValue="—"
