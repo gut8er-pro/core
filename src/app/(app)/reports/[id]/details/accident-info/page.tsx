@@ -212,7 +212,9 @@ function AccidentInfoPage() {
 		<div className="flex flex-col gap-6">
 			{/* Page heading with completion badge + auto-save status */}
 			<div className="flex items-center justify-between">
-				<h2 className="text-subsection font-medium text-black">Accident Overview</h2>
+				<h2 className="text-subsection font-medium text-black">
+					{report?.reportType === 'OT' ? 'Client Information' : 'Accident Overview'}
+				</h2>
 				<div className="flex items-center gap-3">
 					{autoSaveState.status === 'saving' && (
 						<span className="flex items-center gap-1 text-caption text-grey-100">
@@ -233,33 +235,39 @@ function AccidentInfoPage() {
 				</div>
 			</div>
 
-			{/* Form sections */}
-			<AccidentSection
-				register={register}
-				control={control}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
-			/>
+			{/* Form sections — some hidden per report type */}
+			{report?.reportType !== 'BE' && report?.reportType !== 'OT' && (
+				<AccidentSection
+					register={register}
+					control={control}
+					errors={errors}
+					onFieldBlur={handleFieldBlur}
+				/>
+			)}
 
 			<ClaimantSection
 				register={register}
 				control={control}
 				errors={errors}
 				onFieldBlur={handleFieldBlur}
+				reportType={report?.reportType}
 			/>
 
-			<OpponentSection
-				register={register}
-				control={control}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
-			/>
+			{report?.reportType !== 'BE' && report?.reportType !== 'OT' && (
+				<OpponentSection
+					register={register}
+					control={control}
+					errors={errors}
+					onFieldBlur={handleFieldBlur}
+				/>
+			)}
 
 			<VisitSection
 				register={register}
 				control={control}
 				errors={errors}
 				onFieldBlur={handleFieldBlur}
+				reportType={report?.reportType}
 			/>
 
 			<ExpertOpinionSection

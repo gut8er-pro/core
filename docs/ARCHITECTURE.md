@@ -7,21 +7,54 @@
 
 ## 0. REPORT TYPE MATRIX
 
-The app supports 4 report types. Most screens are identical across types — only the Calculation tab differs for BE (Evaluation).
+The app supports 4 report types. Each has distinct flows for the Accident Info, Condition, and Calculation tabs.
 
-| Feature | HS (Liability) | BE (Evaluation) | KG (Short Report) | OT (Oldtimer) |
-|---------|----------------|------------------|-------------------|----------------|
-| Gallery | Upload, Grid, Single view, Annotation | Same | Same | Same |
-| Accident Info | Claimant + Opponent + Lawyer + Visits + Signatures | Same (+ Insurance expanded on Opponent) | Same | Same |
-| Vehicle | VIN, Specs, Details (type/motor/axles/doors/seats pickers) | Same | Same | Same |
-| Condition | Vehicle Condition + Damage Diagram + Paint Thickness + Tires + Prior Damage | Same | Same | Same |
-| Calculation tab label | "Calculation" | **"Valuation"** | "Calculation" | "Calculation" |
-| Calculation content | Value + Repair + Loss of Use + Correction (DAT/Manual/AI) | **DAT Valuation + Manual Valuation** + Correction | Value + Repair + Loss + Correction | Value + Repair + Loss + Correction |
-| Correction result labels | "Results without repair" / "Results with repair" | **"Valuation Results - Manual" / "Valuation after Correction"** | Same as HS | Same as HS |
-| Invoice | Settings + BVSK rates + Line items | Same | Same | Same |
-| Export & Send | Email composer + Document toggles + Lock Report | Same | Same | Same |
+### Tab Labels
+| Tab | HS | BE | KG | OT |
+|-----|----|----|----|----|
+| 1st | Accident Info | Accident Info | Accident Info | **Customer** |
+| 2nd | Vehicle | Vehicle | Vehicle | Vehicle |
+| 3rd | Condition | Condition | Condition | Condition |
+| 4th | Calculation | **Valuation** | Calculation | **Valuation** |
+| 5th | Invoice | Invoice | Invoice | Invoice |
 
-**Key code path:** `src/app/(app)/reports/[id]/details/calculation/page.tsx` checks `report.reportType === 'BE'` to render `ValuationSection` vs standard `ValueSection + RepairSection`.
+### Accident Info / Customer Tab
+| Section | HS | BE | KG | OT |
+|---------|----|----|----|----|
+| Page heading | "Accident Overview" | "Accident Overview" | "Accident Overview" | **"Client Information"** |
+| Accident Information (Day/Scene) | ✓ | ✗ | ✓ | ✗ |
+| Section label | "Claimant Information" | "Claimant Information" | "Claimant Information" | **"Client"** |
+| 3 checkboxes (tax/owner/lawyer) | ✓ | ✓ | ✓ | **2 only (no lawyer)** |
+| Opponent in Accident | ✓ | ✗ | ✓ | ✗ |
+| Present (Expert/Client/Workshop) | ✗ | ✗ | ✗ | **✓** |
+| Visits / Expert Opinion / Signatures | ✓ | ✓ | ✓ | ✓ |
+
+### Condition Tab
+| Section | HS | BE | KG | OT |
+|---------|----|----|----|----|
+| Vehicle Condition (full) | ✓ | ✓ | ✓ | Reduced |
+| Value Increasing Features | ✗ | ✗ | ✗ | **✓** |
+| Vehicle Grading (1-5 scores) | ✗ | ✗ | ✗ | **✓** |
+| Damage/Paint diagram | ✓ | ✓ | ✓ | ✓ |
+| Tires + Prior Damage | ✓ | ✓ | ✓ | ✓ |
+
+### Calculation / Valuation Tab
+| Section | HS | BE | KG | OT |
+|---------|----|----|----|----|
+| Vehicle Value + Repair (2-col) | ✓ | ✗ | ✓ | ✗ |
+| Loss of Use | ✓ | ✗ | ✓ | ✗ |
+| DAT Valuation + Manual Valuation | ✗ | ✓ | ✗ | ✗ |
+| OT Vehicle Value (Market + Replacement + Restoration + Total Cost) | ✗ | ✗ | ✗ | **✓** |
+| Correction Calculation (DAT/Manual/AI) | ✓ | ✓ | **✗** | **✗** |
+| Result cards | ✓ | ✓ (different labels) | **✗** | ✓ (Total Cost) |
+
+### Key code paths
+- `details/layout.tsx` — tab labels per `reportType`
+- `details/accident-info/page.tsx` — hides AccidentSection + OpponentSection for BE/OT
+- `components/report/accident-info/claimant-section.tsx` — OT title "Client", hides lawyer checkbox
+- `components/report/accident-info/visit-section.tsx` — OT "Present" subsection
+- `details/calculation/page.tsx` — `isOldtimerReport`, `isShortReport`, `isValuationReport` conditionals
+- `details/condition/page.tsx` — OT shows VehicleGradingSection + ValueIncreasingFeaturesSection
 
 ---
 

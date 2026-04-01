@@ -33,6 +33,10 @@ type CalculationFormData = {
 	// Correction Calculation results (shared HS + BE)
 	correctionResultWithout: string
 	correctionResultWith: string
+	// OT — Oldtimer Valuation
+	marketValue: string
+	baseVehicleValue: string
+	restorationValue: string
 }
 
 type CalculationSectionProps = {

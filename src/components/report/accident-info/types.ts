@@ -58,6 +58,7 @@ type SectionProps = {
 	control: Control<AccidentInfoFormData>
 	errors: FieldErrors<AccidentInfoFormData>
 	onFieldBlur?: (field: string) => void
+	reportType?: 'HS' | 'BE' | 'KG' | 'OT'
 }
 
 type SignatureData = {

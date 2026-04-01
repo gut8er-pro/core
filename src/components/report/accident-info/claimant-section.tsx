@@ -22,14 +22,18 @@ function ClaimantSection({
 	control,
 	errors,
 	onFieldBlur,
+	reportType,
 	className,
 }: SectionProps & { className?: string }) {
 	const representedByLawyer = useWatch({ control, name: 'claimantRepresentedByLawyer' })
 	const eligibleForTax = useWatch({ control, name: 'claimantEligibleForInputTaxDeduction' })
 	const licensePlate = useWatch({ control, name: 'claimantLicensePlate' })
 
+	const isOT = reportType === 'OT'
+	const sectionTitle = isOT ? 'Client' : 'Claimant Information'
+
 	return (
-		<CollapsibleSection title="Claimant Information" info defaultOpen className={className}>
+		<CollapsibleSection title={sectionTitle} info defaultOpen className={className}>
 			<div className="flex flex-col gap-4">
 				<TextField
 					label="Company"
@@ -170,24 +174,26 @@ function ClaimantSection({
 						</Label>
 					</div>
 
-					<div className="flex items-center gap-2">
-						<Checkbox
-							id="claimant-represented-by-lawyer"
-							onCheckedChange={(checked) => {
-								const event = { target: { name: 'claimantRepresentedByLawyer', value: !!checked } }
-								register('claimantRepresentedByLawyer').onChange(event)
-								onFieldBlur?.('claimantRepresentedByLawyer')
-							}}
-							{...register('claimantRepresentedByLawyer')}
-						/>
-						<Label htmlFor="claimant-represented-by-lawyer" className="cursor-pointer font-normal">
-							Represented by a lawyer
-						</Label>
-					</div>
+					{!isOT && (
+						<div className="flex items-center gap-2">
+							<Checkbox
+								id="claimant-represented-by-lawyer"
+								onCheckedChange={(checked) => {
+									const event = { target: { name: 'claimantRepresentedByLawyer', value: !!checked } }
+									register('claimantRepresentedByLawyer').onChange(event)
+									onFieldBlur?.('claimantRepresentedByLawyer')
+								}}
+								{...register('claimantRepresentedByLawyer')}
+							/>
+							<Label htmlFor="claimant-represented-by-lawyer" className="cursor-pointer font-normal">
+								Represented by a lawyer
+							</Label>
+						</div>
+					)}
 				</div>
 
 				{/* Conditional fields based on checkboxes */}
-				{(eligibleForTax || representedByLawyer) && (
+				{(eligibleForTax || (!isOT && representedByLawyer)) && (
 					<div className="grid grid-cols-2 gap-4">
 						{eligibleForTax && (
 							<TextField
@@ -197,7 +203,7 @@ function ClaimantSection({
 								onBlur={() => onFieldBlur?.('claimantVatId')}
 							/>
 						)}
-						{representedByLawyer && (
+						{!isOT && representedByLawyer && (
 							<TextField
 								label="Involved Lawyer"
 								placeholder="John Doe Lawyer Firm"

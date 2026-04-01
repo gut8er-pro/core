@@ -8,6 +8,8 @@ import { ConditionSection } from '@/components/report/condition/condition-sectio
 import { DamageDiagramSection } from '@/components/report/condition/damage-diagram-section'
 import { PriorDamageSection } from '@/components/report/condition/prior-damage-section'
 import { TireSection } from '@/components/report/condition/tire-section'
+import { ValueIncreasingFeaturesSection } from '@/components/report/condition/value-increasing-features-section'
+import { VehicleGradingSection } from '@/components/report/condition/vehicle-grading-section'
 import type { ConditionFormData } from '@/components/report/condition/types'
 import { Button } from '@/components/ui/button'
 import { CompletionBadge } from '@/components/ui/completion-badge'
@@ -322,6 +324,14 @@ function ConditionPage() {
 				errors={errors}
 				onFieldBlur={handleFieldBlur}
 			/>
+
+			{/* OT-only sections */}
+			{report?.reportType === 'OT' && (
+				<>
+					<ValueIncreasingFeaturesSection />
+					<VehicleGradingSection />
+				</>
+			)}
 
 			<DamageDiagramSection
 				damageMarkers={data?.damageMarkers ?? []}

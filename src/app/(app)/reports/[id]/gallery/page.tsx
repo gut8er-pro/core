@@ -49,14 +49,14 @@ function GalleryPage() {
 	// After generation completes or if report was previously generated, auto-select first photo
 	useEffect(() => {
 		if (hasGenerated && photos.length > 0 && !selectedPhotoId) {
-			setSelectedPhotoId(photos[0]?.id)
+			setSelectedPhotoId(photos[0]?.id ?? null)
 		}
 	}, [hasGenerated, photos, selectedPhotoId])
 
 	// Also auto-select when live generation finishes
 	useEffect(() => {
 		if (genStatus.summary && photos.length > 0) {
-			setSelectedPhotoId(photos[0]?.id)
+			setSelectedPhotoId(photos[0]?.id ?? null)
 			// Record which photos were generated
 			lastGeneratedPhotoIdsRef.current = photos
 				.map((p) => p.id)

@@ -13,14 +13,18 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 	const [showMissing, setShowMissing] = useState(false)
 	const { data: report } = useReport(params.id)
 
-	const calculationLabel = report?.reportType === 'BE' ? 'Valuation' : 'Calculation'
+	const reportType = report?.reportType
+	const isOT = reportType === 'OT'
+	const isBEorOT = reportType === 'BE' || reportType === 'OT'
 
-	// TODO: Wire real completion counts from report data
+	const firstTabLabel = isOT ? 'Customer' : 'Accident Info'
+	const calcTabLabel = isBEorOT ? 'Valuation' : 'Calculation'
+
 	const DETAIL_TABS = [
-		{ key: 'accident-info', label: 'Accident Info', isComplete: false, completion: undefined },
+		{ key: 'accident-info', label: firstTabLabel, isComplete: false, completion: undefined },
 		{ key: 'vehicle', label: 'Vehicle', isComplete: false, completion: '0/4' },
 		{ key: 'condition', label: 'Condition', isComplete: false, completion: '0/12' },
-		{ key: 'calculation', label: calculationLabel, isComplete: false, completion: '0/15' },
+		{ key: 'calculation', label: calcTabLabel, isComplete: false, completion: '0/15' },
 		{ key: 'invoice', label: 'Invoice', isComplete: false, completion: undefined },
 	]
 
