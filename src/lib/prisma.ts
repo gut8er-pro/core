@@ -10,6 +10,7 @@ const createPrismaClient = () => {
 	const pool = new pg.Pool({
 		connectionString,
 		ssl: { rejectUnauthorized: false },
+		max: 3,
 	})
 	const adapter = new PrismaPg(pool)
 	return new PrismaClient({ adapter })
