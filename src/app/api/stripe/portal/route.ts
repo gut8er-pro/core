@@ -8,7 +8,7 @@ async function POST() {
 	if (error) return unauthorizedResponse()
 
 	const dbUser = await prisma.user.findUnique({
-		where: { id: user?.id },
+		where: { id: user!.id },
 		select: { stripeCustomerId: true },
 	})
 

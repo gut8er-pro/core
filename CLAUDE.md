@@ -109,11 +109,11 @@ Report Editor
 | Code | Label | UI Differences |
 |------|-------|---------------|
 | `HS` | Liability (Haftpflichtschaden) | Standard calculation: Value + Repair + Loss + Correction |
-| `BE` | Evaluation (Bewertung) | Valuation tab: DAT Valuation + Manual Valuation + Correction |
-| `KG` | Short Report (Kurzgutachten) | Same as HS |
-| `OT` | Oldtimer Valuation | Same as HS |
+| `BE` | Evaluation (Bewertung) | Valuation tab: DAT Valuation + Manual Valuation + Correction. No Accident Info section, no Opponent. |
+| `KG` | Short Report (Kurzgutachten) | Same as HS but NO Correction Calculation and NO result cards |
+| `OT` | Oldtimer Valuation | Tab "Customer" (not "Accident Info"), "Valuation" (not "Calculation"). No Accident/Opponent sections. Client section (not Claimant), 2 checkboxes only. Present subsection in Visits. Vehicle Grading + Value Increasing Features in Condition. Oldtimer Valuation: Market value + Replacement value + Restoration Value + Total Cost. |
 
-Only `BE` triggers a different Calculation layout. All other tabs are identical across types.
+Each type has distinct sections — see `docs/ARCHITECTURE.md` for the full matrix.
 
 ---
 

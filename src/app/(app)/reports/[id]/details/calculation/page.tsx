@@ -10,6 +10,7 @@ import { CorrectionSection } from '@/components/report/calculation/correction-se
 import type { DatFormData } from '@/components/report/calculation/dat-modal'
 import { DatModal } from '@/components/report/calculation/dat-modal'
 import { LossSection } from '@/components/report/calculation/loss-section'
+import { OldtimerValuationSection } from '@/components/report/calculation/oldtimer-valuation-section'
 import { RepairSection } from '@/components/report/calculation/repair-section'
 import type { CalculationFormData } from '@/components/report/calculation/types'
 import { ValuationSection } from '@/components/report/calculation/valuation-section'
@@ -32,7 +33,10 @@ function CalculationPage() {
 	const [datModalOpen, setDatModalOpen] = useState(false)
 	const [correctionMode, setCorrectionMode] = useState<CorrectionMode>('dat')
 
-	const isValuationReport = report?.reportType === 'BE'
+	const reportType = report?.reportType
+	const isValuationReport = reportType === 'BE'
+	const isOldtimerReport = reportType === 'OT'
+	const isShortReport = reportType === 'KG'
 
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
@@ -190,8 +194,8 @@ function CalculationPage() {
 		)
 	}
 
-	const sectionTitle = isValuationReport
-		? 'Value and Repair Calculation'
+	const sectionTitle = isOldtimerReport
+		? 'Vehicle Value'
 		: 'Value and Repair Calculation'
 
 	return (
@@ -256,7 +260,15 @@ function CalculationPage() {
 					<CompletionBadge percentage={30} />
 				</div>
 
-				{isValuationReport ? (
+				{isOldtimerReport ? (
+					/* OT — Simple Vehicle Value with Market/Replacement/Restoration */
+					<OldtimerValuationSection
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={handleFieldBlur}
+					/>
+				) : isValuationReport ? (
 					/* BE — DAT Valuation + Manual Valuation side by side */
 					<ValuationSection
 						register={register}
@@ -265,7 +277,7 @@ function CalculationPage() {
 						onFieldBlur={handleFieldBlur}
 					/>
 				) : (
-					/* HS (and others) — Value + Repair + Loss of Use */
+					/* HS / KG — Value + Repair + Loss of Use */
 					<>
 						<div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
 							<ValueSection
@@ -293,18 +305,22 @@ function CalculationPage() {
 					</>
 				)}
 
-				{/* Correction Calculation — shared by all report types */}
-				<CorrectionSection
-					mode={correctionMode}
-					onModeChange={setCorrectionMode}
-					onOpenDat={() => setDatModalOpen(true)}
-					resultWithoutLabel={
-						isValuationReport ? 'Valuation Results - Manual' : 'Results without repair'
-					}
-					resultWithLabel={isValuationReport ? 'Valuation after Correction' : 'Results with repair'}
-					resultWithoutValue="—"
-					resultWithValue="—"
-				/>
+				{/* Correction Calculation — HS and BE only (not KG, not OT) */}
+				{!isShortReport && !isOldtimerReport && (
+					<CorrectionSection
+						mode={correctionMode}
+						onModeChange={setCorrectionMode}
+						onOpenDat={() => setDatModalOpen(true)}
+						resultWithoutLabel={
+							isValuationReport ? 'Valuation Results - Manual' : 'Results without repair'
+						}
+						resultWithLabel={
+							isValuationReport ? 'Valuation after Correction' : 'Results with repair'
+						}
+						resultWithoutValue="—"
+						resultWithValue="—"
+					/>
+				)}
 			</div>
 		</div>
 	)

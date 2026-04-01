@@ -3,6 +3,7 @@
 import { Plus, Trash2 } from 'lucide-react'
 import { useFieldArray } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -39,8 +40,10 @@ function VisitSection({
 	register,
 	errors,
 	onFieldBlur,
+	reportType,
 	className,
 }: SectionProps & { className?: string }) {
+	const isOT = reportType === 'OT'
 	const { fields, append, remove } = useFieldArray({
 		control,
 		name: 'visits',
@@ -150,6 +153,33 @@ function VisitSection({
 						</div>
 					</div>
 				))}
+
+				{/* Present subsection — OT only */}
+				{isOT && (
+					<div className="flex flex-col gap-3">
+						<Label className="text-body-sm font-semibold">Present</Label>
+						<div className="flex flex-wrap items-center gap-4">
+							<div className="flex items-center gap-2">
+								<Checkbox id="present-expert" />
+								<Label htmlFor="present-expert" className="cursor-pointer font-normal">
+									Expert Ketn Torres
+								</Label>
+							</div>
+							<div className="flex items-center gap-2">
+								<Checkbox id="present-client" />
+								<Label htmlFor="present-client" className="cursor-pointer font-normal">
+									Client
+								</Label>
+							</div>
+							<div className="flex items-center gap-2">
+								<Checkbox id="present-workshop" />
+								<Label htmlFor="present-workshop" className="cursor-pointer font-normal">
+									Workshop Employee
+								</Label>
+							</div>
+						</div>
+					</div>
+				)}
 
 				<Button
 					type="button"
