@@ -69,5 +69,5 @@ const useToastStore = create<ToastState>()((set, get) => ({
 	},
 }))
 
-export { useToastStore, DEFAULT_DURATION }
-export type { Toast, ToastType, ToastState }
+export type { Toast, ToastState, ToastType }
+export { DEFAULT_DURATION, useToastStore }

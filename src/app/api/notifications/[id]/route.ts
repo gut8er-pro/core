@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { prisma } from '@/lib/prisma'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -11,7 +11,7 @@ async function PATCH(_request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const notification = await prisma.notification.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!notification) {

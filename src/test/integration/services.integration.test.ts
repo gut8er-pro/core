@@ -6,10 +6,11 @@
  *
  * @vitest-environment node
  */
-import { describe, expect, it } from 'vitest'
-import Stripe from 'stripe'
+
 import Anthropic from '@anthropic-ai/sdk'
 import { Resend } from 'resend'
+import Stripe from 'stripe'
+import { describe, expect, it } from 'vitest'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -70,11 +71,13 @@ describe('Anthropic Integration', () => {
 		const message = await client.messages.create({
 			model: 'claude-haiku-4-5-20251001',
 			max_tokens: 256,
-			system: 'You are a professional vehicle damage assessor. Respond with a structured damage assessment.',
+			system:
+				'You are a professional vehicle damage assessor. Respond with a structured damage assessment.',
 			messages: [
 				{
 					role: 'user',
-					content: 'A 2020 BMW 3 Series has a large dent on the front left fender, scratches on the driver door, and the left headlight is cracked. Provide a structured damage assessment.',
+					content:
+						'A 2020 BMW 3 Series has a large dent on the front left fender, scratches on the driver door, and the left headlight is cracked. Provide a structured damage assessment.',
 				},
 			],
 		})
@@ -83,7 +86,7 @@ describe('Anthropic Integration', () => {
 		expect(message.content.length).toBeGreaterThanOrEqual(1)
 		const firstBlock = message.content[0]
 		expect(firstBlock).toBeDefined()
-		expect(firstBlock!.type).toBe('text')
+		expect(firstBlock?.type).toBe('text')
 
 		const text = firstBlock && firstBlock.type === 'text' ? firstBlock.text : ''
 		expect(text.length).toBeGreaterThan(50)

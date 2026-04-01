@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { fetchSubscription, createCheckout, createPortal } from './use-subscription'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createCheckout, createPortal, fetchSubscription } from './use-subscription'
 
 const mockFetch = vi.fn()
 globalThis.fetch = mockFetch
@@ -69,9 +69,7 @@ describe('fetchSubscription', () => {
 
 	it('throws on non-ok response', async () => {
 		mockFetch.mockResolvedValueOnce({ ok: false, status: 500 })
-		await expect(fetchSubscription()).rejects.toThrow(
-			'Failed to fetch subscription status',
-		)
+		await expect(fetchSubscription()).rejects.toThrow('Failed to fetch subscription status')
 	})
 })
 
@@ -83,8 +81,7 @@ describe('createCheckout', () => {
 	it('calls fetch with correct URL and method', async () => {
 		mockFetch.mockResolvedValueOnce({
 			ok: true,
-			json: () =>
-				Promise.resolve({ url: 'https://checkout.stripe.com/session_123' }),
+			json: () => Promise.resolve({ url: 'https://checkout.stripe.com/session_123' }),
 		})
 
 		await createCheckout()
@@ -107,9 +104,7 @@ describe('createCheckout', () => {
 
 	it('throws on non-ok response', async () => {
 		mockFetch.mockResolvedValueOnce({ ok: false, status: 402 })
-		await expect(createCheckout()).rejects.toThrow(
-			'Failed to create checkout session',
-		)
+		await expect(createCheckout()).rejects.toThrow('Failed to create checkout session')
 	})
 })
 
@@ -147,8 +142,6 @@ describe('createPortal', () => {
 
 	it('throws on non-ok response', async () => {
 		mockFetch.mockResolvedValueOnce({ ok: false, status: 500 })
-		await expect(createPortal()).rejects.toThrow(
-			'Failed to create portal session',
-		)
+		await expect(createPortal()).rejects.toThrow('Failed to create portal session')
 	})
 })

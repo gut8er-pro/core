@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { conditionSchema, damageMarkerSchema, paintMarkerSchema, getPaintColor } from './condition'
+import { describe, expect, it } from 'vitest'
+import { conditionSchema, damageMarkerSchema, getPaintColor, paintMarkerSchema } from './condition'
 
 describe('conditionSchema', () => {
 	it('valid data passes', () => {
@@ -40,9 +40,7 @@ describe('damageMarkerSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const xError = result.error.issues.find(
-				(issue) => issue.path[0] === 'x',
-			)
+			const xError = result.error.issues.find((issue) => issue.path[0] === 'x')
 			expect(xError).toBeDefined()
 		}
 	})

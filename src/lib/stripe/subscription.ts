@@ -9,7 +9,11 @@ type SubscriptionInfo = {
 	planId: string
 }
 
-async function createCheckoutSession(userId: string, priceId: string, customerId?: string): Promise<string> {
+async function createCheckoutSession(
+	userId: string,
+	priceId: string,
+	customerId?: string,
+): Promise<string> {
 	const stripe = getStripeClient()
 
 	const session = await stripe.checkout.sessions.create({
@@ -75,5 +79,5 @@ function isProPlan(subscription: { planId: string } | null): boolean {
 	return subscription.planId === PRO_PRICE_ID
 }
 
-export { createCheckoutSession, createCustomerPortalSession, getSubscription, isProPlan }
 export type { SubscriptionInfo }
+export { createCheckoutSession, createCustomerPortalSession, getSubscription, isProPlan }

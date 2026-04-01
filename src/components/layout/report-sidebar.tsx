@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils'
 import type { LucideIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 type SidebarSection = {
 	key: string
@@ -22,10 +22,7 @@ function ReportSidebar({
 }: ReportSidebarProps) {
 	return (
 		<nav
-			className={cn(
-				'flex w-75.5 shrink-0 flex-col gap-4 rounded-2xl bg-white p-6',
-				className,
-			)}
+			className={cn('flex w-75.5 shrink-0 flex-col gap-4 rounded-2xl bg-white p-6', className)}
 			aria-label="Report navigation"
 		>
 			{sections.map((section) => {
@@ -38,9 +35,7 @@ function ReportSidebar({
 						onClick={() => onSectionChange?.(section.key)}
 						className={cn(
 							'flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3.5 py-3 text-body font-medium tracking-[0.16px] transition-colors',
-							isActive
-								? 'bg-grey-25 text-primary'
-								: 'text-black hover:bg-grey-25',
+							isActive ? 'bg-grey-25 text-primary' : 'text-black hover:bg-grey-25',
 						)}
 						aria-current={isActive ? 'page' : undefined}
 					>
@@ -53,5 +48,5 @@ function ReportSidebar({
 	)
 }
 
-export { ReportSidebar }
 export type { ReportSidebarProps, SidebarSection }
+export { ReportSidebar }

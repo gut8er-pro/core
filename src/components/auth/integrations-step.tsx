@@ -1,14 +1,14 @@
 'use client'
 
+import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { signupIntegrationsSchema, type SignupIntegrationsInput } from '@/lib/validations/auth'
-import { useSignupStore } from '@/stores/signup-store'
 import { completeSignup } from '@/lib/auth/actions'
 import { cn } from '@/lib/utils'
+import { type SignupIntegrationsInput, signupIntegrationsSchema } from '@/lib/validations/auth'
+import { useSignupStore } from '@/stores/signup-store'
 
 type Provider = 'dat' | 'audatex' | 'gt_motive'
 
@@ -201,7 +201,7 @@ function IntegrationsStep() {
 								</div>
 							</div>
 							<p className="text-[16px] text-black">
-								Don&apos;t have an account?{" "}
+								Don&apos;t have an account?{' '}
 								<a
 									href="https://www.dat.de"
 									target="_blank"

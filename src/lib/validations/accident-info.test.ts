@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
 	accidentInfoSchema,
 	claimantInfoSchema,
-	opponentInfoSchema,
-	visitSchema,
 	expertOpinionSchema,
+	opponentInfoSchema,
 	signatureSchema,
+	visitSchema,
 } from './accident-info'
 
 describe('accidentInfoSchema', () => {
@@ -59,9 +59,7 @@ describe('claimantInfoSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const emailError = result.error.issues.find(
-				(issue) => issue.path[0] === 'email',
-			)
+			const emailError = result.error.issues.find((issue) => issue.path[0] === 'email')
 			expect(emailError).toBeDefined()
 		}
 	})
@@ -112,9 +110,7 @@ describe('visitSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const typeError = result.error.issues.find(
-				(issue) => issue.path[0] === 'type',
-			)
+			const typeError = result.error.issues.find((issue) => issue.path[0] === 'type')
 			expect(typeError).toBeDefined()
 		}
 	})
@@ -152,9 +148,7 @@ describe('signatureSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const typeError = result.error.issues.find(
-				(issue) => issue.path[0] === 'type',
-			)
+			const typeError = result.error.issues.find((issue) => issue.path[0] === 'type')
 			expect(typeError).toBeDefined()
 		}
 	})

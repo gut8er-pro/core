@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { prisma } from '@/lib/prisma'
 import { accidentInfoPatchSchema } from '@/lib/validations/accident-info'
 
 type RouteContext = {
@@ -14,7 +14,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -48,7 +48,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -77,9 +77,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 			where: { reportId: id },
 			create: {
 				reportId: id,
-				accidentDay: data.accidentInfo.accidentDay
-					? new Date(data.accidentInfo.accidentDay)
-					: null,
+				accidentDay: data.accidentInfo.accidentDay ? new Date(data.accidentInfo.accidentDay) : null,
 				accidentScene: data.accidentInfo.accidentScene ?? null,
 			},
 			update: {
@@ -166,18 +164,14 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 			updateData.caseDate = dateValue
 		}
 		if (expertData.issuedDate !== undefined) {
-			const dateValue = expertData.issuedDate
-				? new Date(expertData.issuedDate)
-				: null
+			const dateValue = expertData.issuedDate ? new Date(expertData.issuedDate) : null
 			createData.issuedDate = dateValue
 			updateData.issuedDate = dateValue
 		}
 
 		results.expertOpinion = await prisma.expertOpinion.upsert({
 			where: { reportId: id },
-			create: createData as Parameters<
-				typeof prisma.expertOpinion.upsert
-			>[0]['create'],
+			create: createData as Parameters<typeof prisma.expertOpinion.upsert>[0]['create'],
 			update: updateData,
 		})
 	}
@@ -196,9 +190,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 						where: { id: sigId },
 						data: {
 							...sigData,
-							signedAt: sigData.signedAt
-								? new Date(sigData.signedAt)
-								: sigData.signedAt,
+							signedAt: sigData.signedAt ? new Date(sigData.signedAt) : sigData.signedAt,
 						},
 					})
 					signatureResults.push(updated)

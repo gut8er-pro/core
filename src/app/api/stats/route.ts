@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { prisma } from '@/lib/prisma'
 
 async function GET() {
 	const { user, error } = await getAuthenticatedUser()
 	if (error) return unauthorizedResponse()
 
-	const userId = user!.id
+	const userId = user?.id
 
 	// Total revenue from invoices
 	const revenueResult = await prisma.invoice.aggregate({

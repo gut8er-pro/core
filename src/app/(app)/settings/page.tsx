@@ -1,38 +1,36 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
-	User,
-	Building2,
-	Link as LinkIcon,
-	DollarSign,
 	Bookmark,
-	Instagram,
-	Facebook,
-	Linkedin,
-	Download,
+	Building2,
 	CreditCard,
+	DollarSign,
+	Download,
+	Facebook,
 	FileText,
 	Info,
+	Instagram,
+	Linkedin,
+	Link as LinkIcon,
+	User,
 	X,
 } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import { TextField } from '@/components/ui/text-field'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton, SkeletonGroup } from '@/components/ui/skeleton'
+import { useEffect, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
-import { useUserSettings, useSaveSettings } from '@/hooks/use-settings'
+import { Skeleton, SkeletonGroup } from '@/components/ui/skeleton'
+import { TextField } from '@/components/ui/text-field'
+import { useSaveSettings, useUserSettings } from '@/hooks/use-settings'
 import { useCreateCheckout, useCreatePortal } from '@/hooks/use-subscription'
+import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 import {
-	profileSettingsSchema,
+	type BusinessSettingsInput,
 	businessSettingsSchema,
 	type ProfileSettingsInput,
-	type BusinessSettingsInput,
+	profileSettingsSchema,
 } from '@/lib/validations/settings'
-import { cn } from '@/lib/utils'
 
 type SettingsTab = 'profile' | 'business' | 'integrations' | 'billing' | 'templates'
 
@@ -63,13 +61,16 @@ function SettingsSidebar({
 						onClick={() => onTabChange(tab.key)}
 						className={cn(
 							'flex cursor-pointer items-center gap-[10px] px-[14px] py-3 transition-colors',
-							isActive
-								? 'rounded-lg bg-grey-25/50'
-								: 'rounded-xl hover:bg-grey-25',
+							isActive ? 'rounded-lg bg-grey-25/50' : 'rounded-xl hover:bg-grey-25',
 						)}
 					>
 						<Icon className={cn('h-6 w-6 shrink-0', isActive ? 'text-primary' : 'text-black')} />
-						<span className={cn('text-body tracking-[0.16px]', isActive ? 'font-medium text-primary' : 'text-black')}>
+						<span
+							className={cn(
+								'text-body tracking-[0.16px]',
+								isActive ? 'font-medium text-primary' : 'text-black',
+							)}
+						>
 							{tab.label}
 						</span>
 					</button>
@@ -129,17 +130,15 @@ function ProfileSection() {
 		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end gap-6">
 			{/* White card */}
 			<div className="flex w-full flex-col gap-6 rounded-section bg-white p-8">
-				<h2 className="text-section-title font-medium leading-none text-black">Personal Information</h2>
+				<h2 className="text-section-title font-medium leading-none text-black">
+					Personal Information
+				</h2>
 
 				{/* Avatar */}
 				<div className="flex items-center gap-6">
 					<div className="h-[100px] w-[100px] shrink-0 overflow-hidden rounded-xl bg-grey-25 flex items-center justify-center">
 						{settings?.avatarUrl ? (
-							<img
-								src={settings.avatarUrl}
-								alt="Profile"
-								className="h-full w-full object-cover"
-							/>
+							<img src={settings.avatarUrl} alt="Profile" className="h-full w-full object-cover" />
 						) : (
 							<User className="h-10 w-10 text-grey-100" />
 						)}
@@ -292,9 +291,7 @@ function BusinessSection() {
 
 			if (uploadError) throw uploadError
 
-			const { data: urlData } = supabase.storage
-				.from('photos')
-				.getPublicUrl(path)
+			const { data: urlData } = supabase.storage.from('photos').getPublicUrl(path)
 
 			saveMutation.mutate(
 				{ logoUrl: urlData.publicUrl },
@@ -333,7 +330,9 @@ function BusinessSection() {
 		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end gap-6">
 			{/* White card */}
 			<div className="flex w-full flex-col gap-8 rounded-section bg-white p-8">
-				<h2 className="text-section-title font-medium leading-none text-black">Business Information</h2>
+				<h2 className="text-section-title font-medium leading-none text-black">
+					Business Information
+				</h2>
 
 				{/* Logo upload */}
 				<div className="flex items-center gap-4">
@@ -373,25 +372,13 @@ function BusinessSection() {
 						{...register('companyName')}
 						error={errors.companyName?.message}
 					/>
-					<TextField
-						label="Website"
-						placeholder="www.kfz.de"
-						disabled
-					/>
+					<TextField label="Website" placeholder="www.kfz.de" disabled />
 				</div>
 
 				{/* Email / Phone number */}
 				<div className="grid grid-cols-2 gap-6">
-					<TextField
-						label="Email"
-						placeholder="sales.contact@kfz.com"
-						disabled
-					/>
-					<TextField
-						label="Phone number"
-						placeholder="+3513331253"
-						disabled
-					/>
+					<TextField label="Email" placeholder="sales.contact@kfz.com" disabled />
+					<TextField label="Phone number" placeholder="+3513331253" disabled />
 				</div>
 
 				{/* Street & Number */}
@@ -470,9 +457,7 @@ function IntegrationsSection() {
 		return <SkeletonGroup count={2} />
 	}
 
-	const datIntegration = settings?.integrations?.find(
-		(i) => i.provider === 'DAT',
-	)
+	const datIntegration = settings?.integrations?.find((i) => i.provider === 'DAT')
 
 	function handleConnect(data: { username: string; password: string }) {
 		saveMutation.mutate(
@@ -522,7 +507,9 @@ function IntegrationsSection() {
 			{/* White card */}
 			<div className="flex w-full flex-col gap-8 rounded-section bg-white p-8">
 				<div className="flex flex-col gap-3">
-					<h2 className="text-section-title font-medium leading-none text-black">Connected Services</h2>
+					<h2 className="text-section-title font-medium leading-none text-black">
+						Connected Services
+					</h2>
 					<p className="text-body tracking-[0.16px] text-black opacity-70">
 						Connect third-party services to streamline your workflow
 					</p>
@@ -530,7 +517,11 @@ function IntegrationsSection() {
 
 				{/* DAT Integration Card */}
 				<div className="flex items-center gap-[14px] rounded-card border-2 border-border-card px-[14px] py-3">
-					<img src="/images/dat-logo.png" alt="DAT" className="h-[88px] w-[55px] object-contain shrink-0" />
+					<img
+						src="/images/dat-logo.png"
+						alt="DAT"
+						className="h-[88px] w-[55px] object-contain shrink-0"
+					/>
 					<div className="flex flex-col gap-[7px]">
 						<p className="text-body-sm font-medium leading-[18px] text-text-secondary">DAT</p>
 						<p className="text-body-sm leading-5 text-black opacity-70">
@@ -644,23 +635,60 @@ function BillingSection() {
 		)
 	}
 
-	const trialEndsAt = settings?.trialEndsAt
-		? new Date(settings.trialEndsAt)
-		: null
-	const isTrialing =
-		trialEndsAt !== null && trialEndsAt.getTime() > Date.now()
+	const trialEndsAt = settings?.trialEndsAt ? new Date(settings.trialEndsAt) : null
+	const isTrialing = trialEndsAt !== null && trialEndsAt.getTime() > Date.now()
 
 	// Mock billing history data for display
 	const billingHistory = [
-		{ date: '14.12.2025', description: 'Pro Plan - December', amount: '49.00', status: 'Paid' as const },
-		{ date: '14.11.2025', description: 'Pro Plan - November', amount: '49.00', status: 'Paid' as const },
-		{ date: '14.10.2025', description: 'Pro Plan - October', amount: '49.00', status: 'Paid' as const },
-		{ date: '14.09.2025', description: 'Pro Plan - September', amount: '49.00', status: 'Paid' as const },
-		{ date: '14.08.2025', description: 'Pro Plan - August', amount: '49.00', status: 'Paid' as const },
-		{ date: '14.07.2025', description: 'Pro Plan - July', amount: '49.00', status: 'Paid' as const },
-		{ date: '14.06.2025', description: 'Pro Plan - June', amount: '49.00', status: 'Paid' as const },
+		{
+			date: '14.12.2025',
+			description: 'Pro Plan - December',
+			amount: '49.00',
+			status: 'Paid' as const,
+		},
+		{
+			date: '14.11.2025',
+			description: 'Pro Plan - November',
+			amount: '49.00',
+			status: 'Paid' as const,
+		},
+		{
+			date: '14.10.2025',
+			description: 'Pro Plan - October',
+			amount: '49.00',
+			status: 'Paid' as const,
+		},
+		{
+			date: '14.09.2025',
+			description: 'Pro Plan - September',
+			amount: '49.00',
+			status: 'Paid' as const,
+		},
+		{
+			date: '14.08.2025',
+			description: 'Pro Plan - August',
+			amount: '49.00',
+			status: 'Paid' as const,
+		},
+		{
+			date: '14.07.2025',
+			description: 'Pro Plan - July',
+			amount: '49.00',
+			status: 'Paid' as const,
+		},
+		{
+			date: '14.06.2025',
+			description: 'Pro Plan - June',
+			amount: '49.00',
+			status: 'Paid' as const,
+		},
 		{ date: '14.05.2025', description: 'Pro Plan - May', amount: '49.00', status: 'Paid' as const },
-		{ date: '14.04.2025', description: 'Pro Plan - April', amount: '49.00', status: 'Paid' as const },
+		{
+			date: '14.04.2025',
+			description: 'Pro Plan - April',
+			amount: '49.00',
+			status: 'Paid' as const,
+		},
 	]
 
 	return (
@@ -676,9 +704,7 @@ function BillingSection() {
 							</p>
 						</div>
 						<p className="text-body tracking-[0.16px] text-white">
-							{isTrialing
-								? 'Trial period active'
-								: '€49.00 / month • Renews on Feb 14, 2026'}
+							{isTrialing ? 'Trial period active' : '€49.00 / month • Renews on Feb 14, 2026'}
 						</p>
 					</div>
 					<div className="flex gap-4">
@@ -739,7 +765,9 @@ function BillingSection() {
 							<CreditCard className="h-7 w-7 text-info-blue" />
 						</div>
 						<div className="flex flex-col gap-1">
-							<p className="text-body-sm font-medium leading-[18px] text-text-secondary">Visa ending in 4242</p>
+							<p className="text-body-sm font-medium leading-[18px] text-text-secondary">
+								Visa ending in 4242
+							</p>
 							<p className="text-caption leading-5 text-black opacity-70">Expires 12/2027</p>
 						</div>
 					</div>
@@ -760,16 +788,25 @@ function BillingSection() {
 						<tbody>
 							{billingHistory.map((item) => (
 								<tr key={item.date} className="border-b border-border-card last:border-0">
-									<td className="h-[54px] px-6 text-body-sm leading-5 text-grey-100">{item.date}</td>
-									<td className="h-[54px] px-6 text-body-sm leading-5 text-grey-100">{item.description}</td>
-									<td className="h-[54px] px-6 text-body-sm font-medium leading-5 text-black">€{item.amount}</td>
+									<td className="h-[54px] px-6 text-body-sm leading-5 text-grey-100">
+										{item.date}
+									</td>
+									<td className="h-[54px] px-6 text-body-sm leading-5 text-grey-100">
+										{item.description}
+									</td>
+									<td className="h-[54px] px-6 text-body-sm font-medium leading-5 text-black">
+										€{item.amount}
+									</td>
 									<td className="h-[54px] px-6">
 										<span className="inline-flex items-center justify-center rounded-md border border-[0.5px] border-primary bg-primary/10 p-[6px] text-caption leading-none text-success-dark">
 											{item.status}
 										</span>
 									</td>
 									<td className="h-[54px] w-[54px] p-3 text-center">
-										<button type="button" className="cursor-pointer text-black opacity-60 hover:opacity-100">
+										<button
+											type="button"
+											className="cursor-pointer text-black opacity-60 hover:opacity-100"
+										>
 											<Download className="h-4 w-4" />
 										</button>
 									</td>
@@ -816,9 +853,7 @@ function TemplatesSection() {
 		if (!editingTemplate) return
 		setTemplates((prev) =>
 			prev.map((t) =>
-				t.id === editingTemplate.id
-					? { ...t, subject: editSubject, body: editBody }
-					: t,
+				t.id === editingTemplate.id ? { ...t, subject: editSubject, body: editBody } : t,
 			),
 		)
 		setEditingTemplate(null)
@@ -832,7 +867,11 @@ function TemplatesSection() {
 		const newTemplate: Template = {
 			id: String(Date.now()),
 			title: 'New Template',
-			date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+			date: new Date().toLocaleDateString('en-GB', {
+				day: '2-digit',
+				month: '2-digit',
+				year: 'numeric',
+			}),
 			subject: '',
 			body: '',
 		}
@@ -858,7 +897,9 @@ function TemplatesSection() {
 								<FileText className="h-6 w-6 text-primary" />
 							</div>
 							<div>
-								<p className="text-body-sm font-medium leading-[18px] text-text-secondary">{template.title}</p>
+								<p className="text-body-sm font-medium leading-[18px] text-text-secondary">
+									{template.title}
+								</p>
 								<p className="text-body-sm leading-5 text-black opacity-70">{template.date}</p>
 							</div>
 						</div>
@@ -891,7 +932,9 @@ function TemplatesSection() {
 					<div className="flex h-full w-[550px] flex-col gap-6 bg-white p-5">
 						{/* Header */}
 						<div className="flex items-center gap-2">
-							<h3 className="text-input font-medium text-black">{isNewTemplate ? 'New Template' : 'Edit Template'}</h3>
+							<h3 className="text-input font-medium text-black">
+								{isNewTemplate ? 'New Template' : 'Edit Template'}
+							</h3>
 							<Info className="h-4 w-4 text-grey-100" />
 							<button
 								type="button"

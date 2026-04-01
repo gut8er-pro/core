@@ -1,9 +1,9 @@
 'use client'
 
+import { AlertTriangle, CheckCircle, Info, X, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useToastStore, type Toast, type ToastType } from '@/stores/toast-store'
+import { type Toast, type ToastType, useToastStore } from '@/stores/toast-store'
 
 const ICON_MAP: Record<ToastType, typeof CheckCircle> = {
 	success: CheckCircle,
@@ -60,9 +60,7 @@ function ToastItem({ toast }: { toast: Toast }) {
 			className={cn(
 				'flex items-start gap-3 rounded-md border px-4 py-3 shadow-card transition-all duration-200 ease-out',
 				styles.container,
-				visible
-					? 'translate-x-0 opacity-100'
-					: 'translate-x-full opacity-0',
+				visible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0',
 			)}
 		>
 			<Icon className={cn('mt-0.5 h-5 w-5 shrink-0', styles.icon)} />

@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { prisma } from '@/lib/prisma'
 import { vehicleInfoSchema } from '@/lib/validations/vehicle'
 
 type RouteContext = {
@@ -14,7 +14,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -35,7 +35,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -63,9 +63,18 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 
 	// String fields — pass through directly
 	const stringFields = [
-		'vin', 'datsCode', 'marketIndex', 'manufacturer',
-		'mainType', 'subType', 'kbaNumber', 'engineDesign',
-		'transmission', 'sourceOfTechnicalData', 'vehicleType', 'motorType',
+		'vin',
+		'datsCode',
+		'marketIndex',
+		'manufacturer',
+		'mainType',
+		'subType',
+		'kbaNumber',
+		'engineDesign',
+		'transmission',
+		'sourceOfTechnicalData',
+		'vehicleType',
+		'motorType',
 	] as const
 	for (const field of stringFields) {
 		if (data[field] !== undefined) {
@@ -75,8 +84,15 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 
 	// Numeric fields — ensure they are numbers or null
 	const numericFields = [
-		'powerKw', 'powerHp', 'cylinders', 'displacement',
-		'axles', 'drivenAxles', 'doors', 'seats', 'previousOwners',
+		'powerKw',
+		'powerHp',
+		'cylinders',
+		'displacement',
+		'axles',
+		'drivenAxles',
+		'doors',
+		'seats',
+		'previousOwners',
 	] as const
 	for (const field of numericFields) {
 		if (data[field] !== undefined) {
@@ -85,21 +101,17 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 				dbData[field] = null
 			} else {
 				const num = Number(value)
-				dbData[field] = isNaN(num) ? null : num
+				dbData[field] = Number.isNaN(num) ? null : num
 			}
 		}
 	}
 
 	// Date fields — convert strings to Date objects
 	if (data.firstRegistration !== undefined) {
-		dbData.firstRegistration = data.firstRegistration
-			? new Date(data.firstRegistration)
-			: null
+		dbData.firstRegistration = data.firstRegistration ? new Date(data.firstRegistration) : null
 	}
 	if (data.lastRegistration !== undefined) {
-		dbData.lastRegistration = data.lastRegistration
-			? new Date(data.lastRegistration)
-			: null
+		dbData.lastRegistration = data.lastRegistration ? new Date(data.lastRegistration) : null
 	}
 
 	const vehicleInfo = await prisma.vehicleInfo.upsert({

@@ -1,9 +1,9 @@
 'use client'
 
-import { useCallback } from 'react'
 import { Plus } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useCallback } from 'react'
 import type { Photo } from '@/hooks/use-photos'
+import { cn } from '@/lib/utils'
 
 type FilmstripProps = {
 	photos: Photo[]
@@ -13,13 +13,7 @@ type FilmstripProps = {
 	className?: string
 }
 
-function Filmstrip({
-	photos,
-	selectedId,
-	onSelect,
-	onAdd,
-	className,
-}: FilmstripProps) {
+function Filmstrip({ photos, selectedId, onSelect, onAdd, className }: FilmstripProps) {
 	const handleSelect = useCallback(
 		(photoId: string) => {
 			onSelect?.(photoId)
@@ -33,10 +27,7 @@ function Filmstrip({
 
 	return (
 		<div
-			className={cn(
-				'flex gap-3.5 overflow-x-auto scroll-smooth',
-				className,
-			)}
+			className={cn('flex gap-3.5 overflow-x-auto scroll-smooth', className)}
 			role="listbox"
 			aria-label="Photo filmstrip"
 		>
@@ -79,5 +70,5 @@ function Filmstrip({
 	)
 }
 
-export { Filmstrip }
 export type { FilmstripProps }
+export { Filmstrip }

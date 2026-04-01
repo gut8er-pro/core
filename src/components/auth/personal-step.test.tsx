@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@/test/test-utils'
 import { PersonalStep } from './personal-step'
 
 const mockPush = vi.fn()

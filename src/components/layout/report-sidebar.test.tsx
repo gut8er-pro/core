@@ -1,7 +1,7 @@
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
-import { Camera, Car, FileText, Calculator, Receipt } from 'lucide-react'
+import { Calculator, Camera, Car, FileText, Receipt } from 'lucide-react'
 import { describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@/test/test-utils'
 import { ReportSidebar } from './report-sidebar'
 
 const sections = [

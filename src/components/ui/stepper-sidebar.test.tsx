@@ -1,6 +1,6 @@
-import { render, screen } from '@/test/test-utils'
 import { describe, expect, it } from 'vitest'
-import { StepperSidebar, StepperProgress } from './stepper-sidebar'
+import { render, screen } from '@/test/test-utils'
+import { StepperProgress, StepperSidebar } from './stepper-sidebar'
 
 const steps = [
 	{ number: 1, title: 'Account', subtitle: 'Create your login' },

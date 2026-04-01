@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { kwToHp, hpToKw } from './power-conversion'
+import { describe, expect, it } from 'vitest'
+import { hpToKw, kwToHp } from './power-conversion'
 
 describe('kwToHp', () => {
 	it('converts 100 kW to 136 HP', () => {

@@ -1,11 +1,4 @@
-import {
-	Document,
-	Page,
-	Text,
-	View,
-	Image,
-	StyleSheet,
-} from '@react-pdf/renderer'
+import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -416,9 +409,7 @@ function HeaderSection({ data }: { data: ReportData }) {
 			<View style={styles.headerRow}>
 				<View style={styles.headerLeft}>
 					<Text style={styles.headerTitle}>{data.report.title}</Text>
-					<Text style={styles.headerSubtitle}>
-						Vehicle Damage Assessment Report
-					</Text>
+					<Text style={styles.headerSubtitle}>Vehicle Damage Assessment Report</Text>
 				</View>
 				<View style={styles.headerRight}>
 					<Text style={styles.reportNumber}>Report No. {reportId}</Text>
@@ -437,9 +428,7 @@ function VehicleInfoSection({ vehicleInfo }: { vehicleInfo: ReportData['vehicleI
 			<Text style={styles.sectionTitle}>Vehicle Information</Text>
 			<DataRow label="Manufacturer" value={displayValue(vehicleInfo.manufacturer)} />
 			<DataRow label="Type" value={displayValue(vehicleInfo.mainType)} />
-			{vehicleInfo.subtype && (
-				<DataRow label="Subtype" value={displayValue(vehicleInfo.subtype)} />
-			)}
+			{vehicleInfo.subtype && <DataRow label="Subtype" value={displayValue(vehicleInfo.subtype)} />}
 			<DataRow label="VIN" value={displayValue(vehicleInfo.vin)} />
 			{vehicleInfo.kbaNumber && (
 				<DataRow label="KBA Number" value={displayValue(vehicleInfo.kbaNumber)} />
@@ -458,7 +447,10 @@ function VehicleInfoSection({ vehicleInfo }: { vehicleInfo: ReportData['vehicleI
 				<DataRow label="Engine Design" value={displayValue(vehicleInfo.engineDesign)} />
 			)}
 			{vehicleInfo.engineDisplacementCcm && (
-				<DataRow label="Displacement" value={formatNumber(vehicleInfo.engineDisplacementCcm, 'ccm')} />
+				<DataRow
+					label="Displacement"
+					value={formatNumber(vehicleInfo.engineDisplacementCcm, 'ccm')}
+				/>
 			)}
 			{vehicleInfo.transmission && (
 				<DataRow label="Transmission" value={displayValue(vehicleInfo.transmission)} />
@@ -466,12 +458,8 @@ function VehicleInfoSection({ vehicleInfo }: { vehicleInfo: ReportData['vehicleI
 			{vehicleInfo.vehicleType && (
 				<DataRow label="Vehicle Type" value={displayValue(vehicleInfo.vehicleType)} />
 			)}
-			{vehicleInfo.doors && (
-				<DataRow label="Doors" value={formatNumber(vehicleInfo.doors)} />
-			)}
-			{vehicleInfo.seats && (
-				<DataRow label="Seats" value={formatNumber(vehicleInfo.seats)} />
-			)}
+			{vehicleInfo.doors && <DataRow label="Doors" value={formatNumber(vehicleInfo.doors)} />}
+			{vehicleInfo.seats && <DataRow label="Seats" value={formatNumber(vehicleInfo.seats)} />}
 			{vehicleInfo.previousOwners !== null && vehicleInfo.previousOwners !== undefined && (
 				<DataRow label="Previous Owners" value={formatNumber(vehicleInfo.previousOwners)} />
 			)}
@@ -525,12 +513,8 @@ function AccidentInfoSection({
 								.join(', ') || '-'
 						}
 					/>
-					{claimantInfo.email && (
-						<DataRow label="Email" value={displayValue(claimantInfo.email)} />
-					)}
-					{claimantInfo.phone && (
-						<DataRow label="Phone" value={displayValue(claimantInfo.phone)} />
-					)}
+					{claimantInfo.email && <DataRow label="Email" value={displayValue(claimantInfo.email)} />}
+					{claimantInfo.phone && <DataRow label="Phone" value={displayValue(claimantInfo.phone)} />}
 					{claimantInfo.licensePlate && (
 						<DataRow label="License Plate" value={displayValue(claimantInfo.licensePlate)} />
 					)}
@@ -554,7 +538,10 @@ function AccidentInfoSection({
 						<DataRow label="Company" value={displayValue(opponentInfo.company)} />
 					)}
 					{opponentInfo.insuranceCompany && (
-						<DataRow label="Insurance Company" value={displayValue(opponentInfo.insuranceCompany)} />
+						<DataRow
+							label="Insurance Company"
+							value={displayValue(opponentInfo.insuranceCompany)}
+						/>
 					)}
 					{opponentInfo.insuranceNumber && (
 						<DataRow label="Insurance Number" value={displayValue(opponentInfo.insuranceNumber)} />
@@ -590,14 +577,18 @@ function ConditionSection({ condition }: { condition: ReportData['condition'] })
 			{condition.specialFeatures && (
 				<DataRow label="Special Features" value={displayValue(condition.specialFeatures)} />
 			)}
-			{condition.notes && (
-				<DataRow label="Notes" value={displayValue(condition.notes)} />
-			)}
+			{condition.notes && <DataRow label="Notes" value={displayValue(condition.notes)} />}
 			{condition.previousDamageReported && (
-				<DataRow label="Previous Damage Reported" value={displayValue(condition.previousDamageReported)} />
+				<DataRow
+					label="Previous Damage Reported"
+					value={displayValue(condition.previousDamageReported)}
+				/>
 			)}
 			{condition.existingDamageNotReported && (
-				<DataRow label="Existing Damage (Not Reported)" value={displayValue(condition.existingDamageNotReported)} />
+				<DataRow
+					label="Existing Damage (Not Reported)"
+					value={displayValue(condition.existingDamageNotReported)}
+				/>
 			)}
 			{condition.subsequentDamage && (
 				<DataRow label="Subsequent Damage" value={displayValue(condition.subsequentDamage)} />
@@ -621,7 +612,10 @@ function CalculationSection({ calculation }: { calculation: ReportData['calculat
 				<DataRow label="Residual Value" value={formatCurrency(calculation.residualValue)} />
 			)}
 			{calculation.diminutionInValue !== null && calculation.diminutionInValue !== undefined && (
-				<DataRow label="Diminution in Value" value={formatCurrency(calculation.diminutionInValue)} />
+				<DataRow
+					label="Diminution in Value"
+					value={formatCurrency(calculation.diminutionInValue)}
+				/>
 			)}
 			{calculation.taxRate && (
 				<DataRow label="Tax Rate" value={displayValue(calculation.taxRate)} />
@@ -638,9 +632,7 @@ function CalculationSection({ calculation }: { calculation: ReportData['calculat
 					{calculation.damageClass && (
 						<DataRow label="Damage Class" value={displayValue(calculation.damageClass)} />
 					)}
-					{calculation.risks && (
-						<DataRow label="Risks" value={displayValue(calculation.risks)} />
-					)}
+					{calculation.risks && <DataRow label="Risks" value={displayValue(calculation.risks)} />}
 				</View>
 			)}
 
@@ -661,9 +653,13 @@ function CalculationSection({ calculation }: { calculation: ReportData['calculat
 					{calculation.repairTimeDays !== null && calculation.repairTimeDays !== undefined && (
 						<DataRow label="Repair Time" value={formatNumber(calculation.repairTimeDays, 'days')} />
 					)}
-					{calculation.replacementTimeDays !== null && calculation.replacementTimeDays !== undefined && (
-						<DataRow label="Replacement Time" value={formatNumber(calculation.replacementTimeDays, 'days')} />
-					)}
+					{calculation.replacementTimeDays !== null &&
+						calculation.replacementTimeDays !== undefined && (
+							<DataRow
+								label="Replacement Time"
+								value={formatNumber(calculation.replacementTimeDays, 'days')}
+							/>
+						)}
 				</View>
 			)}
 		</View>
@@ -683,9 +679,7 @@ function InvoiceSection({ invoice }: { invoice: ReportData['invoice'] }) {
 			{invoice.invoiceNumber && (
 				<DataRow label="Invoice Number" value={displayValue(invoice.invoiceNumber)} />
 			)}
-			{invoice.date && (
-				<DataRow label="Invoice Date" value={formatDate(invoice.date)} />
-			)}
+			{invoice.date && <DataRow label="Invoice Date" value={formatDate(invoice.date)} />}
 
 			{sortedItems.length > 0 && (
 				<View style={{ marginTop: 10 }}>
@@ -725,24 +719,18 @@ function InvoiceSection({ invoice }: { invoice: ReportData['invoice'] }) {
 							<Text style={styles.totalValue}>{formatCurrency(invoice.totalNet)}</Text>
 						</View>
 						<View style={styles.totalRow}>
-							<Text style={styles.totalLabel}>
-								VAT ({formatNumber(invoice.taxRate)}%)
-							</Text>
+							<Text style={styles.totalLabel}>VAT ({formatNumber(invoice.taxRate)}%)</Text>
 							<Text style={styles.totalValue}>{formatCurrency(taxAmount)}</Text>
 						</View>
 						<View style={styles.totalGrossRow}>
 							<Text style={styles.totalGrossLabel}>Gross Total</Text>
-							<Text style={styles.totalGrossValue}>
-								{formatCurrency(invoice.totalGross)}
-							</Text>
+							<Text style={styles.totalGrossValue}>{formatCurrency(invoice.totalGross)}</Text>
 						</View>
 					</View>
 				</View>
 			)}
 
-			{sortedItems.length === 0 && (
-				<Text style={styles.noData}>No line items</Text>
-			)}
+			{sortedItems.length === 0 && <Text style={styles.noData}>No line items</Text>}
 		</View>
 	)
 }
@@ -794,14 +782,9 @@ function PhotoGallerySection({ photos }: { photos: ReportData['photos'] }) {
 						<View style={styles.photoGrid}>
 							{catPhotos.map((photo) => (
 								<View key={photo.id} style={styles.photoItem}>
-									<Image
-										src={photo.annotatedUrl ?? photo.url}
-										style={styles.photoImage}
-									/>
+									<Image src={photo.annotatedUrl ?? photo.url} style={styles.photoImage} />
 									{photo.aiDescription && (
-										<Text style={styles.photoCaption}>
-											{photo.aiDescription}
-										</Text>
+										<Text style={styles.photoCaption}>{photo.aiDescription}</Text>
 									)}
 								</View>
 							))}
@@ -812,20 +795,13 @@ function PhotoGallerySection({ photos }: { photos: ReportData['photos'] }) {
 
 			{uncategorized.length > 0 && (
 				<View wrap={false}>
-					<Text style={styles.photoCategoryTitle}>
-						Other Photos ({uncategorized.length})
-					</Text>
+					<Text style={styles.photoCategoryTitle}>Other Photos ({uncategorized.length})</Text>
 					<View style={styles.photoGrid}>
 						{uncategorized.map((photo) => (
 							<View key={photo.id} style={styles.photoItem}>
-								<Image
-									src={photo.annotatedUrl ?? photo.url}
-									style={styles.photoImage}
-								/>
+								<Image src={photo.annotatedUrl ?? photo.url} style={styles.photoImage} />
 								{photo.aiDescription && (
-									<Text style={styles.photoCaption}>
-										{photo.aiDescription}
-									</Text>
+									<Text style={styles.photoCaption}>{photo.aiDescription}</Text>
 								)}
 							</View>
 						))}
@@ -837,9 +813,7 @@ function PhotoGallerySection({ photos }: { photos: ReportData['photos'] }) {
 }
 
 function FooterSection({ expert }: { expert: ReportData['expert'] }) {
-	const expertName = expert
-		? [expert.firstName, expert.lastName].filter(Boolean).join(' ')
-		: null
+	const expertName = expert ? [expert.firstName, expert.lastName].filter(Boolean).join(' ') : null
 	const companyName = expert?.companyName ?? null
 	const footerText = [expertName, companyName].filter(Boolean).join(' | ')
 	const dateStr = new Date().toLocaleDateString('de-DE', {
@@ -885,12 +859,8 @@ function ReportPdfDocument({ data }: { data: ReportData }) {
 					opponentInfo={data.opponentInfo}
 				/>
 				<ConditionSection condition={data.condition} />
-				{includeValuation && (
-					<CalculationSection calculation={data.calculation} />
-				)}
-				{includeInvoice && (
-					<InvoiceSection invoice={data.invoice} />
-				)}
+				{includeValuation && <CalculationSection calculation={data.calculation} />}
+				{includeInvoice && <InvoiceSection invoice={data.invoice} />}
 				<PhotoGallerySection photos={data.photos} />
 				<FooterSection expert={data.expert} />
 			</Page>
@@ -898,5 +868,5 @@ function ReportPdfDocument({ data }: { data: ReportData }) {
 	)
 }
 
-export { ReportPdfDocument }
 export type { ReportData }
+export { ReportPdfDocument }

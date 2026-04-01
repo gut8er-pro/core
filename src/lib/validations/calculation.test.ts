@@ -1,9 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import {
-	calculationSchema,
-	additionalCostSchema,
-	calculationPatchSchema,
-} from './calculation'
+import { describe, expect, it } from 'vitest'
+import { additionalCostSchema, calculationPatchSchema, calculationSchema } from './calculation'
 
 describe('calculationSchema', () => {
 	it('valid full data passes', () => {
@@ -60,9 +56,7 @@ describe('calculationSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'replacementValue',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'replacementValue')
 			expect(error).toBeDefined()
 		}
 	})
@@ -73,9 +67,7 @@ describe('calculationSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'residualValue',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'residualValue')
 			expect(error).toBeDefined()
 		}
 	})
@@ -86,9 +78,7 @@ describe('calculationSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'diminutionInValue',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'diminutionInValue')
 			expect(error).toBeDefined()
 		}
 	})
@@ -99,9 +89,7 @@ describe('calculationSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'costPerDay',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'costPerDay')
 			expect(error).toBeDefined()
 		}
 	})
@@ -112,9 +100,7 @@ describe('calculationSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'repairTimeDays',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'repairTimeDays')
 			expect(error).toBeDefined()
 		}
 	})
@@ -125,9 +111,7 @@ describe('calculationSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'replacementTimeDays',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'replacementTimeDays')
 			expect(error).toBeDefined()
 		}
 	})
@@ -138,9 +122,7 @@ describe('calculationSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'repairTimeDays',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'repairTimeDays')
 			expect(error).toBeDefined()
 		}
 	})
@@ -163,9 +145,7 @@ describe('calculationSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'taxRate',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'taxRate')
 			expect(error).toBeDefined()
 		}
 	})
@@ -176,9 +156,7 @@ describe('calculationSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'risks',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'risks')
 			expect(error).toBeDefined()
 		}
 	})
@@ -189,9 +167,7 @@ describe('calculationSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'replacementValue',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'replacementValue')
 			expect(error).toBeDefined()
 		}
 	})
@@ -202,9 +178,7 @@ describe('calculationSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'plasticRepair',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'plasticRepair')
 			expect(error).toBeDefined()
 		}
 	})
@@ -234,9 +208,7 @@ describe('additionalCostSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'description',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'description')
 			expect(error).toBeDefined()
 		}
 	})
@@ -248,9 +220,7 @@ describe('additionalCostSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'description',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'description')
 			expect(error).toBeDefined()
 		}
 	})
@@ -261,9 +231,7 @@ describe('additionalCostSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'amount',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'amount')
 			expect(error).toBeDefined()
 		}
 	})
@@ -275,9 +243,7 @@ describe('additionalCostSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'amount',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'amount')
 			expect(error).toBeDefined()
 		}
 	})
@@ -297,9 +263,7 @@ describe('additionalCostSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'description',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'description')
 			expect(error).toBeDefined()
 		}
 	})
@@ -312,9 +276,7 @@ describe('additionalCostSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const error = result.error.issues.find(
-				(issue) => issue.path[0] === 'id',
-			)
+			const error = result.error.issues.find((issue) => issue.path[0] === 'id')
 			expect(error).toBeDefined()
 		}
 	})
@@ -330,9 +292,7 @@ describe('calculationPatchSchema', () => {
 
 	it('valid patch with additionalCosts only passes', () => {
 		const result = calculationPatchSchema.safeParse({
-			additionalCosts: [
-				{ description: 'Towing', amount: 200 },
-			],
+			additionalCosts: [{ description: 'Towing', amount: 200 }],
 		})
 		expect(result.success).toBe(true)
 	})

@@ -1,13 +1,23 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import {
+	BarChart3,
+	Car,
+	ChevronDown,
+	FileText,
+	Info,
+	ListFilter,
+	Plus,
+	Search,
+	Shield,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, ListFilter, Info, ChevronDown, Shield, FileText, BarChart3, Car } from 'lucide-react'
-import { useReports, useCreateReport, useDeleteReport } from '@/hooks/use-reports'
+import { useEffect, useRef, useState } from 'react'
+import { EmptyState, Pagination, ReportTable } from '@/components/dashboard/report-list'
+import { Button } from '@/components/ui/button'
+import { useCreateReport, useDeleteReport, useReports } from '@/hooks/use-reports'
 import { useStats } from '@/hooks/use-stats'
 import { useToast } from '@/hooks/use-toast'
-import { Button } from '@/components/ui/button'
-import { ReportTable, EmptyState, Pagination } from '@/components/dashboard/report-list'
 import { cn } from '@/lib/utils'
 import type { ReportType } from '@/lib/validations/reports'
 
@@ -18,7 +28,20 @@ const REPORT_TYPE_OPTIONS: Array<{ type: ReportType; label: string; icon: typeof
 	{ type: 'OT', label: 'Oldtimer Valuation', icon: Car },
 ]
 
-const CHART_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const CHART_MONTHS = [
+	'Jan',
+	'Feb',
+	'Mar',
+	'Apr',
+	'May',
+	'Jun',
+	'Jul',
+	'Aug',
+	'Sep',
+	'Oct',
+	'Nov',
+	'Dec',
+]
 
 type ChartPeriod = 'yearly' | 'monthly' | 'weekly'
 
@@ -62,14 +85,17 @@ function DashboardPage() {
 
 	function handleCreateReport(reportType: ReportType) {
 		setShowReportTypeMenu(false)
-		createReport.mutate({ title: 'Untitled Report', reportType }, {
-			onSuccess: (data) => {
-				router.push(`/reports/${data.report.id}/gallery`)
+		createReport.mutate(
+			{ title: 'Untitled Report', reportType },
+			{
+				onSuccess: (data) => {
+					router.push(`/reports/${data.report.id}/gallery`)
+				},
+				onError: () => {
+					toast.error('Failed to create report. Please try again.')
+				},
 			},
-			onError: () => {
-				toast.error('Failed to create report. Please try again.')
-			},
-		})
+		)
 	}
 
 	function handleDeleteReport(id: string) {

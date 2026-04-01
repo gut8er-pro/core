@@ -4,11 +4,7 @@ const STORAGE_BUCKET = 'photos'
 
 type StorageVariant = 'original' | 'thumbnail' | 'preview' | 'ai' | 'annotated'
 
-function getStoragePath(
-	reportId: string,
-	photoId: string,
-	variant: StorageVariant,
-): string {
+function getStoragePath(reportId: string, photoId: string, variant: StorageVariant): string {
 	return `reports/${reportId}/photos/${photoId}/${variant}.jpg`
 }
 
@@ -42,10 +38,5 @@ async function downloadFromUrl(url: string): Promise<Buffer> {
 	return Buffer.from(arrayBuffer)
 }
 
-export {
-	uploadBufferToStorage,
-	downloadFromUrl,
-	getStoragePath,
-	STORAGE_BUCKET,
-}
 export type { StorageVariant }
+export { downloadFromUrl, getStoragePath, STORAGE_BUCKET, uploadBufferToStorage }

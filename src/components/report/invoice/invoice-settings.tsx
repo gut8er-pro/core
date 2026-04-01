@@ -1,7 +1,7 @@
 'use client'
 
+import { FileText, Info, User, Users } from 'lucide-react'
 import { Controller } from 'react-hook-form'
-import { User, Users, FileText, Info } from 'lucide-react'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'

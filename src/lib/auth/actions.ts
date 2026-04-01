@@ -1,10 +1,10 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { loginSchema, signupAccountSchema } from '@/lib/validations/auth'
 import { getStripeClient } from '@/lib/stripe/client'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
+import { loginSchema, signupAccountSchema } from '@/lib/validations/auth'
 
 async function login(formData: FormData): Promise<{ error?: string }> {
 	const raw = {
@@ -82,9 +82,7 @@ type CompleteSignupInput = {
 	}
 }
 
-async function completeSignup(
-	input: CompleteSignupInput,
-): Promise<{ error?: string }> {
+async function completeSignup(input: CompleteSignupInput): Promise<{ error?: string }> {
 	const { account, personal, business, plan, integrations } = input
 
 	console.log('[completeSignup] START', {
@@ -102,12 +100,11 @@ async function completeSignup(
 
 	// 1. Create the Supabase auth user with admin API (auto-confirms email)
 	const admin = createAdminClient()
-	const { data: authData, error: authError } =
-		await admin.auth.admin.createUser({
-			email: account.email,
-			password: account.password,
-			email_confirm: true,
-		})
+	const { data: authData, error: authError } = await admin.auth.admin.createUser({
+		email: account.email,
+		password: account.password,
+		email_confirm: true,
+	})
 
 	if (authError) {
 		console.error('[completeSignup] Supabase auth error:', {
@@ -131,13 +128,11 @@ async function completeSignup(
 		const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
 
 		// Filter out "$undefined" strings from Next.js server action serialization
-		const cleanStr = (val: string | undefined) =>
-			val && val !== '$undefined' ? val : null
+		const cleanStr = (val: string | undefined) => (val && val !== '$undefined' ? val : null)
 		const hasBusinessData = !!cleanStr(business.companyName)
 		const validProviders = ['DAT', 'AUDATEX', 'GT_MOTIVE']
 		const providerStr = cleanStr(integrations.provider)?.toUpperCase()
-		const hasIntegration =
-			providerStr && validProviders.includes(providerStr)
+		const hasIntegration = providerStr && validProviders.includes(providerStr)
 
 		console.log('[completeSignup] Creating DB user:', {
 			authUserId,
@@ -155,9 +150,7 @@ async function completeSignup(
 				firstName: cleanStr(personal.firstName),
 				lastName: cleanStr(personal.lastName),
 				phone: cleanStr(personal.phone),
-				professionalQualification: cleanStr(
-					personal.professionalQualification,
-				),
+				professionalQualification: cleanStr(personal.professionalQualification),
 				plan: planValue,
 				trialEndsAt,
 				...(hasBusinessData
@@ -166,8 +159,7 @@ async function completeSignup(
 								create: {
 									companyName: business.companyName!,
 									street: cleanStr(business.street) || '',
-									postcode:
-										cleanStr(business.postcode) || '',
+									postcode: cleanStr(business.postcode) || '',
 									city: cleanStr(business.city) || '',
 									taxId: cleanStr(business.taxId) || '',
 									vatId: cleanStr(business.vatId),
@@ -179,23 +171,14 @@ async function completeSignup(
 					? {
 							integrations: {
 								create: {
-									provider: providerStr as
-										| 'DAT'
-										| 'AUDATEX'
-										| 'GT_MOTIVE',
-									encryptedCredentials: cleanStr(
-										integrations.username,
-									)
+									provider: providerStr as 'DAT' | 'AUDATEX' | 'GT_MOTIVE',
+									encryptedCredentials: cleanStr(integrations.username)
 										? JSON.stringify({
-												username:
-													integrations.username,
-												password:
-													integrations.password,
+												username: integrations.username,
+												password: integrations.password,
 											})
 										: null,
-									isActive: !!cleanStr(
-										integrations.username,
-									),
+									isActive: !!cleanStr(integrations.username),
 								},
 							},
 						}
@@ -226,8 +209,7 @@ async function completeSignup(
 	} catch (dbError) {
 		// If DB creation fails, clean up the auth user
 		await admin.auth.admin.deleteUser(authUserId)
-		const errMsg =
-			dbError instanceof Error ? dbError.message : String(dbError)
+		const errMsg = dbError instanceof Error ? dbError.message : String(dbError)
 		console.error('[completeSignup] Failed to create user record:', errMsg)
 		return { error: `Failed to create account: ${errMsg}` }
 	}
@@ -240,10 +222,13 @@ async function completeSignup(
 	})
 
 	if (signInError) {
-		console.error('[completeSignup] Auto sign-in failed (account created but session not started):', {
-			message: signInError.message,
-			email: account.email,
-		})
+		console.error(
+			'[completeSignup] Auto sign-in failed (account created but session not started):',
+			{
+				message: signInError.message,
+				email: account.email,
+			},
+		)
 		// Non-fatal — user can log in manually
 	} else {
 		console.log('[completeSignup] SUCCESS — user signed in:', account.email)
@@ -290,11 +275,4 @@ async function logout() {
 	redirect('/login')
 }
 
-export {
-	login,
-	signup,
-	completeSignup,
-	signInWithGoogle,
-	signInWithApple,
-	logout,
-}
+export { completeSignup, login, logout, signInWithApple, signInWithGoogle, signup }

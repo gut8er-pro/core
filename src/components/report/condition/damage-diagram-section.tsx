@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect } from 'react'
 import { Trash2, X } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
-import { Button } from '@/components/ui/button'
-import { VehicleDiagram } from '@/components/ui/vehicle-diagram'
 import type { Marker } from '@/components/ui/vehicle-diagram'
+import { VehicleDiagram } from '@/components/ui/vehicle-diagram'
 import { cn } from '@/lib/utils'
 import { getPaintColor } from '@/lib/validations/condition'
 import type { DamageMarkerData, PaintMarkerData } from './types'
@@ -77,7 +77,12 @@ function DamageDiagramSection({
 	)
 
 	return (
-		<CollapsibleSection title="Visual Accident Details" info defaultOpen={false} className={className}>
+		<CollapsibleSection
+			title="Visual Accident Details"
+			info
+			defaultOpen={false}
+			className={className}
+		>
 			<div className="flex flex-col gap-6">
 				{/* Manual Setup toggle */}
 				<ToggleSwitch
@@ -188,24 +193,25 @@ function DamagesView({
 				/>
 
 				{/* Floating comment popover near active marker */}
-				{editingMarkerId && (() => {
-					const marker = damageMarkers.find((m) => m.id === editingMarkerId)
-					if (!marker) return null
-					return (
-						<MarkerPopover
-							marker={marker}
-							onUpdate={(comment) => {
-								onUpdateMarker(marker.id, comment)
-								onEditingChange(null)
-							}}
-							onDelete={() => {
-								onDeleteMarker(marker.id)
-								onEditingChange(null)
-							}}
-							onClose={() => onEditingChange(null)}
-						/>
-					)
-				})()}
+				{editingMarkerId &&
+					(() => {
+						const marker = damageMarkers.find((m) => m.id === editingMarkerId)
+						if (!marker) return null
+						return (
+							<MarkerPopover
+								marker={marker}
+								onUpdate={(comment) => {
+									onUpdateMarker(marker.id, comment)
+									onEditingChange(null)
+								}}
+								onDelete={() => {
+									onDeleteMarker(marker.id)
+									onEditingChange(null)
+								}}
+								onClose={() => onEditingChange(null)}
+							/>
+						)
+					})()}
 			</div>
 
 			{/* Damage marker list */}
@@ -229,7 +235,15 @@ function DamagesView({
 							</span>
 							<button
 								type="button"
-								onClick={() => onMarkerClick({ id: marker.id, x: marker.x, y: marker.y, comment: marker.comment ?? undefined, color: '#1F2937' })}
+								onClick={() =>
+									onMarkerClick({
+										id: marker.id,
+										x: marker.x,
+										y: marker.y,
+										comment: marker.comment ?? undefined,
+										color: '#1F2937',
+									})
+								}
 								className="cursor-pointer text-caption text-primary hover:underline"
 							>
 								Edit
@@ -267,12 +281,8 @@ function MarkerPopover({ marker, onUpdate, onDelete, onClose }: MarkerPopoverPro
 	// Position the popover near the marker's coordinates
 	const left = `${Math.min(Math.max(marker.x, 15), 85)}%`
 	const isTopHalf = marker.y < 50
-	const topStyle = isTopHalf
-		? `${marker.y + 8}%`
-		: undefined
-	const bottomStyle = !isTopHalf
-		? `${100 - marker.y + 8}%`
-		: undefined
+	const topStyle = isTopHalf ? `${marker.y + 8}%` : undefined
+	const bottomStyle = !isTopHalf ? `${100 - marker.y + 8}%` : undefined
 
 	return (
 		<div
@@ -358,10 +368,7 @@ function PaintView({
 					{ label: '>700', color: '#EF4444' },
 				].map((item) => (
 					<div key={item.label} className="flex items-center gap-1">
-						<div
-							className="h-3 w-6 rounded-full"
-							style={{ backgroundColor: item.color }}
-						/>
+						<div className="h-3 w-6 rounded-full" style={{ backgroundColor: item.color }} />
 						<span className="text-caption text-grey-100">{item.label}</span>
 					</div>
 				))}
@@ -369,12 +376,7 @@ function PaintView({
 
 			{/* Diagram with positioned paint inputs */}
 			<div className="relative">
-				<VehicleDiagram
-					mode="paint"
-					markers={markers}
-					editable
-					onAddMarker={onDiagramClick}
-				/>
+				<VehicleDiagram mode="paint" markers={markers} editable onAddMarker={onDiagramClick} />
 
 				{/* Paint measurement inputs positioned around diagram */}
 				{PAINT_POSITIONS.map((pos) => {
@@ -439,7 +441,13 @@ type PaintMeasurementInputProps = {
 	onDelete?: () => void
 }
 
-function PaintMeasurementInput({ label, position, marker, onSubmit, onDelete }: PaintMeasurementInputProps) {
+function PaintMeasurementInput({
+	label,
+	position,
+	marker,
+	onSubmit,
+	onDelete,
+}: PaintMeasurementInputProps) {
 	const [editing, setEditing] = useState(false)
 	const thickness = marker?.thickness ?? 0
 	const color = marker ? (marker.color ?? getPaintColor(marker.thickness)) : '#D1D5DB'
@@ -465,16 +473,15 @@ function PaintMeasurementInput({ label, position, marker, onSubmit, onDelete }: 
 					style={{ borderColor: color }}
 					placeholder="µm"
 					defaultValue={thickness || ''}
-					autoFocus
 					onBlur={(e) => {
 						const val = parseInt(e.target.value, 10)
-						if (!isNaN(val) && val > 0) onSubmit(val)
+						if (!Number.isNaN(val) && val > 0) onSubmit(val)
 						setEditing(false)
 					}}
 					onKeyDown={(e) => {
 						if (e.key === 'Enter') {
 							const val = parseInt(e.currentTarget.value, 10)
-							if (!isNaN(val) && val > 0) onSubmit(val)
+							if (!Number.isNaN(val) && val > 0) onSubmit(val)
 							setEditing(false)
 						}
 						if (e.key === 'Escape') setEditing(false)
@@ -501,5 +508,5 @@ function PaintMeasurementInput({ label, position, marker, onSubmit, onDelete }: 
 	)
 }
 
-export { DamageDiagramSection }
 export type { DamageDiagramSectionProps }
+export { DamageDiagramSection }

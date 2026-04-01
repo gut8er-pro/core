@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@/test/test-utils'
 import { useForm } from 'react-hook-form'
+import { describe, expect, it } from 'vitest'
+import { render, screen } from '@/test/test-utils'
 import { ClaimantSection } from './claimant-section'
 import type { AccidentInfoFormData } from './types'
 
@@ -75,9 +75,7 @@ describe('ClaimantSection', () => {
 
 	it('renders checkboxes (3 checkboxes)', () => {
 		render(<TestWrapper />)
-		expect(
-			screen.getByText('Eligible for input tax deduction'),
-		).toBeInTheDocument()
+		expect(screen.getByText('Eligible for input tax deduction')).toBeInTheDocument()
 		expect(screen.getByText('Is vehicle owner')).toBeInTheDocument()
 		expect(screen.getByText('Represented by lawyer')).toBeInTheDocument()
 	})

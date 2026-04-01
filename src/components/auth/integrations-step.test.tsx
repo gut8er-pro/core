@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { render, screen, waitFor } from '@/test/test-utils'
 import { IntegrationsStep } from './integrations-step'
 
 const mockPush = vi.fn()
@@ -20,7 +20,13 @@ const mockReset = vi.fn()
 vi.mock('@/stores/signup-store', () => ({
 	useSignupStore: () => ({
 		account: { email: 'test@example.com', password: 'Password1!' },
-		personal: { title: 'Herr', firstName: 'Max', lastName: 'Mustermann', phone: '', professionalQualification: '' },
+		personal: {
+			title: 'Herr',
+			firstName: 'Max',
+			lastName: 'Mustermann',
+			phone: '',
+			professionalQualification: '',
+		},
 		business: { companyName: '', street: '', postcode: '', city: '', taxId: '', vatId: '' },
 		plan: { plan: 'free' },
 		integrations: {},
@@ -39,9 +45,7 @@ describe('IntegrationsStep', () => {
 	it('renders heading and description', () => {
 		render(<IntegrationsStep />)
 		expect(screen.getByText('Connect your tools')).toBeInTheDocument()
-		expect(
-			screen.getByText(/Link your calculation provider/),
-		).toBeInTheDocument()
+		expect(screen.getByText(/Link your calculation provider/)).toBeInTheDocument()
 	})
 
 	it('renders three provider cards', () => {
@@ -61,7 +65,7 @@ describe('IntegrationsStep', () => {
 		const user = userEvent.setup()
 		render(<IntegrationsStep />)
 
-		const datCard = screen.getAllByText('DAT')[0]!.closest('[role="button"]')!
+		const datCard = screen.getAllByText('DAT')[0]?.closest('[role="button"]') as HTMLElement
 		await user.click(datCard)
 
 		expect(screen.getByText('DAT SilverDAT3 Credentials')).toBeInTheDocument()
@@ -73,13 +77,10 @@ describe('IntegrationsStep', () => {
 		const user = userEvent.setup()
 		render(<IntegrationsStep />)
 
-		const datCard = screen.getAllByText('DAT')[0]!.closest('[role="button"]')!
+		const datCard = screen.getAllByText('DAT')[0]?.closest('[role="button"]') as HTMLElement
 		await user.click(datCard)
 
-		expect(screen.getByText('Register with DAT')).toHaveAttribute(
-			'href',
-			'https://www.dat.de',
-		)
+		expect(screen.getByText('Register with DAT')).toHaveAttribute('href', 'https://www.dat.de')
 	})
 
 	it('shows skip instruction', () => {

@@ -1,9 +1,9 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+import { getAnthropicClient } from '@/lib/ai/anthropic'
+import { getCachedResult, getCacheKey, setCachedResult } from '@/lib/ai/cache'
+import { fetchImageAsBase64 } from '@/lib/ai/fetch-image'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { aiPhotoRequestSchema } from '@/lib/validations/ai'
-import { getAnthropicClient } from '@/lib/ai/anthropic'
-import { getCacheKey, getCachedResult, setCachedResult } from '@/lib/ai/cache'
-import { fetchImageAsBase64 } from '@/lib/ai/fetch-image'
 
 const VIN_PATTERN = /^[A-HJ-NPR-Z0-9]{17}$/
 
@@ -30,7 +30,10 @@ async function POST(request: NextRequest) {
 
 	if (!process.env.ANTHROPIC_API_KEY) {
 		return NextResponse.json(
-			{ error: 'AI service is not configured. Please set the ANTHROPIC_API_KEY environment variable.' },
+			{
+				error:
+					'AI service is not configured. Please set the ANTHROPIC_API_KEY environment variable.',
+			},
 			{ status: 503 },
 		)
 	}
@@ -44,24 +47,27 @@ async function POST(request: NextRequest) {
 		const message = await client.messages.create({
 			model: 'claude-haiku-4-5-20251001',
 			max_tokens: 256,
-			messages: [{
-				role: 'user',
-				content: [
-					{
-						type: 'image',
-						source: {
-							type: 'base64',
-							media_type: imageData.mediaType,
-							data: imageData.base64,
+			messages: [
+				{
+					role: 'user',
+					content: [
+						{
+							type: 'image',
+							source: {
+								type: 'base64',
+								media_type: imageData.mediaType,
+								data: imageData.base64,
+							},
 						},
-					},
-					{
-						type: 'text',
-						text: 'Extract the VIN from this image.',
-					},
-				],
-			}],
-			system: 'Extract the Vehicle Identification Number (VIN) from this image. A VIN is a 17-character alphanumeric code. Return ONLY the VIN string if found, or null if not visible. Do not include any other text.',
+						{
+							type: 'text',
+							text: 'Extract the VIN from this image.',
+						},
+					],
+				},
+			],
+			system:
+				'Extract the Vehicle Identification Number (VIN) from this image. A VIN is a 17-character alphanumeric code. Return ONLY the VIN string if found, or null if not visible. Do not include any other text.',
 		})
 
 		const textBlock = message.content.find((block) => block.type === 'text')
@@ -87,10 +93,7 @@ async function POST(request: NextRequest) {
 	} catch (err) {
 		console.error('Claude API error (detect-vin):', err)
 		const message = err instanceof Error ? err.message : 'Unknown error'
-		return NextResponse.json(
-			{ error: `VIN detection failed: ${message}` },
-			{ status: 500 },
-		)
+		return NextResponse.json({ error: `VIN detection failed: ${message}` }, { status: 500 })
 	}
 }
 

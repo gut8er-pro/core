@@ -1,20 +1,16 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
 	BVSK_RATES,
+	calculateGrossTotal,
 	calculateNetTotal,
 	calculateTax,
-	calculateGrossTotal,
 	generateInvoiceNumber,
 	lookupBvskRate,
 } from './invoice-calculations'
 
 describe('calculateNetTotal', () => {
 	it('sums amounts from multiple line items', () => {
-		const items = [
-			{ amount: 100 },
-			{ amount: 200 },
-			{ amount: 50 },
-		]
+		const items = [{ amount: 100 }, { amount: 200 }, { amount: 50 }]
 		expect(calculateNetTotal(items)).toBe(350)
 	})
 
@@ -27,19 +23,12 @@ describe('calculateNetTotal', () => {
 	})
 
 	it('handles decimal amounts', () => {
-		const items = [
-			{ amount: 99.99 },
-			{ amount: 0.01 },
-		]
+		const items = [{ amount: 99.99 }, { amount: 0.01 }]
 		expect(calculateNetTotal(items)).toBeCloseTo(100, 2)
 	})
 
 	it('handles zero amounts', () => {
-		const items = [
-			{ amount: 0 },
-			{ amount: 0 },
-			{ amount: 100 },
-		]
+		const items = [{ amount: 0 }, { amount: 0 }, { amount: 100 }]
 		expect(calculateNetTotal(items)).toBe(100)
 	})
 })
@@ -142,7 +131,7 @@ describe('lookupBvskRate', () => {
 	})
 
 	it('returns correct rate for exact upper boundary of first bracket', () => {
-		const rate = lookupBvskRate(500)
+		const _rate = lookupBvskRate(500)
 		// 500 matches both the first (0-500) and second (500-750) brackets
 		// find() returns the first match
 		const rate0 = lookupBvskRate(500)
@@ -214,9 +203,7 @@ describe('BVSK_RATES', () => {
 		for (let i = 1; i < BVSK_RATES.length; i++) {
 			const current = BVSK_RATES[i]!
 			const previous = BVSK_RATES[i - 1]!
-			expect(current.additionalFee).toBeGreaterThanOrEqual(
-				previous.additionalFee,
-			)
+			expect(current.additionalFee).toBeGreaterThanOrEqual(previous.additionalFee)
 		}
 	})
 

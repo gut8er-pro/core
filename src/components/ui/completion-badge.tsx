@@ -19,5 +19,5 @@ function CompletionBadge({ percentage, label, className }: CompletionBadgeProps)
 	)
 }
 
-export { CompletionBadge }
 export type { CompletionBadgeProps }
+export { CompletionBadge }

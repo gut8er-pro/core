@@ -1,11 +1,10 @@
 'use client'
 
-import { CollapsibleSection } from '@/components/ui/collapsible-section'
-import { TextField } from '@/components/ui/text-field'
-import { SelectField } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
+import { SelectField } from '@/components/ui/select'
+import { TextField } from '@/components/ui/text-field'
 import type { SectionProps } from './types'
 
 const ORDER_PLACEMENT_OPTIONS = [
@@ -14,7 +13,13 @@ const ORDER_PLACEMENT_OPTIONS = [
 	{ value: 'via_insurance', label: 'Via Insurance' },
 ]
 
-function ExpertOpinionSection({ register, control, errors, onFieldBlur, className }: SectionProps & { className?: string }) {
+function ExpertOpinionSection({
+	register,
+	control,
+	errors,
+	onFieldBlur,
+	className,
+}: SectionProps & { className?: string }) {
 	return (
 		<CollapsibleSection title="Expert Opinion Characteristics" className={className}>
 			<div className="flex flex-col gap-4">

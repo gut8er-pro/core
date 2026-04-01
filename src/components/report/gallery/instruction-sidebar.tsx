@@ -1,6 +1,6 @@
 import { Sparkles } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import type { ClassificationResult } from '@/lib/ai/types'
+import { cn } from '@/lib/utils'
 
 type GenerationSummaryData = {
 	totalFieldsFilled: number
@@ -56,12 +56,22 @@ function GreenCheckIcon({ className }: { className?: string }) {
 	return (
 		<svg viewBox="0 0 17 17" fill="none" className={className} aria-hidden="true">
 			<circle cx="8.5" cy="8.5" r="8.5" fill="#019447" />
-			<path d="M5 8.5L7.5 11L12 6.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+			<path
+				d="M5 8.5L7.5 11L12 6.5"
+				stroke="white"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
 		</svg>
 	)
 }
 
-function InstructionSidebar({ className, classifications, generationSummary }: InstructionSidebarProps) {
+function InstructionSidebar({
+	className,
+	classifications,
+	generationSummary,
+}: InstructionSidebarProps) {
 	const hasClassifications = classifications && classifications.size > 0
 
 	function getCategoryCount(category: SuggestedCategory): number {
@@ -149,16 +159,22 @@ function InstructionSidebar({ className, classifications, generationSummary }: I
 					<div className="flex flex-col gap-2">
 						<div className="flex items-center justify-between">
 							<span className="text-caption text-grey-100">Photos processed</span>
-							<span className="text-body-sm font-semibold text-black">{generationSummary.photosProcessed}</span>
+							<span className="text-body-sm font-semibold text-black">
+								{generationSummary.photosProcessed}
+							</span>
 						</div>
 						<div className="flex items-center justify-between">
 							<span className="text-caption text-grey-100">Fields auto-filled</span>
-							<span className="text-body-sm font-semibold text-primary">{generationSummary.totalFieldsFilled}</span>
+							<span className="text-body-sm font-semibold text-primary">
+								{generationSummary.totalFieldsFilled}
+							</span>
 						</div>
 						{generationSummary.damageMarkersPlaced > 0 && (
 							<div className="flex items-center justify-between">
 								<span className="text-caption text-grey-100">Damage markers</span>
-								<span className="text-body-sm font-semibold text-black">{generationSummary.damageMarkersPlaced}</span>
+								<span className="text-body-sm font-semibold text-black">
+									{generationSummary.damageMarkersPlaced}
+								</span>
 							</div>
 						)}
 					</div>
@@ -179,5 +195,5 @@ function countMatches(
 	return count
 }
 
-export { InstructionSidebar }
 export type { InstructionSidebarProps }
+export { InstructionSidebar }

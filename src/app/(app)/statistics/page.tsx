@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { ChevronDown, Download, Info, Search, SlidersHorizontal } from 'lucide-react'
+import { useState } from 'react'
 import { useStats } from '@/hooks/use-stats'
 import { cn } from '@/lib/utils'
 
@@ -12,15 +12,69 @@ const Y_LABELS = [10000, 5000, 2000, 1000, 0]
 
 // Mock invoice history — replace with real API when invoice list endpoint exists
 const MOCK_INVOICES = [
-	{ id: 'OT-0214-01', client: 'Marko Jovanović', date: 'Wed, 14.02.2026', amount: 268, status: 'Completed' as const },
-	{ id: 'HS-0214-02', client: 'Ana Petrović', date: 'Wed, 14.02.2026', amount: 268, status: 'Pending' as const },
-	{ id: 'KG-0214-02', client: 'Stefan Nikolić', date: 'Wed, 14.02.2026', amount: -268, status: 'Rejected' as const },
-	{ id: 'BE-0214-03', client: 'Milica Stojanović', date: 'Wed, 14.02.2026', amount: 268, status: 'Completed' as const },
-	{ id: 'OT-0214-04', client: 'Janko Popović', date: 'Wed, 14.02.2026', amount: 268, status: 'Completed' as const },
-	{ id: 'OT-0214-05', client: 'Vera Stefanov', date: 'Wed, 14.02.2026', amount: 268, status: 'Completed' as const },
-	{ id: 'HS-0214-06', client: 'Vladislav Marić', date: 'Wed, 14.02.2026', amount: 268, status: 'Completed' as const },
-	{ id: 'KG-0214-07', client: 'Petar Petrović', date: 'Wed, 14.02.2026', amount: 268, status: 'Completed' as const },
-	{ id: 'GH-0214-08', client: 'Pavle Rokvić', date: 'Wed, 14.02.2026', amount: 268, status: 'Completed' as const },
+	{
+		id: 'OT-0214-01',
+		client: 'Marko Jovanović',
+		date: 'Wed, 14.02.2026',
+		amount: 268,
+		status: 'Completed' as const,
+	},
+	{
+		id: 'HS-0214-02',
+		client: 'Ana Petrović',
+		date: 'Wed, 14.02.2026',
+		amount: 268,
+		status: 'Pending' as const,
+	},
+	{
+		id: 'KG-0214-02',
+		client: 'Stefan Nikolić',
+		date: 'Wed, 14.02.2026',
+		amount: -268,
+		status: 'Rejected' as const,
+	},
+	{
+		id: 'BE-0214-03',
+		client: 'Milica Stojanović',
+		date: 'Wed, 14.02.2026',
+		amount: 268,
+		status: 'Completed' as const,
+	},
+	{
+		id: 'OT-0214-04',
+		client: 'Janko Popović',
+		date: 'Wed, 14.02.2026',
+		amount: 268,
+		status: 'Completed' as const,
+	},
+	{
+		id: 'OT-0214-05',
+		client: 'Vera Stefanov',
+		date: 'Wed, 14.02.2026',
+		amount: 268,
+		status: 'Completed' as const,
+	},
+	{
+		id: 'HS-0214-06',
+		client: 'Vladislav Marić',
+		date: 'Wed, 14.02.2026',
+		amount: 268,
+		status: 'Completed' as const,
+	},
+	{
+		id: 'KG-0214-07',
+		client: 'Petar Petrović',
+		date: 'Wed, 14.02.2026',
+		amount: 268,
+		status: 'Completed' as const,
+	},
+	{
+		id: 'GH-0214-08',
+		client: 'Pavle Rokvić',
+		date: 'Wed, 14.02.2026',
+		amount: 268,
+		status: 'Completed' as const,
+	},
 ]
 
 function StatisticsPage() {
@@ -29,7 +83,8 @@ function StatisticsPage() {
 	const [searchQuery, setSearchQuery] = useState('')
 
 	const totalRevenue = stats?.totalRevenue ?? 0
-	const totalReports = (stats?.completedPayments ?? 0) + (stats?.pendingPayments ?? 0) + (stats?.delayedPayments ?? 0)
+	const totalReports =
+		(stats?.completedPayments ?? 0) + (stats?.pendingPayments ?? 0) + (stats?.delayedPayments ?? 0)
 	const avgReportValue = totalReports > 0 ? totalRevenue / totalReports : 0
 	const monthlyRevenue = stats?.monthlyRevenue ?? Array(12).fill(0)
 
@@ -44,7 +99,9 @@ function StatisticsPage() {
 			{/* Header */}
 			<div className="flex items-start justify-between">
 				<div>
-					<h1 className="text-page-title font-medium leading-none text-black">Financial Analytics</h1>
+					<h1 className="text-page-title font-medium leading-none text-black">
+						Financial Analytics
+					</h1>
 					<p className="mt-2 text-input tracking-[0.18px] text-black/70">
 						Overview of your revenue and report activity
 					</p>
@@ -80,7 +137,11 @@ function StatisticsPage() {
 				/>
 				<StatCard
 					label="Completion Rate"
-					value={isLoading ? '—' : `${stats?.completedPayments && totalReports ? Math.round((stats.completedPayments / totalReports) * 100) : 0}%`}
+					value={
+						isLoading
+							? '—'
+							: `${stats?.completedPayments && totalReports ? Math.round((stats.completedPayments / totalReports) * 100) : 0}%`
+					}
 					change={5.4}
 					positive
 				/>
@@ -174,28 +235,49 @@ function StatisticsPage() {
 					<table className="w-full">
 						<thead>
 							<tr className="border-b border-border-card bg-surface-secondary">
-								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">Clients</th>
-								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">Invoice ID</th>
-								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">Date Created</th>
-								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">Amount</th>
-								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">Status</th>
+								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">
+									Clients
+								</th>
+								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">
+									Invoice ID
+								</th>
+								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">
+									Date Created
+								</th>
+								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">
+									Amount
+								</th>
+								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">
+									Status
+								</th>
 								<th className="w-14 px-3 py-3" />
 							</tr>
 						</thead>
 						<tbody>
 							{filteredInvoices.map((inv) => (
-								<tr key={inv.id} className="border-b border-border-card last:border-0 hover:bg-grey-25">
+								<tr
+									key={inv.id}
+									className="border-b border-border-card last:border-0 hover:bg-grey-25"
+								>
 									<td className="px-6 py-3">
 										<div className="flex items-center gap-3">
 											<div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-grey-25 text-caption font-medium text-grey-100">
-												{inv.client.split(' ').map((n) => n[0]).join('')}
+												{inv.client
+													.split(' ')
+													.map((n) => n[0])
+													.join('')}
 											</div>
 											<span className="text-body-sm font-medium text-black">{inv.client}</span>
 										</div>
 									</td>
 									<td className="px-6 py-3 text-body-sm text-grey-100">{inv.id}</td>
 									<td className="px-6 py-3 text-body-sm text-grey-100">{inv.date}</td>
-									<td className={cn('px-6 py-3 text-body-sm font-medium', inv.amount < 0 ? 'text-negative' : 'text-black')}>
+									<td
+										className={cn(
+											'px-6 py-3 text-body-sm font-medium',
+											inv.amount < 0 ? 'text-negative' : 'text-black',
+										)}
+									>
 										{inv.amount < 0 ? `-€${Math.abs(inv.amount)}` : `€${inv.amount}`}
 									</td>
 									<td className="px-6 py-3">
@@ -234,7 +316,8 @@ function StatCard({
 				<div className="flex flex-col gap-1.5">
 					<p className="text-page-title font-medium leading-none text-black">{value}</p>
 					<p className={cn('text-body-sm font-medium', positive ? 'text-primary' : 'text-error')}>
-						{positive ? '↑' : '↓'} {positive ? '+' : ''}{change}%
+						{positive ? '↑' : '↓'} {positive ? '+' : ''}
+						{change}%
 					</p>
 				</div>
 			</div>
@@ -251,7 +334,9 @@ function AreaChart({ data, maxValue }: { data: number[]; maxValue: number }) {
 		y: chartHeight - Math.max((value / maxValue) * chartHeight, 0),
 	}))
 
-	const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')
+	const linePath = points
+		.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+		.join(' ')
 	const areaPath = `${linePath} L ${chartWidth} ${chartHeight} L 0 ${chartHeight} Z`
 
 	// Grid lines at Y_LABELS positions
@@ -261,7 +346,11 @@ function AreaChart({ data, maxValue }: { data: number[]; maxValue: number }) {
 	}))
 
 	return (
-		<svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-full w-full" preserveAspectRatio="none">
+		<svg
+			viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+			className="h-full w-full"
+			preserveAspectRatio="none"
+		>
 			<defs>
 				<linearGradient id="statsAreaGradient" x1="0" y1="0" x2="0" y2="1">
 					<stop offset="0%" stopColor="#019447" stopOpacity="0.25" />

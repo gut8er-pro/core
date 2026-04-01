@@ -26,17 +26,17 @@ type VinDetectionResponse = z.infer<typeof vinDetectionResponseSchema>
 type PlateDetectionResponse = z.infer<typeof plateDetectionResponseSchema>
 type OcrResponse = z.infer<typeof ocrResponseSchema>
 
-export {
-	aiPhotoRequestSchema,
-	photoAnalysisResponseSchema,
-	vinDetectionResponseSchema,
-	plateDetectionResponseSchema,
-	ocrResponseSchema,
-}
 export type {
 	AiPhotoRequest,
-	PhotoAnalysisResponse,
-	VinDetectionResponse,
-	PlateDetectionResponse,
 	OcrResponse,
+	PhotoAnalysisResponse,
+	PlateDetectionResponse,
+	VinDetectionResponse,
+}
+export {
+	aiPhotoRequestSchema,
+	ocrResponseSchema,
+	photoAnalysisResponseSchema,
+	plateDetectionResponseSchema,
+	vinDetectionResponseSchema,
 }

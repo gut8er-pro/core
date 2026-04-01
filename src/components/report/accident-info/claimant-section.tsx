@@ -1,13 +1,12 @@
 'use client'
 
 import { useWatch } from 'react-hook-form'
-import { CollapsibleSection } from '@/components/ui/collapsible-section'
-import { TextField } from '@/components/ui/text-field'
-import { SelectField } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { LicensePlate } from '@/components/ui/license-plate'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
+import { LicensePlate } from '@/components/ui/license-plate'
+import { SelectField } from '@/components/ui/select'
+import { TextField } from '@/components/ui/text-field'
 import type { SectionProps } from './types'
 
 const salutationOptions = [
@@ -18,7 +17,13 @@ const salutationOptions = [
 	{ value: 'company', label: 'Company' },
 ]
 
-function ClaimantSection({ register, control, errors, onFieldBlur, className }: SectionProps & { className?: string }) {
+function ClaimantSection({
+	register,
+	control,
+	errors,
+	onFieldBlur,
+	className,
+}: SectionProps & { className?: string }) {
 	const representedByLawyer = useWatch({ control, name: 'claimantRepresentedByLawyer' })
 	const eligibleForTax = useWatch({ control, name: 'claimantEligibleForInputTaxDeduction' })
 	const licensePlate = useWatch({ control, name: 'claimantLicensePlate' })
@@ -125,9 +130,7 @@ function ClaimantSection({ register, control, errors, onFieldBlur, className }: 
 							onBlur={() => onFieldBlur?.('claimantLicensePlate')}
 							className="flex-1"
 						/>
-						{licensePlate && (
-							<LicensePlate plate={licensePlate} />
-						)}
+						{licensePlate && <LicensePlate plate={licensePlate} />}
 					</div>
 				</div>
 
@@ -138,7 +141,9 @@ function ClaimantSection({ register, control, errors, onFieldBlur, className }: 
 							id="claimant-eligible-input-tax"
 							checked={undefined}
 							onCheckedChange={(checked) => {
-								const event = { target: { name: 'claimantEligibleForInputTaxDeduction', value: !!checked } }
+								const event = {
+									target: { name: 'claimantEligibleForInputTaxDeduction', value: !!checked },
+								}
 								register('claimantEligibleForInputTaxDeduction').onChange(event)
 								onFieldBlur?.('claimantEligibleForInputTaxDeduction')
 							}}

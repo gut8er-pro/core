@@ -3,9 +3,9 @@
 import { useCallback } from 'react'
 import { useWatch } from 'react-hook-form'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
-import { TextField } from '@/components/ui/text-field'
 import { SelectField } from '@/components/ui/select'
-import { kwToHp, hpToKw } from '@/lib/utils/power-conversion'
+import { TextField } from '@/components/ui/text-field'
+import { hpToKw, kwToHp } from '@/lib/utils/power-conversion'
 import type { VehicleSectionProps } from './types'
 
 const ENGINE_DESIGN_OPTIONS = [
@@ -40,7 +40,7 @@ function SpecificationSection({
 		const kwValue = kwInput?.value
 		if (kwValue && setValue) {
 			const kw = parseFloat(kwValue)
-			if (!isNaN(kw)) {
+			if (!Number.isNaN(kw)) {
 				setValue('powerHp', String(kwToHp(kw)))
 			}
 		}
@@ -52,7 +52,7 @@ function SpecificationSection({
 		const hpValue = hpInput?.value
 		if (hpValue && setValue) {
 			const hp = parseFloat(hpValue)
-			if (!isNaN(hp)) {
+			if (!Number.isNaN(hp)) {
 				setValue('powerKw', String(hpToKw(hp)))
 			}
 		}

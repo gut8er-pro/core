@@ -1,9 +1,9 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+import { getAnthropicClient } from '@/lib/ai/anthropic'
+import { getCachedResult, getCacheKey, setCachedResult } from '@/lib/ai/cache'
+import { fetchImageAsBase64 } from '@/lib/ai/fetch-image'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { aiPhotoRequestSchema } from '@/lib/validations/ai'
-import { getAnthropicClient } from '@/lib/ai/anthropic'
-import { getCacheKey, getCachedResult, setCachedResult } from '@/lib/ai/cache'
-import { fetchImageAsBase64 } from '@/lib/ai/fetch-image'
 
 const EMPTY_OCR_RESULT = {
 	manufacturer: '',
@@ -42,7 +42,10 @@ async function POST(request: NextRequest) {
 
 	if (!process.env.ANTHROPIC_API_KEY) {
 		return NextResponse.json(
-			{ error: 'AI service is not configured. Please set the ANTHROPIC_API_KEY environment variable.' },
+			{
+				error:
+					'AI service is not configured. Please set the ANTHROPIC_API_KEY environment variable.',
+			},
 			{ status: 503 },
 		)
 	}
@@ -56,31 +59,34 @@ async function POST(request: NextRequest) {
 		const message = await client.messages.create({
 			model: 'claude-sonnet-4-5-20250929',
 			max_tokens: 1024,
-			messages: [{
-				role: 'user',
-				content: [
-					{
-						type: 'image',
-						source: {
-							type: 'base64',
-							media_type: imageData.mediaType,
-							data: imageData.base64,
+			messages: [
+				{
+					role: 'user',
+					content: [
+						{
+							type: 'image',
+							source: {
+								type: 'base64',
+								media_type: imageData.mediaType,
+								data: imageData.base64,
+							},
 						},
-					},
-					{
-						type: 'text',
-						text: 'Extract vehicle registration information from this document image. Return the result as a JSON object.',
-					},
-				],
-			}],
-			system: 'Extract vehicle registration information from this German Zulassungsbescheinigung (vehicle registration document). Return a JSON object with these fields: manufacturer, model, vin, licensePlate, firstRegistration (date as YYYY-MM-DD), engineDisplacement (in ccm), power (in kW), fuel (type), mileage. Use empty string for fields that cannot be extracted. Return ONLY the JSON object, no additional text or markdown formatting.',
+						{
+							type: 'text',
+							text: 'Extract vehicle registration information from this document image. Return the result as a JSON object.',
+						},
+					],
+				},
+			],
+			system:
+				'Extract vehicle registration information from this German Zulassungsbescheinigung (vehicle registration document). Return a JSON object with these fields: manufacturer, model, vin, licensePlate, firstRegistration (date as YYYY-MM-DD), engineDisplacement (in ccm), power (in kW), fuel (type), mileage. Use empty string for fields that cannot be extracted. Return ONLY the JSON object, no additional text or markdown formatting.',
 		})
 
 		const textBlock = message.content.find((block) => block.type === 'text')
 		const rawResponse = textBlock ? textBlock.text.trim() : ''
 
 		// Parse the JSON response from Claude
-		let ocrData = { ...EMPTY_OCR_RESULT }
+		const ocrData = { ...EMPTY_OCR_RESULT }
 		if (rawResponse) {
 			try {
 				// Strip markdown code fences if present
@@ -111,10 +117,7 @@ async function POST(request: NextRequest) {
 	} catch (err) {
 		console.error('Claude API error (ocr):', err)
 		const message = err instanceof Error ? err.message : 'Unknown error'
-		return NextResponse.json(
-			{ error: `Document OCR failed: ${message}` },
-			{ status: 500 },
-		)
+		return NextResponse.json({ error: `Document OCR failed: ${message}` }, { status: 500 })
 	}
 }
 

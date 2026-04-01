@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
+import { compressImage, getStoragePath, uploadToStorage } from '@/lib/storage/photos'
+import { MAX_PHOTOS_PER_REPORT, validateFileSize, validateFileType } from '@/lib/validations/photos'
 import { useUploadPhoto } from './use-photos'
-import { compressImage, uploadToStorage, getStoragePath } from '@/lib/storage/photos'
-import { validateFileType, validateFileSize, MAX_PHOTOS_PER_REPORT } from '@/lib/validations/photos'
 
 type UploadState = {
 	isUploading: boolean
@@ -114,5 +114,5 @@ function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
 	}
 }
 
-export { usePhotoUpload }
 export type { UploadState, UsePhotoUploadReturn }
+export { usePhotoUpload }

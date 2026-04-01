@@ -1,8 +1,8 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
-import { exportConfigSchema } from '@/lib/validations/export'
 import { generateReportPdfBuffer } from '@/lib/pdf/generate-buffer'
+import { prisma } from '@/lib/prisma'
+import { exportConfigSchema } from '@/lib/validations/export'
 
 type RouteContext = {
 	params: Promise<{ id: string }>
@@ -19,7 +19,7 @@ async function GET(request: NextRequest, context: RouteContext) {
 	// If ?format=pdf, generate and return the PDF
 	if (format === 'pdf') {
 		try {
-			const result = await generateReportPdfBuffer(id, user!.id)
+			const result = await generateReportPdfBuffer(id, user?.id)
 			if ('error' in result) {
 				return NextResponse.json({ error: result.error }, { status: 404 })
 			}
@@ -32,16 +32,13 @@ async function GET(request: NextRequest, context: RouteContext) {
 			})
 		} catch (pdfError) {
 			console.error('PDF generation failed:', pdfError)
-			return NextResponse.json(
-				{ error: 'Failed to generate PDF' },
-				{ status: 500 },
-			)
+			return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 })
 		}
 	}
 
 	// Default: return export config JSON
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -79,7 +76,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -103,7 +100,8 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	const data = parsed.data
 	const updateData: Record<string, unknown> = {}
 
-	if (data.includeValuation !== undefined) updateData.includeVehicleValuation = data.includeValuation
+	if (data.includeValuation !== undefined)
+		updateData.includeVehicleValuation = data.includeValuation
 	if (data.includeCommission !== undefined) updateData.includeCommission = data.includeCommission
 	if (data.includeInvoice !== undefined) updateData.includeInvoice = data.includeInvoice
 	if (data.lockReport !== undefined) updateData.lockReport = data.lockReport

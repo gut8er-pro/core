@@ -1,11 +1,11 @@
 'use client'
 
+import { Bus, Car, Fuel, Leaf, Plus, Truck, Zap } from 'lucide-react'
 import { useController } from 'react-hook-form'
-import { Car, Truck, Bus, Fuel, Zap, Leaf, Plus } from 'lucide-react'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { IconSelector } from '@/components/ui/icon-selector'
-import { NumberChipSelector } from '@/components/ui/number-chip-selector'
 import { Label } from '@/components/ui/label'
+import { NumberChipSelector } from '@/components/ui/number-chip-selector'
 import type { VehicleSectionProps } from './types'
 
 const VEHICLE_TYPE_OPTIONS = [

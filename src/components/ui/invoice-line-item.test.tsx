@@ -1,13 +1,11 @@
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { InvoiceLineItem, formatEUR } from './invoice-line-item'
+import { render, screen } from '@/test/test-utils'
+import { formatEUR, InvoiceLineItem } from './invoice-line-item'
 
 describe('InvoiceLineItem', () => {
 	it('renders description', () => {
-		render(
-			<InvoiceLineItem description="Basic Fees" rate={124} amount={124} />,
-		)
+		render(<InvoiceLineItem description="Basic Fees" rate={124} amount={124} />)
 		expect(screen.getByText('Basic Fees')).toBeInTheDocument()
 	})
 
@@ -24,48 +22,36 @@ describe('InvoiceLineItem', () => {
 	})
 
 	it('renders formatted amount', () => {
-		render(
-			<InvoiceLineItem description="Basic Fees" rate={124} amount={124} />,
-		)
+		render(<InvoiceLineItem description="Basic Fees" rate={124} amount={124} />)
 		expect(screen.getByLabelText('Amount')).toHaveTextContent('124,00')
 	})
 
 	it('renders lump sum badge', () => {
-		render(
-			<InvoiceLineItem description="Travel" rate={40} amount={40} isLumpSum />,
-		)
+		render(<InvoiceLineItem description="Travel" rate={40} amount={40} isLumpSum />)
 		expect(screen.getByText('Lump Sum')).toBeInTheDocument()
 	})
 
 	it('renders delete button when onDelete provided', () => {
-		render(
-			<InvoiceLineItem description="Test" rate={10} amount={10} onDelete={() => {}} />,
-		)
+		render(<InvoiceLineItem description="Test" rate={10} amount={10} onDelete={() => {}} />)
 		expect(screen.getByLabelText('Delete line item')).toBeInTheDocument()
 	})
 
 	it('calls onDelete when delete clicked', async () => {
 		const user = userEvent.setup()
 		const onDelete = vi.fn()
-		render(
-			<InvoiceLineItem description="Test" rate={10} amount={10} onDelete={onDelete} />,
-		)
+		render(<InvoiceLineItem description="Test" rate={10} amount={10} onDelete={onDelete} />)
 		await user.click(screen.getByLabelText('Delete line item'))
 		expect(onDelete).toHaveBeenCalledOnce()
 	})
 
 	it('renders editable inputs when editable', () => {
-		render(
-			<InvoiceLineItem description="Test" rate={10} amount={10} editable />,
-		)
+		render(<InvoiceLineItem description="Test" rate={10} amount={10} editable />)
 		expect(screen.getByLabelText('Description')).toBeInTheDocument()
 		expect(screen.getByLabelText('Rate')).toBeInTheDocument()
 	})
 
 	it('renders read-only when not editable', () => {
-		render(
-			<InvoiceLineItem description="Test" rate={10} amount={10} />,
-		)
+		render(<InvoiceLineItem description="Test" rate={10} amount={10} />)
 		expect(screen.queryByLabelText('Description')).not.toBeInTheDocument()
 	})
 })

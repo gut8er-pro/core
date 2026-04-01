@@ -1,9 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import {
-	profileSettingsSchema,
-	businessSettingsSchema,
-	settingsUpdateSchema,
-} from './settings'
+import { describe, expect, it } from 'vitest'
+import { businessSettingsSchema, profileSettingsSchema, settingsUpdateSchema } from './settings'
 
 describe('profileSettingsSchema', () => {
 	it('passes with all fields provided', () => {
@@ -44,9 +40,7 @@ describe('profileSettingsSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const firstNameError = result.error.issues.find(
-				(issue) => issue.path[0] === 'firstName',
-			)
+			const firstNameError = result.error.issues.find((issue) => issue.path[0] === 'firstName')
 			expect(firstNameError).toBeDefined()
 			expect(firstNameError?.message).toContain('First name is required')
 		}
@@ -58,9 +52,7 @@ describe('profileSettingsSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const lastNameError = result.error.issues.find(
-				(issue) => issue.path[0] === 'lastName',
-			)
+			const lastNameError = result.error.issues.find((issue) => issue.path[0] === 'lastName')
 			expect(lastNameError).toBeDefined()
 			expect(lastNameError?.message).toContain('Last name is required')
 		}
@@ -118,9 +110,7 @@ describe('businessSettingsSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const companyError = result.error.issues.find(
-				(issue) => issue.path[0] === 'companyName',
-			)
+			const companyError = result.error.issues.find((issue) => issue.path[0] === 'companyName')
 			expect(companyError).toBeDefined()
 			expect(companyError?.message).toContain('Company name is required')
 		}
@@ -139,9 +129,7 @@ describe('businessSettingsSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const streetError = result.error.issues.find(
-				(issue) => issue.path[0] === 'street',
-			)
+			const streetError = result.error.issues.find((issue) => issue.path[0] === 'street')
 			expect(streetError).toBeDefined()
 			expect(streetError?.message).toContain('Street is required')
 		}
@@ -154,9 +142,7 @@ describe('businessSettingsSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const postcodeError = result.error.issues.find(
-				(issue) => issue.path[0] === 'postcode',
-			)
+			const postcodeError = result.error.issues.find((issue) => issue.path[0] === 'postcode')
 			expect(postcodeError).toBeDefined()
 		}
 	})
@@ -176,9 +162,7 @@ describe('businessSettingsSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const postcodeError = result.error.issues.find(
-				(issue) => issue.path[0] === 'postcode',
-			)
+			const postcodeError = result.error.issues.find((issue) => issue.path[0] === 'postcode')
 			expect(postcodeError).toBeDefined()
 			expect(postcodeError?.message).toContain('5 digits')
 		}
@@ -197,9 +181,7 @@ describe('businessSettingsSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const cityError = result.error.issues.find(
-				(issue) => issue.path[0] === 'city',
-			)
+			const cityError = result.error.issues.find((issue) => issue.path[0] === 'city')
 			expect(cityError).toBeDefined()
 			expect(cityError?.message).toContain('City is required')
 		}
@@ -218,9 +200,7 @@ describe('businessSettingsSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const taxIdError = result.error.issues.find(
-				(issue) => issue.path[0] === 'taxId',
-			)
+			const taxIdError = result.error.issues.find((issue) => issue.path[0] === 'taxId')
 			expect(taxIdError).toBeDefined()
 			expect(taxIdError?.message).toContain('Tax ID')
 		}
@@ -233,9 +213,7 @@ describe('businessSettingsSchema', () => {
 		})
 		expect(result.success).toBe(false)
 		if (!result.success) {
-			const vatError = result.error.issues.find(
-				(issue) => issue.path[0] === 'vatId',
-			)
+			const vatError = result.error.issues.find((issue) => issue.path[0] === 'vatId')
 			expect(vatError).toBeDefined()
 			expect(vatError?.message).toContain('DE + 9 digits')
 		}

@@ -1,12 +1,8 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import sharp from 'sharp'
-import { prisma } from '@/lib/prisma'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
-import {
-	uploadBufferToStorage,
-	downloadFromUrl,
-	getStoragePath,
-} from '@/lib/storage/photos-server'
+import { prisma } from '@/lib/prisma'
+import { downloadFromUrl, getStoragePath, uploadBufferToStorage } from '@/lib/storage/photos-server'
 
 type RouteContext = {
 	params: Promise<{ id: string }>
@@ -32,7 +28,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	const { id: reportId } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id: reportId, userId: user!.id },
+		where: { id: reportId, userId: user?.id },
 	})
 
 	if (!report) {
@@ -56,10 +52,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	}
 
 	if (!photoId || typeof photoId !== 'string') {
-		return NextResponse.json(
-			{ error: 'photoId is required and must be a string' },
-			{ status: 400 },
-		)
+		return NextResponse.json({ error: 'photoId is required and must be a string' }, { status: 400 })
 	}
 
 	const photo = await prisma.photo.findFirst({
@@ -106,17 +99,17 @@ async function POST(request: NextRequest, context: RouteContext) {
 	await prisma.photo.update({
 		where: { id: photoId },
 		data: {
-			thumbnailUrl: urls['thumbnail'],
-			previewUrl: urls['preview'],
-			aiUrl: urls['ai'],
+			thumbnailUrl: urls.thumbnail,
+			previewUrl: urls.preview,
+			aiUrl: urls.ai,
 		},
 	})
 
 	return NextResponse.json({
 		photoId,
-		thumbnailUrl: urls['thumbnail'],
-		previewUrl: urls['preview'],
-		aiUrl: urls['ai'],
+		thumbnailUrl: urls.thumbnail,
+		previewUrl: urls.preview,
+		aiUrl: urls.ai,
 	})
 }
 

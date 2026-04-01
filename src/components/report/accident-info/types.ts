@@ -73,9 +73,4 @@ type SignatureSectionProps = {
 	className?: string
 }
 
-export type {
-	AccidentInfoFormData,
-	SectionProps,
-	SignatureData,
-	SignatureSectionProps,
-}
+export type { AccidentInfoFormData, SectionProps, SignatureData, SignatureSectionProps }

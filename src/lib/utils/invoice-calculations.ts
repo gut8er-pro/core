@@ -60,12 +60,12 @@ function lookupBvskRate(repairCost: number): { baseFee: number; additionalFee: n
 	return { baseFee: last.baseFee, additionalFee: last.additionalFee }
 }
 
+export type { BvskRateEntry }
 export {
 	BVSK_RATES,
+	calculateGrossTotal,
 	calculateNetTotal,
 	calculateTax,
-	calculateGrossTotal,
 	generateInvoiceNumber,
 	lookupBvskRate,
 }
-export type { BvskRateEntry }

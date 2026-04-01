@@ -1,10 +1,10 @@
 'use client'
 
-import { useCallback } from 'react'
 import { ChevronDown, TriangleAlert } from 'lucide-react'
+import { useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { BVSK_RATES, lookupBvskRate } from '@/lib/utils/invoice-calculations'
 import { cn } from '@/lib/utils'
+import { BVSK_RATES, lookupBvskRate } from '@/lib/utils/invoice-calculations'
 
 type BvskRateTableProps = {
 	repairCost?: number
@@ -19,11 +19,7 @@ function formatEUR(value: number): string {
 	}).format(value)
 }
 
-function BvskRateTable({
-	repairCost,
-	onApplyRate,
-	className,
-}: BvskRateTableProps) {
+function BvskRateTable({ repairCost, onApplyRate, className }: BvskRateTableProps) {
 	const handleApply = useCallback(() => {
 		if (!repairCost || !onApplyRate) return
 		const rate = lookupBvskRate(repairCost)
@@ -100,5 +96,5 @@ function BvskRateTable({
 	)
 }
 
-export { BvskRateTable }
 export type { BvskRateTableProps }
+export { BvskRateTable }

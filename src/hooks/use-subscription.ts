@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
 type SubscriptionStatus = {
 	plan: 'FREE' | 'PRO'
@@ -68,5 +68,12 @@ function useCreatePortal() {
 	})
 }
 
-export { useSubscription, useCreateCheckout, useCreatePortal, fetchSubscription, createCheckout, createPortal }
 export type { SubscriptionStatus }
+export {
+	createCheckout,
+	createPortal,
+	fetchSubscription,
+	useCreateCheckout,
+	useCreatePortal,
+	useSubscription,
+}

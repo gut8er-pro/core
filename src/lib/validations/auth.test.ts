@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
 	loginSchema,
 	signupAccountSchema,
-	signupPersonalSchema,
 	signupBusinessSchema,
-	signupPlanSchema,
 	signupIntegrationsSchema,
+	signupPersonalSchema,
+	signupPlanSchema,
 } from './auth'
 
 describe('loginSchema', () => {

@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { prisma } from '@/lib/prisma'
 import { updatePhotoSchema } from '@/lib/validations/photos'
 
 type RouteContext = {
@@ -14,7 +14,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 	const { id, photoId } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -40,7 +40,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	const { id, photoId } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -63,7 +63,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 
 	const { annotations, annotatedUrl, ...photoData } = parsed.data
 
-	const photo = await prisma.photo.update({
+	const _photo = await prisma.photo.update({
 		where: { id: photoId },
 		data: {
 			...photoData,
@@ -80,8 +80,12 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 					photoId,
 					type: ann.type,
 					color: ann.color,
-					coordinates: ann.coordinates as Record<string, unknown> as Parameters<typeof prisma.annotation.create>[0]['data']['coordinates'],
-					fabricJson: (ann.fabricJson ?? null) as Parameters<typeof prisma.annotation.create>[0]['data']['fabricJson'],
+					coordinates: ann.coordinates as Record<string, unknown> as Parameters<
+						typeof prisma.annotation.create
+					>[0]['data']['coordinates'],
+					fabricJson: (ann.fabricJson ?? null) as Parameters<
+						typeof prisma.annotation.create
+					>[0]['data']['fabricJson'],
 				},
 			})
 		}
@@ -102,7 +106,7 @@ async function DELETE(_request: NextRequest, context: RouteContext) {
 	const { id, photoId } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -126,4 +130,4 @@ async function DELETE(_request: NextRequest, context: RouteContext) {
 	return NextResponse.json({ success: true })
 }
 
-export { GET, PATCH, DELETE }
+export { DELETE, GET, PATCH }

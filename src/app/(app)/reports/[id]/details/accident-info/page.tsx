@@ -1,22 +1,22 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import { useForm } from 'react-hook-form'
 import { CheckCircle2, Loader2 } from 'lucide-react'
-import { useAccidentInfo, useSaveSignature } from '@/hooks/use-accident-info'
-import { useReport } from '@/hooks/use-reports'
-import { useAutoSave } from '@/hooks/use-auto-save'
-import { Modal } from '@/components/ui/modal'
-import { Button } from '@/components/ui/button'
-import { SignaturePad } from '@/components/signature/signature-pad.dynamic'
+import { useParams } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { AccidentSection } from '@/components/report/accident-info/accident-section'
 import { ClaimantSection } from '@/components/report/accident-info/claimant-section'
-import { OpponentSection } from '@/components/report/accident-info/opponent-section'
-import { VisitSection } from '@/components/report/accident-info/visit-section'
 import { ExpertOpinionSection } from '@/components/report/accident-info/expert-opinion-section'
+import { OpponentSection } from '@/components/report/accident-info/opponent-section'
 import { SignatureSection } from '@/components/report/accident-info/signature-section'
 import type { AccidentInfoFormData } from '@/components/report/accident-info/types'
+import { VisitSection } from '@/components/report/accident-info/visit-section'
+import { SignaturePad } from '@/components/signature/signature-pad.dynamic'
+import { Button } from '@/components/ui/button'
+import { Modal } from '@/components/ui/modal'
+import { useAccidentInfo, useSaveSignature } from '@/hooks/use-accident-info'
+import { useAutoSave } from '@/hooks/use-auto-save'
+import { useReport } from '@/hooks/use-reports'
 
 type SignatureType = 'LAWYER' | 'DATA_PERMISSION' | 'CANCELLATION'
 
@@ -27,7 +27,11 @@ function AccidentInfoPage() {
 	const { data: report } = useReport(reportId)
 	const saveSignature = useSaveSignature(reportId)
 
-	const { saveField, flushNow, state: autoSaveState } = useAutoSave({
+	const {
+		saveField,
+		flushNow,
+		state: autoSaveState,
+	} = useAutoSave({
 		reportId,
 		section: 'accident-info',
 		disabled: report?.isLocked,
@@ -168,7 +172,14 @@ function AccidentInfoPage() {
 				const apiField = field.replace('opponent', '')
 				const key = apiField.charAt(0).toLowerCase() + apiField.slice(1)
 				saveField(`opponentInfo.${key}`, value)
-			} else if (field.startsWith('expert') || field === 'fileNumber' || field === 'caseDate' || field === 'orderWasPlacement' || field === 'issuedDate' || field === 'mediator') {
+			} else if (
+				field.startsWith('expert') ||
+				field === 'fileNumber' ||
+				field === 'caseDate' ||
+				field === 'orderWasPlacement' ||
+				field === 'issuedDate' ||
+				field === 'mediator'
+			) {
 				saveField(`expertOpinion.${field}`, value)
 			} else {
 				saveField(`accidentInfo.${field}`, value)
@@ -283,22 +294,16 @@ function AccidentInfoPage() {
 						>
 							Cancel
 						</Button>
-						<Button
-							variant="primary"
-							onClick={handleSignatureSave}
-							disabled={!signatureValue}
-						>
+						<Button variant="primary" onClick={handleSignatureSave} disabled={!signatureValue}>
 							Save
 						</Button>
 					</>
 				}
 			>
-				<SignaturePad
-					value={signatureValue}
-					onChange={setSignatureValue}
-				/>
+				<SignaturePad value={signatureValue} onChange={setSignatureValue} />
 				<p className="mt-4 text-caption text-grey-100">
-					By signing this document with an electronic signature, I agree that such signature will be extend allowed by local law.
+					By signing this document with an electronic signature, I agree that such signature will be
+					extend allowed by local law.
 				</p>
 			</Modal>
 

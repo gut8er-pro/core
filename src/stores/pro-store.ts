@@ -18,5 +18,5 @@ function useProStatus(): boolean {
 	return useProStore((state) => state.isPro)
 }
 
-export { useProStore, useProStatus }
 export type { ProState }
+export { useProStatus, useProStore }

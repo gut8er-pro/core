@@ -1,18 +1,12 @@
 'use client'
 
 import { formatDistanceToNow } from 'date-fns'
-import {
-	Bell,
-	FileText,
-	Lock,
-	CheckCircle2,
-	CreditCard,
-} from 'lucide-react'
+import { Bell, CheckCircle2, CreditCard, FileText, Lock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
-import { useNotifications } from '@/hooks/use-notifications'
 import type { NotificationEventType } from '@/hooks/use-notifications'
+import { useNotifications } from '@/hooks/use-notifications'
+import { cn } from '@/lib/utils'
 
 const NOTIFICATION_ICON_MAP: Record<
 	NotificationEventType,
@@ -51,14 +45,7 @@ const NOTIFICATION_ICON_MAP: Record<
 }
 
 function NotificationsPage() {
-	const {
-		notifications,
-		unreadCount,
-		markRead,
-		markAllRead,
-		isLoading,
-		error,
-	} = useNotifications()
+	const { notifications, unreadCount, markRead, markAllRead, isLoading, error } = useNotifications()
 
 	if (error) {
 		return (
@@ -73,11 +60,7 @@ function NotificationsPage() {
 
 	return (
 		<div className="mx-auto max-w-2xl">
-			<PageHeader
-				unreadCount={unreadCount}
-				onMarkAllRead={markAllRead}
-				isLoading={isLoading}
-			/>
+			<PageHeader unreadCount={unreadCount} onMarkAllRead={markAllRead} isLoading={isLoading} />
 
 			{isLoading ? (
 				<NotificationsSkeleton />
@@ -86,12 +69,12 @@ function NotificationsPage() {
 			) : (
 				<div className="mt-6 overflow-hidden rounded-xl border border-border bg-white">
 					{notifications.map((notification, index) => {
-						const iconConfig = NOTIFICATION_ICON_MAP[notification.eventType] ?? NOTIFICATION_ICON_MAP.REPORT_CREATED
+						const iconConfig =
+							NOTIFICATION_ICON_MAP[notification.eventType] ?? NOTIFICATION_ICON_MAP.REPORT_CREATED
 						const Icon = iconConfig.icon
-						const relativeTime = formatDistanceToNow(
-							new Date(notification.createdAt),
-							{ addSuffix: true },
-						)
+						const relativeTime = formatDistanceToNow(new Date(notification.createdAt), {
+							addSuffix: true,
+						})
 
 						return (
 							<div
@@ -129,12 +112,8 @@ function NotificationsPage() {
 									>
 										{notification.title}
 									</p>
-									<p className="mt-0.5 text-body-sm text-grey-100">
-										{notification.description}
-									</p>
-									<p className="mt-1 text-caption text-grey-100">
-										{relativeTime}
-									</p>
+									<p className="mt-0.5 text-body-sm text-grey-100">{notification.description}</p>
+									<p className="mt-1 text-caption text-grey-100">{relativeTime}</p>
 								</div>
 
 								{/* Unread indicator */}
@@ -163,9 +142,7 @@ function PageHeader({
 		<div className="flex items-center justify-between">
 			<div className="flex items-center gap-3">
 				<h1 className="text-h2 font-bold text-black">Notifications</h1>
-				{!isLoading && unreadCount > 0 && (
-					<Badge variant="info">{unreadCount}</Badge>
-				)}
+				{!isLoading && unreadCount > 0 && <Badge variant="info">{unreadCount}</Badge>}
 			</div>
 			{!isLoading && unreadCount > 0 && (
 				<button
@@ -186,9 +163,7 @@ function EmptyState() {
 			<div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-grey-25">
 				<Bell className="h-8 w-8 text-grey-50" />
 			</div>
-			<p className="text-body-sm font-medium text-grey-100">
-				No notifications yet
-			</p>
+			<p className="text-body-sm font-medium text-grey-100">No notifications yet</p>
 			<p className="mt-1 text-caption text-grey-100">
 				Notifications will appear here when there is activity on your reports.
 			</p>
@@ -202,10 +177,7 @@ function NotificationsSkeleton() {
 			{Array.from({ length: 5 }).map((_, i) => (
 				<div
 					key={i}
-					className={cn(
-						'flex items-start gap-4 px-5 py-4',
-						i < 4 && 'border-b border-border',
-					)}
+					className={cn('flex items-start gap-4 px-5 py-4', i < 4 && 'border-b border-border')}
 				>
 					<Skeleton variant="circle" className="h-10 w-10" />
 					<div className="flex-1">

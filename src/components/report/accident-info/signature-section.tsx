@@ -1,8 +1,8 @@
 'use client'
 
-import { Scale, Users, Ban, Plus } from 'lucide-react'
-import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { Ban, Scale, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { cn } from '@/lib/utils'
 import type { SignatureSectionProps } from './types'
 
@@ -18,12 +18,13 @@ function SignatureSection({ signatures, onSignatureClick, className }: Signature
 	}
 
 	// Find which signature type is currently active (most recently signed)
-	const activeType = signatures.length > 0
-		? signatures.sort((a, b) => {
-			if (!a.signedAt || !b.signedAt) return 0
-			return new Date(b.signedAt).getTime() - new Date(a.signedAt).getTime()
-		})[0]?.type
-		: null
+	const activeType =
+		signatures.length > 0
+			? signatures.sort((a, b) => {
+					if (!a.signedAt || !b.signedAt) return 0
+					return new Date(b.signedAt).getTime() - new Date(a.signedAt).getTime()
+				})[0]?.type
+			: null
 
 	return (
 		<CollapsibleSection title="Signatures" info defaultOpen className={className}>
@@ -35,7 +36,7 @@ function SignatureSection({ signatures, onSignatureClick, className }: Signature
 				<div className="grid grid-cols-3 gap-4">
 					{SIGNATURE_TYPES.map(({ type, label, icon: Icon }) => {
 						const signature = getSignatureForType(type)
-						const isSigned = signature?.imageUrl !== null && signature?.imageUrl !== undefined
+						const _isSigned = signature?.imageUrl !== null && signature?.imageUrl !== undefined
 						const isActive = activeType === type
 
 						return (
@@ -50,10 +51,7 @@ function SignatureSection({ signatures, onSignatureClick, className }: Signature
 										: 'border-border hover:border-primary/50',
 								)}
 							>
-								<Icon className={cn(
-									'h-8 w-8',
-									isActive ? 'text-primary' : 'text-primary/60',
-								)} />
+								<Icon className={cn('h-8 w-8', isActive ? 'text-primary' : 'text-primary/60')} />
 								<span className="text-body-sm font-medium text-black">{label}</span>
 							</button>
 						)
@@ -61,35 +59,35 @@ function SignatureSection({ signatures, onSignatureClick, className }: Signature
 				</div>
 
 				{/* Show existing signature image if available */}
-				{signatures.filter(s => s.imageUrl).map((sig) => (
-					<div key={sig.id} className="flex flex-col items-center gap-3">
-						<div className="flex w-full items-center justify-center rounded-xl border border-border bg-grey-25 p-6">
-							<img
-								src={sig.imageUrl!}
-								alt="Signature"
-								className="max-h-32 object-contain"
-							/>
+				{signatures
+					.filter((s) => s.imageUrl)
+					.map((sig) => (
+						<div key={sig.id} className="flex flex-col items-center gap-3">
+							<div className="flex w-full items-center justify-center rounded-xl border border-border bg-grey-25 p-6">
+								<img src={sig.imageUrl!} alt="Signature" className="max-h-32 object-contain" />
+							</div>
+							<div className="flex items-center gap-3">
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => {
+										// TODO: implement remove signature
+									}}
+								>
+									Remove
+								</Button>
+								<Button
+									variant="primary"
+									size="sm"
+									onClick={() =>
+										onSignatureClick(sig.type as 'LAWYER' | 'DATA_PERMISSION' | 'CANCELLATION')
+									}
+								>
+									Update Signature
+								</Button>
+							</div>
 						</div>
-						<div className="flex items-center gap-3">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => {
-									// TODO: implement remove signature
-								}}
-							>
-								Remove
-							</Button>
-							<Button
-								variant="primary"
-								size="sm"
-								onClick={() => onSignatureClick(sig.type as 'LAWYER' | 'DATA_PERMISSION' | 'CANCELLATION')}
-							>
-								Update Signature
-							</Button>
-						</div>
-					</div>
-				))}
+					))}
 			</div>
 		</CollapsibleSection>
 	)

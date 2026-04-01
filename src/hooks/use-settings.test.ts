@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetchSettings, saveSettings } from './use-settings'
 
 const mockFetch = vi.fn()
@@ -112,9 +112,7 @@ describe('fetchSettings', () => {
 
 	it('throws on non-ok response', async () => {
 		mockFetch.mockResolvedValueOnce({ ok: false, status: 401 })
-		await expect(fetchSettings()).rejects.toThrow(
-			'Failed to fetch settings',
-		)
+		await expect(fetchSettings()).rejects.toThrow('Failed to fetch settings')
 	})
 })
 
@@ -291,9 +289,9 @@ describe('saveSettings', () => {
 
 	it('throws on non-ok response', async () => {
 		mockFetch.mockResolvedValueOnce({ ok: false, status: 422 })
-		await expect(
-			saveSettings({ profile: { firstName: 'Test' } }),
-		).rejects.toThrow('Failed to save settings')
+		await expect(saveSettings({ profile: { firstName: 'Test' } })).rejects.toThrow(
+			'Failed to save settings',
+		)
 	})
 
 	it('throws on server error', async () => {

@@ -37,12 +37,7 @@ function PhotoCard({
 				className,
 			)}
 		>
-			<img
-				src={src}
-				alt={alt}
-				className="h-full w-full object-cover"
-				loading="lazy"
-			/>
+			<img src={src} alt={alt} className="h-full w-full object-cover" loading="lazy" />
 
 			{watermark && (
 				<div className="pointer-events-none absolute bottom-4 left-4">
@@ -85,5 +80,5 @@ function PhotoCard({
 	)
 }
 
-export { PhotoCard }
 export type { PhotoCardProps }
+export { PhotoCard }

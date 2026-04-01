@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+import { createClient } from '@/lib/supabase/server'
 
 async function GET(request: Request) {
 	const { searchParams, origin } = new URL(request.url)
@@ -24,18 +24,10 @@ async function GET(request: Request) {
 						data: {
 							id: user.id,
 							email: user.email ?? '',
-							firstName:
-								(user.user_metadata?.['full_name'] as string)
-									?.split(' ')[0] ?? null,
+							firstName: (user.user_metadata?.full_name as string)?.split(' ')[0] ?? null,
 							lastName:
-								(user.user_metadata?.['full_name'] as string)
-									?.split(' ')
-									.slice(1)
-									.join(' ') ?? null,
-							avatarUrl:
-								(user.user_metadata?.[
-									'avatar_url'
-								] as string) ?? null,
+								(user.user_metadata?.full_name as string)?.split(' ').slice(1).join(' ') ?? null,
+							avatarUrl: (user.user_metadata?.avatar_url as string) ?? null,
 						},
 					})
 				}

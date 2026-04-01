@@ -1,12 +1,13 @@
 'use client'
 
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { signupBusinessSchema, type SignupBusinessInput } from '@/lib/validations/auth'
+import { type SignupBusinessInput, signupBusinessSchema } from '@/lib/validations/auth'
 import { useSignupStore } from '@/stores/signup-store'
 
-const INPUT_CLS = 'h-[53px] w-full rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-3.5 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none'
+const INPUT_CLS =
+	'h-[53px] w-full rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-3.5 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none'
 const LABEL_CLS = 'text-[16px] font-medium text-black'
 const FIELD_CLS = 'flex flex-col gap-3'
 
@@ -57,8 +58,14 @@ function BusinessStep() {
 					{/* Company name */}
 					<div className={FIELD_CLS}>
 						<label className={LABEL_CLS}>Company name</label>
-						<input {...register('companyName')} placeholder="Mustermann Gutachten GmbH" className={INPUT_CLS} />
-						{errors.companyName && <p className="text-[14px] text-error">{errors.companyName.message}</p>}
+						<input
+							{...register('companyName')}
+							placeholder="Mustermann Gutachten GmbH"
+							className={INPUT_CLS}
+						/>
+						{errors.companyName && (
+							<p className="text-[14px] text-error">{errors.companyName.message}</p>
+						)}
 					</div>
 
 					{/* Street */}
@@ -73,7 +80,9 @@ function BusinessStep() {
 						<div className={`${FIELD_CLS} w-[220px] shrink-0`}>
 							<label className={LABEL_CLS}>Postcode</label>
 							<input {...register('postcode')} placeholder="12345" className={INPUT_CLS} />
-							{errors.postcode && <p className="text-[14px] text-error">{errors.postcode.message}</p>}
+							{errors.postcode && (
+								<p className="text-[14px] text-error">{errors.postcode.message}</p>
+							)}
 						</div>
 						<div className={`${FIELD_CLS} flex-1`}>
 							<label className={LABEL_CLS}>City</label>
@@ -96,7 +105,6 @@ function BusinessStep() {
 						</div>
 					</div>
 				</div>
-
 
 				{/* Generic fallback — catches any field error not shown above */}
 				{Object.keys(errors).length > 0 && (

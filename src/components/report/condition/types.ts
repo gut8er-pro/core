@@ -103,10 +103,10 @@ type ConditionResponse = {
 
 export type {
 	ConditionFormData,
+	ConditionResponse,
 	ConditionSectionProps,
 	DamageMarkerData,
 	PaintMarkerData,
 	TireData,
 	TireSetData,
-	ConditionResponse,
 }

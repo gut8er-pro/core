@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { prisma } from '@/lib/prisma'
 import { settingsUpdateSchema } from '@/lib/validations/settings'
 
 async function GET() {
@@ -8,7 +8,7 @@ async function GET() {
 	if (error) return unauthorizedResponse()
 
 	const dbUser = await prisma.user.findUnique({
-		where: { id: user!.id },
+		where: { id: user?.id },
 		select: {
 			id: true,
 			email: true,
@@ -72,7 +72,7 @@ async function PATCH(request: NextRequest) {
 		// Update profile fields on User model
 		if (profile) {
 			await prisma.user.update({
-				where: { id: user!.id },
+				where: { id: user?.id },
 				data: {
 					title: profile.title,
 					firstName: profile.firstName,
@@ -88,7 +88,7 @@ async function PATCH(request: NextRequest) {
 		// Update or create Business record
 		if (business) {
 			await prisma.business.upsert({
-				where: { userId: user!.id },
+				where: { userId: user?.id },
 				update: {
 					companyName: business.companyName,
 					street: business.street,
@@ -99,7 +99,7 @@ async function PATCH(request: NextRequest) {
 					logoUrl: business.logoUrl,
 				},
 				create: {
-					userId: user!.id,
+					userId: user?.id,
 					companyName: business.companyName,
 					street: business.street,
 					postcode: business.postcode,
@@ -113,18 +113,17 @@ async function PATCH(request: NextRequest) {
 
 		// Update or create Integration record
 		if (integration) {
-			const credentials =
-				integration.username
-					? JSON.stringify({
-							username: integration.username,
-							password: integration.password,
-						})
-					: null
+			const credentials = integration.username
+				? JSON.stringify({
+						username: integration.username,
+						password: integration.password,
+					})
+				: null
 
 			await prisma.integration.upsert({
 				where: {
 					userId_provider: {
-						userId: user!.id,
+						userId: user?.id,
 						provider: integration.provider,
 					},
 				},
@@ -133,7 +132,7 @@ async function PATCH(request: NextRequest) {
 					isActive: integration.isActive,
 				},
 				create: {
-					userId: user!.id,
+					userId: user?.id,
 					provider: integration.provider,
 					encryptedCredentials: credentials,
 					isActive: integration.isActive,
@@ -144,10 +143,10 @@ async function PATCH(request: NextRequest) {
 		// Update logo URL on Business record (standalone, no other fields required)
 		if (logoUrl !== undefined) {
 			await prisma.business.upsert({
-				where: { userId: user!.id },
+				where: { userId: user?.id },
 				update: { logoUrl },
 				create: {
-					userId: user!.id,
+					userId: user?.id,
 					companyName: '',
 					street: '',
 					postcode: '00000',
@@ -160,7 +159,7 @@ async function PATCH(request: NextRequest) {
 
 		// Return updated settings
 		const updatedUser = await prisma.user.findUnique({
-			where: { id: user!.id },
+			where: { id: user?.id },
 			select: {
 				id: true,
 				email: true,
@@ -201,10 +200,7 @@ async function PATCH(request: NextRequest) {
 	} catch (err) {
 		console.error('Settings PATCH error:', err)
 		const message = err instanceof Error ? err.message : 'Internal server error'
-		return NextResponse.json(
-			{ error: message },
-			{ status: 500 },
-		)
+		return NextResponse.json({ error: message }, { status: 500 })
 	}
 }
 

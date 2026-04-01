@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
-import { PhotoViewer } from './photo-viewer'
+import { describe, expect, it, vi } from 'vitest'
 import type { Photo } from '@/hooks/use-photos'
+import { render, screen } from '@/test/test-utils'
+import { PhotoViewer } from './photo-viewer'
 
 const mockPhoto: Photo = {
 	id: 'p1',
@@ -33,13 +33,7 @@ describe('PhotoViewer', () => {
 	})
 
 	it('shows floating action buttons (Annotate, Delete)', () => {
-		render(
-			<PhotoViewer
-				photo={mockPhoto}
-				onAnnotate={vi.fn()}
-				onDelete={vi.fn()}
-			/>,
-		)
+		render(<PhotoViewer photo={mockPhoto} onAnnotate={vi.fn()} onDelete={vi.fn()} />)
 		expect(screen.getByLabelText('Annotate photo')).toBeInTheDocument()
 		expect(screen.getByLabelText('Delete photo')).toBeInTheDocument()
 	})

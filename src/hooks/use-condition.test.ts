@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetchCondition } from './use-condition'
 
 const mockFetch = vi.fn()
@@ -22,9 +22,7 @@ describe('fetchCondition', () => {
 		})
 
 		await fetchCondition('report-123')
-		expect(mockFetch).toHaveBeenCalledWith(
-			'/api/reports/report-123/condition',
-		)
+		expect(mockFetch).toHaveBeenCalledWith('/api/reports/report-123/condition')
 	})
 
 	it('returns parsed JSON on success', async () => {
@@ -71,8 +69,6 @@ describe('fetchCondition', () => {
 
 	it('throws on non-ok response', async () => {
 		mockFetch.mockResolvedValueOnce({ ok: false, status: 500 })
-		await expect(fetchCondition('report-123')).rejects.toThrow(
-			'Failed to fetch condition data',
-		)
+		await expect(fetchCondition('report-123')).rejects.toThrow('Failed to fetch condition data')
 	})
 })

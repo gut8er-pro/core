@@ -1,7 +1,7 @@
 import { Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import type { GenerationStatus } from '@/hooks/use-generate-report'
+import { cn } from '@/lib/utils'
 
 type GenerateProgressProps = {
 	status: GenerationStatus
@@ -34,12 +34,7 @@ function GenerateProgress({ status, onCancel, className }: GenerateProgressProps
 						<span className="truncate text-caption text-grey-100">{status.message}</span>
 					</div>
 				</div>
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={onCancel}
-					aria-label="Cancel generation"
-				>
+				<Button variant="ghost" size="icon" onClick={onCancel} aria-label="Cancel generation">
 					<X className="h-4 w-4" />
 				</Button>
 			</div>
@@ -61,5 +56,5 @@ function GenerateProgress({ status, onCancel, className }: GenerateProgressProps
 	)
 }
 
-export { GenerateProgress }
 export type { GenerateProgressProps }
+export { GenerateProgress }

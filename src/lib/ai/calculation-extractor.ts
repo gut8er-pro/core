@@ -28,9 +28,7 @@ Based on the visible damage, determine:
 
 Return ONLY valid JSON. Use null for fields you cannot determine.`
 
-async function extractCalculationData(
-	images: ImageData[],
-): Promise<CalculationAutoFillResult> {
+async function extractCalculationData(images: ImageData[]): Promise<CalculationAutoFillResult> {
 	const client = getAnthropicClient()
 
 	const imageContent = images.map((img) => ({
@@ -45,13 +43,12 @@ async function extractCalculationData(
 	const message = await client.messages.create({
 		model: 'claude-sonnet-4-5-20250929',
 		max_tokens: 512,
-		messages: [{
-			role: 'user',
-			content: [
-				...imageContent,
-				{ type: 'text', text: CALCULATION_PROMPT },
-			],
-		}],
+		messages: [
+			{
+				role: 'user',
+				content: [...imageContent, { type: 'text', text: CALCULATION_PROMPT }],
+			},
+		],
 	})
 
 	const textBlock = message.content.find((block) => block.type === 'text')
@@ -84,10 +81,14 @@ function parseCalculationResponse(rawResponse: string): CalculationAutoFillResul
 			repairMethod: typeof parsed.repairMethod === 'string' ? parsed.repairMethod : null,
 			risks: typeof parsed.risks === 'string' ? parsed.risks : null,
 			wheelAlignment: typeof parsed.wheelAlignment === 'string' ? parsed.wheelAlignment : null,
-			bodyMeasurements: typeof parsed.bodyMeasurements === 'string' ? parsed.bodyMeasurements : null,
+			bodyMeasurements:
+				typeof parsed.bodyMeasurements === 'string' ? parsed.bodyMeasurements : null,
 			bodyPaint: typeof parsed.bodyPaint === 'string' ? parsed.bodyPaint : null,
 			plasticRepair: typeof parsed.plasticRepair === 'boolean' ? parsed.plasticRepair : null,
-			estimatedRepairDays: typeof parsed.estimatedRepairDays === 'number' ? Math.round(parsed.estimatedRepairDays) : null,
+			estimatedRepairDays:
+				typeof parsed.estimatedRepairDays === 'number'
+					? Math.round(parsed.estimatedRepairDays)
+					: null,
 		}
 	} catch {
 		console.error('Failed to parse calculation response:', rawResponse)
@@ -95,5 +96,5 @@ function parseCalculationResponse(rawResponse: string): CalculationAutoFillResul
 	}
 }
 
-export { extractCalculationData }
 export type { CalculationAutoFillResult }
+export { extractCalculationData }

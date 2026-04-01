@@ -1,5 +1,5 @@
 import * as ProgressPrimitive from '@radix-ui/react-progress'
-import { forwardRef, type ComponentPropsWithoutRef, type ElementRef } from 'react'
+import { type ComponentPropsWithoutRef, type ElementRef, forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 
 const Progress = forwardRef<

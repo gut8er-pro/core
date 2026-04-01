@@ -1,11 +1,11 @@
 // POST /api/reports/:id/calculation/auto-fill
 // Analyzes damage photos and returns calculation-relevant auto-fill data.
 
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
-import { fetchImageAsBase64 } from '@/lib/ai/fetch-image'
+import { type NextRequest, NextResponse } from 'next/server'
 import { extractCalculationData } from '@/lib/ai/calculation-extractor'
+import { fetchImageAsBase64 } from '@/lib/ai/fetch-image'
+import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { prisma } from '@/lib/prisma'
 
 type RouteContext = {
 	params: Promise<{ id: string }>
@@ -18,7 +18,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	const { id: reportId } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id: reportId, userId: user!.id },
+		where: { id: reportId, userId: user?.id },
 	})
 
 	if (!report) {
@@ -29,7 +29,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 		return NextResponse.json({ error: 'AI service is not configured' }, { status: 503 })
 	}
 
-	const body = await request.json() as { photoIds?: string[] }
+	const body = (await request.json()) as { photoIds?: string[] }
 	const photoIds = body.photoIds
 
 	// If no photo IDs provided, use all damage-type photos
@@ -59,9 +59,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 
 	try {
 		// Fetch images as base64
-		const images = await Promise.all(
-			photos.map((p) => fetchImageAsBase64(p.aiUrl || p.url)),
-		)
+		const images = await Promise.all(photos.map((p) => fetchImageAsBase64(p.aiUrl || p.url)))
 
 		// Extract calculation data
 		const result = await extractCalculationData(images)

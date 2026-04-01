@@ -22,12 +22,16 @@ const updatePhotoSchema = z.object({
 	annotatedUrl: z.string().url().nullable().optional(),
 	order: z.number().int().min(0).optional(),
 	type: z.enum(['VEHICLE_DIAGONAL', 'DAMAGE_OVERVIEW', 'DOCUMENT', 'OTHER']).optional(),
-	annotations: z.array(z.object({
-		type: z.string().min(1),
-		color: z.string().min(1),
-		coordinates: z.record(z.string(), z.unknown()),
-		fabricJson: z.record(z.string(), z.unknown()).optional(),
-	})).optional(),
+	annotations: z
+		.array(
+			z.object({
+				type: z.string().min(1),
+				color: z.string().min(1),
+				coordinates: z.record(z.string(), z.unknown()),
+				fabricJson: z.record(z.string(), z.unknown()).optional(),
+			}),
+		)
+		.optional(),
 })
 
 const saveAnnotationSchema = z.object({
@@ -50,15 +54,15 @@ type CreatePhotoInput = z.infer<typeof createPhotoSchema>
 type UpdatePhotoInput = z.infer<typeof updatePhotoSchema>
 type SaveAnnotationInput = z.infer<typeof saveAnnotationSchema>
 
+export type { CreatePhotoInput, SaveAnnotationInput, UpdatePhotoInput, UploadPhotoInput }
 export {
-	uploadPhotoSchema,
-	createPhotoSchema,
-	updatePhotoSchema,
-	saveAnnotationSchema,
-	validateFileType,
-	validateFileSize,
-	MAX_PHOTOS_PER_REPORT,
 	ALLOWED_TYPES,
+	createPhotoSchema,
 	MAX_FILE_SIZE,
+	MAX_PHOTOS_PER_REPORT,
+	saveAnnotationSchema,
+	updatePhotoSchema,
+	uploadPhotoSchema,
+	validateFileSize,
+	validateFileType,
 }
-export type { UploadPhotoInput, CreatePhotoInput, UpdatePhotoInput, SaveAnnotationInput }

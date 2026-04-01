@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetchCalculation } from './use-calculation'
 
 const mockFetch = vi.fn()
@@ -20,9 +20,7 @@ describe('fetchCalculation', () => {
 		})
 
 		await fetchCalculation('report-123')
-		expect(mockFetch).toHaveBeenCalledWith(
-			'/api/reports/report-123/calculation',
-		)
+		expect(mockFetch).toHaveBeenCalledWith('/api/reports/report-123/calculation')
 	})
 
 	it('returns parsed JSON on success', async () => {
@@ -89,9 +87,7 @@ describe('fetchCalculation', () => {
 
 	it('throws on non-ok response', async () => {
 		mockFetch.mockResolvedValueOnce({ ok: false, status: 500 })
-		await expect(fetchCalculation('report-123')).rejects.toThrow(
-			'Failed to fetch calculation data',
-		)
+		await expect(fetchCalculation('report-123')).rejects.toThrow('Failed to fetch calculation data')
 	})
 
 	it('returns multiple additional costs', async () => {

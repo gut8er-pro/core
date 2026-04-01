@@ -1,8 +1,4 @@
-import {
-	useQuery,
-	useMutation,
-	useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 type Annotation = {
 	id: string
@@ -40,7 +36,13 @@ async function fetchPhotos(reportId: string): Promise<{ photos: Photo[] }> {
 
 async function uploadPhoto(
 	reportId: string,
-	data: { url: string; thumbnailUrl?: string; previewUrl?: string; filename: string; type?: string },
+	data: {
+		url: string
+		thumbnailUrl?: string
+		previewUrl?: string
+		filename: string
+		type?: string
+	},
 ): Promise<{ photo: Photo }> {
 	const response = await fetch(`/api/reports/${reportId}/photos`, {
 		method: 'POST',
@@ -76,8 +78,13 @@ function usePhotos(reportId: string) {
 function useUploadPhoto(reportId: string) {
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationFn: (data: { url: string; thumbnailUrl?: string; previewUrl?: string; filename: string; type?: string }) =>
-			uploadPhoto(reportId, data),
+		mutationFn: (data: {
+			url: string
+			thumbnailUrl?: string
+			previewUrl?: string
+			filename: string
+			type?: string
+		}) => uploadPhoto(reportId, data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['report', reportId, 'photos'] })
 		},
@@ -94,5 +101,5 @@ function useDeletePhoto(reportId: string) {
 	})
 }
 
-export { usePhotos, useUploadPhoto, useDeletePhoto, fetchPhotos }
-export type { Photo, Annotation }
+export type { Annotation, Photo }
+export { fetchPhotos, useDeletePhoto, usePhotos, useUploadPhoto }

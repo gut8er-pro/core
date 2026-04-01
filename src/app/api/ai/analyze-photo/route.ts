@@ -1,9 +1,9 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+import { getAnthropicClient } from '@/lib/ai/anthropic'
+import { getCachedResult, getCacheKey, setCachedResult } from '@/lib/ai/cache'
+import { fetchImageAsBase64 } from '@/lib/ai/fetch-image'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { aiPhotoRequestSchema } from '@/lib/validations/ai'
-import { getAnthropicClient } from '@/lib/ai/anthropic'
-import { getCacheKey, getCachedResult, setCachedResult } from '@/lib/ai/cache'
-import { fetchImageAsBase64 } from '@/lib/ai/fetch-image'
 
 async function POST(request: NextRequest) {
 	const { error } = await getAuthenticatedUser()
@@ -28,7 +28,10 @@ async function POST(request: NextRequest) {
 
 	if (!process.env.ANTHROPIC_API_KEY) {
 		return NextResponse.json(
-			{ error: 'AI service is not configured. Please set the ANTHROPIC_API_KEY environment variable.' },
+			{
+				error:
+					'AI service is not configured. Please set the ANTHROPIC_API_KEY environment variable.',
+			},
 			{ status: 503 },
 		)
 	}
@@ -42,24 +45,27 @@ async function POST(request: NextRequest) {
 		const message = await client.messages.create({
 			model: 'claude-sonnet-4-5-20250929',
 			max_tokens: 1024,
-			messages: [{
-				role: 'user',
-				content: [
-					{
-						type: 'image',
-						source: {
-							type: 'base64',
-							media_type: imageData.mediaType,
-							data: imageData.base64,
+			messages: [
+				{
+					role: 'user',
+					content: [
+						{
+							type: 'image',
+							source: {
+								type: 'base64',
+								media_type: imageData.mediaType,
+								data: imageData.base64,
+							},
 						},
-					},
-					{
-						type: 'text',
-						text: 'Analyze this vehicle photo and provide a detailed description of any visible damage.',
-					},
-				],
-			}],
-			system: 'You are a professional vehicle damage assessor. Analyze this vehicle photo and provide a detailed description of any visible damage. Include: damage location, severity (minor/moderate/severe), type of damage (dent, scratch, crack, deformation), affected parts, and estimated repair approach. Respond in a structured format.',
+						{
+							type: 'text',
+							text: 'Analyze this vehicle photo and provide a detailed description of any visible damage.',
+						},
+					],
+				},
+			],
+			system:
+				'You are a professional vehicle damage assessor. Analyze this vehicle photo and provide a detailed description of any visible damage. Include: damage location, severity (minor/moderate/severe), type of damage (dent, scratch, crack, deformation), affected parts, and estimated repair approach. Respond in a structured format.',
 		})
 
 		const textBlock = message.content.find((block) => block.type === 'text')
@@ -72,10 +78,7 @@ async function POST(request: NextRequest) {
 	} catch (err) {
 		console.error('Claude API error (analyze-photo):', err)
 		const message = err instanceof Error ? err.message : 'Unknown error'
-		return NextResponse.json(
-			{ error: `AI analysis failed: ${message}` },
-			{ status: 500 },
-		)
+		return NextResponse.json({ error: `AI analysis failed: ${message}` }, { status: 500 })
 	}
 }
 

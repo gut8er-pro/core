@@ -1,15 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect, type ReactNode, Fragment } from 'react'
-import {
-	Paintbrush,
-	Crop,
-	Circle,
-	Square,
-	ArrowBigRight,
-	Trash2,
-	Check,
-} from 'lucide-react'
+import { ArrowBigRight, Check, Circle, Crop, Paintbrush, Square, Trash2 } from 'lucide-react'
+import { Fragment, type ReactNode, useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 type AnnotationTool = 'pen' | 'crop' | 'circle' | 'rectangle' | 'arrow'
@@ -34,11 +26,23 @@ const TOOLS: { id: AnnotationTool; label: string; icon: ReactNode }[] = [
 
 const COLOR_PALETTE = [
 	// Row 1
-	'#FF0000', '#FF6B35', '#FFD700', '#16A34A', '#22C55E',
+	'#FF0000',
+	'#FF6B35',
+	'#FFD700',
+	'#16A34A',
+	'#22C55E',
 	// Row 2
-	'#06B6D4', '#0891B2', '#3B82F6', '#6366F1', '#8B5CF6',
+	'#06B6D4',
+	'#0891B2',
+	'#3B82F6',
+	'#6366F1',
+	'#8B5CF6',
 	// Row 3
-	'#D946EF', '#EC4899', '#D2A679', '#FFFFFF', '#000000',
+	'#D946EF',
+	'#EC4899',
+	'#D2A679',
+	'#FFFFFF',
+	'#000000',
 ] as const
 
 function AnnotationToolbar({
@@ -85,9 +89,7 @@ function AnnotationToolbar({
 								}}
 								className={cn(
 									'h-7 w-7 cursor-pointer rounded-full border-2 transition-transform hover:scale-110',
-									activeColor === color
-										? 'border-primary scale-110'
-										: 'border-transparent',
+									activeColor === color ? 'border-primary scale-110' : 'border-transparent',
 									color === '#FFFFFF' && activeColor !== color && 'border-grey-50',
 								)}
 								style={{ backgroundColor: color }}
@@ -104,9 +106,7 @@ function AnnotationToolbar({
 				{TOOLS.map((tool, index) => (
 					<Fragment key={tool.id}>
 						{/* Divider before each tool except the first */}
-						{index > 0 && (
-							<div className="mx-0.5 h-6 w-px bg-border" />
-						)}
+						{index > 0 && <div className="mx-0.5 h-6 w-px bg-border" />}
 						<button
 							type="button"
 							aria-label={tool.label}
@@ -164,5 +164,5 @@ function AnnotationToolbar({
 	)
 }
 
+export type { AnnotationTool, AnnotationToolbarProps }
 export { AnnotationToolbar, COLOR_PALETTE, TOOLS }
-export type { AnnotationToolbarProps, AnnotationTool }

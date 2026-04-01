@@ -1,4 +1,4 @@
-import { Info, Calendar, ChevronDown } from 'lucide-react'
+import { Calendar, ChevronDown, Info } from 'lucide-react'
 import { Controller } from 'react-hook-form'
 import { cn } from '@/lib/utils'
 import type { CalculationSectionProps } from './types'
@@ -22,7 +22,13 @@ const DATA_SOURCE_OPTIONS = [
 	{ value: 'dat', label: 'DAT' },
 ]
 
-function ValuationSection({ register, control, errors, onFieldBlur, className }: CalculationSectionProps) {
+function ValuationSection({
+	register,
+	control,
+	errors,
+	onFieldBlur,
+	className,
+}: CalculationSectionProps) {
 	return (
 		<div className={cn('grid grid-cols-1 gap-5 lg:grid-cols-2', className)}>
 			{/* Left — DAT Valuation */}
@@ -56,7 +62,9 @@ function ValuationSection({ register, control, errors, onFieldBlur, className }:
 									>
 										<option value="">Select condition</option>
 										{CONDITION_OPTIONS.map((o) => (
-											<option key={o.value} value={o.value}>{o.label}</option>
+											<option key={o.value} value={o.value}>
+												{o.label}
+											</option>
 										))}
 									</select>
 								)}
@@ -138,7 +146,9 @@ function ValuationSection({ register, control, errors, onFieldBlur, className }:
 								>
 									<option value="">Select source</option>
 									{DATA_SOURCE_OPTIONS.map((o) => (
-										<option key={o.value} value={o.value}>{o.label}</option>
+										<option key={o.value} value={o.value}>
+											{o.label}
+										</option>
 									))}
 								</select>
 							)}

@@ -34,13 +34,7 @@ function CarBrandLogo({ make, className }: CarBrandLogoProps) {
 					className,
 				)}
 			>
-				<Image
-					src={logoPath}
-					alt={make}
-					width={21}
-					height={21}
-					className="object-contain"
-				/>
+				<Image src={logoPath} alt={make} width={21} height={21} className="object-contain" />
 			</div>
 		)
 	}
@@ -53,12 +47,10 @@ function CarBrandLogo({ make, className }: CarBrandLogoProps) {
 				className,
 			)}
 		>
-			<span className="text-[10px] font-bold text-grey-100">
-				{make.charAt(0).toUpperCase()}
-			</span>
+			<span className="text-[10px] font-bold text-grey-100">{make.charAt(0).toUpperCase()}</span>
 		</div>
 	)
 }
 
-export { CarBrandLogo }
 export type { CarBrandLogoProps }
+export { CarBrandLogo }

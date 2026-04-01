@@ -51,4 +51,4 @@ function StripeProvider({ children }: { children: React.ReactNode }) {
 	return <>{children}</>
 }
 
-export { StripeProvider, getStripePublishableKey }
+export { getStripePublishableKey, StripeProvider }

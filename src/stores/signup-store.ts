@@ -2,10 +2,10 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type {
 	SignupAccountInput,
-	SignupPersonalInput,
 	SignupBusinessInput,
-	SignupPlanInput,
 	SignupIntegrationsInput,
+	SignupPersonalInput,
+	SignupPlanInput,
 } from '@/lib/validations/auth'
 
 type SignupState = {
@@ -63,5 +63,5 @@ const useSignupStore = create<SignupState>()(
 	),
 )
 
-export { useSignupStore }
 export type { SignupState }
+export { useSignupStore }

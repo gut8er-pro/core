@@ -22,5 +22,5 @@ function useStats() {
 	})
 }
 
-export { useStats }
 export type { StatsData }
+export { useStats }

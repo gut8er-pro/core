@@ -4,11 +4,7 @@ const STORAGE_BUCKET = 'photos'
 
 type StorageVariant = 'original' | 'thumbnail' | 'preview' | 'ai' | 'annotated'
 
-function getStoragePath(
-	reportId: string,
-	photoId: string,
-	variant: StorageVariant,
-): string {
+function getStoragePath(reportId: string, photoId: string, variant: StorageVariant): string {
 	return `reports/${reportId}/photos/${photoId}/${variant}.jpg`
 }
 
@@ -68,20 +64,16 @@ async function compressImage(
 async function uploadToStorage(file: File | Blob, path: string): Promise<string> {
 	const supabase = createClient()
 
-	const { error } = await supabase.storage
-		.from(STORAGE_BUCKET)
-		.upload(path, file, {
-			contentType: 'image/jpeg',
-			upsert: true,
-		})
+	const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, file, {
+		contentType: 'image/jpeg',
+		upsert: true,
+	})
 
 	if (error) {
 		throw new Error(`Failed to upload file: ${error.message}`)
 	}
 
-	const { data: urlData } = supabase.storage
-		.from(STORAGE_BUCKET)
-		.getPublicUrl(path)
+	const { data: urlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path)
 
 	return urlData.publicUrl
 }
@@ -89,20 +81,12 @@ async function uploadToStorage(file: File | Blob, path: string): Promise<string>
 async function deleteFromStorage(path: string): Promise<void> {
 	const supabase = createClient()
 
-	const { error } = await supabase.storage
-		.from(STORAGE_BUCKET)
-		.remove([path])
+	const { error } = await supabase.storage.from(STORAGE_BUCKET).remove([path])
 
 	if (error) {
 		throw new Error(`Failed to delete file: ${error.message}`)
 	}
 }
 
-export {
-	getStoragePath,
-	compressImage,
-	uploadToStorage,
-	deleteFromStorage,
-	STORAGE_BUCKET,
-}
 export type { StorageVariant }
+export { compressImage, deleteFromStorage, getStoragePath, STORAGE_BUCKET, uploadToStorage }

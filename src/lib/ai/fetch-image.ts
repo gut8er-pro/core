@@ -27,5 +27,5 @@ async function fetchImageAsBase64(url: string): Promise<ImageData> {
 	return { base64, mediaType }
 }
 
-export { fetchImageAsBase64 }
 export type { ImageData }
+export { fetchImageAsBase64 }

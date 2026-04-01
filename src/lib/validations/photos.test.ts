@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
-	uploadPhotoSchema,
-	updatePhotoSchema,
-	saveAnnotationSchema,
-	validateFileType,
-	validateFileSize,
-	MAX_PHOTOS_PER_REPORT,
 	ALLOWED_TYPES,
 	MAX_FILE_SIZE,
+	MAX_PHOTOS_PER_REPORT,
+	saveAnnotationSchema,
+	updatePhotoSchema,
+	uploadPhotoSchema,
+	validateFileSize,
+	validateFileType,
 } from './photos'
 
 describe('uploadPhotoSchema', () => {

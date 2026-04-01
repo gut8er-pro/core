@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
 import { Plus } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { TireSetData, TireData } from './types'
+import type { TireData, TireSetData } from './types'
 
 const TIRE_POSITIONS = [
 	{ key: 'VL', label: 'VL' },
@@ -37,12 +36,7 @@ type TireSectionProps = {
 	className?: string
 }
 
-function TireSection({
-	tireSets,
-	onSaveTireSet,
-	onDeleteTireSet,
-	className,
-}: TireSectionProps) {
+function TireSection({ tireSets, onSaveTireSet, onDeleteTireSet, className }: TireSectionProps) {
 	const [activeSetIndex, setActiveSetIndex] = useState(0)
 	const [activePosition, setActivePosition] = useState<string>('VL')
 	const autoCreated = useRef(false)
@@ -176,9 +170,7 @@ function TireSection({
 									<div className="flex items-center justify-between">
 										<div className="flex items-center gap-3">
 											<TireIcon className="h-6 w-6 text-black" />
-											<span className="text-body-sm text-black">
-												Tires Usability
-											</span>
+											<span className="text-body-sm text-black">Tires Usability</span>
 										</div>
 										<div className="flex items-center gap-3">
 											{[1, 2, 3, 4, 5].map((level) => (
@@ -287,12 +279,7 @@ function TireIcon({ className }: { className?: string }) {
  */
 function TireWheelIcon({ className, filled }: { className?: string; filled?: boolean }) {
 	return (
-		<svg
-			viewBox="0 0 32 32"
-			fill="none"
-			xmlns="http://www.w3.org/2000/svg"
-			className={className}
-		>
+		<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
 			{/* Outer tire */}
 			<circle
 				cx="16"
@@ -312,25 +299,84 @@ function TireWheelIcon({ className, filled }: { className?: string; filled?: boo
 				fill="none"
 			/>
 			{/* Hub */}
-			<circle
-				cx="16"
-				cy="16"
-				r="3.5"
-				fill={filled ? '#019447' : '#d1d5db'}
-			/>
+			<circle cx="16" cy="16" r="3.5" fill={filled ? '#019447' : '#d1d5db'} />
 			{/* Spokes */}
-			<line x1="16" y1="7" x2="16" y2="2" stroke={filled ? '#019447' : '#919191'} strokeWidth="2" strokeLinecap="round" />
-			<line x1="16" y1="30" x2="16" y2="25" stroke={filled ? '#019447' : '#919191'} strokeWidth="2" strokeLinecap="round" />
-			<line x1="2" y1="16" x2="7" y2="16" stroke={filled ? '#019447' : '#919191'} strokeWidth="2" strokeLinecap="round" />
-			<line x1="25" y1="16" x2="30" y2="16" stroke={filled ? '#019447' : '#919191'} strokeWidth="2" strokeLinecap="round" />
+			<line
+				x1="16"
+				y1="7"
+				x2="16"
+				y2="2"
+				stroke={filled ? '#019447' : '#919191'}
+				strokeWidth="2"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="16"
+				y1="30"
+				x2="16"
+				y2="25"
+				stroke={filled ? '#019447' : '#919191'}
+				strokeWidth="2"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="2"
+				y1="16"
+				x2="7"
+				y2="16"
+				stroke={filled ? '#019447' : '#919191'}
+				strokeWidth="2"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="25"
+				y1="16"
+				x2="30"
+				y2="16"
+				stroke={filled ? '#019447' : '#919191'}
+				strokeWidth="2"
+				strokeLinecap="round"
+			/>
 			{/* Diagonal spokes */}
-			<line x1="6.1" y1="6.1" x2="9.6" y2="9.6" stroke={filled ? '#019447' : '#919191'} strokeWidth="1.5" strokeLinecap="round" />
-			<line x1="22.4" y1="22.4" x2="25.9" y2="25.9" stroke={filled ? '#019447' : '#919191'} strokeWidth="1.5" strokeLinecap="round" />
-			<line x1="25.9" y1="6.1" x2="22.4" y2="9.6" stroke={filled ? '#019447' : '#919191'} strokeWidth="1.5" strokeLinecap="round" />
-			<line x1="9.6" y1="22.4" x2="6.1" y2="25.9" stroke={filled ? '#019447' : '#919191'} strokeWidth="1.5" strokeLinecap="round" />
+			<line
+				x1="6.1"
+				y1="6.1"
+				x2="9.6"
+				y2="9.6"
+				stroke={filled ? '#019447' : '#919191'}
+				strokeWidth="1.5"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="22.4"
+				y1="22.4"
+				x2="25.9"
+				y2="25.9"
+				stroke={filled ? '#019447' : '#919191'}
+				strokeWidth="1.5"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="25.9"
+				y1="6.1"
+				x2="22.4"
+				y2="9.6"
+				stroke={filled ? '#019447' : '#919191'}
+				strokeWidth="1.5"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="9.6"
+				y1="22.4"
+				x2="6.1"
+				y2="25.9"
+				stroke={filled ? '#019447' : '#919191'}
+				strokeWidth="1.5"
+				strokeLinecap="round"
+			/>
 		</svg>
 	)
 }
 
-export { TireSection }
 export type { TireSectionProps }
+export { TireSection }

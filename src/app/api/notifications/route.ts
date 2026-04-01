@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { prisma } from '@/lib/prisma'
 
 async function GET(request: NextRequest) {
 	const { user, error } = await getAuthenticatedUser()
@@ -10,7 +10,7 @@ async function GET(request: NextRequest) {
 	const limit = Math.min(Number(searchParams.get('limit') ?? '50'), 100)
 
 	const notifications = await prisma.notification.findMany({
-		where: { userId: user!.id },
+		where: { userId: user?.id },
 		orderBy: { createdAt: 'desc' },
 		take: limit,
 		select: {
@@ -25,7 +25,7 @@ async function GET(request: NextRequest) {
 	})
 
 	const unreadCount = await prisma.notification.count({
-		where: { userId: user!.id, isRead: false },
+		where: { userId: user?.id, isRead: false },
 	})
 
 	return NextResponse.json({ notifications, unreadCount })
@@ -36,7 +36,7 @@ async function PATCH() {
 	if (error) return unauthorizedResponse()
 
 	await prisma.notification.updateMany({
-		where: { userId: user!.id, isRead: false },
+		where: { userId: user?.id, isRead: false },
 		data: { isRead: true },
 	})
 

@@ -1,9 +1,9 @@
 // Photo classifier — categorizes each photo into one of 8 types using Haiku 4.5.
 
 import { getAnthropicClient } from './anthropic'
-import { getCacheKey, getCachedResult, setCachedResult } from './cache'
-import type { ClassificationResult, PhotoClassificationType, VehiclePosition } from './types'
+import { getCachedResult, getCacheKey, setCachedResult } from './cache'
 import type { ImageData } from './fetch-image'
+import type { ClassificationResult, PhotoClassificationType, VehiclePosition } from './types'
 
 const CLASSIFICATION_PROMPT = `You are a vehicle assessment photo classifier. Classify this photo into exactly one category.
 
@@ -27,19 +27,37 @@ Also determine:
 Return ONLY valid JSON: {"type":"...","position":"...","suggestedOrder":N,"confidence":0.X,"damageLocation":"...or null"}`
 
 const VALID_TYPES: PhotoClassificationType[] = [
-	'damage', 'vin', 'plate', 'document', 'overview', 'tire', 'interior', 'other',
+	'damage',
+	'vin',
+	'plate',
+	'document',
+	'overview',
+	'tire',
+	'interior',
+	'other',
 ]
 
 const VALID_POSITIONS: VehiclePosition[] = [
-	'front-left', 'front', 'front-right', 'left', 'right',
-	'rear-left', 'rear', 'rear-right', 'top', 'interior', 'engine',
-	'wheel-fl', 'wheel-fr', 'wheel-rl', 'wheel-rr', 'undercarriage', 'other',
+	'front-left',
+	'front',
+	'front-right',
+	'left',
+	'right',
+	'rear-left',
+	'rear',
+	'rear-right',
+	'top',
+	'interior',
+	'engine',
+	'wheel-fl',
+	'wheel-fr',
+	'wheel-rl',
+	'wheel-rr',
+	'undercarriage',
+	'other',
 ]
 
-async function classifyPhoto(
-	photoId: string,
-	imageData: ImageData,
-): Promise<ClassificationResult> {
+async function classifyPhoto(photoId: string, imageData: ImageData): Promise<ClassificationResult> {
 	const cacheKey = getCacheKey(photoId, 'classify')
 	const cached = getCachedResult<ClassificationResult>(cacheKey)
 	if (cached) return cached
@@ -49,20 +67,22 @@ async function classifyPhoto(
 	const message = await client.messages.create({
 		model: 'claude-haiku-4-5-20251001',
 		max_tokens: 256,
-		messages: [{
-			role: 'user',
-			content: [
-				{
-					type: 'image',
-					source: {
-						type: 'base64',
-						media_type: imageData.mediaType,
-						data: imageData.base64,
+		messages: [
+			{
+				role: 'user',
+				content: [
+					{
+						type: 'image',
+						source: {
+							type: 'base64',
+							media_type: imageData.mediaType,
+							data: imageData.base64,
+						},
 					},
-				},
-				{ type: 'text', text: CLASSIFICATION_PROMPT },
-			],
-		}],
+					{ type: 'text', text: CLASSIFICATION_PROMPT },
+				],
+			},
+		],
 	})
 
 	const textBlock = message.content.find((block) => block.type === 'text')
@@ -73,10 +93,7 @@ async function classifyPhoto(
 	return result
 }
 
-function parseClassificationResponse(
-	photoId: string,
-	rawResponse: string,
-): ClassificationResult {
+function parseClassificationResponse(photoId: string, rawResponse: string): ClassificationResult {
 	const fallback: ClassificationResult = {
 		photoId,
 		type: 'other',
@@ -101,17 +118,16 @@ function parseClassificationResponse(
 			? (parsed.position as VehiclePosition)
 			: 'other'
 
-		const suggestedOrder = typeof parsed.suggestedOrder === 'number'
-			? Math.min(20, Math.max(1, Math.round(parsed.suggestedOrder)))
-			: 20
+		const suggestedOrder =
+			typeof parsed.suggestedOrder === 'number'
+				? Math.min(20, Math.max(1, Math.round(parsed.suggestedOrder)))
+				: 20
 
-		const confidence = typeof parsed.confidence === 'number'
-			? Math.min(1, Math.max(0, parsed.confidence))
-			: 0.5
+		const confidence =
+			typeof parsed.confidence === 'number' ? Math.min(1, Math.max(0, parsed.confidence)) : 0.5
 
-		const damageLocation = type === 'damage' && typeof parsed.damageLocation === 'string'
-			? parsed.damageLocation
-			: null
+		const damageLocation =
+			type === 'damage' && typeof parsed.damageLocation === 'string' ? parsed.damageLocation : null
 
 		return { photoId, type, confidence, position, suggestedOrder, damageLocation }
 	} catch {

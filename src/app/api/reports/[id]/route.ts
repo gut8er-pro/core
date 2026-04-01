@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { prisma } from '@/lib/prisma'
 import { updateReportSchema } from '@/lib/validations/reports'
 
 type RouteContext = {
@@ -14,7 +14,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 		include: {
 			_count: { select: { photos: true } },
 		},
@@ -34,7 +34,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const existing = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!existing) {
@@ -64,7 +64,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	if (parsed.data.status === 'COMPLETED' && existing.status !== 'COMPLETED') {
 		const { createNotification } = await import('@/lib/notifications/create')
 		await createNotification({
-			userId: user!.id,
+			userId: user?.id,
 			eventType: 'REPORT_COMPLETED',
 			title: 'Report Completed',
 			description: `Report "${report.title}" has been marked as completed.`,
@@ -82,7 +82,7 @@ async function DELETE(_request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const existing = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!existing) {
@@ -94,4 +94,4 @@ async function DELETE(_request: NextRequest, context: RouteContext) {
 	return NextResponse.json({ success: true })
 }
 
-export { GET, PATCH, DELETE }
+export { DELETE, GET, PATCH }

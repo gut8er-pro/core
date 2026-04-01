@@ -1,12 +1,12 @@
 'use client'
 
-import { type ReactNode } from 'react'
+import { ChevronLeft, FileText, ImageIcon, Lock, Send, Sparkles } from 'lucide-react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
-import { ChevronLeft, ImageIcon, FileText, Send, Lock, Sparkles } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { ReportSidebar } from '@/components/layout/report-sidebar'
 import { Badge } from '@/components/ui/badge'
-import { useReport } from '@/hooks/use-reports'
 import { usePhotos } from '@/hooks/use-photos'
+import { useReport } from '@/hooks/use-reports'
 
 const REPORT_SECTIONS = [
 	{ key: 'gallery', label: 'Gallery', icon: ImageIcon },
@@ -21,9 +21,9 @@ function ReportLayout({ children }: { children: ReactNode }) {
 	const { data: report } = useReport(params.id)
 	const { data: photoData } = usePhotos(params.id)
 
-	const activeSection = REPORT_SECTIONS.find((s) =>
-		pathname.includes(`/reports/${params.id}/${s.key}`),
-	)?.key ?? 'gallery'
+	const activeSection =
+		REPORT_SECTIONS.find((s) => pathname.includes(`/reports/${params.id}/${s.key}`))?.key ??
+		'gallery'
 
 	const isGallery = activeSection === 'gallery'
 	const hasPhotos = (photoData?.photos?.length ?? 0) > 0
@@ -35,9 +35,10 @@ function ReportLayout({ children }: { children: ReactNode }) {
 	const showReportSidebar = !isGallery || (isGallery && hasGenerated)
 
 	// Title: "Upload Images" during upload phase, report title after
-	const title = isGallery && !hasPhotos && !hasGenerated
-		? 'Upload Images'
-		: report?.title ?? 'Create New Report'
+	const title =
+		isGallery && !hasPhotos && !hasGenerated
+			? 'Upload Images'
+			: (report?.title ?? 'Create New Report')
 
 	function handleSectionChange(key: string) {
 		router.push(`/reports/${params.id}/${key}`)
@@ -60,12 +61,8 @@ function ReportLayout({ children }: { children: ReactNode }) {
 					</button>
 				</div>
 				<div className="flex flex-1 items-center gap-2">
-					<h1 className="text-[34px] font-medium leading-none text-black">
-						{title}
-					</h1>
-					{report?.reportType && (
-						<Badge variant="success">{report.reportType}</Badge>
-					)}
+					<h1 className="text-[34px] font-medium leading-none text-black">{title}</h1>
+					{report?.reportType && <Badge variant="success">{report.reportType}</Badge>}
 					{report?.isLocked && (
 						<Badge variant="default">
 							<Lock className="mr-1 h-3 w-3" />
@@ -92,7 +89,8 @@ function ReportLayout({ children }: { children: ReactNode }) {
 			{report?.isLocked && (
 				<div className="flex items-center gap-2 rounded-btn border border-warning bg-warning-light px-4 py-2.5 text-body-sm text-warning">
 					<Lock className="h-4 w-4 shrink-0" />
-					This report has been locked and is read-only. Unlock it from Export &amp; Send to make changes.
+					This report has been locked and is read-only. Unlock it from Export &amp; Send to make
+					changes.
 				</div>
 			)}
 

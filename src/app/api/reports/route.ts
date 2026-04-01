@@ -1,10 +1,7 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
-import {
-	createReportSchema,
-	reportListParamsSchema,
-} from '@/lib/validations/reports'
+import { prisma } from '@/lib/prisma'
+import { createReportSchema, reportListParamsSchema } from '@/lib/validations/reports'
 
 async function GET(request: NextRequest) {
 	const { user, error } = await getAuthenticatedUser()
@@ -30,7 +27,7 @@ async function GET(request: NextRequest) {
 	const skip = (page - 1) * limit
 
 	const where = {
-		userId: user!.id,
+		userId: user?.id,
 		...(status ? { status } : {}),
 	}
 
@@ -51,9 +48,8 @@ async function GET(request: NextRequest) {
 
 	// Flatten joined data for dashboard display
 	const reports = rawReports.map((r) => {
-		const claimantName = [r.claimantInfo?.firstName, r.claimantInfo?.lastName]
-			.filter(Boolean)
-			.join(' ') || null
+		const claimantName =
+			[r.claimantInfo?.firstName, r.claimantInfo?.lastName].filter(Boolean).join(' ') || null
 		return {
 			id: r.id,
 			userId: r.userId,
@@ -101,7 +97,7 @@ async function POST(request: NextRequest) {
 
 	const report = await prisma.report.create({
 		data: {
-			userId: user!.id,
+			userId: user?.id,
 			title: parsed.data.title,
 			reportType: parsed.data.reportType,
 		},

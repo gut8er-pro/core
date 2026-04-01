@@ -1,13 +1,19 @@
 // POST /api/reports/:id/generate — SSE endpoint that runs the AI pipeline.
 // Streams progress events to the client as Server-Sent Events.
 
-import { type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
-import { runPipeline } from '@/lib/ai/pipeline'
-import { normalizeVehicleType } from '@/lib/ai/vehicle-lookup'
-import type { GenerateEvent, GenerationSummary, OverviewAnalysisResult, InteriorAnalysisResult, TireAnalysisResult } from '@/lib/ai/types'
+import type { NextRequest } from 'next/server'
 import type { CalculationAutoFillResult } from '@/lib/ai/calculation-extractor'
+import { runPipeline } from '@/lib/ai/pipeline'
+import type {
+	GenerateEvent,
+	GenerationSummary,
+	InteriorAnalysisResult,
+	OverviewAnalysisResult,
+	TireAnalysisResult,
+} from '@/lib/ai/types'
+import { normalizeVehicleType } from '@/lib/ai/vehicle-lookup'
+import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { prisma } from '@/lib/prisma'
 
 type RouteContext = {
 	params: Promise<{ id: string }>
@@ -22,7 +28,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	// Read incremental flag from request body
 	let incremental = false
 	try {
-		const body = await request.json() as { incremental?: boolean }
+		const body = (await request.json()) as { incremental?: boolean }
 		incremental = body.incremental === true
 	} catch {
 		// No body or invalid JSON — default to non-incremental
@@ -30,7 +36,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 
 	// Validate report exists and belongs to user
 	const report = await prisma.report.findFirst({
-		where: { id: reportId, userId: user!.id },
+		where: { id: reportId, userId: user?.id },
 	})
 
 	if (!report) {
@@ -110,7 +116,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 		headers: {
 			'Content-Type': 'text/event-stream',
 			'Cache-Control': 'no-cache',
-			'Connection': 'keep-alive',
+			Connection: 'keep-alive',
 		},
 	})
 }
@@ -118,13 +124,20 @@ async function POST(request: NextRequest, context: RouteContext) {
 /**
  * Maps AI classification strings to the Prisma PhotoType enum.
  */
-function mapClassificationToPhotoType(classification: string): 'VEHICLE_DIAGONAL' | 'DAMAGE_OVERVIEW' | 'DOCUMENT' | 'OTHER' {
+function mapClassificationToPhotoType(
+	classification: string,
+): 'VEHICLE_DIAGONAL' | 'DAMAGE_OVERVIEW' | 'DOCUMENT' | 'OTHER' {
 	switch (classification) {
-		case 'overview': return 'VEHICLE_DIAGONAL'
-		case 'damage': return 'DAMAGE_OVERVIEW'
-		case 'document': return 'DOCUMENT'
-		case 'vin': return 'DOCUMENT'
-		default: return 'OTHER'
+		case 'overview':
+			return 'VEHICLE_DIAGONAL'
+		case 'damage':
+			return 'DAMAGE_OVERVIEW'
+		case 'document':
+			return 'DOCUMENT'
+		case 'vin':
+			return 'DOCUMENT'
+		default:
+			return 'OTHER'
 	}
 }
 
@@ -145,7 +158,14 @@ type PipelinePayloads = {
 		photoId: string
 		aiDescription: string | null
 		classification: string
-		boundingBoxes: Array<{ x: number; y: number; width: number; height: number; label: string; color: string }>
+		boundingBoxes: Array<{
+			x: number
+			y: number
+			width: number
+			height: number
+			label: string
+			color: string
+		}>
 	}>
 	photoOrder: string[]
 	processedPhotoIds: Array<{ id: string; hash: string }>
@@ -154,10 +174,7 @@ type PipelinePayloads = {
 /**
  * Persists all auto-fill results from the pipeline to the database.
  */
-async function persistResults(
-	reportId: string,
-	summary: GenerationSummary,
-): Promise<void> {
+async function persistResults(reportId: string, summary: GenerationSummary): Promise<void> {
 	const payloads = (summary as GenerationSummary & { _payloads?: PipelinePayloads })._payloads
 	if (!payloads) return
 
@@ -165,14 +182,31 @@ async function persistResults(
 	{
 		const dbData: Record<string, unknown> = {}
 
-		const stringFields = ['vin', 'manufacturer', 'mainType', 'subtype', 'engineDesign', 'transmission', 'vehicleType', 'motorType', 'kbaNumber'] as const
+		const stringFields = [
+			'vin',
+			'manufacturer',
+			'mainType',
+			'subtype',
+			'engineDesign',
+			'transmission',
+			'vehicleType',
+			'motorType',
+			'kbaNumber',
+		] as const
 		for (const field of stringFields) {
 			if (payloads.vehicleData[field] !== undefined) {
 				dbData[field] = payloads.vehicleData[field]
 			}
 		}
 
-		const numericFields = ['powerKw', 'cylinders', 'engineDisplacementCcm', 'doors', 'seats', 'previousOwners'] as const
+		const numericFields = [
+			'powerKw',
+			'cylinders',
+			'engineDisplacementCcm',
+			'doors',
+			'seats',
+			'previousOwners',
+		] as const
 		for (const field of numericFields) {
 			if (payloads.vehicleData[field] !== undefined) {
 				const val = Number(payloads.vehicleData[field])
@@ -263,17 +297,21 @@ async function persistResults(
 			// Extract data from overview results
 			for (const overview of payloads.conditionData.overviewResults) {
 				if (overview.color) conditionUpdateData.vehicleColor = overview.color
-				if (overview.generalCondition) conditionUpdateData.generalCondition = overview.generalCondition
+				if (overview.generalCondition)
+					conditionUpdateData.generalCondition = overview.generalCondition
 				if (overview.bodyCondition) conditionUpdateData.bodyCondition = overview.bodyCondition
 			}
 
 			// Extract data from interior results
 			for (const interior of payloads.conditionData.interiorResults) {
 				if (interior.condition) conditionUpdateData.interiorCondition = interior.condition
-				if (interior.features.length > 0) conditionUpdateData.specialFeatures = interior.features.join(', ')
+				if (interior.features.length > 0)
+					conditionUpdateData.specialFeatures = interior.features.join(', ')
 				if (interior.mileage !== null) conditionUpdateData.mileageRead = interior.mileage
-				if (interior.parkingSensors !== null) conditionUpdateData.parkingSensors = interior.parkingSensors
-				if (interior.airbagsDeployed !== null) conditionUpdateData.airbagsDeployed = interior.airbagsDeployed
+				if (interior.parkingSensors !== null)
+					conditionUpdateData.parkingSensors = interior.parkingSensors
+				if (interior.airbagsDeployed !== null)
+					conditionUpdateData.airbagsDeployed = interior.airbagsDeployed
 			}
 
 			if (payloads.conditionData.damageMarkers.length > 0) {
@@ -305,7 +343,9 @@ async function persistResults(
 	// 4. Update tire data — including dotCode and tireType
 	console.log(`[Generate] Tire results: ${payloads.conditionData.tireResults.length}`)
 	for (const t of payloads.conditionData.tireResults) {
-		console.log(`[Generate] Tire: pos=${t.position} size=${t.size} mfr=${t.manufacturer} tread=${t.treadDepth} profile=${t.profileLevel}`)
+		console.log(
+			`[Generate] Tire: pos=${t.position} size=${t.size} mfr=${t.manufacturer} tread=${t.treadDepth} profile=${t.profileLevel}`,
+		)
 	}
 	if (payloads.conditionData.tireResults.length > 0) {
 		try {
@@ -329,18 +369,27 @@ async function persistResults(
 				if (tire.treadDepth !== null) return `${tire.treadDepth}mm`
 				// Map qualitative labels to approximate mm values
 				switch (tire.profileLevel) {
-					case 'good': return '6mm'
-					case 'acceptable': return '3mm'
-					case 'worn': return '2mm'
-					case 'critical': return '1.5mm'
-					default: return ''
+					case 'good':
+						return '6mm'
+					case 'acceptable':
+						return '3mm'
+					case 'worn':
+						return '2mm'
+					case 'critical':
+						return '1.5mm'
+					default:
+						return ''
 				}
 			}
 
 			// Build tire data from the best result (first with most data)
 			const bestTire = payloads.conditionData.tireResults.reduce((best, current) => {
-				const bestScore = (best.size ? 1 : 0) + (best.manufacturer ? 1 : 0) + (best.treadDepth !== null ? 1 : 0)
-				const currentScore = (current.size ? 1 : 0) + (current.manufacturer ? 1 : 0) + (current.treadDepth !== null ? 1 : 0)
+				const bestScore =
+					(best.size ? 1 : 0) + (best.manufacturer ? 1 : 0) + (best.treadDepth !== null ? 1 : 0)
+				const currentScore =
+					(current.size ? 1 : 0) +
+					(current.manufacturer ? 1 : 0) +
+					(current.treadDepth !== null ? 1 : 0)
 				return currentScore > bestScore ? current : best
 			})
 
@@ -382,9 +431,7 @@ async function persistResults(
 			} else {
 				// Multiple tire results — assign to positions, fill gaps with best data
 				const usedPositions = new Set(
-					payloads.conditionData.tireResults
-						.filter((t) => t.position)
-						.map((t) => t.position),
+					payloads.conditionData.tireResults.filter((t) => t.position).map((t) => t.position),
 				)
 				let nextDefaultIdx = 0
 
@@ -393,7 +440,10 @@ async function persistResults(
 				for (const tire of payloads.conditionData.tireResults) {
 					let position = tire.position
 					if (!position) {
-						while (nextDefaultIdx < allPositions.length && usedPositions.has(allPositions[nextDefaultIdx]!)) {
+						while (
+							nextDefaultIdx < allPositions.length &&
+							usedPositions.has(allPositions[nextDefaultIdx]!)
+						) {
 							nextDefaultIdx++
 						}
 						if (nextDefaultIdx < allPositions.length) {
@@ -442,7 +492,7 @@ async function persistResults(
 					const existingTire = await prisma.tire.findFirst({
 						where: { tireSetId: tireSet.id, position },
 					})
-					if (existingTire && existingTire.size) continue // don't overwrite existing user data
+					if (existingTire?.size) continue // don't overwrite existing user data
 					const fillData = {
 						size: bestTire.size || undefined,
 						profileLevel: bestProfile || undefined,
@@ -585,7 +635,10 @@ async function persistResults(
 		}
 
 		// Auto-generate a meaningful title from extracted data if still "Untitled Report"
-		const currentReport = await prisma.report.findUnique({ where: { id: reportId }, select: { title: true } })
+		const currentReport = await prisma.report.findUnique({
+			where: { id: reportId },
+			select: { title: true },
+		})
 		if (currentReport?.title === 'Untitled Report') {
 			const parts: string[] = []
 			const manufacturer = payloads.vehicleData.manufacturer as string | undefined
@@ -595,10 +648,16 @@ async function persistResults(
 			// Check overview results if VIN/OCR didn't have make/model
 			if (parts.length === 0) {
 				for (const o of payloads.conditionData.overviewResults) {
-					if (o.make) { parts.push(o.make); break }
+					if (o.make) {
+						parts.push(o.make)
+						break
+					}
 				}
 				for (const o of payloads.conditionData.overviewResults) {
-					if (o.model) { parts.push(o.model); break }
+					if (o.model) {
+						parts.push(o.model)
+						break
+					}
 				}
 			}
 			if (parts.length > 0) {

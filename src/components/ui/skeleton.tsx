@@ -30,5 +30,5 @@ function SkeletonGroup({ className, count = 3 }: { className?: string; count?: n
 	)
 }
 
-export { Skeleton, SkeletonGroup }
 export type { SkeletonProps }
+export { Skeleton, SkeletonGroup }

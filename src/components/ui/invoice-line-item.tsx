@@ -45,9 +45,7 @@ function InvoiceLineItem({
 				) : (
 					<p className="text-body-sm font-medium text-black">{description}</p>
 				)}
-				{specialFeature && (
-					<p className="text-caption text-grey-100">{specialFeature}</p>
-				)}
+				{specialFeature && <p className="text-caption text-grey-100">{specialFeature}</p>}
 			</div>
 
 			<div className="flex items-center gap-4">
@@ -68,9 +66,7 @@ function InvoiceLineItem({
 							step="0.01"
 						/>
 					) : (
-						<span className="text-body-sm text-grey-100">
-							{formatEUR(rate)}
-						</span>
+						<span className="text-body-sm text-grey-100">{formatEUR(rate)}</span>
 					)}
 				</div>
 
@@ -102,5 +98,5 @@ function formatEUR(value: number): string {
 	}).format(value)
 }
 
-export { InvoiceLineItem, formatEUR }
 export type { InvoiceLineItemProps }
+export { formatEUR, InvoiceLineItem }

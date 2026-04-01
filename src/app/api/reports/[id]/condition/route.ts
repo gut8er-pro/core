@@ -1,8 +1,8 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
-import { conditionPatchSchema } from '@/lib/validations/condition'
 import { getPaintColor } from '@/lib/design-tokens'
+import { prisma } from '@/lib/prisma'
+import { conditionPatchSchema } from '@/lib/validations/condition'
 
 type RouteContext = {
 	params: Promise<{ id: string }>
@@ -15,7 +15,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -79,7 +79,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -120,28 +120,45 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 
 		if (data.condition.paintType !== undefined) updateData.paintType = data.condition.paintType
 		if (data.condition.hard !== undefined) updateData.hard = data.condition.hard
-		if (data.condition.paintCondition !== undefined) updateData.paintCondition = data.condition.paintCondition
-		if (data.condition.generalCondition !== undefined) updateData.generalCondition = data.condition.generalCondition
-		if (data.condition.bodyCondition !== undefined) updateData.bodyCondition = data.condition.bodyCondition
-		if (data.condition.interiorCondition !== undefined) updateData.interiorCondition = data.condition.interiorCondition
-		if (data.condition.drivingAbility !== undefined) updateData.drivingAbility = data.condition.drivingAbility
-		if (data.condition.specialFeatures !== undefined) updateData.specialFeatures = data.condition.specialFeatures
-		if (data.condition.parkingSensors !== undefined) updateData.parkingSensors = data.condition.parkingSensors
-		if (data.condition.mileageRead !== undefined) updateData.mileageRead = data.condition.mileageRead
-		if (data.condition.estimateMileage !== undefined) updateData.estimateMileage = data.condition.estimateMileage
+		if (data.condition.paintCondition !== undefined)
+			updateData.paintCondition = data.condition.paintCondition
+		if (data.condition.generalCondition !== undefined)
+			updateData.generalCondition = data.condition.generalCondition
+		if (data.condition.bodyCondition !== undefined)
+			updateData.bodyCondition = data.condition.bodyCondition
+		if (data.condition.interiorCondition !== undefined)
+			updateData.interiorCondition = data.condition.interiorCondition
+		if (data.condition.drivingAbility !== undefined)
+			updateData.drivingAbility = data.condition.drivingAbility
+		if (data.condition.specialFeatures !== undefined)
+			updateData.specialFeatures = data.condition.specialFeatures
+		if (data.condition.parkingSensors !== undefined)
+			updateData.parkingSensors = data.condition.parkingSensors
+		if (data.condition.mileageRead !== undefined)
+			updateData.mileageRead = data.condition.mileageRead
+		if (data.condition.estimateMileage !== undefined)
+			updateData.estimateMileage = data.condition.estimateMileage
 		if (data.condition.unit !== undefined) updateData.unit = data.condition.unit
 		if (data.condition.nextMot !== undefined) {
 			updateData.nextMot = data.condition.nextMot ? new Date(data.condition.nextMot) : null
 		}
-		if (data.condition.fullServiceHistory !== undefined) updateData.fullServiceHistory = data.condition.fullServiceHistory
-		if (data.condition.testDrivePerformed !== undefined) updateData.testDrivePerformed = data.condition.testDrivePerformed
-		if (data.condition.errorMemoryRead !== undefined) updateData.errorMemoryRead = data.condition.errorMemoryRead
-		if (data.condition.airbagsDeployed !== undefined) updateData.airbagsDeployed = data.condition.airbagsDeployed
+		if (data.condition.fullServiceHistory !== undefined)
+			updateData.fullServiceHistory = data.condition.fullServiceHistory
+		if (data.condition.testDrivePerformed !== undefined)
+			updateData.testDrivePerformed = data.condition.testDrivePerformed
+		if (data.condition.errorMemoryRead !== undefined)
+			updateData.errorMemoryRead = data.condition.errorMemoryRead
+		if (data.condition.airbagsDeployed !== undefined)
+			updateData.airbagsDeployed = data.condition.airbagsDeployed
 		if (data.condition.notes !== undefined) updateData.notes = data.condition.notes
-		if (data.condition.manualSetup !== undefined) updateData.manualSetup = data.condition.manualSetup
-		if (data.condition.previousDamageReported !== undefined) updateData.previousDamageReported = data.condition.previousDamageReported
-		if (data.condition.existingDamageNotReported !== undefined) updateData.existingDamageNotReported = data.condition.existingDamageNotReported
-		if (data.condition.subsequentDamage !== undefined) updateData.subsequentDamage = data.condition.subsequentDamage
+		if (data.condition.manualSetup !== undefined)
+			updateData.manualSetup = data.condition.manualSetup
+		if (data.condition.previousDamageReported !== undefined)
+			updateData.previousDamageReported = data.condition.previousDamageReported
+		if (data.condition.existingDamageNotReported !== undefined)
+			updateData.existingDamageNotReported = data.condition.existingDamageNotReported
+		if (data.condition.subsequentDamage !== undefined)
+			updateData.subsequentDamage = data.condition.subsequentDamage
 
 		if (Object.keys(updateData).length > 0) {
 			results.condition = await prisma.vehicleCondition.update({
@@ -243,7 +260,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 					where: { id: tireSetId, conditionId: condition.id },
 				})
 				if (existing) {
-					const updated = await prisma.tireSet.update({
+					const _updated = await prisma.tireSet.update({
 						where: { id: tireSetId },
 						data: tireSetData,
 					})

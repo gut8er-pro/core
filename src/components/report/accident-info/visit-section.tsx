@@ -1,13 +1,13 @@
 'use client'
 
-import { useFieldArray } from 'react-hook-form'
 import { Plus, Trash2 } from 'lucide-react'
-import { CollapsibleSection } from '@/components/ui/collapsible-section'
-import { TextField } from '@/components/ui/text-field'
-import { SelectField } from '@/components/ui/select'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { useFieldArray } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { SelectField } from '@/components/ui/select'
+import { TextField } from '@/components/ui/text-field'
 import { cn } from '@/lib/utils'
 import type { SectionProps } from './types'
 
@@ -34,7 +34,13 @@ const DEFAULT_VISIT = {
 	vehicleCondition: '',
 }
 
-function VisitSection({ control, register, errors, onFieldBlur, className }: SectionProps & { className?: string }) {
+function VisitSection({
+	control,
+	register,
+	errors,
+	onFieldBlur,
+	className,
+}: SectionProps & { className?: string }) {
 	const { fields, append, remove } = useFieldArray({
 		control,
 		name: 'visits',
@@ -44,14 +50,9 @@ function VisitSection({ control, register, errors, onFieldBlur, className }: Sec
 		<CollapsibleSection title="Visits" className={className}>
 			<div className="flex flex-col gap-6">
 				{fields.map((field, index) => (
-					<div
-						key={field.id}
-						className="relative rounded-lg border border-border bg-white p-4"
-					>
+					<div key={field.id} className="relative rounded-lg border border-border bg-white p-4">
 						<div className="mb-4 flex items-center justify-between">
-							<span className="text-body-sm font-semibold text-black">
-								Visit {index + 1}
-							</span>
+							<span className="text-body-sm font-semibold text-black">Visit {index + 1}</span>
 							<Button
 								type="button"
 								variant="ghost"

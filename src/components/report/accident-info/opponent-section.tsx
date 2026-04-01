@@ -1,8 +1,8 @@
 'use client'
 
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
-import { TextField } from '@/components/ui/text-field'
 import { SelectField } from '@/components/ui/select'
+import { TextField } from '@/components/ui/text-field'
 import type { SectionProps } from './types'
 
 const salutationOptions = [
@@ -13,7 +13,13 @@ const salutationOptions = [
 	{ value: 'company', label: 'Company' },
 ]
 
-function OpponentSection({ register, control, errors, onFieldBlur, className }: SectionProps & { className?: string }) {
+function OpponentSection({
+	register,
+	control,
+	errors,
+	onFieldBlur,
+	className,
+}: SectionProps & { className?: string }) {
 	return (
 		<CollapsibleSection title="Opponent in Accident" info className={className}>
 			<div className="flex flex-col gap-4">

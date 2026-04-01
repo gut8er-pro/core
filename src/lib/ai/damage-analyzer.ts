@@ -2,9 +2,9 @@
 // bounding boxes for photo annotation, and diagram position for SVG marker.
 
 import { getAnthropicClient } from './anthropic'
-import { getCacheKey, getCachedResult, setCachedResult } from './cache'
-import type { DamageAnalysisResult, VehiclePosition } from './types'
+import { getCachedResult, getCacheKey, setCachedResult } from './cache'
 import type { ImageData } from './fetch-image'
+import type { DamageAnalysisResult, VehiclePosition } from './types'
 
 function buildDamagePrompt(position: VehiclePosition, damageLocation: string | null): string {
 	return `You are a professional German vehicle damage assessor (Kfz-Sachverständiger). Analyze this vehicle damage photo in detail.
@@ -56,20 +56,22 @@ async function analyzeDamage(
 	const message = await client.messages.create({
 		model: 'claude-sonnet-4-5-20250929',
 		max_tokens: 2048,
-		messages: [{
-			role: 'user',
-			content: [
-				{
-					type: 'image',
-					source: {
-						type: 'base64',
-						media_type: imageData.mediaType,
-						data: imageData.base64,
+		messages: [
+			{
+				role: 'user',
+				content: [
+					{
+						type: 'image',
+						source: {
+							type: 'base64',
+							media_type: imageData.mediaType,
+							data: imageData.base64,
+						},
 					},
-				},
-				{ type: 'text', text: buildDamagePrompt(position, damageLocation) },
-			],
-		}],
+					{ type: 'text', text: buildDamagePrompt(position, damageLocation) },
+				],
+			},
+		],
 	})
 
 	const textBlock = message.content.find((block) => block.type === 'text')
@@ -106,34 +108,39 @@ function parseDamageResponse(photoId: string, rawResponse: string): DamageAnalys
 
 		const boundingBoxes = Array.isArray(parsed.boundingBoxes)
 			? (parsed.boundingBoxes as Array<Record<string, unknown>>)
-				.filter((b) => typeof b.x === 'number' && typeof b.y === 'number')
-				.map((b) => ({
-					x: clamp(b.x as number, 0, 1),
-					y: clamp(b.y as number, 0, 1),
-					width: clamp((b.width as number) || 0.1, 0, 1),
-					height: clamp((b.height as number) || 0.1, 0, 1),
-					label: typeof b.label === 'string' ? b.label : 'Damage',
-					color: typeof b.color === 'string' ? b.color : '#FF0000',
-				}))
+					.filter((b) => typeof b.x === 'number' && typeof b.y === 'number')
+					.map((b) => ({
+						x: clamp(b.x as number, 0, 1),
+						y: clamp(b.y as number, 0, 1),
+						width: clamp((b.width as number) || 0.1, 0, 1),
+						height: clamp((b.height as number) || 0.1, 0, 1),
+						label: typeof b.label === 'string' ? b.label : 'Damage',
+						color: typeof b.color === 'string' ? b.color : '#FF0000',
+					}))
 			: []
 
 		const diagramRaw = parsed.diagramPosition as Record<string, unknown> | undefined
-		const diagramPosition = diagramRaw && typeof diagramRaw.x === 'number'
-			? {
-				x: clamp(diagramRaw.x as number, 0, 100),
-				y: clamp(diagramRaw.y as number, 0, 100),
-				comment: typeof diagramRaw.comment === 'string' ? diagramRaw.comment : 'Damage',
-			}
-			: fallback.diagramPosition
+		const diagramPosition =
+			diagramRaw && typeof diagramRaw.x === 'number'
+				? {
+						x: clamp(diagramRaw.x as number, 0, 100),
+						y: clamp(diagramRaw.y as number, 0, 100),
+						comment: typeof diagramRaw.comment === 'string' ? diagramRaw.comment : 'Damage',
+					}
+				: fallback.diagramPosition
 
 		return {
 			photoId,
-			description: typeof parsed.description === 'string' ? parsed.description : fallback.description,
+			description:
+				typeof parsed.description === 'string' ? parsed.description : fallback.description,
 			severity,
-			damageTypes: Array.isArray(parsed.damageTypes) ? parsed.damageTypes as DamageAnalysisResult['damageTypes'] : [],
-			affectedParts: Array.isArray(parsed.affectedParts) ? parsed.affectedParts as string[] : [],
+			damageTypes: Array.isArray(parsed.damageTypes)
+				? (parsed.damageTypes as DamageAnalysisResult['damageTypes'])
+				: [],
+			affectedParts: Array.isArray(parsed.affectedParts) ? (parsed.affectedParts as string[]) : [],
 			repairApproach: typeof parsed.repairApproach === 'string' ? parsed.repairApproach : '',
-			estimatedRepairHours: typeof parsed.estimatedRepairHours === 'number' ? parsed.estimatedRepairHours : null,
+			estimatedRepairHours:
+				typeof parsed.estimatedRepairHours === 'number' ? parsed.estimatedRepairHours : null,
 			boundingBoxes,
 			diagramPosition,
 		}

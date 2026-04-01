@@ -1,7 +1,7 @@
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { VehicleDiagram, PaintLegend } from './vehicle-diagram'
+import { render, screen } from '@/test/test-utils'
+import { PaintLegend, VehicleDiagram } from './vehicle-diagram'
 
 describe('VehicleDiagram', () => {
 	it('renders damage diagram by default', () => {

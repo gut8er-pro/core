@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
 	AlignCenter,
 	AlignJustify,
@@ -11,6 +10,7 @@ import {
 	ListOrdered,
 	Type,
 } from 'lucide-react'
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 type RichTextEditorProps = {
@@ -87,5 +87,5 @@ function RichTextEditor({ value, onChange, placeholder, className }: RichTextEdi
 	)
 }
 
-export { RichTextEditor }
 export type { RichTextEditorProps }
+export { RichTextEditor }

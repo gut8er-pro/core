@@ -92,22 +92,22 @@
 }
 
 @layer base {
-  body {
-    background: var(--color-white);
-    color: var(--color-black);
-    font-family: var(--font-sans);
-  }
+	body {
+		background: var(--color-white);
+		color: var(--color-black);
+		font-family: var(--font-sans);
+	}
 
-  button,
-  [role="button"],
-  [role="menuitem"],
-  [role="option"],
-  [role="tab"],
-  [role="checkbox"],
-  [role="radio"],
-  [role="switch"],
-  select,
-  summary {
-    cursor: pointer;
-  }
+	button,
+	[role="button"],
+	[role="menuitem"],
+	[role="option"],
+	[role="tab"],
+	[role="checkbox"],
+	[role="radio"],
+	[role="switch"],
+	select,
+	summary {
+		cursor: pointer;
+	}
 }

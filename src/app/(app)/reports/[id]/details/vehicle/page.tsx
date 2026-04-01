@@ -1,19 +1,19 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import { useForm } from 'react-hook-form'
 import { CheckCircle2, Loader2 } from 'lucide-react'
-import { useVehicleInfo } from '@/hooks/use-vehicle-info'
-import { useReport } from '@/hooks/use-reports'
-import { useAutoSave } from '@/hooks/use-auto-save'
-import { ToggleSwitch } from '@/components/ui/toggle-switch'
-import { CompletionBadge } from '@/components/ui/completion-badge'
-import { Button } from '@/components/ui/button'
+import { useParams } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { DetailsSection } from '@/components/report/vehicle/details-section'
 import { IdentificationSection } from '@/components/report/vehicle/identification-section'
 import { SpecificationSection } from '@/components/report/vehicle/specification-section'
-import { DetailsSection } from '@/components/report/vehicle/details-section'
 import type { VehicleFormData } from '@/components/report/vehicle/types'
+import { Button } from '@/components/ui/button'
+import { CompletionBadge } from '@/components/ui/completion-badge'
+import { ToggleSwitch } from '@/components/ui/toggle-switch'
+import { useAutoSave } from '@/hooks/use-auto-save'
+import { useReport } from '@/hooks/use-reports'
+import { useVehicleInfo } from '@/hooks/use-vehicle-info'
 
 function VehiclePage() {
 	const params = useParams<{ id: string }>()
@@ -22,7 +22,11 @@ function VehiclePage() {
 	const { data: report } = useReport(reportId)
 	const [showMissing, setShowMissing] = useState(false)
 
-	const { saveField, flushNow, state: autoSaveState } = useAutoSave({
+	const {
+		saveField,
+		flushNow,
+		state: autoSaveState,
+	} = useAutoSave({
 		reportId,
 		section: 'vehicle',
 		disabled: report?.isLocked,
@@ -124,7 +128,7 @@ function VehiclePage() {
 				const rawValue = input?.value
 				if (rawValue !== undefined) {
 					const num = parseFloat(rawValue)
-					saveField(field, rawValue === '' ? null : isNaN(num) ? null : num)
+					saveField(field, rawValue === '' ? null : Number.isNaN(num) ? null : num)
 				}
 				return
 			}
@@ -144,9 +148,22 @@ function VehiclePage() {
 		const values = getValues()
 		let count = 0
 		const stringFields: (keyof VehicleFormData)[] = [
-			'vin', 'datsCode', 'marketIndex', 'manufacturer', 'mainType', 'subType',
-			'kbaNumber', 'powerKw', 'powerHp', 'engineDesign', 'cylinders', 'transmission',
-			'displacement', 'firstRegistration', 'lastRegistration', 'sourceOfTechnicalData',
+			'vin',
+			'datsCode',
+			'marketIndex',
+			'manufacturer',
+			'mainType',
+			'subType',
+			'kbaNumber',
+			'powerKw',
+			'powerHp',
+			'engineDesign',
+			'cylinders',
+			'transmission',
+			'displacement',
+			'firstRegistration',
+			'lastRegistration',
+			'sourceOfTechnicalData',
 		]
 		for (const f of stringFields) {
 			if (!values[f]) count++
@@ -158,10 +175,24 @@ function VehiclePage() {
 	const completionPercentage = (() => {
 		const values = getValues()
 		const allFields: (keyof VehicleFormData)[] = [
-			'vin', 'datsCode', 'marketIndex', 'manufacturer', 'mainType', 'subType',
-			'kbaNumber', 'powerKw', 'powerHp', 'engineDesign', 'cylinders', 'transmission',
-			'displacement', 'firstRegistration', 'lastRegistration', 'sourceOfTechnicalData',
-			'vehicleType', 'motorType',
+			'vin',
+			'datsCode',
+			'marketIndex',
+			'manufacturer',
+			'mainType',
+			'subType',
+			'kbaNumber',
+			'powerKw',
+			'powerHp',
+			'engineDesign',
+			'cylinders',
+			'transmission',
+			'displacement',
+			'firstRegistration',
+			'lastRegistration',
+			'sourceOfTechnicalData',
+			'vehicleType',
+			'motorType',
 		]
 		let filled = 0
 		for (const f of allFields) {
@@ -188,11 +219,7 @@ function VehiclePage() {
 						{missingFieldCount} fields need attention
 					</span>
 				</div>
-				<ToggleSwitch
-					label=""
-					checked={showMissing}
-					onCheckedChange={setShowMissing}
-				/>
+				<ToggleSwitch label="" checked={showMissing} onCheckedChange={setShowMissing} />
 			</div>
 
 			{/* Page heading with completion */}
@@ -216,9 +243,7 @@ function VehiclePage() {
 							<span className="text-primary">Saved</span>
 						</>
 					)}
-					{autoSaveState.status === 'error' && (
-						<span className="text-error">Failed to save</span>
-					)}
+					{autoSaveState.status === 'error' && <span className="text-error">Failed to save</span>}
 				</div>
 			)}
 
@@ -249,7 +274,12 @@ function VehiclePage() {
 
 			{/* Update Report button */}
 			<div className="flex justify-end">
-				<Button variant="primary" size="lg" onClick={flushNow} loading={autoSaveState.status === 'saving'}>
+				<Button
+					variant="primary"
+					size="lg"
+					onClick={flushNow}
+					loading={autoSaveState.status === 'saving'}
+				>
 					Update Report
 				</Button>
 			</div>

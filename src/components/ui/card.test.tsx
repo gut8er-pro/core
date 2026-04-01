@@ -1,7 +1,7 @@
-import { render, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './card'
+import { render, screen } from '@/test/test-utils'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card'
 
 describe('Card', () => {
 	it('renders children', () => {

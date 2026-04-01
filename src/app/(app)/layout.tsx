@@ -1,12 +1,12 @@
 'use client'
 
+import { usePathname, useRouter } from 'next/navigation'
 import { type ReactNode, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
 import { TopNavBar } from '@/components/layout/top-nav-bar'
 import { useAuth } from '@/hooks/use-auth'
 import { useUserSettings } from '@/hooks/use-settings'
-import { useProStore } from '@/stores/pro-store'
 import { logout } from '@/lib/auth/actions'
+import { useProStore } from '@/stores/pro-store'
 
 function AppLayout({ children }: { children: ReactNode }) {
 	const router = useRouter()
@@ -42,19 +42,23 @@ function AppLayout({ children }: { children: ReactNode }) {
 		<div className="min-h-screen bg-surface-secondary">
 			<TopNavBar
 				userName={
-					(user?.user_metadata?.['first_name'] as string | undefined) ??
-					(user?.email?.split('@')[0] ?? undefined)
+					(user?.user_metadata?.first_name as string | undefined) ??
+					user?.email?.split('@')[0] ??
+					undefined
 				}
 				userEmail={user?.email ?? undefined}
 				userRole={
-					(user?.user_metadata?.['professional_qualification'] as string | undefined) ??
+					(user?.user_metadata?.professional_qualification as string | undefined) ??
 					'Sachverständiger'
 				}
 				activePath={
-					pathname.startsWith('/dashboard') ? '/dashboard'
-					: pathname.startsWith('/statistics') ? '/statistics'
-					: pathname.startsWith('/settings') ? '/settings'
-					: undefined
+					pathname.startsWith('/dashboard')
+						? '/dashboard'
+						: pathname.startsWith('/statistics')
+							? '/statistics'
+							: pathname.startsWith('/settings')
+								? '/settings'
+								: undefined
 				}
 				onNavigate={handleNavigate}
 				onLogout={handleLogout}

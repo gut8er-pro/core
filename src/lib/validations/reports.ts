@@ -27,10 +27,5 @@ type CreateReportInput = z.infer<typeof createReportSchema>
 type UpdateReportInput = z.infer<typeof updateReportSchema>
 type ReportListParams = z.infer<typeof reportListParamsSchema>
 
-export {
-	createReportSchema,
-	updateReportSchema,
-	reportListParamsSchema,
-	REPORT_TYPES,
-}
-export type { CreateReportInput, UpdateReportInput, ReportListParams, ReportType }
+export type { CreateReportInput, ReportListParams, ReportType, UpdateReportInput }
+export { createReportSchema, REPORT_TYPES, reportListParamsSchema, updateReportSchema }

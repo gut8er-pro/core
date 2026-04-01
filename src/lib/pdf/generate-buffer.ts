@@ -1,6 +1,6 @@
 import { renderToBuffer } from '@react-pdf/renderer'
 import { prisma } from '@/lib/prisma'
-import { ReportPdfDocument, type ReportData } from './report-template'
+import { type ReportData, ReportPdfDocument } from './report-template'
 
 /**
  * Generates a PDF buffer for a report.
@@ -194,9 +194,7 @@ async function generateReportPdfBuffer(
 		},
 	}
 
-	const pdfBuffer = await renderToBuffer(
-		ReportPdfDocument({ data: pdfData }),
-	)
+	const pdfBuffer = await renderToBuffer(ReportPdfDocument({ data: pdfData }))
 
 	const safeTitle = report.title
 		.replace(/[^a-zA-Z0-9_\-\s]/g, '')

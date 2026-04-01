@@ -34,13 +34,5 @@ type InvoiceInput = z.infer<typeof invoiceSchema>
 type LineItemInput = z.infer<typeof lineItemSchema>
 type InvoicePatchInput = z.infer<typeof invoicePatchSchema>
 
-export {
-	invoiceSchema,
-	lineItemSchema,
-	invoicePatchSchema,
-}
-export type {
-	InvoiceInput,
-	LineItemInput,
-	InvoicePatchInput,
-}
+export type { InvoiceInput, InvoicePatchInput, LineItemInput }
+export { invoicePatchSchema, invoiceSchema, lineItemSchema }

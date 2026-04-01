@@ -56,12 +56,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 								/>
 							</svg>
 						</div>
-						<h2 className="text-h3 font-semibold text-black">
-							Something went wrong
-						</h2>
+						<h2 className="text-h3 font-semibold text-black">Something went wrong</h2>
 						<p className="max-w-md text-body-sm text-grey-100">
-							An unexpected error occurred. Please try again. If the problem
-							persists, contact support.
+							An unexpected error occurred. Please try again. If the problem persists, contact
+							support.
 						</p>
 					</div>
 					<Button variant="primary" onClick={this.handleReset}>

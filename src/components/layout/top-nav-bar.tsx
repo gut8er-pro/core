@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
 import {
 	BarChart3,
@@ -15,14 +14,15 @@ import {
 	Settings,
 	User,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import Image from 'next/image'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useNotifications } from '@/hooks/use-notifications'
 import type { NotificationEventType } from '@/hooks/use-notifications'
+import { useNotifications } from '@/hooks/use-notifications'
+import { cn } from '@/lib/utils'
 
 // Map event types to lucide icons
 const NOTIFICATION_ICON: Record<NotificationEventType, typeof FileText> = {
@@ -330,5 +330,5 @@ function CenterNavItem({
 	)
 }
 
-export { TopNavBar }
 export type { TopNavBarProps }
+export { TopNavBar }
