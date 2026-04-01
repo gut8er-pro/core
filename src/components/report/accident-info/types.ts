@@ -32,6 +32,7 @@ type AccidentInfoFormData = {
 	opponentPhone: string
 	opponentInsuranceCompany: string
 	opponentInsuranceNumber: string
+	opponentClaimNumber: string
 	// Expert Opinion
 	expertName: string
 	fileNumber: string

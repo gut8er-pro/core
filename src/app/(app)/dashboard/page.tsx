@@ -1,13 +1,22 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Search, ListFilter, Info, ChevronDown } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Plus, Search, ListFilter, Info, ChevronDown, Shield, FileText, BarChart3, Car } from 'lucide-react'
 import { useReports, useCreateReport, useDeleteReport } from '@/hooks/use-reports'
 import { useStats } from '@/hooks/use-stats'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { ReportTable, EmptyState, Pagination } from '@/components/dashboard/report-list'
 import { cn } from '@/lib/utils'
+import type { ReportType } from '@/lib/validations/reports'
+
+const REPORT_TYPE_OPTIONS: Array<{ type: ReportType; label: string; icon: typeof Shield }> = [
+	{ type: 'HS', label: 'Liability', icon: Shield },
+	{ type: 'KG', label: 'Short Report', icon: FileText },
+	{ type: 'BE', label: 'Evaluation', icon: BarChart3 },
+	{ type: 'OT', label: 'Oldtimer Valuation', icon: Car },
+]
 
 const CHART_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -25,6 +34,9 @@ function DashboardPage() {
 	const [page, setPage] = useState(1)
 	const [search, setSearch] = useState('')
 	const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('yearly')
+	const [showReportTypeMenu, setShowReportTypeMenu] = useState(false)
+	const reportTypeRef = useRef<HTMLDivElement>(null)
+	const router = useRouter()
 	const { data, isLoading, error } = useReports({ page, limit: 10 })
 	const { data: stats } = useStats()
 	const createReport = useCreateReport()
@@ -35,10 +47,24 @@ function DashboardPage() {
 	const maxChartValue = Math.max(...chartValues, 1)
 	const currentYear = new Date().getFullYear()
 
-	function handleCreateReport() {
-		createReport.mutate('Untitled Report', {
-			onSuccess: () => {
-				toast.success('Report created successfully')
+	// Close dropdown on outside click
+	useEffect(() => {
+		function handleClickOutside(e: MouseEvent) {
+			if (reportTypeRef.current && !reportTypeRef.current.contains(e.target as Node)) {
+				setShowReportTypeMenu(false)
+			}
+		}
+		if (showReportTypeMenu) {
+			document.addEventListener('mousedown', handleClickOutside)
+			return () => document.removeEventListener('mousedown', handleClickOutside)
+		}
+	}, [showReportTypeMenu])
+
+	function handleCreateReport(reportType: ReportType) {
+		setShowReportTypeMenu(false)
+		createReport.mutate({ title: 'Untitled Report', reportType }, {
+			onSuccess: (data) => {
+				router.push(`/reports/${data.report.id}/gallery`)
 			},
 			onError: () => {
 				toast.error('Failed to create report. Please try again.')
@@ -193,15 +219,38 @@ function DashboardPage() {
 							className="h-11 w-[320px] rounded-lg border border-border bg-white pl-9 pr-3 text-body-sm text-black outline-none placeholder:text-grey-100 focus:border-primary focus:ring-1 focus:ring-primary"
 						/>
 					</div>
-					<Button
-						onClick={handleCreateReport}
-						loading={createReport.isPending}
-						size="lg"
-						icon={<Plus className="h-3.5 w-3.5" />}
-						iconPosition="right"
-					>
-						New Report
-					</Button>
+					<div className="relative" ref={reportTypeRef}>
+						<Button
+							onClick={() => setShowReportTypeMenu(!showReportTypeMenu)}
+							loading={createReport.isPending}
+							size="lg"
+							icon={<Plus className="h-3.5 w-3.5" />}
+							iconPosition="right"
+						>
+							New Report
+						</Button>
+						{showReportTypeMenu && (
+							<div className="absolute right-0 top-full z-50 mt-2 w-54.5 overflow-hidden rounded-xl bg-white shadow-dropdown">
+								{REPORT_TYPE_OPTIONS.map((option, idx) => {
+									const Icon = option.icon
+									return (
+										<button
+											key={option.type}
+											type="button"
+											onClick={() => handleCreateReport(option.type)}
+											className={cn(
+												'flex w-full items-center gap-2.5 px-3.5 py-4 text-body-sm font-medium text-black transition-colors hover:bg-grey-25',
+												idx > 0 && 'border-t border-border',
+											)}
+										>
+											<Icon className="h-4.5 w-4.5 shrink-0 text-black" />
+											{option.label}
+										</button>
+									)
+								})}
+							</div>
+						)}
+					</div>
 				</div>
 			</div>
 

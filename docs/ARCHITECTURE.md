@@ -5,6 +5,26 @@
 
 ---
 
+## 0. REPORT TYPE MATRIX
+
+The app supports 4 report types. Most screens are identical across types — only the Calculation tab differs for BE (Evaluation).
+
+| Feature | HS (Liability) | BE (Evaluation) | KG (Short Report) | OT (Oldtimer) |
+|---------|----------------|------------------|-------------------|----------------|
+| Gallery | Upload, Grid, Single view, Annotation | Same | Same | Same |
+| Accident Info | Claimant + Opponent + Lawyer + Visits + Signatures | Same (+ Insurance expanded on Opponent) | Same | Same |
+| Vehicle | VIN, Specs, Details (type/motor/axles/doors/seats pickers) | Same | Same | Same |
+| Condition | Vehicle Condition + Damage Diagram + Paint Thickness + Tires + Prior Damage | Same | Same | Same |
+| Calculation tab label | "Calculation" | **"Valuation"** | "Calculation" | "Calculation" |
+| Calculation content | Value + Repair + Loss of Use + Correction (DAT/Manual/AI) | **DAT Valuation + Manual Valuation** + Correction | Value + Repair + Loss + Correction | Value + Repair + Loss + Correction |
+| Correction result labels | "Results without repair" / "Results with repair" | **"Valuation Results - Manual" / "Valuation after Correction"** | Same as HS | Same as HS |
+| Invoice | Settings + BVSK rates + Line items | Same | Same | Same |
+| Export & Send | Email composer + Document toggles + Lock Report | Same | Same | Same |
+
+**Key code path:** `src/app/(app)/reports/[id]/details/calculation/page.tsx` checks `report.reportType === 'BE'` to render `ValuationSection` vs standard `ValueSection + RepairSection`.
+
+---
+
 ## 1. SCREEN INVENTORY
 
 ### 1.0 Landing Page (Welcome Screen)

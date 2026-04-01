@@ -30,14 +30,15 @@ function AnnotationCanvas({
 	const activeShapeRef = useRef<fabric.FabricObject | null>(null)
 	const activeToolRef = useRef<AnnotationTool>(activeTool)
 	const activeColorRef = useRef<string>(activeColor)
-	const containerSizeRef = useRef<{ w: number; h: number } | null>(null)
+	// Store the natural image dimensions for export
+	const naturalSizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 })
 
 	const [ready, setReady] = useState(false)
 
 	activeToolRef.current = activeTool
 	activeColorRef.current = activeColor
 
-	// Single effect: measure container, load image, create canvas
+	// Core effect: load image, create canvas sized to fit image
 	useEffect(() => {
 		const container = containerRef.current
 		const canvasEl = canvasElRef.current
@@ -45,60 +46,52 @@ function AnnotationCanvas({
 
 		let disposed = false
 
-		// Load image first, then create canvas with fresh container measurements
 		const img = new window.Image()
 		img.crossOrigin = 'anonymous'
 		img.onload = () => {
 			if (disposed) return
 
-			// Measure container NOW (after image loaded, layout is fully settled)
-			const cw = container!.offsetWidth
-			const ch = container!.offsetHeight
-
-			if (cw < 100 || ch < 100) return
-
-			containerSizeRef.current = { w: cw, h: ch }
+			const cw = container.offsetWidth
+			const ch = container.offsetHeight
+			if (cw < 50 || ch < 50) return
 
 			const natW = img.naturalWidth
 			const natH = img.naturalHeight
+			naturalSizeRef.current = { w: natW, h: natH }
 
-			// Calculate "contain" fit
+			// "Contain" fit — canvas size = displayed image size
 			const scale = Math.min(cw / natW, ch / natH)
-			const imgW = Math.round(natW * scale)
-			const imgH = Math.round(natH * scale)
-			const offsetX = Math.round((cw - imgW) / 2)
-			const offsetY = Math.round((ch - imgH) / 2)
+			const canvasW = Math.round(natW * scale)
+			const canvasH = Math.round(natH * scale)
 
-			// Create canvas at FULL container size
-			const canvas = new fabric.Canvas(canvasEl!, {
-				width: cw,
-				height: ch,
+			const canvas = new fabric.Canvas(canvasEl, {
+				width: canvasW,
+				height: canvasH,
 				selection: false,
 			})
 			fabricCanvasRef.current = canvas
 
-			// Fabric wraps the <canvas> in a div — make it fill the container
-			const wrapper = canvasEl!.parentElement
+			// Center the canvas wrapper inside the container
+			const wrapper = canvasEl.parentElement
 			if (wrapper) {
 				wrapper.style.position = 'absolute'
-				wrapper.style.left = '0'
-				wrapper.style.top = '0'
+				wrapper.style.left = `${Math.round((cw - canvasW) / 2)}px`
+				wrapper.style.top = `${Math.round((ch - canvasH) / 2)}px`
 			}
 
-			// Create FabricImage from the already-loaded img element
+			// Background image fills the entire canvas (no offset)
 			const bgImg = new fabric.FabricImage(img, {
 				scaleX: scale,
 				scaleY: scale,
-				left: offsetX,
-				top: offsetY,
+				left: 0,
+				top: 0,
 				selectable: false,
 				evented: false,
 			})
-
 			canvas.backgroundImage = bgImg
 			canvas.renderAll()
 
-			// Restore saved annotations if any
+			// Restore saved annotations
 			if (initialAnnotations) {
 				const json = { ...initialAnnotations } as Record<string, unknown>
 				delete json.width
@@ -107,7 +100,7 @@ function AnnotationCanvas({
 				delete json.background
 
 				canvas.loadFromJSON(JSON.stringify(json)).then(() => {
-					canvas.setDimensions({ width: cw, height: ch })
+					canvas.setDimensions({ width: canvasW, height: canvasH })
 					canvas.backgroundImage = bgImg
 					canvas.renderAll()
 				})
@@ -118,35 +111,38 @@ function AnnotationCanvas({
 		}
 		img.src = photoUrl
 
-		// Handle resize
+		// Handle container resize
 		const observer = new ResizeObserver(() => {
-			const canvas = fabricCanvasRef.current
-			if (!canvas || disposed) return
+			const c = fabricCanvasRef.current
+			if (!c || disposed) return
 
-			const newW = container!.offsetWidth
-			const newH = container!.offsetHeight
-			if (newW < 100 || newH < 100) return
+			const newCW = container.offsetWidth
+			const newCH = container.offsetHeight
+			if (newCW < 50 || newCH < 50) return
 
-			const prev = containerSizeRef.current
-			if (prev && Math.abs(prev.w - newW) < 2 && Math.abs(prev.h - newH) < 2) return
-			containerSizeRef.current = { w: newW, h: newH }
+			const { w: natW, h: natH } = naturalSizeRef.current
+			if (!natW || !natH) return
 
-			canvas.setDimensions({ width: newW, height: newH })
+			const newScale = Math.min(newCW / natW, newCH / natH)
+			const newW = Math.round(natW * newScale)
+			const newH = Math.round(natH * newScale)
 
-			// Re-center background image
-			const bgImg = canvas.backgroundImage
-			if (bgImg && bgImg instanceof fabric.FabricImage) {
-				const natW = bgImg.width ?? 1
-				const natH = bgImg.height ?? 1
-				const scale = Math.min(newW / natW, newH / natH)
-				bgImg.set({
-					scaleX: scale,
-					scaleY: scale,
-					left: Math.round((newW - natW * scale) / 2),
-					top: Math.round((newH - natH * scale) / 2),
-				})
+			c.setDimensions({ width: newW, height: newH })
+
+			// Re-center wrapper
+			const wrapper = canvasEl.parentElement
+			if (wrapper) {
+				wrapper.style.left = `${Math.round((newCW - newW) / 2)}px`
+				wrapper.style.top = `${Math.round((newCH - newH) / 2)}px`
 			}
-			canvas.renderAll()
+
+			// Update background image scale
+			const bgImg = c.backgroundImage
+			if (bgImg && bgImg instanceof fabric.FabricImage) {
+				bgImg.set({ scaleX: newScale, scaleY: newScale, left: 0, top: 0 })
+			}
+
+			c.renderAll()
 		})
 		observer.observe(container)
 
@@ -162,7 +158,7 @@ function AnnotationCanvas({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [photoUrl])
 
-	// Handle tool changes
+	// Tool handling
 	useEffect(() => {
 		const canvas = fabricCanvasRef.current
 		if (!canvas) return
@@ -277,10 +273,7 @@ function AnnotationCanvas({
 						height: Math.abs(pointer.y - startY),
 					})
 				} else if (tool === 'arrow' && shape instanceof fabric.Line) {
-					shape.set({
-						x2: pointer.x,
-						y2: pointer.y,
-					})
+					shape.set({ x2: pointer.x, y2: pointer.y })
 				}
 
 				canvas.renderAll()
@@ -314,6 +307,7 @@ function AnnotationCanvas({
 		}
 	}, [activeTool, activeColor, ready])
 
+	// Sync drawing brush color
 	useEffect(() => {
 		const canvas = fabricCanvasRef.current
 		if (!canvas) return
@@ -325,7 +319,7 @@ function AnnotationCanvas({
 	return (
 		<div
 			ref={containerRef}
-			className={cn('absolute inset-0 overflow-hidden', className)}
+			className={cn('relative h-full w-full overflow-hidden', className)}
 		>
 			<canvas ref={canvasElRef} />
 		</div>

@@ -1,7 +1,17 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
-import { Camera, Upload } from 'lucide-react'
+/** Upload cloud icon from Figma (node 4178:3347) */
+function UploadCloudIcon({ className }: { className?: string }) {
+	return (
+		<svg viewBox="0 0 26 26" fill="none" className={className} aria-hidden="true">
+			<path d="M17.3 17.3L13 13L8.6 17.3" stroke="currentColor" strokeWidth="2.16" strokeLinecap="round" strokeLinejoin="round" />
+			<path d="M13 13V22.7" stroke="currentColor" strokeWidth="2.16" strokeLinecap="round" strokeLinejoin="round" />
+			<path d="M22 19.9C23.1 19.3 23.9 18.4 24.4 17.3C24.9 16.2 25 15 24.7 13.8C24.4 12.6 23.7 11.6 22.8 10.9C21.8 10.1 20.6 9.7 19.4 9.7H18.1C17.8 8.5 17.1 7.3 16.3 6.3C15.5 5.3 14.4 4.5 13.2 4C12 3.5 10.7 3.2 9.4 3.3C8.1 3.3 6.8 3.6 5.7 4.3C4.5 4.9 3.5 5.7 2.7 6.8C2 7.8 1.4 9.1 1.2 10.3C1 11.6 1 12.9 1.4 14.2C1.7 15.5 2.4 16.6 3.2 17.6" stroke="currentColor" strokeWidth="2.16" strokeLinecap="round" strokeLinejoin="round" />
+			<path d="M17.3 17.3L13 13L8.6 17.3" stroke="currentColor" strokeWidth="2.16" strokeLinecap="round" strokeLinejoin="round" />
+		</svg>
+	)
+}
 import { cn } from '@/lib/utils'
 
 type UploadZoneProps = {
@@ -98,7 +108,6 @@ function UploadZone({
 			if (validFiles.length > 0) {
 				onFilesSelected(validFiles)
 			}
-			// Reset the input so the same file can be selected again
 			if (inputRef.current) {
 				inputRef.current.value = ''
 			}
@@ -118,69 +127,60 @@ function UploadZone({
 
 	return (
 		<div
-			role="button"
-			tabIndex={isDisabled ? -1 : 0}
-			aria-label="Upload photos"
-			aria-disabled={isDisabled}
-			onClick={handleClick}
-			onKeyDown={handleKeyDown}
-			onDragEnter={handleDragEnter}
-			onDragLeave={handleDragLeave}
-			onDragOver={handleDragOver}
-			onDrop={handleDrop}
 			className={cn(
-				'relative flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-12 transition-colors',
-				isDisabled
-					? 'cursor-not-allowed border-grey-50 bg-grey-25 opacity-60'
-					: isDragOver
-						? 'border-primary bg-primary-light cursor-copy'
-						: 'border-grey-50 bg-grey-25 hover:border-primary hover:bg-primary-light cursor-pointer',
+				'flex min-h-[400px] flex-col items-center justify-center rounded-card bg-white p-4',
 				className,
 			)}
 		>
-			<input
-				ref={inputRef}
-				type="file"
-				accept={ACCEPT_STRING}
-				multiple
-				onChange={handleInputChange}
-				className="hidden"
-				aria-hidden="true"
-				tabIndex={-1}
-				disabled={isDisabled}
-			/>
-
 			<div
+				role="button"
+				tabIndex={isDisabled ? -1 : 0}
+				aria-label="Upload photos"
+				aria-disabled={isDisabled}
+				onClick={handleClick}
+				onKeyDown={handleKeyDown}
+				onDragEnter={handleDragEnter}
+				onDragLeave={handleDragLeave}
+				onDragOver={handleDragOver}
+				onDrop={handleDrop}
 				className={cn(
-					'flex h-14 w-14 items-center justify-center rounded-full',
-					isDragOver && !isDisabled
-						? 'bg-primary text-white'
-						: 'bg-white text-grey-100',
+					'flex w-full flex-1 flex-col items-center justify-center gap-2 rounded-lg py-4 transition-colors',
+					isDisabled
+						? 'cursor-not-allowed opacity-60'
+						: isDragOver
+							? 'bg-primary-light cursor-copy'
+							: 'cursor-pointer',
 				)}
 			>
-				{isDragOver && !isDisabled ? (
-					<Upload className="h-6 w-6" />
-				) : (
-					<Camera className="h-6 w-6" />
-				)}
-			</div>
+				<input
+					ref={inputRef}
+					type="file"
+					accept={ACCEPT_STRING}
+					multiple
+					onChange={handleInputChange}
+					className="hidden"
+					aria-hidden="true"
+					tabIndex={-1}
+					disabled={isDisabled}
+				/>
 
-			<div className="flex flex-col items-center gap-1 text-center">
-				<p className="text-body font-semibold text-black">
+				{/* Upload icon */}
+				<div className="flex h-[60px] w-[60px] items-center justify-center rounded-full border-[9px] border-primary/10 bg-primary/20">
+					<UploadCloudIcon className="h-6.5 w-6.5 text-primary" />
+				</div>
+
+				<p className="text-body-sm font-semibold text-black">
 					{isMaxReached
 						? 'Maximum photos reached'
-						: 'Drag & drop photos here'}
+						: 'Drag and drop here or click to upload'}
 				</p>
+
 				{!isMaxReached && (
-					<p className="text-body-sm text-grey-100">
-						or click to browse
+					<p className="text-caption text-grey-100">
+						PDF, PNG or JPG
 					</p>
 				)}
 			</div>
-
-			<p className="text-caption text-grey-100">
-				{currentCount} / {maxFiles} photos
-			</p>
 		</div>
 	)
 }

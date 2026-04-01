@@ -1,4 +1,4 @@
-import { CheckCircle2, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ClassificationResult } from '@/lib/ai/types'
 
@@ -27,6 +27,7 @@ type SuggestedCategory = {
 	label: string
 	description: string
 	matchTypes: string[]
+	image: string
 }
 
 const SUGGESTED_CATEGORIES: SuggestedCategory[] = [
@@ -34,23 +35,35 @@ const SUGGESTED_CATEGORIES: SuggestedCategory[] = [
 		label: 'Vehicle Diagonals',
 		description: 'Front and rear diagonal photos of the vehicle',
 		matchTypes: ['overview'],
+		image: '/images/suggested/vehicle-diagonals.webp',
 	},
 	{
 		label: 'Damage Overview',
 		description: 'Detailed close-ups of all damaged areas',
 		matchTypes: ['damage'],
+		image: '/images/suggested/damage-overview.webp',
 	},
 	{
 		label: 'Document Shot',
 		description: 'Photos of all relevant vehicle documents',
 		matchTypes: ['document', 'vin', 'plate'],
+		image: '/images/suggested/document-shot.webp',
 	},
 ]
+
+/** Filled green circle with white checkmark — matches Figma "lets-icons:check-fill" */
+function GreenCheckIcon({ className }: { className?: string }) {
+	return (
+		<svg viewBox="0 0 17 17" fill="none" className={className} aria-hidden="true">
+			<circle cx="8.5" cy="8.5" r="8.5" fill="#019447" />
+			<path d="M5 8.5L7.5 11L12 6.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+		</svg>
+	)
+}
 
 function InstructionSidebar({ className, classifications, generationSummary }: InstructionSidebarProps) {
 	const hasClassifications = classifications && classifications.size > 0
 
-	// Get category counts: prefer live classification map, fall back to persisted summary counts
 	function getCategoryCount(category: SuggestedCategory): number {
 		if (hasClassifications) {
 			return countMatches(classifications, category.matchTypes)
@@ -66,24 +79,24 @@ function InstructionSidebar({ className, classifications, generationSummary }: I
 	}
 
 	return (
-		<div className={cn('flex flex-col gap-4', className)}>
+		<div className={cn('flex flex-col', className)}>
 			{/* Instruction Card */}
-			<div className="flex flex-col gap-3 rounded-2xl bg-white p-5">
-				<h3 className="text-h3 font-medium text-black">Instruction</h3>
-				<ul className="flex flex-col gap-2.5">
+			<div className="mb-6 flex flex-col gap-2.5 rounded-card bg-white p-5">
+				<h3 className="text-subsection font-medium leading-6 text-black">Instruction</h3>
+				<div className="flex flex-col gap-2.5">
 					{INSTRUCTIONS.map((text) => (
-						<li key={text} className="flex items-start gap-2.5">
-							<CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-							<span className="text-body text-black">{text}</span>
-						</li>
+						<div key={text} className="flex items-center gap-2.5">
+							<GreenCheckIcon className="h-4.5 w-4.5 shrink-0" />
+							<span className="text-body tracking-[0.16px] text-black">{text}</span>
+						</div>
 					))}
-				</ul>
+				</div>
 			</div>
 
 			{/* Suggested Photos Card */}
-			<div className="flex flex-col gap-3 rounded-2xl bg-white p-5">
-				<h3 className="text-h3 font-medium text-black">Suggested Photos</h3>
-				<div className="flex flex-col gap-3">
+			<div className="flex flex-col gap-2.5 rounded-card bg-white p-5">
+				<h3 className="text-subsection font-medium leading-6 text-black">Suggested Photos</h3>
+				<div className="flex flex-col gap-2.5">
 					{SUGGESTED_CATEGORIES.map((category) => {
 						const count = getCategoryCount(category)
 						const isFulfilled = count > 0
@@ -91,24 +104,27 @@ function InstructionSidebar({ className, classifications, generationSummary }: I
 						return (
 							<div
 								key={category.label}
-								className="flex items-center gap-3 rounded-2xl border-2 border-[#ededed] p-3.5"
+								className="flex h-22 items-center gap-2.5 rounded-btn border-2 border-border-card p-3.5"
 							>
-								{/* Thumbnail placeholder */}
-								<div
-									className={cn(
-										'flex h-12 w-12 shrink-0 items-center justify-center rounded-lg',
-										isFulfilled ? 'bg-primary-light' : 'bg-grey-25',
-									)}
-								>
+								{/* Thumbnail — 60px rounded */}
+								<div className="relative h-15 w-15 shrink-0 overflow-hidden rounded-btn">
+									<img
+										src={category.image}
+										alt={category.label}
+										className="h-full w-full object-cover"
+										loading="lazy"
+									/>
 									{isFulfilled && (
-										<CheckCircle2 className="h-5 w-5 text-primary" />
+										<div className="absolute inset-0 flex items-center justify-center bg-black/30">
+											<GreenCheckIcon className="h-5 w-5" />
+										</div>
 									)}
 								</div>
-								<div className="flex flex-col gap-0.5 min-w-0">
-									<span className="text-body-sm font-semibold text-black">
+								<div className="flex flex-col gap-1 min-w-0">
+									<span className="text-body font-medium tracking-[0.16px] text-black">
 										{category.label}
 									</span>
-									<span className="text-caption text-grey-100">
+									<span className="text-body-sm tracking-[0.14px] text-black leading-[1.2]">
 										{category.description}
 									</span>
 									{count > 0 && (
@@ -125,10 +141,10 @@ function InstructionSidebar({ className, classifications, generationSummary }: I
 
 			{/* AI Generation Summary Card */}
 			{generationSummary && (
-				<div className="flex flex-col gap-3 rounded-2xl bg-white p-5">
+				<div className="flex flex-col gap-3 rounded-card bg-white p-5">
 					<div className="flex items-center gap-2">
 						<Sparkles className="h-4 w-4 text-primary" />
-						<h3 className="text-h3 font-medium text-black">AI Analysis</h3>
+						<h3 className="text-subsection font-medium text-black">AI Analysis</h3>
 					</div>
 					<div className="flex flex-col gap-2">
 						<div className="flex items-center justify-between">

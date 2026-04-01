@@ -2,6 +2,7 @@
 
 import { type ReactNode, useState } from 'react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
+import { AlertCircle } from 'lucide-react'
 import { TabBar } from '@/components/ui/tab-bar'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
 import { useReport } from '@/hooks/use-reports'
@@ -15,12 +16,13 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 
 	const calculationLabel = report?.reportType === 'BE' ? 'Valuation' : 'Calculation'
 
+	// TODO: Wire real completion counts from report data
 	const DETAIL_TABS = [
-		{ key: 'accident-info', label: 'Accident Info' },
-		{ key: 'vehicle', label: 'Vehicle' },
-		{ key: 'condition', label: 'Condition' },
-		{ key: 'calculation', label: calculationLabel },
-		{ key: 'invoice', label: 'Invoice' },
+		{ key: 'accident-info', label: 'Accident Info', isComplete: false, completion: undefined },
+		{ key: 'vehicle', label: 'Vehicle', isComplete: false, completion: '0/4' },
+		{ key: 'condition', label: 'Condition', isComplete: false, completion: '0/12' },
+		{ key: 'calculation', label: calculationLabel, isComplete: false, completion: '0/15' },
+		{ key: 'invoice', label: 'Invoice', isComplete: false, completion: undefined },
 	]
 
 	const activeTab =
@@ -38,12 +40,12 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 				onTabChange={handleTabChange}
 			/>
 
-			{/* Show missing information toggle */}
-			<div className="flex items-center justify-between rounded-lg bg-white px-4 py-3">
-				<div>
-					<p className="text-body-sm font-medium text-black">Show missing information</p>
-					<p className="text-caption text-grey-100">
-						{showMissing ? 'Highlighting missing fields' : 'X fields need attention'}
+			{/* Show missing information banner */}
+			<div className="flex items-center justify-between rounded-xl bg-white px-5 py-3.5">
+				<div className="flex flex-col gap-0.5">
+					<p className="text-body font-medium text-black">Show missing information</p>
+					<p className="text-body-sm text-grey-100">
+						{showMissing ? 'Highlighting empty fields' : 'X fields need attention'}
 					</p>
 				</div>
 				<ToggleSwitch

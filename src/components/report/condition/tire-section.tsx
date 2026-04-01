@@ -187,10 +187,10 @@ function TireSection({
 													type="button"
 													onClick={() => handleChange('usability', level)}
 													className={cn(
-														'flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-[15px] transition-colors',
+														'flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn transition-colors',
 														level <= tire.usability
 															? 'border-2 border-primary bg-white'
-															: 'border border-[#e3e3e3] bg-white hover:border-grey-100',
+															: 'border border-border-card bg-white hover:border-grey-100',
 													)}
 													aria-label={`Set usability to ${level} of 5`}
 													aria-pressed={level <= tire.usability}
@@ -203,7 +203,7 @@ function TireSection({
 											))}
 											<button
 												type="button"
-												className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-[15px] border border-[#e3e3e3] bg-white text-black transition-colors hover:border-grey-100"
+												className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn border border-border-card bg-white text-black transition-colors hover:border-grey-100"
 											>
 												<Plus className="h-4 w-4" />
 											</button>
@@ -244,7 +244,7 @@ function TireSection({
 							<div className="flex items-center gap-4">
 								<button
 									type="button"
-									className="flex h-[50px] cursor-pointer items-center justify-center rounded-[15px] border-2 border-grey-50 px-4 text-body-md font-medium text-black transition-colors hover:border-grey-100"
+									className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-grey-50 px-4 text-body-md font-medium text-black transition-colors hover:border-grey-100"
 								>
 									Align Axes
 								</button>
@@ -253,7 +253,7 @@ function TireSection({
 									onClick={() => {
 										onSaveTireSet({ ...activeTireSet, matchAndAlloy: !activeTireSet.matchAndAlloy })
 									}}
-									className="flex h-[50px] cursor-pointer items-center justify-center rounded-[15px] bg-primary px-4 text-body-md font-medium text-white transition-colors hover:bg-primary/90"
+									className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn bg-primary px-4 text-body-md font-medium text-white transition-colors hover:bg-primary/90"
 								>
 									Match The Set
 								</button>

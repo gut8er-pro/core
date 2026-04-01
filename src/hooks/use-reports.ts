@@ -59,11 +59,16 @@ async function fetchReports(params: Partial<ReportListParams> = {}): Promise<Rep
 	return response.json()
 }
 
-async function createReport(title: string): Promise<{ report: Report }> {
+type CreateReportParams = {
+	title: string
+	reportType?: 'HS' | 'BE' | 'KG' | 'OT'
+}
+
+async function createReport(params: CreateReportParams): Promise<{ report: Report }> {
 	const response = await fetch('/api/reports', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ title }),
+		body: JSON.stringify(params),
 	})
 	if (!response.ok) {
 		throw new Error('Failed to create report')

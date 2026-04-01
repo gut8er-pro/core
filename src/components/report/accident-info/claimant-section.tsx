@@ -20,10 +20,11 @@ const salutationOptions = [
 
 function ClaimantSection({ register, control, errors, onFieldBlur, className }: SectionProps & { className?: string }) {
 	const representedByLawyer = useWatch({ control, name: 'claimantRepresentedByLawyer' })
+	const eligibleForTax = useWatch({ control, name: 'claimantEligibleForInputTaxDeduction' })
 	const licensePlate = useWatch({ control, name: 'claimantLicensePlate' })
 
 	return (
-		<CollapsibleSection title="Claimant Information" defaultOpen className={className}>
+		<CollapsibleSection title="Claimant Information" info defaultOpen className={className}>
 			<div className="flex flex-col gap-4">
 				<TextField
 					label="Company"
@@ -180,14 +181,27 @@ function ClaimantSection({ register, control, errors, onFieldBlur, className }: 
 					</div>
 				</div>
 
-				{representedByLawyer && (
-					<TextField
-						label="Involved Lawyer"
-						placeholder="Lawyer name or firm"
-						error={errors.claimantInvolvedLawyer?.message}
-						{...register('claimantInvolvedLawyer')}
-						onBlur={() => onFieldBlur?.('claimantInvolvedLawyer')}
-					/>
+				{/* Conditional fields based on checkboxes */}
+				{(eligibleForTax || representedByLawyer) && (
+					<div className="grid grid-cols-2 gap-4">
+						{eligibleForTax && (
+							<TextField
+								label="VAT ID"
+								placeholder="DE344/490424"
+								{...register('claimantVatId' as keyof import('./types').AccidentInfoFormData)}
+								onBlur={() => onFieldBlur?.('claimantVatId')}
+							/>
+						)}
+						{representedByLawyer && (
+							<TextField
+								label="Involved Lawyer"
+								placeholder="John Doe Lawyer Firm"
+								error={errors.claimantInvolvedLawyer?.message}
+								{...register('claimantInvolvedLawyer')}
+								onBlur={() => onFieldBlur?.('claimantInvolvedLawyer')}
+							/>
+						)}
+					</div>
 				)}
 			</div>
 		</CollapsibleSection>
