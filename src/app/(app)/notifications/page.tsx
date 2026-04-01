@@ -6,37 +6,47 @@ import {
 	FileText,
 	Lock,
 	CheckCircle2,
-	Receipt,
+	CreditCard,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { useNotifications } from '@/hooks/use-notifications'
-import type { NotificationType } from '@/hooks/use-notifications'
+import type { NotificationEventType } from '@/hooks/use-notifications'
 
 const NOTIFICATION_ICON_MAP: Record<
-	NotificationType,
+	NotificationEventType,
 	{ icon: typeof FileText; bgClass: string; iconClass: string }
 > = {
-	report_created: {
+	REPORT_CREATED: {
 		icon: FileText,
 		bgClass: 'bg-primary-light',
 		iconClass: 'text-primary',
 	},
-	report_sent: {
+	REPORT_COMPLETED: {
 		icon: CheckCircle2,
 		bgClass: 'bg-primary-light',
 		iconClass: 'text-primary',
 	},
-	report_locked: {
+	REPORT_SENT: {
+		icon: CheckCircle2,
+		bgClass: 'bg-primary-light',
+		iconClass: 'text-primary',
+	},
+	REPORT_LOCKED: {
 		icon: Lock,
 		bgClass: 'bg-warning-light',
 		iconClass: 'text-warning',
 	},
-	report_updated: {
-		icon: Receipt,
+	INVOICE_GENERATED: {
+		icon: CreditCard,
 		bgClass: 'bg-grey-25',
 		iconClass: 'text-grey-100',
+	},
+	PAYMENT_RECEIVED: {
+		icon: CreditCard,
+		bgClass: 'bg-primary-light',
+		iconClass: 'text-primary',
 	},
 }
 
@@ -76,7 +86,7 @@ function NotificationsPage() {
 			) : (
 				<div className="mt-6 overflow-hidden rounded-xl border border-border bg-white">
 					{notifications.map((notification, index) => {
-						const iconConfig = NOTIFICATION_ICON_MAP[notification.type]
+						const iconConfig = NOTIFICATION_ICON_MAP[notification.eventType] ?? NOTIFICATION_ICON_MAP.REPORT_CREATED
 						const Icon = iconConfig.icon
 						const relativeTime = formatDistanceToNow(
 							new Date(notification.createdAt),
