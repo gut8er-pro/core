@@ -1,7 +1,11 @@
 import { z } from 'zod'
 
+const REPORT_TYPES = ['HS', 'BE', 'KG', 'OT'] as const
+type ReportType = (typeof REPORT_TYPES)[number]
+
 const createReportSchema = z.object({
 	title: z.string().min(1, 'Title is required').max(200, 'Title must be under 200 characters'),
+	reportType: z.enum(REPORT_TYPES).optional(),
 })
 
 const updateReportSchema = z.object({
@@ -27,5 +31,6 @@ export {
 	createReportSchema,
 	updateReportSchema,
 	reportListParamsSchema,
+	REPORT_TYPES,
 }
-export type { CreateReportInput, UpdateReportInput, ReportListParams }
+export type { CreateReportInput, UpdateReportInput, ReportListParams, ReportType }

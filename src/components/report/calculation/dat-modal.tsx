@@ -83,7 +83,7 @@ function DatModal({ open, onClose, initialData, onSave }: DatModalProps) {
 						<Info className="h-4 w-4 text-grey-100" />
 					</div>
 
-					<div className="flex flex-col gap-2 rounded-[20px] border border-[#e8e9eb] p-4">
+					<div className="flex flex-col gap-2 rounded-card border border-border-card p-4">
 						<div className="flex items-end justify-between gap-4">
 							<label className="flex h-[53px] items-center gap-2 cursor-pointer">
 								<Checkbox
@@ -134,7 +134,7 @@ function DatModal({ open, onClose, initialData, onSave }: DatModalProps) {
 						<Info className="h-4 w-4 text-grey-100" />
 					</div>
 
-					<div className="rounded-[20px] border border-[#e8e9eb] p-4">
+					<div className="rounded-card border border-border-card p-4">
 						<button
 							type="button"
 							className="flex w-full cursor-pointer items-center justify-between transition-colors hover:opacity-80"

@@ -71,6 +71,7 @@ function AccidentInfoPage() {
 			opponentPhone: '',
 			opponentInsuranceCompany: '',
 			opponentInsuranceNumber: '',
+			opponentClaimNumber: '',
 			expertName: '',
 			fileNumber: '',
 			caseDate: '',
@@ -200,7 +201,7 @@ function AccidentInfoPage() {
 		<div className="flex flex-col gap-6">
 			{/* Page heading with completion badge + auto-save status */}
 			<div className="flex items-center justify-between">
-				<h2 className="text-h3 font-bold text-black">Accident Overview</h2>
+				<h2 className="text-subsection font-medium text-black">Accident Overview</h2>
 				<div className="flex items-center gap-3">
 					{autoSaveState.status === 'saving' && (
 						<span className="flex items-center gap-1 text-caption text-grey-100">
@@ -217,7 +218,7 @@ function AccidentInfoPage() {
 					{autoSaveState.status === 'error' && (
 						<span className="text-caption text-error">Failed to save</span>
 					)}
-					<span className="text-body-sm text-grey-100">64% Complete</span>
+					<span className="text-body-sm text-grey-100">50% Complete</span>
 				</div>
 			</div>
 

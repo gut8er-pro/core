@@ -43,7 +43,7 @@ function LoginPage() {
 					{/* Car illustration — anchored to bottom */}
 					<div className="absolute bottom-0 left-0 right-0">
 						<Image
-							src="/images/login-car-illustration.png"
+							src="/images/login-car-illustration.webp"
 							alt="Vehicle assessment illustration"
 							width={600}
 							height={642}

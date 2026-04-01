@@ -1,14 +1,8 @@
 'use client'
 
-import { useState, useCallback, useRef, useMemo } from 'react'
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import {
-	Sparkles,
-	AlertCircle,
-	X,
-	Check,
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { AlertCircle, X, Check } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { usePhotos, useDeletePhoto } from '@/hooks/use-photos'
 import { usePhotoUpload } from '@/hooks/use-photo-upload'
@@ -28,8 +22,6 @@ import { GenerateProgress } from '@/components/report/gallery/generate-progress'
 import { ClassificationBadge } from '@/components/report/gallery/photo-classification-badge'
 import type { PhotoClassificationType } from '@/lib/ai/types'
 
-type ViewMode = 'single' | 'grid'
-
 function GalleryPage() {
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
@@ -39,16 +31,53 @@ function GalleryPage() {
 	const { uploadState, uploadPhotos } = usePhotoUpload(reportId)
 	const queryClient = useQueryClient()
 	const { status: genStatus, generate, cancel, reset } = useGenerateReport(reportId)
-	const [viewMode] = useState<ViewMode>('single')
 	const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null)
 	const [annotationPhotoId, setAnnotationPhotoId] = useState<string | null>(null)
+	const [summaryDismissed, setSummaryDismissed] = useState(false)
 	const fileInputRef = useRef<HTMLInputElement>(null)
+	// Track which photo IDs were last generated to prevent duplicate runs
+	const lastGeneratedPhotoIdsRef = useRef<string | null>(null)
 
 	const photos = data?.photos ?? []
-	const selectedPhoto = photos.find((p) => p.id === selectedPhotoId) ?? photos[0] ?? null
+	const selectedPhoto = selectedPhotoId ? photos.find((p) => p.id === selectedPhotoId) ?? null : null
 
 	// Persisted AI generation summary from the report
 	const persistedSummary = report?.aiGenerationSummary as AiGenerationSummary | null
+	const hasGenerated = !!persistedSummary
+
+	// After generation completes or if report was previously generated, auto-select first photo
+	useEffect(() => {
+		if (hasGenerated && photos.length > 0 && !selectedPhotoId) {
+			setSelectedPhotoId(photos[0]!.id)
+		}
+	}, [hasGenerated, photos, selectedPhotoId])
+
+	// Also auto-select when live generation finishes
+	useEffect(() => {
+		if (genStatus.summary && photos.length > 0) {
+			setSelectedPhotoId(photos[0]!.id)
+			// Record which photos were generated
+			lastGeneratedPhotoIdsRef.current = photos.map((p) => p.id).sort().join(',')
+		}
+	}, [genStatus.summary, photos])
+
+	// Listen for "Generate Report" button in the layout
+	useEffect(() => {
+		function handleGenerate() {
+			if (photos.length === 0 || genStatus.isGenerating) return
+
+			// Prevent re-generation if same photos haven't changed
+			const currentPhotoIds = photos.map((p) => p.id).sort().join(',')
+			if (lastGeneratedPhotoIdsRef.current === currentPhotoIds) {
+				// Same photos already generated — skip
+				return
+			}
+
+			void generate()
+		}
+		window.addEventListener('generate-report', handleGenerate)
+		return () => window.removeEventListener('generate-report', handleGenerate)
+	}, [photos, genStatus.isGenerating, generate])
 
 	// Build classifications map: prefer live SSE data, fall back to persisted aiClassification
 	const mergedClassifications = useMemo(() => {
@@ -64,7 +93,7 @@ function GalleryPage() {
 
 	// Effective summary: live SSE summary takes priority, then persisted DB summary
 	const effectiveSummary = genStatus.summary || persistedSummary
-	const hasLiveSummary = !!genStatus.summary
+
 
 	const handleFilesSelected = useCallback(
 		(files: File[]) => {
@@ -82,7 +111,6 @@ function GalleryPage() {
 			const files = e.target.files
 			if (!files || files.length === 0) return
 			handleFilesSelected(Array.from(files))
-			// Reset input so the same files can be selected again
 			e.target.value = ''
 		},
 		[handleFilesSelected],
@@ -105,10 +133,6 @@ function GalleryPage() {
 		[],
 	)
 
-	const handleGenerate = useCallback(() => {
-		void generate()
-	}, [generate])
-
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center py-16">
@@ -116,6 +140,10 @@ function GalleryPage() {
 			</div>
 		)
 	}
+
+	// Determine view: empty → upload, photos + no selection → grid, photos + selection → single
+	const hasPhotos = photos.length > 0
+	const showSingleView = hasPhotos && selectedPhoto !== null
 
 	return (
 		<div className="flex gap-6">
@@ -130,28 +158,18 @@ function GalleryPage() {
 				aria-hidden="true"
 			/>
 
-			{/* Left instruction sidebar */}
-			<InstructionSidebar
-				className="hidden w-72 shrink-0 xl:block"
-				classifications={mergedClassifications as Map<string, import('@/lib/ai/types').ClassificationResult>}
-				generationSummary={effectiveSummary ?? undefined}
-			/>
+			{/* Left sidebar: only show instruction sidebar during upload/grid phase (before generation).
+			    After generation, the layout renders the report nav sidebar. */}
+			{!hasGenerated && !showSingleView && (
+				<InstructionSidebar
+					className="hidden w-75.5 shrink-0 xl:block"
+					classifications={mergedClassifications as Map<string, import('@/lib/ai/types').ClassificationResult>}
+					generationSummary={effectiveSummary ?? undefined}
+				/>
+			)}
 
 			{/* Main content area */}
 			<div className="flex flex-1 flex-col gap-6 min-w-0">
-				{/* Header bar */}
-				<div className="flex items-center justify-end">
-					<Button
-						variant="primary"
-						icon={<Sparkles className="h-4 w-4" />}
-						onClick={handleGenerate}
-						disabled={photos.length === 0 || genStatus.isGenerating}
-						loading={genStatus.isGenerating}
-					>
-						Generate Report
-					</Button>
-				</div>
-
 				{/* Generation progress */}
 				{genStatus.isGenerating && (
 					<GenerateProgress status={genStatus} onCancel={cancel} />
@@ -173,24 +191,25 @@ function GalleryPage() {
 					</div>
 				)}
 
-				{/* Generation summary — live after generation or persisted from DB */}
-				{effectiveSummary && !genStatus.isGenerating && !genStatus.error && (
+				{/* Generation summary */}
+				{effectiveSummary && !genStatus.isGenerating && !genStatus.error && !summaryDismissed && (
 					<div className="flex items-center gap-2 rounded-lg border border-primary bg-primary-light px-4 py-3">
 						<Check className="h-4 w-4 shrink-0 text-primary" />
 						<p className="flex-1 text-body-sm text-primary">
 							Report generated — {effectiveSummary.totalFieldsFilled} fields auto-filled
 							{effectiveSummary.damageMarkersPlaced > 0 && `, ${effectiveSummary.damageMarkersPlaced} damage markers placed`}
 						</p>
-						{hasLiveSummary && (
-							<button
-								type="button"
-								onClick={reset}
-								className="shrink-0 cursor-pointer text-primary hover:text-primary/80"
-								aria-label="Dismiss message"
-							>
-								<X className="h-4 w-4" />
-							</button>
-						)}
+						<button
+							type="button"
+							onClick={() => {
+								setSummaryDismissed(true)
+								reset()
+							}}
+							className="shrink-0 cursor-pointer text-primary hover:text-primary/80"
+							aria-label="Dismiss message"
+						>
+							<X className="h-4 w-4" />
+						</button>
 					</div>
 				)}
 
@@ -217,16 +236,17 @@ function GalleryPage() {
 					</div>
 				)}
 
-				{/* Gallery content */}
-				{photos.length === 0 ? (
-					/* Upload zone - only shown when no photos */
+				{/* Gallery content — 3 views */}
+				{!hasPhotos ? (
+					/* Empty state: upload zone */
 					<UploadZone
 						onFilesSelected={handleFilesSelected}
 						currentCount={photos.length}
 						maxFiles={MAX_PHOTOS_PER_REPORT}
 						disabled={uploadState.isUploading}
 					/>
-				) : viewMode === 'single' ? (
+				) : showSingleView ? (
+					/* Single photo view with filmstrip */
 					<div className="flex flex-col gap-6">
 						<div className="relative">
 							<PhotoViewer
@@ -234,7 +254,7 @@ function GalleryPage() {
 								onDelete={() => selectedPhoto && handleDelete(selectedPhoto.id)}
 								onAnnotate={() => selectedPhoto && handleAnnotate(selectedPhoto.id)}
 							/>
-							{/* Classification badge overlay — live during generation, persisted after */}
+							{/* Classification badge overlay */}
 							{selectedPhoto && (() => {
 								const liveClassification = genStatus.classifications.get(selectedPhoto.id)?.type
 								const persistedClassification = selectedPhoto.aiClassification as PhotoClassificationType | null
@@ -256,13 +276,24 @@ function GalleryPage() {
 						/>
 					</div>
 				) : (
+					/* Grid view */
 					<PhotoGrid
 						photos={photos}
-						selectedId={selectedPhoto?.id}
-						onSelect={setSelectedPhotoId}
+						onSelect={(id) => setSelectedPhotoId(id)}
 						onEdit={handleAnnotate}
 						onDelete={handleDelete}
 					/>
+				)}
+
+				{/* Back to grid button — shown in single view */}
+				{showSingleView && (
+					<button
+						type="button"
+						onClick={() => setSelectedPhotoId(null)}
+						className="self-start text-body-sm font-medium text-primary hover:underline"
+					>
+						Back to gallery
+					</button>
 				)}
 			</div>
 
@@ -278,7 +309,6 @@ function GalleryPage() {
 					try {
 						let annotatedUrl: string | null = null
 						if (dataUrl) {
-							// Upload flattened annotated image to storage
 							const response = await fetch(dataUrl)
 							const blob = await response.blob()
 							const storagePath = getStoragePath(reportId, annotationPhotoId, 'annotated')
@@ -291,7 +321,6 @@ function GalleryPage() {
 							method: 'PATCH',
 							headers: { 'Content-Type': 'application/json' },
 							body: JSON.stringify({
-								// Explicitly set to URL or null (clears previous annotation)
 								annotatedUrl,
 								annotations: hasAnnotations ? [{
 									type: 'fabric',
@@ -301,11 +330,10 @@ function GalleryPage() {
 								}] : [],
 							}),
 						})
-						// Invalidate photos query so the change is visible immediately
 						queryClient.invalidateQueries({ queryKey: ['report', reportId, 'photos'] })
 						setAnnotationPhotoId(null)
 					} catch {
-						// Annotation save failed silently -- photo still accessible
+						// Annotation save failed silently
 					}
 				}}
 			/>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
-import { PhotoCard } from '@/components/ui/photo-card'
+import { Palette, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Photo } from '@/hooks/use-photos'
 
@@ -18,7 +18,6 @@ function PhotoGrid({
 	photos,
 	onEdit,
 	onDelete,
-	selectedId,
 	onSelect,
 	className,
 }: PhotoGridProps) {
@@ -33,7 +32,7 @@ function PhotoGrid({
 		return (
 			<div
 				className={cn(
-					'flex flex-col items-center justify-center rounded-lg border border-dashed border-grey-50 py-12 text-center',
+					'flex flex-col items-center justify-center rounded-card bg-white py-12 text-center',
 					className,
 				)}
 			>
@@ -47,13 +46,14 @@ function PhotoGrid({
 	return (
 		<div
 			className={cn(
-				'grid grid-cols-1 gap-4 md:grid-cols-2',
+				'grid grid-cols-2 gap-4 rounded-card bg-white p-6',
 				className,
 			)}
 		>
 			{photos.map((photo) => (
 				<div
 					key={photo.id}
+					className="group relative cursor-pointer overflow-hidden rounded-xl"
 					role="button"
 					tabIndex={0}
 					onClick={() => handleSelect(photo.id)}
@@ -63,16 +63,43 @@ function PhotoGrid({
 							handleSelect(photo.id)
 						}
 					}}
-					className="cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
 				>
-					<PhotoCard
-						src={photo.thumbnailUrl ?? photo.url}
+					<img
+						src={photo.annotatedUrl ?? photo.previewUrl ?? photo.url}
 						alt={photo.filename}
-						variant="grid"
-						selected={selectedId === photo.id}
-						onEdit={onEdit ? () => onEdit(photo.id) : undefined}
-						onDelete={onDelete ? () => onDelete(photo.id) : undefined}
+						className="aspect-4/3 w-full object-cover"
+						loading="lazy"
 					/>
+
+					{/* Floating action buttons — bottom right */}
+					<div className="absolute bottom-4 right-4 flex flex-col gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+						{onEdit && (
+							<button
+								type="button"
+								onClick={(e) => {
+									e.stopPropagation()
+									onEdit(photo.id)
+								}}
+								className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-md bg-black/90 backdrop-blur-sm transition-colors hover:bg-black"
+								aria-label="Annotate photo"
+							>
+								<Palette className="h-6 w-6 text-white" />
+							</button>
+						)}
+						{onDelete && (
+							<button
+								type="button"
+								onClick={(e) => {
+									e.stopPropagation()
+									onDelete(photo.id)
+								}}
+								className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-md bg-black/90 backdrop-blur-sm transition-colors hover:bg-black"
+								aria-label="Delete photo"
+							>
+								<Trash2 className="h-6 w-6 text-white" />
+							</button>
+						)}
+					</div>
 				</div>
 			))}
 		</div>

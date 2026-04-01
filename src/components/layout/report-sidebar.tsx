@@ -23,35 +23,32 @@ function ReportSidebar({
 	return (
 		<nav
 			className={cn(
-				'hidden w-[200px] shrink-0 rounded-2xl bg-surface-secondary p-4 lg:block',
+				'flex w-75.5 shrink-0 flex-col gap-4 rounded-2xl bg-white p-6',
 				className,
 			)}
 			aria-label="Report navigation"
 		>
-			<ul className="flex flex-col gap-1">
-				{sections.map((section) => {
-					const Icon = section.icon
-					const isActive = section.key === activeSection
-					return (
-						<li key={section.key}>
-							<button
-								type="button"
-								onClick={() => onSectionChange?.(section.key)}
-								className={cn(
-									'flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors',
-									isActive
-										? 'font-semibold text-primary'
-										: 'text-grey-100 hover:bg-grey-25 hover:text-black',
-								)}
-								aria-current={isActive ? 'page' : undefined}
-							>
-								<Icon className="h-5 w-5 shrink-0" />
-								{section.label}
-							</button>
-						</li>
-					)
-				})}
-			</ul>
+			{sections.map((section) => {
+				const Icon = section.icon
+				const isActive = section.key === activeSection
+				return (
+					<button
+						key={section.key}
+						type="button"
+						onClick={() => onSectionChange?.(section.key)}
+						className={cn(
+							'flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3.5 py-3 text-body font-medium tracking-[0.16px] transition-colors',
+							isActive
+								? 'bg-grey-25 text-primary'
+								: 'text-black hover:bg-grey-25',
+						)}
+						aria-current={isActive ? 'page' : undefined}
+					>
+						<Icon className="h-6 w-6 shrink-0" />
+						{section.label}
+					</button>
+				)
+			})}
 		</nav>
 	)
 }

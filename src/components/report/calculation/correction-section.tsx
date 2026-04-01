@@ -113,7 +113,7 @@ function ResultCard({
 	onEdit?: () => void
 }) {
 	return (
-		<div className="relative overflow-hidden rounded-[20px] bg-primary p-6">
+		<div className="relative overflow-hidden rounded-card bg-primary p-6">
 			{/* Dark overlay tint for depth */}
 			<div className="absolute inset-0 bg-black/10" />
 			<div className="relative flex items-end justify-between">
@@ -125,7 +125,7 @@ function ResultCard({
 					<button
 						type="button"
 						onClick={onEdit}
-						className="flex items-center gap-1.5 rounded-[15px] bg-white/15 px-3.5 py-3 text-body-sm font-medium text-white transition-colors hover:bg-white/25"
+						className="flex items-center gap-1.5 rounded-btn bg-white/15 px-3.5 py-3 text-body-sm font-medium text-white transition-colors hover:bg-white/25"
 					>
 						<Edit className="h-4 w-4" />
 						Edit

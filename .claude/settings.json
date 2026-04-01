@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/ivanvukasinovic/Documents/dev/temp/core/src/components -type f -name *.tsx -o -name *.ts)",
+      "Bash(find /Users/ivanvukasinovic/Documents/dev/temp/core/src/hooks -type f -name *.ts -o -name *.tsx)",
+      "Bash(ls -la \"/Users/ivanvukasinovic/Documents/dev/temp/core/src/app/\\(app\\)/dashboard/\")",
+      "Bash(cat \"/Users/ivanvukasinovic/Documents/dev/temp/core/src/app/\\(app\\)/dashboard/page.tsx\")",
+      "Bash(cat \"/Users/ivanvukasinovic/Documents/dev/temp/core/src/app/\\(app\\)/reports/[id]/gallery/page.tsx\")",
+      "Bash(cat \"/Users/ivanvukasinovic/Documents/dev/temp/core/src/app/\\(app\\)/reports/[id]/details/accident-info/page.tsx\")",
+      "Bash(cat \"/Users/ivanvukasinovic/Documents/dev/temp/core/src/app/\\(app\\)/reports/[id]/details/vehicle/page.tsx\")",
+      "Bash(cat \"/Users/ivanvukasinovic/Documents/dev/temp/core/src/app/\\(app\\)/reports/[id]/details/condition/page.tsx\")",
+      "Bash(cat \"/Users/ivanvukasinovic/Documents/dev/temp/core/src/app/\\(app\\)/reports/[id]/details/calculation/page.tsx\")",
+      "Bash(cat \"/Users/ivanvukasinovic/Documents/dev/temp/core/src/app/\\(app\\)/reports/[id]/details/invoice/page.tsx\")",
+      "Bash(cat \"/Users/ivanvukasinovic/Documents/dev/temp/core/src/app/\\(app\\)/reports/[id]/export/page.tsx\")",
+      "Bash(wc -l /Users/ivanvukasinovic/Documents/dev/temp/core/src/components/report/gallery/*)",
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Bash(npx --yes sharp-cli --help)",
+      "Bash(npx sharp:*)",
+      "Bash(npx --yes sharp-cli -i images/sug1.png -o public/images/suggested/vehicle-diagonals.webp --quality 80 resize 300 300 --fit cover)",
+      "Bash(npx --yes sharp-cli -i images/sug2.jpg -o public/images/suggested/damage-overview.webp --quality 80 resize 300 300 --fit cover)",
+      "Bash(npx --yes sharp-cli -i images/sug3.png -o public/images/suggested/document-shot.webp --quality 80 resize 300 300 --fit cover)",
+      "Bash(curl -sL \"https://www.figma.com/api/mcp/asset/e611a466-2d09-4631-9931-0f439514eeb4\" -o /tmp/upload-cloud-check.svg)",
+      "Read(//tmp/**)",
+      "Bash(git restore:*)",
+      "Bash(find public/images -type f -exec ls -lh {} \\\\;)",
+      "Bash(sort -k5 -h)",
+      "Bash(npx --yes sharp-cli -i public/images/login-car-illustration.png -o public/images/login-car-illustration.webp --quality 82 resize 1200 0)",
+      "Bash(npx --yes sharp-cli -i public/images/complete-check.png -o public/images/complete-check.webp --quality 82 resize 800 0)",
+      "Bash(npx --yes sharp-cli -i public/images/complete-card-icons.png -o public/images/complete-card-icons.webp --quality 82 resize 600 0)",
+      "Bash(npx --yes sharp-cli -i public/images/login-car-illustration.png -o public/images/login-car-illustration.webp --quality 82)",
+      "Bash(npx --yes sharp-cli -i public/images/complete-check.png -o public/images/complete-check.webp --quality 82)",
+      "Bash(npx --yes sharp-cli -i public/images/complete-card-icons.png -o public/images/complete-card-icons.webp --quality 82)",
+      "Bash(ls -lh public/images/login-car-illustration.* public/images/complete-check.* public/images/complete-card-icons.*)",
+      "Bash(git rm:*)"
+    ]
+  }
+}

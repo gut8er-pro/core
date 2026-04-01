@@ -58,6 +58,7 @@ async function GET(request: NextRequest) {
 			id: r.id,
 			userId: r.userId,
 			title: r.title,
+			reportType: r.reportType,
 			status: r.status,
 			completionPercentage: r.completionPercentage,
 			isLocked: r.isLocked,
@@ -102,6 +103,7 @@ async function POST(request: NextRequest) {
 		data: {
 			userId: user!.id,
 			title: parsed.data.title,
+			reportType: parsed.data.reportType,
 		},
 	})
 

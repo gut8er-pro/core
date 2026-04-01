@@ -71,6 +71,7 @@ model Report {
   id                   String       @id @default(uuid())
   userId               String
   title                String       @default("Untitled Report")
+  reportType           String?
   status               ReportStatus @default(DRAFT)
   completionPercentage Int          @default(0)
   isLocked             Boolean      @default(false)

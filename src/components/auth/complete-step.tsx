@@ -49,7 +49,7 @@ function CompleteStep() {
 				<div className="relative mb-5 h-[151px] w-[149px] overflow-hidden rounded-[100px]">
 					<img
 						alt="Success"
-						src="/images/complete-check.png"
+						src="/images/complete-check.webp"
 						className="absolute max-w-none"
 						style={{ height: '270.9%', left: '-143.98%', top: '-65.87%', width: '273.8%' }}
 					/>
@@ -83,7 +83,7 @@ function CompleteStep() {
 							<div className="relative h-[59px] w-[60px] overflow-hidden rounded-[18px] border-2 border-[#e5e7eb]">
 								<img
 									alt=""
-									src="/images/complete-card-icons.png"
+									src="/images/complete-card-icons.webp"
 									className="pointer-events-none"
 									style={CARD_ICON_STYLE[card.id]}
 								/>

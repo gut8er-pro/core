@@ -104,6 +104,17 @@ Report Editor
 | DATSCode | DAT-specific vehicle code |
 | Diminution in Value | Merkantiler Minderwert — loss in market value after repair |
 
+### Report Types
+
+| Code | Label | UI Differences |
+|------|-------|---------------|
+| `HS` | Liability (Haftpflichtschaden) | Standard calculation: Value + Repair + Loss + Correction |
+| `BE` | Evaluation (Bewertung) | Valuation tab: DAT Valuation + Manual Valuation + Correction |
+| `KG` | Short Report (Kurzgutachten) | Same as HS |
+| `OT` | Oldtimer Valuation | Same as HS |
+
+Only `BE` triggers a different Calculation layout. All other tabs are identical across types.
+
 ---
 
 ## Tech Stack (TO BE DECIDED)

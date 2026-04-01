@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react'
 import type * as fabric from 'fabric'
-import { ChevronLeft, ChevronRight, Image as ImageIcon, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Image as ImageIcon, X, Edit } from 'lucide-react'
 import type { Photo } from '@/hooks/use-photos'
 import { AnnotationToolbar, type AnnotationTool } from './annotation-toolbar'
 import { AnnotationCanvas } from './annotation-canvas'
@@ -126,7 +126,7 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 			/>
 
 			{/* Modal container */}
-			<div className="absolute inset-3 top-12 flex flex-col overflow-hidden rounded-2xl bg-[#f5f5f5] shadow-2xl">
+			<div className="absolute inset-3 top-12 flex flex-col overflow-hidden rounded-2xl bg-surface-secondary shadow-2xl">
 				{/* Header */}
 				<div className="flex items-center justify-between px-5 py-3">
 					<div className="flex items-center gap-3">
@@ -159,7 +159,7 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 							<button
 								type="button"
 								onClick={handlePrev}
-								className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-xl bg-[#121312] text-white shadow-md transition-colors hover:bg-black"
+								className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-xl bg-black text-white shadow-md transition-colors hover:bg-black"
 								aria-label="Previous photo"
 							>
 								<ChevronLeft className="h-5 w-5" />
@@ -171,7 +171,7 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 							<button
 								type="button"
 								onClick={handleNext}
-								className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-xl bg-[#121312] text-white shadow-md transition-colors hover:bg-black"
+								className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-xl bg-black text-white shadow-md transition-colors hover:bg-black"
 								aria-label="Next photo"
 							>
 								<ChevronRight className="h-5 w-5" />
@@ -194,15 +194,17 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 					</div>
 
 					{/* Description panel */}
-					<div className="hidden w-70 shrink-0 flex-col border-l border-border bg-white p-5 lg:flex">
-						<h3 className="mb-4 text-body font-semibold text-black">Description</h3>
+					<div className="hidden w-90 shrink-0 flex-col gap-5 p-5 lg:flex">
+						<div className="flex items-center justify-between">
+							<h3 className="text-input font-medium text-black">Description</h3>
+						</div>
 
 						{isEditingDescription ? (
 							<div className="flex flex-1 flex-col gap-3">
 								<textarea
 									value={editDescriptionValue}
 									onChange={(e) => setEditDescriptionValue(e.target.value)}
-									className="flex-1 resize-none rounded-lg border border-border bg-grey-25 p-3 text-body-sm text-black focus:border-primary focus:outline-none"
+									className="flex-1 resize-none rounded-xl border border-border p-4 text-input tracking-[0.18px] text-black focus:border-primary focus:outline-none"
 									placeholder="Enter a description..."
 									autoFocus
 								/>
@@ -210,36 +212,48 @@ function AnnotationModal({ photo, photos, open, onClose, onSave, onNavigate }: A
 									<button
 										type="button"
 										onClick={() => setIsEditingDescription(false)}
-										className="flex-1 cursor-pointer rounded-lg border border-border px-3 py-2 text-body-sm text-grey-100 hover:bg-grey-25"
+										className="flex-1 cursor-pointer rounded-btn border border-border px-3 py-2 text-body-sm text-grey-100 hover:bg-grey-25"
 									>
 										Cancel
 									</button>
 									<button
 										type="button"
 										onClick={handleSaveDescription}
-										className="flex-1 cursor-pointer rounded-lg bg-primary px-3 py-2 text-body-sm text-white hover:bg-primary/90"
+										className="flex-1 cursor-pointer rounded-btn bg-primary px-3 py-2 text-body-sm text-white hover:bg-primary-hover"
 									>
 										Save
 									</button>
 								</div>
 							</div>
 						) : (
-							<div
-								className="flex-1 cursor-pointer overflow-y-auto text-body-sm leading-relaxed text-black"
-								onClick={handleStartEditDescription}
-								onKeyDown={(e) => {
-									if (e.key === 'Enter') handleStartEditDescription()
-								}}
-								role="button"
-								tabIndex={0}
-							>
-								{photoDescription ? (
-									<p className="whitespace-pre-wrap">{photoDescription}</p>
-								) : (
-									<p className="italic text-grey-100">
-										No description available. Run &quot;Generate Report&quot; to analyze this photo, or click to add one.
-									</p>
-								)}
+							<div className="relative flex-1">
+								{/* Green edit button */}
+								<button
+									type="button"
+									onClick={handleStartEditDescription}
+									className="absolute -right-1 -top-1 z-10 flex h-12 w-12 cursor-pointer items-center justify-center rounded-md bg-primary text-white backdrop-blur-sm transition-colors hover:bg-primary-hover"
+									aria-label="Edit description"
+								>
+									<Edit className="h-6 w-6" />
+								</button>
+
+								<div
+									className="h-full overflow-y-auto rounded-xl border border-border p-4 text-input leading-relaxed tracking-[0.18px] text-black"
+									onClick={handleStartEditDescription}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter') handleStartEditDescription()
+									}}
+									role="button"
+									tabIndex={0}
+								>
+									{photoDescription ? (
+										<p className="whitespace-pre-wrap">{photoDescription}</p>
+									) : (
+										<p className="italic text-grey-100">
+											No description available. Run &quot;Generate Report&quot; to analyze this photo, or click to add one.
+										</p>
+									)}
+								</div>
 							</div>
 						)}
 					</div>

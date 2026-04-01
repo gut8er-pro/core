@@ -26,7 +26,7 @@ function ValuationSection({ register, control, errors, onFieldBlur, className }:
 	return (
 		<div className={cn('grid grid-cols-1 gap-5 lg:grid-cols-2', className)}>
 			{/* Left — DAT Valuation */}
-			<div className="flex flex-col justify-between gap-4 rounded-3xl border-2 border-[#f5f5f5] p-5">
+			<div className="flex flex-col justify-between gap-4 rounded-3xl border-2 border-border-subtle p-5">
 				<div className="flex flex-col gap-4">
 					{/* Header */}
 					<div className="flex items-center gap-2">
@@ -37,7 +37,7 @@ function ValuationSection({ register, control, errors, onFieldBlur, className }:
 					{/* DAT logo */}
 					<div className="flex justify-center">
 						<div className="flex h-[91px] w-[57px] flex-col items-center justify-center rounded bg-[#f5c800] text-[11px] font-bold leading-tight text-[#003087]">
-							<span className="text-[18px]">DAT</span>
+							<span className="text-input">DAT</span>
 						</div>
 					</div>
 
@@ -52,7 +52,7 @@ function ValuationSection({ register, control, errors, onFieldBlur, className }:
 									<select
 										{...field}
 										onBlur={() => onFieldBlur?.('generalCondition')}
-										className="h-[53px] w-full appearance-none rounded-2xl border-[1.5px] border-[#eaeaea] bg-white px-3.5 pr-10 text-body text-black focus:border-primary focus:outline-none"
+										className="h-[53px] w-full appearance-none rounded-2xl border-[1.5px] border-border-card bg-white px-3.5 pr-10 text-body text-black focus:border-primary focus:outline-none"
 									>
 										<option value="">Select condition</option>
 										{CONDITION_OPTIONS.map((o) => (
@@ -85,7 +85,7 @@ function ValuationSection({ register, control, errors, onFieldBlur, className }:
 												'flex h-[53px] flex-col items-center justify-center rounded-2xl border-[1.5px] text-body-sm transition-colors',
 												field.value === opt.value
 													? 'border-primary bg-primary/5 text-primary'
-													: 'border-[#eaeaea] text-black',
+													: 'border-border-card text-black',
 											)}
 										>
 											<span className="font-medium">{opt.label}</span>
@@ -102,13 +102,13 @@ function ValuationSection({ register, control, errors, onFieldBlur, className }:
 				<div className="grid grid-cols-2 gap-6">
 					<button
 						type="button"
-						className="flex items-center justify-center rounded-[15px] border border-black p-3.5 text-body-sm font-medium text-black transition-colors hover:bg-grey-25"
+						className="flex items-center justify-center rounded-btn border border-black p-3.5 text-body-sm font-medium text-black transition-colors hover:bg-grey-25"
 					>
 						Quick Valuation
 					</button>
 					<button
 						type="button"
-						className="flex items-center justify-center rounded-[15px] bg-primary p-3.5 text-body-sm font-medium text-white transition-colors hover:bg-primary-hover"
+						className="flex items-center justify-center rounded-btn bg-primary p-3.5 text-body-sm font-medium text-white transition-colors hover:bg-primary-hover"
 					>
 						Detail Valuation
 					</button>
@@ -116,7 +116,7 @@ function ValuationSection({ register, control, errors, onFieldBlur, className }:
 			</div>
 
 			{/* Right — Manual Valuation */}
-			<div className="flex flex-col gap-4 rounded-3xl border-2 border-[#f5f5f5] p-5">
+			<div className="flex flex-col gap-4 rounded-3xl border-2 border-border-subtle p-5">
 				{/* Header */}
 				<div className="flex items-center gap-2">
 					<span className="text-h4 font-semibold text-black">Manual Valuation</span>
@@ -134,7 +134,7 @@ function ValuationSection({ register, control, errors, onFieldBlur, className }:
 								<select
 									{...field}
 									onBlur={() => onFieldBlur?.('dataSource')}
-									className="h-[53px] w-full appearance-none rounded-2xl border-[1.5px] border-[#eaeaea] bg-white px-3.5 pr-10 text-body text-black focus:border-primary focus:outline-none"
+									className="h-[53px] w-full appearance-none rounded-2xl border-[1.5px] border-border-card bg-white px-3.5 pr-10 text-body text-black focus:border-primary focus:outline-none"
 								>
 									<option value="">Select source</option>
 									{DATA_SOURCE_OPTIONS.map((o) => (
@@ -168,7 +168,7 @@ function ValuationSection({ register, control, errors, onFieldBlur, className }:
 								{...register(name)}
 								onBlur={() => onFieldBlur?.(name)}
 								placeholder="—"
-								className="h-[53px] w-full rounded-2xl border-[1.5px] border-[#eaeaea] px-3.5 text-body text-black placeholder:text-placeholder focus:border-primary focus:outline-none"
+								className="h-[53px] w-full rounded-2xl border-[1.5px] border-border-card px-3.5 text-body text-black placeholder:text-placeholder focus:border-primary focus:outline-none"
 							/>
 						</div>
 					))}
@@ -182,7 +182,7 @@ function ValuationSection({ register, control, errors, onFieldBlur, className }:
 							{...register('valuationDate')}
 							onBlur={() => onFieldBlur?.('valuationDate')}
 							placeholder="MM/YYYY"
-							className="h-[53px] w-full rounded-2xl border-[1.5px] border-[#eaeaea] px-3.5 pr-10 text-body text-black placeholder:text-placeholder focus:border-primary focus:outline-none"
+							className="h-[53px] w-full rounded-2xl border-[1.5px] border-border-card px-3.5 pr-10 text-body text-black placeholder:text-placeholder focus:border-primary focus:outline-none"
 						/>
 						<Calendar className="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-grey-100" />
 					</div>
@@ -191,7 +191,7 @@ function ValuationSection({ register, control, errors, onFieldBlur, className }:
 				{/* Remove Calculation */}
 				<button
 					type="button"
-					className="mt-auto flex items-center justify-center rounded-[15px] border border-black p-3.5 text-body-sm font-medium text-black transition-colors hover:bg-grey-25"
+					className="mt-auto flex items-center justify-center rounded-btn border border-black p-3.5 text-body-sm font-medium text-black transition-colors hover:bg-grey-25"
 				>
 					Remove Calculation
 				</button>
