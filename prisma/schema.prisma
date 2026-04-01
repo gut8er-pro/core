@@ -383,6 +383,18 @@ model Calculation {
   replacementTimeDays   Int?
   // DAT result
   datCalculationResult  Json?
+  // BE valuation
+  generalCondition      String?
+  taxation              String?
+  dataSource            String?
+  valuationMax          Float?
+  valuationAvg          Float?
+  valuationMin          Float?
+  valuationDate         String?
+  // OT valuation
+  marketValue           Float?
+  baseVehicleValue      Float?
+  restorationValue      Float?
 
   report          Report           @relation(fields: [reportId], references: [id], onDelete: Cascade)
   additionalCosts AdditionalCost[]

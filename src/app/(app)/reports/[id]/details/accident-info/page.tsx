@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { AccidentSection } from '@/components/report/accident-info/accident-section'
 import { ClaimantSection } from '@/components/report/accident-info/claimant-section'
@@ -17,6 +17,7 @@ import { Modal } from '@/components/ui/modal'
 import { useAccidentInfo, useSaveSignature } from '@/hooks/use-accident-info'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useReport } from '@/hooks/use-reports'
+import { useToastStore } from '@/stores/toast-store'
 
 type SignatureType = 'LAWYER' | 'DATA_PERMISSION' | 'CANCELLATION'
 
@@ -37,6 +38,7 @@ function AccidentInfoPage() {
 		disabled: report?.isLocked,
 	})
 
+	const toast = useToastStore()
 	const [signatureModalType, setSignatureModalType] = useState<SignatureType | null>(null)
 	const [signatureValue, setSignatureValue] = useState('')
 
@@ -45,6 +47,7 @@ function AccidentInfoPage() {
 		control,
 		formState: { errors },
 		reset,
+		getValues,
 	} = useForm<AccidentInfoFormData>({
 		defaultValues: {
 			accidentDay: '',
@@ -87,9 +90,11 @@ function AccidentInfoPage() {
 		},
 	})
 
-	// Populate form when data loads
+	// Populate form on initial load only (not on refetch after auto-save)
+	const initializedRef = useRef(false)
 	useEffect(() => {
-		if (!data) return
+		if (!data || initializedRef.current) return
+		initializedRef.current = true
 
 		const formData: Partial<AccidentInfoFormData> = {}
 
@@ -160,11 +165,16 @@ function AccidentInfoPage() {
 
 	const handleFieldBlur = useCallback(
 		(field: string) => {
-			// Map form field names to API section structure
-			const value = document.querySelector<HTMLInputElement>(`[name="${field}"]`)?.value
+			// Read from React Hook Form state (works for all field types including
+			// selects, radios, checkboxes, and array fields like visits)
+			const value = getValues(field as keyof AccidentInfoFormData)
 			if (value === undefined) return
 
-			if (field.startsWith('claimant')) {
+			// Visits: save the entire visits array
+			if (field.startsWith('visits')) {
+				const visits = getValues('visits')
+				saveField('visits', visits)
+			} else if (field.startsWith('claimant')) {
 				const apiField = field.replace('claimant', '')
 				const key = apiField.charAt(0).toLowerCase() + apiField.slice(1)
 				saveField(`claimantInfo.${key}`, value)
@@ -185,7 +195,7 @@ function AccidentInfoPage() {
 				saveField(`accidentInfo.${field}`, value)
 			}
 		},
-		[saveField],
+		[saveField, getValues],
 	)
 
 	const handleSignatureSave = useCallback(() => {
@@ -317,7 +327,7 @@ function AccidentInfoPage() {
 
 			{/* Update Report button */}
 			<div className="flex justify-end">
-				<Button variant="primary" onClick={flushNow} loading={autoSaveState.status === 'saving'}>
+				<Button variant="primary" onClick={() => { flushNow(); toast.success('Report updated', 2000) }} loading={autoSaveState.status === 'saving'}>
 					Update Report
 				</Button>
 			</div>

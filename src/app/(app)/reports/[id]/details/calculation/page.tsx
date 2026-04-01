@@ -3,7 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, ChevronRight, Loader2, Sparkles } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import type { CorrectionMode } from '@/components/report/calculation/correction-section'
 import { CorrectionSection } from '@/components/report/calculation/correction-section'
@@ -49,6 +49,7 @@ function CalculationPage() {
 		control,
 		formState: { errors },
 		reset,
+		getValues,
 	} = useForm<CalculationFormData>({
 		defaultValues: {
 			replacementValue: '',
@@ -82,11 +83,14 @@ function CalculationPage() {
 		},
 	})
 
+	const initializedRef = useRef(false)
 	useEffect(() => {
-		if (!data?.calculation) return
+		if (!data?.calculation || initializedRef.current) return
+		initializedRef.current = true
 
 		const c = data.calculation
 		const formData: Partial<CalculationFormData> = {
+			// HS/KG fields
 			replacementValue: c.replacementValue?.toString() ?? '',
 			taxRate: c.taxRate ?? '19',
 			residualValue: c.residualValue?.toString() ?? '',
@@ -107,6 +111,18 @@ function CalculationPage() {
 				description: ac.description,
 				amount: ac.amount.toString(),
 			})),
+			// BE valuation fields
+			generalCondition: (c as Record<string, unknown>).generalCondition as string ?? '',
+			taxation: (c as Record<string, unknown>).taxation as string ?? '2.4',
+			dataSource: (c as Record<string, unknown>).dataSource as string ?? '',
+			valuationMax: ((c as Record<string, unknown>).valuationMax as number)?.toString() ?? '',
+			valuationAvg: ((c as Record<string, unknown>).valuationAvg as number)?.toString() ?? '',
+			valuationMin: ((c as Record<string, unknown>).valuationMin as number)?.toString() ?? '',
+			valuationDate: (c as Record<string, unknown>).valuationDate as string ?? '',
+			// OT valuation fields
+			marketValue: ((c as Record<string, unknown>).marketValue as number)?.toString() ?? '',
+			baseVehicleValue: ((c as Record<string, unknown>).baseVehicleValue as number)?.toString() ?? '',
+			restorationValue: ((c as Record<string, unknown>).restorationValue as number)?.toString() ?? '',
 		}
 
 		reset(formData as CalculationFormData)
@@ -114,32 +130,27 @@ function CalculationPage() {
 
 	const handleFieldBlur = useCallback(
 		(field: string) => {
-			const el = document.querySelector<HTMLInputElement>(`[name="${field}"]`)
-			if (!el) return
-			const value = el.type === 'checkbox' ? el.checked : el.value
+			const value = getValues(field as keyof CalculationFormData)
+			if (value === undefined) return
 
 			const floatFields = [
-				'replacementValue',
-				'residualValue',
-				'diminutionInValue',
-				'costPerDay',
-				'valuationMax',
-				'valuationAvg',
-				'valuationMin',
+				'replacementValue', 'residualValue', 'diminutionInValue', 'costPerDay',
+				'valuationMax', 'valuationAvg', 'valuationMin',
+				'marketValue', 'baseVehicleValue', 'restorationValue',
 			]
 			const intFields = ['repairTimeDays', 'replacementTimeDays']
 
 			if (floatFields.includes(field)) {
-				const numVal = parseFloat(el.value)
+				const numVal = parseFloat(String(value))
 				saveField(`calculation.${field}`, Number.isNaN(numVal) ? null : numVal)
 			} else if (intFields.includes(field)) {
-				const numVal = parseInt(el.value, 10)
+				const numVal = parseInt(String(value), 10)
 				saveField(`calculation.${field}`, Number.isNaN(numVal) ? null : numVal)
 			} else {
 				saveField(`calculation.${field}`, value)
 			}
 		},
-		[saveField],
+		[saveField, getValues],
 	)
 
 	const handleDatSave = useCallback(

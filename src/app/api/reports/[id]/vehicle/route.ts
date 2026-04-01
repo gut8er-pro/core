@@ -25,7 +25,16 @@ async function GET(_request: NextRequest, context: RouteContext) {
 		where: { reportId: id },
 	})
 
-	return NextResponse.json(vehicleInfo)
+	// Map Prisma field names to form field names
+	const response = vehicleInfo
+		? {
+				...vehicleInfo,
+				subType: vehicleInfo.subtype,
+				displacement: vehicleInfo.engineDisplacementCcm,
+			}
+		: null
+
+	return NextResponse.json(response)
 }
 
 async function PATCH(request: NextRequest, context: RouteContext) {
@@ -68,7 +77,6 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		'marketIndex',
 		'manufacturer',
 		'mainType',
-		'subType',
 		'kbaNumber',
 		'engineDesign',
 		'transmission',
@@ -82,12 +90,16 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		}
 	}
 
+	// subType → Prisma column is "subtype" (lowercase)
+	if (data.subType !== undefined) {
+		dbData.subtype = data.subType
+	}
+
 	// Numeric fields — ensure they are numbers or null
 	const numericFields = [
 		'powerKw',
 		'powerHp',
 		'cylinders',
-		'displacement',
 		'axles',
 		'drivenAxles',
 		'doors',
@@ -103,6 +115,17 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 				const num = Number(value)
 				dbData[field] = Number.isNaN(num) ? null : num
 			}
+		}
+	}
+
+	// displacement → Prisma column is "engineDisplacementCcm"
+	if (data.displacement !== undefined) {
+		const val = data.displacement
+		if (val === null || val === undefined) {
+			dbData.engineDisplacementCcm = null
+		} else {
+			const num = Number(val)
+			dbData.engineDisplacementCcm = Number.isNaN(num) ? null : num
 		}
 	}
 

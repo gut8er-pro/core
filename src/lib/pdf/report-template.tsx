@@ -6,6 +6,7 @@ type ReportData = {
 	report: {
 		id: string
 		title: string
+		reportType: string
 		createdAt: Date
 		updatedAt: Date
 	}
@@ -67,23 +68,71 @@ type ReportData = {
 	} | null
 	condition: {
 		paintType: string | null
+		hard: string | null
+		paintCondition: string | null
+		vehicleColor: string | null
 		generalCondition: string | null
 		bodyCondition: string | null
 		interiorCondition: string | null
 		drivingAbility: string | null
 		specialFeatures: string | null
+		parkingSensors: boolean
 		mileageRead: number | null
+		estimateMileage: number | null
 		unit: string
+		nextMot: Date | null
+		fullServiceHistory: boolean
+		testDrivePerformed: boolean
+		errorMemoryRead: boolean
+		airbagsDeployed: boolean
 		notes: string | null
 		previousDamageReported: string | null
 		existingDamageNotReported: string | null
 		subsequentDamage: string | null
+		tireSets: {
+			setNumber: number
+			matchAndAlloy: string | null
+			tires: {
+				position: string
+				size: string | null
+				profileLevel: number | null
+				manufacturer: string | null
+				dotCode: string | null
+				tireType: string | null
+			}[]
+		}[]
 	} | null
+	visits: {
+		type: string
+		street: string | null
+		postcode: string | null
+		location: string | null
+		date: Date | null
+		expert: string | null
+		vehicleCondition: string | null
+	}[]
+	expertOpinion: {
+		expertName: string | null
+		fileNumber: string | null
+		caseDate: Date | null
+		orderWasPlacement: string | null
+		issuedDate: Date | null
+		orderByClaimant: boolean
+		mediator: string | null
+	} | null
+	signatures: {
+		type: string
+		imageUrl: string | null
+	}[]
 	calculation: {
 		replacementValue: number | null
 		taxRate: string | null
 		residualValue: number | null
 		diminutionInValue: number | null
+		wheelAlignment: string | null
+		bodyMeasurements: string | null
+		bodyPaint: string | null
+		plasticRepair: boolean
 		repairMethod: string | null
 		risks: string | null
 		damageClass: string | null
@@ -92,6 +141,19 @@ type ReportData = {
 		rentalCarClass: string | null
 		repairTimeDays: number | null
 		replacementTimeDays: number | null
+		// BE valuation
+		generalCondition: string | null
+		taxation: string | null
+		dataSource: string | null
+		valuationMax: number | null
+		valuationAvg: number | null
+		valuationMin: number | null
+		valuationDate: string | null
+		// OT valuation
+		marketValue: number | null
+		baseVehicleValue: number | null
+		restorationValue: number | null
+		additionalCosts: { description: string; amount: number }[]
 	} | null
 	invoice: {
 		invoiceNumber: string | null
@@ -568,15 +630,33 @@ function ConditionSection({ condition }: { condition: ReportData['condition'] })
 			{condition.paintType && (
 				<DataRow label="Paint Type" value={displayValue(condition.paintType)} />
 			)}
+			{condition.hard && <DataRow label="Paint Finish" value={displayValue(condition.hard)} />}
+			{condition.paintCondition && (
+				<DataRow label="Paint Condition" value={displayValue(condition.paintCondition)} />
+			)}
+			{condition.vehicleColor && (
+				<DataRow label="Vehicle Color" value={displayValue(condition.vehicleColor)} />
+			)}
 			{condition.drivingAbility && (
 				<DataRow label="Driving Ability" value={displayValue(condition.drivingAbility)} />
 			)}
-			{condition.mileageRead && (
+			{condition.mileageRead != null && (
 				<DataRow label="Mileage" value={formatNumber(condition.mileageRead, condition.unit)} />
+			)}
+			{condition.estimateMileage != null && (
+				<DataRow label="Estimated Mileage" value={formatNumber(condition.estimateMileage, condition.unit)} />
+			)}
+			{condition.nextMot && (
+				<DataRow label="Next MOT" value={formatDate(condition.nextMot)} />
 			)}
 			{condition.specialFeatures && (
 				<DataRow label="Special Features" value={displayValue(condition.specialFeatures)} />
 			)}
+			{condition.parkingSensors && <DataRow label="Parking Sensors" value="Yes" />}
+			{condition.fullServiceHistory && <DataRow label="Full Service History" value="Yes" />}
+			{condition.testDrivePerformed && <DataRow label="Test Drive Performed" value="Yes" />}
+			{condition.errorMemoryRead && <DataRow label="Error Memory Read" value="Yes" />}
+			{condition.airbagsDeployed && <DataRow label="Airbags Deployed" value="Yes" />}
 			{condition.notes && <DataRow label="Notes" value={displayValue(condition.notes)} />}
 			{condition.previousDamageReported && (
 				<DataRow
@@ -592,6 +672,25 @@ function ConditionSection({ condition }: { condition: ReportData['condition'] })
 			)}
 			{condition.subsequentDamage && (
 				<DataRow label="Subsequent Damage" value={displayValue(condition.subsequentDamage)} />
+			)}
+
+			{/* Tire Sets */}
+			{condition.tireSets.length > 0 && (
+				<View style={{ marginTop: 8 }}>
+					<Text style={[styles.dataLabel, { marginBottom: 4, fontSize: 10 }]}>Tires</Text>
+					{condition.tireSets.map((ts, i) => (
+						<View key={`tireset-${i}`} style={{ marginBottom: 6 }}>
+							<Text style={[styles.dataValue, { fontSize: 9, marginBottom: 2 }]}>
+								Set {ts.setNumber}{ts.matchAndAlloy ? ` — ${ts.matchAndAlloy}` : ''}
+							</Text>
+							{ts.tires.map((t, j) => (
+								<Text key={`tire-${j}`} style={[styles.dataValue, { fontSize: 8, color: GREY_TEXT }]}>
+									{t.position}: {t.size ?? '—'} | Profile: {t.profileLevel ?? '—'}mm | {t.manufacturer ?? '—'} | DOT: {t.dotCode ?? '—'}
+								</Text>
+							))}
+						</View>
+					))}
+				</View>
 			)}
 		</View>
 	)
@@ -621,11 +720,21 @@ function CalculationSection({ calculation }: { calculation: ReportData['calculat
 				<DataRow label="Tax Rate" value={displayValue(calculation.taxRate)} />
 			)}
 
-			{(calculation.repairMethod || calculation.damageClass) && (
+			{(calculation.repairMethod || calculation.damageClass || calculation.wheelAlignment) && (
 				<View style={{ marginTop: 8 }}>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
 						Repair
 					</Text>
+					{calculation.wheelAlignment && (
+						<DataRow label="Wheel Alignment" value={displayValue(calculation.wheelAlignment)} />
+					)}
+					{calculation.bodyMeasurements && (
+						<DataRow label="Body Measurements" value={displayValue(calculation.bodyMeasurements)} />
+					)}
+					{calculation.bodyPaint && (
+						<DataRow label="Body Paint" value={displayValue(calculation.bodyPaint)} />
+					)}
+					{calculation.plasticRepair && <DataRow label="Plastic Repair" value="Yes" />}
 					{calculation.repairMethod && (
 						<DataRow label="Repair Method" value={displayValue(calculation.repairMethod)} />
 					)}
@@ -660,6 +769,116 @@ function CalculationSection({ calculation }: { calculation: ReportData['calculat
 								value={formatNumber(calculation.replacementTimeDays, 'days')}
 							/>
 						)}
+				</View>
+			)}
+
+			{/* BE Valuation */}
+			{(calculation.valuationMax != null || calculation.valuationAvg != null) && (
+				<View style={{ marginTop: 8 }}>
+					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
+						Valuation
+					</Text>
+					{calculation.generalCondition && (
+						<DataRow label="General Condition" value={displayValue(calculation.generalCondition)} />
+					)}
+					{calculation.taxation && <DataRow label="Taxation" value={`${calculation.taxation}%`} />}
+					{calculation.dataSource && (
+						<DataRow label="Data Source" value={displayValue(calculation.dataSource)} />
+					)}
+					{calculation.valuationMax != null && (
+						<DataRow label="Maximum Value" value={formatCurrency(calculation.valuationMax)} />
+					)}
+					{calculation.valuationAvg != null && (
+						<DataRow label="Average Value" value={formatCurrency(calculation.valuationAvg)} />
+					)}
+					{calculation.valuationMin != null && (
+						<DataRow label="Minimum Value" value={formatCurrency(calculation.valuationMin)} />
+					)}
+					{calculation.valuationDate && (
+						<DataRow label="Valuation Date" value={displayValue(calculation.valuationDate)} />
+					)}
+				</View>
+			)}
+
+			{/* OT Valuation */}
+			{(calculation.marketValue != null || calculation.baseVehicleValue != null) && (
+				<View style={{ marginTop: 8 }}>
+					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
+						Oldtimer Valuation
+					</Text>
+					{calculation.marketValue != null && (
+						<DataRow label="Market Value" value={formatCurrency(calculation.marketValue)} />
+					)}
+					{calculation.baseVehicleValue != null && (
+						<DataRow label="Base Vehicle Value" value={formatCurrency(calculation.baseVehicleValue)} />
+					)}
+					{calculation.restorationValue != null && (
+						<DataRow label="Restoration Value" value={formatCurrency(calculation.restorationValue)} />
+					)}
+				</View>
+			)}
+
+			{/* Additional Costs */}
+			{calculation.additionalCosts.length > 0 && (
+				<View style={{ marginTop: 8 }}>
+					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
+						Additional Costs
+					</Text>
+					{calculation.additionalCosts.map((ac, i) => (
+						<DataRow key={`ac-${i}`} label={ac.description} value={formatCurrency(ac.amount)} />
+					))}
+				</View>
+			)}
+		</View>
+	)
+}
+
+function VisitsSection({ visits, expertOpinion }: { visits: ReportData['visits']; expertOpinion: ReportData['expertOpinion'] }) {
+	if (visits.length === 0 && !expertOpinion) return null
+
+	return (
+		<View style={styles.section}>
+			{visits.length > 0 && (
+				<View>
+					<Text style={styles.sectionTitle}>Visits</Text>
+					{visits.map((v, i) => (
+						<View key={`visit-${i}`} style={{ marginBottom: 6 }}>
+							<DataRow label="Type" value={displayValue(v.type)} />
+							{(v.street || v.postcode || v.location) && (
+								<DataRow label="Address" value={[v.street, v.postcode, v.location].filter(Boolean).join(', ')} />
+							)}
+							{v.date && <DataRow label="Date" value={formatDate(v.date)} />}
+							{v.expert && <DataRow label="Expert" value={displayValue(v.expert)} />}
+							{v.vehicleCondition && (
+								<DataRow label="Vehicle Condition" value={displayValue(v.vehicleCondition)} />
+							)}
+						</View>
+					))}
+				</View>
+			)}
+
+			{expertOpinion && (
+				<View style={{ marginTop: visits.length > 0 ? 8 : 0 }}>
+					<Text style={styles.sectionTitle}>Expert Opinion</Text>
+					{expertOpinion.expertName && (
+						<DataRow label="Expert Name" value={displayValue(expertOpinion.expertName)} />
+					)}
+					{expertOpinion.fileNumber && (
+						<DataRow label="File Number" value={displayValue(expertOpinion.fileNumber)} />
+					)}
+					{expertOpinion.caseDate && (
+						<DataRow label="Case Date" value={formatDate(expertOpinion.caseDate)} />
+					)}
+					{expertOpinion.orderWasPlacement && (
+						<DataRow label="Order Placement" value={displayValue(expertOpinion.orderWasPlacement)} />
+					)}
+					{expertOpinion.issuedDate && (
+						<DataRow label="Issued Date" value={formatDate(expertOpinion.issuedDate)} />
+					)}
+					{expertOpinion.orderByClaimant && <DataRow label="Ordered by Claimant" value="Yes" />}
+					{expertOpinion.mediator && (
+						<DataRow label="Mediator" value={displayValue(expertOpinion.mediator)} />
+					)}
 				</View>
 			)}
 		</View>
@@ -858,6 +1077,7 @@ function ReportPdfDocument({ data }: { data: ReportData }) {
 					claimantInfo={data.claimantInfo}
 					opponentInfo={data.opponentInfo}
 				/>
+				<VisitsSection visits={data.visits} expertOpinion={data.expertOpinion} />
 				<ConditionSection condition={data.condition} />
 				{includeValuation && <CalculationSection calculation={data.calculation} />}
 				{includeInvoice && <InvoiceSection invoice={data.invoice} />}

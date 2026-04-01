@@ -17,8 +17,24 @@ async function generateReportPdfBuffer(
 			claimantInfo: true,
 			opponentInfo: true,
 			vehicleInfo: true,
-			condition: true,
-			calculation: true,
+			condition: {
+				include: {
+					damageMarkers: true,
+					paintMarkers: true,
+					tireSets: {
+						include: { tires: { orderBy: { position: 'asc' } } },
+						orderBy: { setNumber: 'asc' },
+					},
+				},
+			},
+			calculation: {
+				include: {
+					additionalCosts: { orderBy: { id: 'asc' } },
+				},
+			},
+			visits: { orderBy: { date: 'asc' } },
+			expertOpinion: true,
+			signatures: true,
 			photos: {
 				orderBy: { order: 'asc' },
 				select: {
@@ -59,6 +75,7 @@ async function generateReportPdfBuffer(
 		report: {
 			id: report.id,
 			title: report.title,
+			reportType: report.reportType,
 			createdAt: report.createdAt,
 			updatedAt: report.updatedAt,
 		},
@@ -129,25 +146,75 @@ async function generateReportPdfBuffer(
 		condition: report.condition
 			? {
 					paintType: report.condition.paintType,
+					hard: report.condition.hard,
+					paintCondition: report.condition.paintCondition,
+					vehicleColor: report.condition.vehicleColor,
 					generalCondition: report.condition.generalCondition,
 					bodyCondition: report.condition.bodyCondition,
 					interiorCondition: report.condition.interiorCondition,
 					drivingAbility: report.condition.drivingAbility,
 					specialFeatures: report.condition.specialFeatures,
+					parkingSensors: report.condition.parkingSensors,
 					mileageRead: report.condition.mileageRead,
+					estimateMileage: report.condition.estimateMileage,
 					unit: report.condition.unit,
+					nextMot: report.condition.nextMot,
+					fullServiceHistory: report.condition.fullServiceHistory,
+					testDrivePerformed: report.condition.testDrivePerformed,
+					errorMemoryRead: report.condition.errorMemoryRead,
+					airbagsDeployed: report.condition.airbagsDeployed,
 					notes: report.condition.notes,
 					previousDamageReported: report.condition.previousDamageReported,
 					existingDamageNotReported: report.condition.existingDamageNotReported,
 					subsequentDamage: report.condition.subsequentDamage,
+					tireSets: report.condition.tireSets.map((ts) => ({
+						setNumber: ts.setNumber,
+						matchAndAlloy: ts.matchAndAlloy,
+						tires: ts.tires.map((t) => ({
+							position: t.position,
+							size: t.size,
+							profileLevel: t.profileLevel,
+							manufacturer: t.manufacturer,
+							dotCode: t.dotCode,
+							tireType: t.tireType,
+						})),
+					})),
 				}
 			: null,
+		visits: (report.visits ?? []).map((v) => ({
+			type: v.type,
+			street: v.street,
+			postcode: v.postcode,
+			location: v.location,
+			date: v.date,
+			expert: v.expert,
+			vehicleCondition: v.vehicleCondition,
+		})),
+		expertOpinion: report.expertOpinion
+			? {
+					expertName: report.expertOpinion.expertName,
+					fileNumber: report.expertOpinion.fileNumber,
+					caseDate: report.expertOpinion.caseDate,
+					orderWasPlacement: report.expertOpinion.orderWasPlacement,
+					issuedDate: report.expertOpinion.issuedDate,
+					orderByClaimant: report.expertOpinion.orderByClaimant,
+					mediator: report.expertOpinion.mediator,
+				}
+			: null,
+		signatures: (report.signatures ?? []).map((s) => ({
+			type: s.type,
+			imageUrl: s.imageUrl,
+		})),
 		calculation: report.calculation
 			? {
 					replacementValue: report.calculation.replacementValue,
 					taxRate: report.calculation.taxRate,
 					residualValue: report.calculation.residualValue,
 					diminutionInValue: report.calculation.diminutionInValue,
+					wheelAlignment: report.calculation.wheelAlignment,
+					bodyMeasurements: report.calculation.bodyMeasurements,
+					bodyPaint: report.calculation.bodyPaint,
+					plasticRepair: report.calculation.plasticRepair,
 					repairMethod: report.calculation.repairMethod,
 					risks: report.calculation.risks,
 					damageClass: report.calculation.damageClass,
@@ -156,6 +223,22 @@ async function generateReportPdfBuffer(
 					rentalCarClass: report.calculation.rentalCarClass,
 					repairTimeDays: report.calculation.repairTimeDays,
 					replacementTimeDays: report.calculation.replacementTimeDays,
+					// BE valuation
+					generalCondition: report.calculation.generalCondition,
+					taxation: report.calculation.taxation,
+					dataSource: report.calculation.dataSource,
+					valuationMax: report.calculation.valuationMax,
+					valuationAvg: report.calculation.valuationAvg,
+					valuationMin: report.calculation.valuationMin,
+					valuationDate: report.calculation.valuationDate,
+					// OT valuation
+					marketValue: report.calculation.marketValue,
+					baseVehicleValue: report.calculation.baseVehicleValue,
+					restorationValue: report.calculation.restorationValue,
+					additionalCosts: report.calculation.additionalCosts.map((ac) => ({
+						description: ac.description,
+						amount: ac.amount,
+					})),
 				}
 			: null,
 		invoice: report.invoice
