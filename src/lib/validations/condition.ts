@@ -70,11 +70,11 @@ const conditionPatchSchema = z.object({
 })
 
 function getPaintColor(thickness: number): string {
-	if (thickness >= 700) return '#EF4444' // Red
-	if (thickness > 300) return '#F97316' // Orange
-	if (thickness > 160) return '#EAB308' // Yellow
-	if (thickness >= 70) return '#22C55E' // Green
-	return '#3B82F6' // Blue
+	if (thickness >= 700) return '#F41414' // Red
+	if (thickness > 300) return '#F47514' // Orange
+	if (thickness > 160) return '#F4CA14' // Yellow
+	if (thickness >= 70) return '#52D57B' // Green
+	return '#49DCF2' // Cyan
 }
 
 type ConditionInput = z.infer<typeof conditionSchema>
