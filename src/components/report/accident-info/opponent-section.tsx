@@ -32,7 +32,7 @@ function OpponentSection({
 				/>
 
 				{/* Salutation / First Name / Last Name — 3 columns */}
-				<div className="grid grid-cols-3 gap-4">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<SelectField
 						label="Salutation"
 						options={salutationOptions}
@@ -61,7 +61,7 @@ function OpponentSection({
 				</div>
 
 				{/* Street / Postcode / Location — 3 columns */}
-				<div className="grid grid-cols-3 gap-4">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<TextField
 						label="Street & house number or PO box"
 						placeholder="Street address or p.o. box"
@@ -86,7 +86,7 @@ function OpponentSection({
 				</div>
 
 				{/* Email / BAN / Phone — 3 columns */}
-				<div className="grid grid-cols-3 gap-4">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<TextField
 						label="Email"
 						type="email"
@@ -122,7 +122,7 @@ function OpponentSection({
 				/>
 
 				{/* Insurance number / Claim number — 2 columns */}
-				<div className="grid grid-cols-2 gap-4">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<TextField
 						label="Insurance number"
 						placeholder="Policy number"

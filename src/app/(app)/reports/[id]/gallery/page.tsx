@@ -149,7 +149,7 @@ function GalleryPage() {
 	const showSingleView = hasPhotos && selectedPhoto !== null
 
 	return (
-		<div className="flex gap-6">
+		<div className="flex flex-col gap-4 xl:flex-row xl:gap-6">
 			{/* Hidden file input for adding photos via filmstrip "+" button */}
 			<input
 				ref={fileInputRef}

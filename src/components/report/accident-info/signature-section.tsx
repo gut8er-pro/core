@@ -33,7 +33,7 @@ function SignatureSection({ signatures, onSignatureClick, className }: Signature
 				<p className="text-body-sm font-medium text-black">Permission Use</p>
 
 				{/* 3-card selector */}
-				<div className="grid grid-cols-3 gap-4">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					{SIGNATURE_TYPES.map(({ type, label, icon: Icon }) => {
 						const signature = getSignatureForType(type)
 						const _isSigned = signature?.imageUrl !== null && signature?.imageUrl !== undefined

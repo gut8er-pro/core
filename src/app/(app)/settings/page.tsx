@@ -50,7 +50,7 @@ function SettingsSidebar({
 	onTabChange: (tab: SettingsTab) => void
 }) {
 	return (
-		<div className="flex w-[302px] shrink-0 flex-col gap-4 rounded-2xl bg-white p-6">
+		<div className="flex w-full shrink-0 gap-2 overflow-x-auto rounded-2xl bg-white p-3 md:w-[302px] md:flex-col md:gap-4 md:p-6">
 			{SETTINGS_TABS.map((tab) => {
 				const Icon = tab.icon
 				const isActive = activeTab === tab.key
@@ -152,7 +152,7 @@ function ProfileSection() {
 				</div>
 
 				{/* First Name / Last Name */}
-				<div className="grid grid-cols-2 gap-6">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField
 						label="First name"
 						placeholder="Ketn"
@@ -176,7 +176,7 @@ function ProfileSection() {
 				/>
 
 				{/* Email / Phone */}
-				<div className="grid grid-cols-2 gap-6">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField
 						label="Email"
 						value={settings?.email ?? ''}
@@ -192,7 +192,7 @@ function ProfileSection() {
 				</div>
 
 				{/* Social links */}
-				<div className="grid grid-cols-3 gap-6">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
 					<TextField
 						label="Instagram"
 						placeholder="@username"
@@ -365,7 +365,7 @@ function BusinessSection() {
 				</div>
 
 				{/* Company Name / Website */}
-				<div className="grid grid-cols-2 gap-6">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField
 						label="Company Name"
 						placeholder="Kfz-Sachverständiger"
@@ -376,7 +376,7 @@ function BusinessSection() {
 				</div>
 
 				{/* Email / Phone number */}
-				<div className="grid grid-cols-2 gap-6">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField label="Email" placeholder="sales.contact@kfz.com" disabled />
 					<TextField label="Phone number" placeholder="+3513331253" disabled />
 				</div>
@@ -390,7 +390,7 @@ function BusinessSection() {
 				/>
 
 				{/* Postcode / City */}
-				<div className="grid grid-cols-2 gap-6">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField
 						label="Postcode"
 						placeholder="10115"
@@ -406,7 +406,7 @@ function BusinessSection() {
 				</div>
 
 				{/* Tax ID / VAT ID */}
-				<div className="grid grid-cols-2 gap-6">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField
 						label="Tax ID (Steuernummer)"
 						placeholder="123/456/78901"
@@ -568,7 +568,7 @@ function IntegrationsSection() {
 						onSubmit={datForm.handleSubmit(handleConnect)}
 						className="border-t border-border-card pt-6"
 					>
-						<div className="grid grid-cols-2 gap-6">
+						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 							<TextField
 								label="Username"
 								placeholder="DAT username"
@@ -1000,7 +1000,7 @@ function SettingsPage() {
 			<div className="flex flex-col gap-6">
 				<h1 className="text-page-title font-medium leading-none text-black">Account Settings</h1>
 
-				<div className="flex items-start gap-6">
+				<div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
 					{/* Sidebar Navigation */}
 					<SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
 

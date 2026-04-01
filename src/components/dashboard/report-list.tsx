@@ -62,8 +62,8 @@ function ReportTable({ reports, onDelete, isDeleting }: ReportTableProps) {
 	const router = useRouter()
 
 	return (
-		<div className="overflow-hidden rounded-lg border border-border bg-white">
-			<table className="w-full">
+		<div className="overflow-x-auto rounded-lg border border-border bg-white">
+			<table className="w-full min-w-160">
 				<thead>
 					<tr className="border-b border-border">
 						<th className="px-6 py-3 text-left">
