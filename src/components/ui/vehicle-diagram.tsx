@@ -27,10 +27,9 @@ function VehicleDiagram({
 	editable = false,
 	className,
 }: VehicleDiagramProps) {
-	function handleDiagramClick(e: React.MouseEvent<SVGSVGElement>) {
+	function handleClick(e: React.MouseEvent<HTMLDivElement>) {
 		if (!editable || !onAddMarker) return
-		const svg = e.currentTarget
-		const rect = svg.getBoundingClientRect()
+		const rect = e.currentTarget.getBoundingClientRect()
 		const x = ((e.clientX - rect.left) / rect.width) * 100
 		const y = ((e.clientY - rect.top) / rect.height) * 100
 		onAddMarker(x, y)
@@ -41,87 +40,75 @@ function VehicleDiagram({
 			{mode === 'paint' && <PaintLegend />}
 
 			<div className="relative rounded-lg border border-border bg-white p-4">
-				<svg
-					viewBox="0 0 400 200"
-					className={cn('h-auto w-full', editable && 'cursor-crosshair')}
-					onClick={handleDiagramClick}
-					aria-label={mode === 'damages' ? 'Vehicle damage diagram' : 'Vehicle paint diagram'}
-					role="img"
+				<div
+					className={cn(
+						'relative mx-auto',
+						editable && 'cursor-crosshair',
+					)}
+					style={{ maxWidth: 320 }}
+					onClick={handleClick}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault()
+						}
+					}}
+					role={editable ? 'button' : 'img'}
+					tabIndex={editable ? 0 : undefined}
+					aria-label={
+						mode === 'damages' ? 'Vehicle damage diagram' : 'Vehicle paint diagram'
+					}
 				>
-					{/* Simplified top-down car outline */}
-					<rect
-						x="100"
-						y="20"
-						width="200"
-						height="160"
-						rx="40"
-						fill="none"
-						stroke="#D1D5DB"
-						strokeWidth="2"
+					{/* Car silhouette — portrait orientation, front facing up */}
+					<img
+						src="/images/car-silhouette.png"
+						alt=""
+						className="h-auto w-full select-none"
+						draggable={false}
 					/>
-					{/* Windshield */}
-					<line x1="140" y1="60" x2="260" y2="60" stroke="#D1D5DB" strokeWidth="1.5" />
-					{/* Rear window */}
-					<line x1="140" y1="140" x2="260" y2="140" stroke="#D1D5DB" strokeWidth="1.5" />
-					{/* Center line */}
-					<line
-						x1="200"
-						y1="20"
-						x2="200"
-						y2="180"
-						stroke="#D1D5DB"
-						strokeWidth="0.5"
-						strokeDasharray="4 4"
-					/>
-					{/* Wheels */}
-					<rect x="85" y="45" width="15" height="30" rx="3" fill="#E5E7EB" stroke="#D1D5DB" />
-					<rect x="300" y="45" width="15" height="30" rx="3" fill="#E5E7EB" stroke="#D1D5DB" />
-					<rect x="85" y="125" width="15" height="30" rx="3" fill="#E5E7EB" stroke="#D1D5DB" />
-					<rect x="300" y="125" width="15" height="30" rx="3" fill="#E5E7EB" stroke="#D1D5DB" />
 
-					{/* Markers */}
+					{/* Markers overlay */}
 					{markers.map((marker) => {
-						const cx = (marker.x / 100) * 400
-						const cy = (marker.y / 100) * 200
 						const fill =
 							mode === 'paint' && marker.value != null
 								? getPaintColor(marker.value)
 								: marker.color || '#1F2937'
 
 						return (
-							<g
+							<button
 								key={marker.id}
+								type="button"
 								onClick={(e) => {
 									e.stopPropagation()
 									onMarkerClick?.(marker)
 								}}
-								className={cn(onMarkerClick && 'cursor-pointer')}
-								role="button"
-								tabIndex={0}
+								className={cn(
+									'absolute flex items-center justify-center rounded-full -translate-x-1/2 -translate-y-1/2',
+									onMarkerClick &&
+										'cursor-pointer hover:scale-110 transition-transform',
+								)}
+								style={{
+									left: `${marker.x}%`,
+									top: `${marker.y}%`,
+									width: 22,
+									height: 22,
+									backgroundColor: fill,
+									opacity: 0.9,
+								}}
 								aria-label={
 									mode === 'damages'
 										? `Damage marker: ${marker.comment || 'No comment'}`
 										: `Paint: ${marker.value || 0}µm`
 								}
 							>
-								<circle cx={cx} cy={cy} r="8" fill={fill} opacity="0.9" />
 								{mode === 'paint' && marker.value != null && (
-									<text
-										x={cx}
-										y={cy + 1}
-										textAnchor="middle"
-										dominantBaseline="middle"
-										fill="white"
-										fontSize="6"
-										fontWeight="bold"
-									>
+									<span className="text-[8px] font-bold leading-none text-white">
 										{marker.value}
-									</text>
+									</span>
 								)}
-							</g>
+							</button>
 						)
 					})}
-				</svg>
+				</div>
 			</div>
 		</div>
 	)
@@ -129,11 +116,11 @@ function VehicleDiagram({
 
 function PaintLegend() {
 	const legend = [
-		{ label: '<70µm', color: '#3B82F6' },
-		{ label: '≥70µm', color: '#16A34A' },
-		{ label: '>160µm', color: '#EAB308' },
-		{ label: '>300µm', color: '#F97316' },
-		{ label: '>700µm', color: '#EF4444' },
+		{ label: '<70µm', color: '#49DCF2' },
+		{ label: '≥70µm', color: '#52D57B' },
+		{ label: '>160µm', color: '#F4CA14' },
+		{ label: '>300µm', color: '#F47514' },
+		{ label: '>700µm', color: '#F41414' },
 	]
 
 	return (

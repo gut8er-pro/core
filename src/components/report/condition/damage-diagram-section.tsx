@@ -83,41 +83,41 @@ function DamageDiagramSection({
 			defaultOpen={false}
 			className={className}
 		>
-			<div className="flex flex-col gap-6">
+			<div className="flex flex-col gap-4">
+				{/* Segmented tab control */}
+				<div className="flex rounded-full bg-black/5 p-1.5">
+					<button
+						type="button"
+						onClick={() => setActiveTab('damages')}
+						className={cn(
+							'flex-1 cursor-pointer rounded-full px-5 py-3 text-center text-body font-medium transition-colors',
+							activeTab === 'damages'
+								? 'bg-black text-white'
+								: 'bg-transparent text-[#919191]',
+						)}
+					>
+						Damage
+					</button>
+					<button
+						type="button"
+						onClick={() => setActiveTab('paint')}
+						className={cn(
+							'flex-1 cursor-pointer rounded-full px-5 py-3 text-center text-body font-medium transition-colors',
+							activeTab === 'paint'
+								? 'bg-black text-white'
+								: 'bg-transparent text-[#919191]',
+						)}
+					>
+						Paint
+					</button>
+				</div>
+
 				{/* Manual Setup toggle */}
 				<ToggleSwitch
 					label={activeTab === 'damages' ? 'Damage Manual Setup' : 'Paint Manual Setup'}
 					checked={manualSetup}
 					onCheckedChange={setManualSetup}
 				/>
-
-				{/* Segmented tab control */}
-				<div className="flex rounded-full border border-border bg-white p-1">
-					<button
-						type="button"
-						onClick={() => setActiveTab('damages')}
-						className={cn(
-							'flex-1 cursor-pointer rounded-full py-2.5 text-center text-body-sm font-medium transition-colors',
-							activeTab === 'damages'
-								? 'bg-black text-white'
-								: 'bg-transparent text-grey-100 hover:bg-grey-25',
-						)}
-					>
-						Damages
-					</button>
-					<button
-						type="button"
-						onClick={() => setActiveTab('paint')}
-						className={cn(
-							'flex-1 cursor-pointer rounded-full py-2.5 text-center text-body-sm font-medium transition-colors',
-							activeTab === 'paint'
-								? 'bg-black text-white'
-								: 'bg-transparent text-grey-100 hover:bg-grey-25',
-						)}
-					>
-						Paint
-					</button>
-				</div>
 
 				{/* Diagram */}
 				{activeTab === 'damages' ? (
@@ -338,172 +338,157 @@ type PaintViewProps = {
 	onDeletePaintMarker: (markerId: string) => void
 }
 
+// Paint call-out positions — mapped to portrait car (front at top)
+// Positions as % of the diagram container
+// Left column ~29%, Center ~46%, Right ~63% (from Figma absolute positions)
+// Vertical positions mapped from Figma y offsets relative to car area
 const PAINT_POSITIONS = [
-	{ label: 'Hood', x: 50, y: 15, position: 'hood' },
-	{ label: 'Roof', x: 50, y: 50, position: 'roof' },
-	{ label: 'Trunk', x: 50, y: 85, position: 'trunk' },
-	{ label: 'Left Fender', x: 10, y: 30, position: 'left-fender' },
-	{ label: 'Right Fender', x: 90, y: 30, position: 'right-fender' },
-	{ label: 'Left Door', x: 10, y: 60, position: 'left-door' },
-	{ label: 'Right Door', x: 90, y: 60, position: 'right-door' },
+	{ position: 'hood', side: 'center' as const, top: 8 },
+	{ position: 'front-left-fender', side: 'left' as const, top: 25 },
+	{ position: 'front-right-fender', side: 'right' as const, top: 25 },
+	{ position: 'left-front-door', side: 'left' as const, top: 39 },
+	{ position: 'right-front-door', side: 'right' as const, top: 39 },
+	{ position: 'roof', side: 'center' as const, top: 43 },
+	{ position: 'left-rear-door', side: 'left' as const, top: 53 },
+	{ position: 'right-rear-door', side: 'right' as const, top: 53 },
+	{ position: 'left-rear-fender', side: 'left' as const, top: 66 },
+	{ position: 'right-rear-fender', side: 'right' as const, top: 66 },
+	{ position: 'trunk', side: 'center' as const, top: 74 },
 ] as const
 
-function PaintView({
-	markers,
-	paintMarkers,
-	onDiagramClick,
-	onUpdatePaintMarker,
-	onDeletePaintMarker,
-}: PaintViewProps) {
+// Figma legend colors
+const PAINT_LEGEND = [
+	{ label: '<70', color: '#49DCF2' },
+	{ label: '>=70', color: '#52D57B' },
+	{ label: '>160', color: '#F4CA14' },
+	{ label: '>300', color: '#F47514' },
+	{ label: '>700', color: '#F41414' },
+]
+
+function PaintView({ paintMarkers, onDiagramClick, onUpdatePaintMarker }: PaintViewProps) {
 	return (
 		<div className="flex flex-col gap-4">
-			{/* Paint thickness legend */}
-			<div className="flex flex-wrap items-center gap-4">
-				<span className="text-body-sm font-medium text-black">Standard View</span>
-				{[
-					{ label: '<70', color: '#3B82F6' },
-					{ label: '>=70', color: '#22C55E' },
-					{ label: '>160', color: '#EAB308' },
-					{ label: '>300', color: '#F97316' },
-					{ label: '>700', color: '#EF4444' },
-				].map((item) => (
+			{/* Paint thickness legend — matches Figma exactly */}
+			<div className="flex flex-wrap items-center gap-6 py-2.5">
+				<span className="text-body font-medium text-black">Standard View</span>
+				{PAINT_LEGEND.map((item) => (
 					<div key={item.label} className="flex items-center gap-1">
-						<div className="h-3 w-6 rounded-full" style={{ backgroundColor: item.color }} />
-						<span className="text-caption text-grey-100">{item.label}</span>
+						<div
+							className="h-2 w-10 rounded-full"
+							style={{ backgroundColor: item.color }}
+						/>
+						<span className="text-body-sm text-black">{item.label}</span>
 					</div>
 				))}
 			</div>
 
-			{/* Diagram with positioned paint inputs */}
-			<div className="relative">
-				<VehicleDiagram mode="paint" markers={markers} editable onAddMarker={onDiagramClick} />
+			{/* Diagram with floating call-out inputs */}
+			<div className="relative flex items-center justify-center py-4">
+				{/* Car image — centered, constrained width */}
+				<img
+					src="/images/car-silhouette.png"
+					alt="Vehicle outline"
+					className="h-auto w-full max-w-72 select-none"
+					draggable={false}
+				/>
 
-				{/* Paint measurement inputs positioned around diagram */}
+				{/* Floating call-out inputs positioned around the car */}
 				{PAINT_POSITIONS.map((pos) => {
 					const existing = paintMarkers.find((m) => m.position === pos.position)
 					return (
-						<PaintMeasurementInput
+						<PaintCallout
 							key={pos.position}
-							label={pos.label}
-							position={pos}
-							marker={existing ?? null}
-							onSubmit={(thickness) => {
+							position={pos.position}
+							side={pos.side}
+							top={pos.top}
+							value={existing?.thickness ?? null}
+							onSubmit={(val) => {
 								if (existing) {
-									onUpdatePaintMarker(existing.id, thickness)
+									onUpdatePaintMarker(existing.id, val)
 								} else {
-									onDiagramClick(pos.x, pos.y)
+									const approxX =
+										pos.side === 'left' ? 20 : pos.side === 'right' ? 80 : 50
+									onDiagramClick(approxX, pos.top)
 								}
 							}}
-							onDelete={existing ? () => onDeletePaintMarker(existing.id) : undefined}
 						/>
 					)
 				})}
 			</div>
-
-			{/* Paint marker list */}
-			{paintMarkers.length > 0 && (
-				<div className="flex flex-wrap gap-2">
-					{paintMarkers.map((marker) => (
-						<div
-							key={marker.id}
-							className="flex items-center gap-2 rounded-full border px-3 py-1.5"
-							style={{ borderColor: marker.color ?? getPaintColor(marker.thickness) }}
-						>
-							<div
-								className="h-2.5 w-2.5 rounded-full"
-								style={{ backgroundColor: marker.color ?? getPaintColor(marker.thickness) }}
-							/>
-							<span className="text-caption font-medium text-black">{marker.thickness}µm</span>
-							{marker.position && (
-								<span className="text-caption text-grey-100">{marker.position}</span>
-							)}
-							<button
-								type="button"
-								onClick={() => onDeletePaintMarker(marker.id)}
-								className="cursor-pointer text-grey-100 hover:text-error"
-								aria-label="Remove measurement"
-							>
-								<X className="h-3 w-3" />
-							</button>
-						</div>
-					))}
-				</div>
-			)}
 		</div>
 	)
 }
 
-type PaintMeasurementInputProps = {
-	label: string
-	position: { x: number; y: number; position: string }
-	marker: PaintMarkerData | null
+type PaintCalloutProps = {
+	position: string
+	side: 'left' | 'right' | 'center'
+	top: number
+	value: number | null
 	onSubmit: (thickness: number) => void
-	onDelete?: () => void
 }
 
-function PaintMeasurementInput({
-	label,
-	position,
-	marker,
-	onSubmit,
-	onDelete,
-}: PaintMeasurementInputProps) {
-	const [editing, setEditing] = useState(false)
-	const thickness = marker?.thickness ?? 0
-	const color = marker ? (marker.color ?? getPaintColor(marker.thickness)) : '#D1D5DB'
-
-	// Position: left side items anchor right, right side items anchor left
-	const isLeft = position.x < 30
-	const isRight = position.x > 70
+function PaintCallout({ position, side, top, value, onSubmit }: PaintCalloutProps) {
+	const inputRef = useRef<HTMLInputElement>(null)
+	const color = value != null ? getPaintColor(value) : null
 
 	return (
 		<div
-			className="absolute z-10 flex items-center gap-1"
+			className="absolute z-10 -translate-y-1/2"
 			style={{
-				left: isLeft ? '0%' : isRight ? undefined : `${position.x}%`,
-				right: isRight ? '0%' : undefined,
-				top: `${position.y}%`,
-				transform: isLeft || isRight ? 'translateY(-50%)' : 'translate(-50%, -50%)',
+				top: `${top}%`,
+				...(side === 'left'
+					? { right: '68%' }
+					: side === 'right'
+						? { left: '68%' }
+						: { left: '50%', transform: 'translate(-50%, -50%)' }),
 			}}
 		>
-			{editing ? (
+			<div
+				className={cn(
+					'rounded-xl bg-white px-2.5 py-1.5 shadow-[0px_4px_16px_0px_rgba(0,0,0,0.1)]',
+					value != null ? 'border-2' : 'border border-border-card',
+				)}
+				style={value != null ? { borderColor: color ?? undefined } : undefined}
+			>
 				<input
-					type="number"
-					className="w-16 rounded border px-1.5 py-0.5 text-center text-caption outline-none focus:border-border-focus"
-					style={{ borderColor: color }}
-					placeholder="µm"
-					defaultValue={thickness || ''}
+					ref={inputRef}
+					type="text"
+					inputMode="numeric"
+					className={cn(
+						'w-12 border-b border-black bg-transparent py-1 text-body outline-none',
+						value != null
+							? 'font-normal text-black'
+							: 'text-black/30 placeholder:text-black/30',
+					)}
+					placeholder="μm"
+					defaultValue={value != null ? `${value}μm` : ''}
+					key={`${position}-${value}`}
+					onFocus={(e) => {
+						const raw = e.target.value.replace('μm', '')
+						e.target.value = raw
+						e.target.select()
+					}}
 					onBlur={(e) => {
-						const val = parseInt(e.target.value, 10)
-						if (!Number.isNaN(val) && val > 0) onSubmit(val)
-						setEditing(false)
+						const val = parseInt(e.target.value.replace('μm', ''), 10)
+						if (!Number.isNaN(val) && val > 0) {
+							onSubmit(val)
+							e.target.value = `${val}μm`
+						} else if (value != null) {
+							e.target.value = `${value}μm`
+						} else {
+							e.target.value = ''
+						}
 					}}
 					onKeyDown={(e) => {
-						if (e.key === 'Enter') {
-							const val = parseInt(e.currentTarget.value, 10)
-							if (!Number.isNaN(val) && val > 0) onSubmit(val)
-							setEditing(false)
+						if (e.key === 'Enter') e.currentTarget.blur()
+						if (e.key === 'Escape') {
+							e.currentTarget.value =
+								value != null ? `${value}μm` : ''
+							e.currentTarget.blur()
 						}
-						if (e.key === 'Escape') setEditing(false)
 					}}
 				/>
-			) : (
-				<button
-					type="button"
-					onClick={() => setEditing(true)}
-					className={cn(
-						'cursor-pointer rounded border-2 px-2 py-0.5 text-caption font-medium transition-colors hover:opacity-80',
-						marker ? 'text-white' : 'bg-white text-grey-100',
-					)}
-					style={{
-						borderColor: color,
-						backgroundColor: marker ? color : undefined,
-					}}
-					title={`${label}: ${marker ? `${thickness}µm` : 'Click to add'}`}
-				>
-					{marker ? `${thickness}` : label}
-				</button>
-			)}
+			</div>
 		</div>
 	)
 }

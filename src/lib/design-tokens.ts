@@ -25,11 +25,11 @@ export const COLORS = {
 } as const
 
 export const PAINT_THICKNESS_COLORS = {
-	blue: { hex: '#3B82F6', maxMicrons: 70, label: '< 70 \u00B5m' },
-	green: { hex: '#22C55E', maxMicrons: 160, label: '\u2265 70 \u00B5m' },
-	yellow: { hex: '#EAB308', maxMicrons: 300, label: '> 160 \u00B5m' },
-	orange: { hex: '#F97316', maxMicrons: 700, label: '> 300 \u00B5m' },
-	red: { hex: '#EF4444', maxMicrons: Infinity, label: '> 700 \u00B5m' },
+	blue: { hex: '#49DCF2', maxMicrons: 70, label: '< 70 \u00B5m' },
+	green: { hex: '#52D57B', maxMicrons: 160, label: '\u2265 70 \u00B5m' },
+	yellow: { hex: '#F4CA14', maxMicrons: 300, label: '> 160 \u00B5m' },
+	orange: { hex: '#F47514', maxMicrons: 700, label: '> 300 \u00B5m' },
+	red: { hex: '#F41414', maxMicrons: Infinity, label: '> 700 \u00B5m' },
 } as const
 
 export function getPaintColor(thicknessMicrons: number): string {
