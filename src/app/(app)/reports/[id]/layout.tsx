@@ -45,23 +45,21 @@ function ReportLayout({ children }: { children: ReactNode }) {
 	}
 
 	return (
-		<div className="flex flex-col gap-6">
+		<div className="flex flex-col gap-4 md:gap-6">
 			{/* Top row: Go Back + Report title + action button */}
-			<div className="flex items-center">
-				<div className="w-[302px] shrink-0">
-					<button
-						type="button"
-						onClick={() => router.push('/dashboard')}
-						className="flex cursor-pointer items-center gap-1.5 text-input font-medium text-black hover:text-grey-100"
-					>
-						<div className="flex items-center justify-center rounded-[13.5px] bg-white p-1.5">
-							<ChevronLeft className="h-3.5 w-3.5" />
-						</div>
-						Go Back
-					</button>
-				</div>
-				<div className="flex flex-1 items-center gap-2">
-					<h1 className="text-[34px] font-medium leading-none text-black">{title}</h1>
+			<div className="flex flex-wrap items-center gap-3">
+				<button
+					type="button"
+					onClick={() => router.push('/dashboard')}
+					className="flex cursor-pointer items-center gap-1.5 text-body-sm font-medium text-black hover:text-grey-100 md:text-input"
+				>
+					<div className="flex items-center justify-center rounded-[13.5px] bg-white p-1.5">
+						<ChevronLeft className="h-3.5 w-3.5" />
+					</div>
+					Go Back
+				</button>
+				<div className="flex flex-1 flex-wrap items-center gap-2">
+					<h1 className="text-h2 font-medium leading-none text-black md:text-[34px]">{title}</h1>
 					{report?.reportType && <Badge variant="success">{report.reportType}</Badge>}
 					{report?.isLocked && (
 						<Badge variant="default">
@@ -74,14 +72,15 @@ function ReportLayout({ children }: { children: ReactNode }) {
 				{isGallery && (
 					<button
 						type="button"
-						className="flex h-[50px] shrink-0 items-center gap-2.5 rounded-btn bg-primary px-3.5 text-input font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
+						className="flex h-10 shrink-0 items-center gap-2 rounded-btn bg-primary px-3 text-body-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50 sm:h-12.5 sm:gap-2.5 sm:px-3.5 sm:text-input"
 						disabled={!hasPhotos}
 						onClick={() => {
 							window.dispatchEvent(new CustomEvent('generate-report'))
 						}}
 					>
-						<Sparkles className="h-6 w-6" />
-						Generate Report
+						<Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
+						<span className="hidden sm:inline">Generate Report</span>
+						<span className="sm:hidden">Generate</span>
 					</button>
 				)}
 			</div>
@@ -96,7 +95,7 @@ function ReportLayout({ children }: { children: ReactNode }) {
 
 			{/* Main content */}
 			{showReportSidebar ? (
-				<div className="flex items-start gap-6">
+				<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
 					<ReportSidebar
 						sections={REPORT_SECTIONS}
 						activeSection={activeSection}

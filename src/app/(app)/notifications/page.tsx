@@ -2,11 +2,32 @@
 
 import { formatDistanceToNow } from 'date-fns'
 import { Bell, CheckCircle2, CreditCard, FileText, Lock } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { NotificationEventType } from '@/hooks/use-notifications'
 import { useNotifications } from '@/hooks/use-notifications'
 import { cn } from '@/lib/utils'
+
+function getNotificationPath(eventType: NotificationEventType, reportId: string | null): string {
+	if (!reportId) return '/notifications'
+	switch (eventType) {
+		case 'REPORT_CREATED':
+			return `/reports/${reportId}/gallery`
+		case 'REPORT_COMPLETED':
+			return `/reports/${reportId}/export`
+		case 'REPORT_SENT':
+			return `/reports/${reportId}/export`
+		case 'REPORT_LOCKED':
+			return `/reports/${reportId}/details/accident-info`
+		case 'INVOICE_GENERATED':
+			return `/reports/${reportId}/details/invoice`
+		case 'PAYMENT_RECEIVED':
+			return `/reports/${reportId}/details/invoice`
+		default:
+			return `/reports/${reportId}/gallery`
+	}
+}
 
 const NOTIFICATION_ICON_MAP: Record<
 	NotificationEventType,
@@ -45,6 +66,7 @@ const NOTIFICATION_ICON_MAP: Record<
 }
 
 function NotificationsPage() {
+	const router = useRouter()
 	const { notifications, unreadCount, markRead, markAllRead, isLoading, error } = useNotifications()
 
 	if (error) {
@@ -83,10 +105,14 @@ function NotificationsPage() {
 									'flex cursor-pointer items-start gap-4 px-5 py-4 transition-colors hover:bg-grey-25',
 									index < notifications.length - 1 && 'border-b border-border',
 								)}
-								onClick={() => markRead(notification.id)}
+								onClick={() => {
+									markRead(notification.id)
+									router.push(getNotificationPath(notification.eventType, notification.reportId))
+								}}
 								onKeyDown={(e) => {
 									if (e.key === 'Enter' || e.key === ' ') {
 										markRead(notification.id)
+										router.push(getNotificationPath(notification.eventType, notification.reportId))
 									}
 								}}
 								role="button"

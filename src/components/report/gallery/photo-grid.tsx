@@ -36,7 +36,7 @@ function PhotoGrid({ photos, onEdit, onDelete, onSelect, className }: PhotoGridP
 	}
 
 	return (
-		<div className={cn('grid grid-cols-2 gap-4 rounded-card bg-white p-6', className)}>
+		<div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-2 rounded-card bg-white p-6', className)}>
 			{photos.map((photo) => (
 				<div
 					key={photo.id}

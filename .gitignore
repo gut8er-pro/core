@@ -52,3 +52,5 @@ next-env.d.ts
 
 # Claude Code
 .claude/settings.json
+tempImg/
+images/

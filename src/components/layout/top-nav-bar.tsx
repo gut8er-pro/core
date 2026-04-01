@@ -34,16 +34,24 @@ const NOTIFICATION_ICON: Record<NotificationEventType, typeof FileText> = {
 	PAYMENT_RECEIVED: CreditCard,
 }
 
-// Map event types to navigation paths
+// Map event types to the most relevant page
 function getNotificationPath(eventType: NotificationEventType, reportId: string | null): string {
 	if (!reportId) return '/notifications'
 	switch (eventType) {
+		case 'REPORT_CREATED':
+			return `/reports/${reportId}/gallery`
+		case 'REPORT_COMPLETED':
+			return `/reports/${reportId}/export`
+		case 'REPORT_SENT':
+			return `/reports/${reportId}/export`
+		case 'REPORT_LOCKED':
+			return `/reports/${reportId}/details/accident-info`
 		case 'INVOICE_GENERATED':
 			return `/reports/${reportId}/details/invoice`
 		case 'PAYMENT_RECEIVED':
-			return '/statistics'
+			return `/reports/${reportId}/details/invoice`
 		default:
-			return `/reports/${reportId}`
+			return `/reports/${reportId}/gallery`
 	}
 }
 
@@ -82,21 +90,21 @@ function TopNavBar({
 	const recentNotifications = notifications.slice(0, 3)
 
 	return (
-		<header className={cn('flex items-center justify-between px-6 py-4', className)}>
+		<header className={cn('flex items-center justify-between px-3 py-3 sm:px-4 md:px-6 md:py-4', className)}>
 			{/* Left: Logo */}
-			<div className="flex items-center">
+			<div className="flex shrink-0 items-center">
 				<button
 					type="button"
 					className="cursor-pointer"
 					onClick={() => onNavigate?.('/dashboard')}
 					aria-label="Gut8erPRO home"
 				>
-					<Image src="/images/logo.svg" alt="Gut8erPRO" width={131} height={31} priority />
+					<Image src="/images/logo.svg" alt="Gut8erPRO" width={131} height={31} priority className="h-6 w-auto sm:h-8" />
 				</button>
 			</div>
 
 			{/* Center: Navigation */}
-			<nav className="flex items-center gap-2.5">
+			<nav className="flex items-center gap-1 sm:gap-2.5">
 				{CENTER_NAV_ITEMS.map((item) => {
 					const isActive = activePath === item.path
 					return (
@@ -112,16 +120,16 @@ function TopNavBar({
 			</nav>
 
 			{/* Right: Bell + User */}
-			<div className="flex items-center gap-2.5">
+			<div className="flex items-center gap-1.5 sm:gap-2.5">
 				{/* Notifications dropdown */}
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<button
 							type="button"
-							className="relative flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
+							className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-btn bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black sm:h-12.5 sm:w-12.5"
 							aria-label="Notifications"
 						>
-							<Bell className="h-6 w-6" />
+							<Bell className="h-5 w-5 sm:h-6 sm:w-6" />
 							{unreadCount > 0 && (
 								<span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-primary" />
 							)}
@@ -201,9 +209,9 @@ function TopNavBar({
 					<DropdownMenuTrigger asChild>
 						<button
 							type="button"
-							className="ml-2 flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-grey-25"
+							className="ml-1 flex cursor-pointer items-center gap-2 rounded-lg px-1 py-1 transition-colors hover:bg-grey-25 sm:ml-2 sm:px-2 sm:py-1.5"
 						>
-							<div className="flex h-[52px] w-[52px] items-center justify-center rounded-btn bg-primary text-body-sm font-semibold text-white">
+							<div className="flex h-9 w-9 items-center justify-center rounded-btn bg-primary text-caption font-semibold text-white sm:h-13 sm:w-13 sm:text-body-sm">
 								{userName?.charAt(0)?.toUpperCase() || 'U'}
 							</div>
 							<div className="hidden text-left lg:block">
@@ -308,12 +316,12 @@ function CenterNavItem({
 			<button
 				type="button"
 				onClick={onClick}
-				className="flex h-[50px] cursor-pointer items-center gap-2.5 rounded-btn bg-black px-3.5 text-body-sm font-medium text-white transition-colors"
+				className="flex h-10 cursor-pointer items-center gap-1.5 rounded-btn bg-black px-2.5 text-caption font-medium text-white transition-colors sm:h-12.5 sm:gap-2.5 sm:px-3.5 sm:text-body-sm"
 				aria-label={label}
 				aria-current="page"
 			>
-				<Icon className="h-6 w-6" />
-				<span>{label}</span>
+				<Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+				<span className="hidden sm:inline">{label}</span>
 			</button>
 		)
 	}
@@ -322,10 +330,10 @@ function CenterNavItem({
 		<button
 			type="button"
 			onClick={onClick}
-			className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
+			className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-btn bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black sm:h-12.5 sm:w-12.5"
 			aria-label={label}
 		>
-			<Icon className="h-6 w-6" />
+			<Icon className="h-5 w-5 sm:h-6 sm:w-6" />
 		</button>
 	)
 }

@@ -116,7 +116,7 @@ function StatisticsPage() {
 			</div>
 
 			{/* Summary cards */}
-			<div className="grid grid-cols-4 gap-6">
+			<div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 md:gap-6">
 				<StatCard
 					label="Total Revenue"
 					value={isLoading ? '—' : formatCurrency(totalRevenue)}
@@ -231,8 +231,8 @@ function StatisticsPage() {
 					</div>
 				</div>
 
-				<div className="overflow-hidden rounded-xl border-2 border-border-card bg-white">
-					<table className="w-full">
+				<div className="overflow-x-auto rounded-xl border-2 border-border-card bg-white">
+					<table className="w-full min-w-120">
 						<thead>
 							<tr className="border-b border-border-card bg-surface-secondary">
 								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">

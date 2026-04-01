@@ -63,7 +63,7 @@ function AppLayout({ children }: { children: ReactNode }) {
 				onNavigate={handleNavigate}
 				onLogout={handleLogout}
 			/>
-			<main className="mx-auto max-w-7xl px-6 py-6">{children}</main>
+			<main className="mx-auto max-w-7xl px-3 py-4 sm:px-4 md:px-6 md:py-6">{children}</main>
 		</div>
 	)
 }

@@ -217,7 +217,7 @@ function DashboardPage() {
 			</div>
 
 			{/* Recent Reports Header */}
-			<div className="mb-4 flex items-center justify-between">
+			<div className="mb-4 flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center gap-2">
 					<h2 className="text-subsection font-medium text-black">Recent Reports</h2>
 					<Info className="h-4 w-4 text-grey-100" />
@@ -227,7 +227,7 @@ function DashboardPage() {
 						</span>
 					)}
 				</div>
-				<div className="flex items-center gap-3">
+				<div className="flex flex-wrap items-center gap-2 sm:gap-3">
 					<button
 						type="button"
 						className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 opacity-80 transition-colors hover:bg-grey-25 hover:text-black"
@@ -242,7 +242,7 @@ function DashboardPage() {
 							placeholder="Search..."
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="h-11 w-[320px] rounded-lg border border-border bg-white pl-9 pr-3 text-body-sm text-black outline-none placeholder:text-grey-100 focus:border-primary focus:ring-1 focus:ring-primary"
+							className="h-11 w-full max-w-[320px] rounded-lg border border-border bg-white pl-9 pr-3 text-body-sm text-black outline-none placeholder:text-grey-100 focus:border-primary focus:ring-1 focus:ring-primary"
 						/>
 					</div>
 					<div className="relative" ref={reportTypeRef}>
