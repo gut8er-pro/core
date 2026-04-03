@@ -71,18 +71,18 @@ function RichTextEditor({ value, onChange, placeholder, className }: RichTextEdi
 				})}
 			</div>
 
+			{/* biome-ignore lint/security/noDangerouslySetInnerHtml: rich text editor content */}
 			<div
 				contentEditable
 				suppressContentEditableWarning
-				dir="ltr"
 				onInput={handleChange}
-				className="min-h-[200px] p-4 text-left text-body focus:outline-none"
+				className="min-h-[200px] p-4 text-body focus:outline-none *:text-left"
+				style={{ textAlign: 'left', direction: 'ltr', unicodeBidi: 'plaintext' }}
 				role="textbox"
 				aria-multiline="true"
 				aria-label="Email body"
 				data-placeholder={placeholder}
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: rich text editor content
-				dangerouslySetInnerHTML={content ? { __html: content } : undefined}
+				dangerouslySetInnerHTML={{ __html: content || '<p><br></p>' }}
 			/>
 		</div>
 	)
