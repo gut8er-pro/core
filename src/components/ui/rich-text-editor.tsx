@@ -10,7 +10,7 @@ import {
 	ListOrdered,
 	Type,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useRef } from 'react'
 import { cn } from '@/lib/utils'
 
 type RichTextEditorProps = {
@@ -40,11 +40,23 @@ const toolbarButtons: ToolbarButton[] = [
 ]
 
 function RichTextEditor({ value, onChange, placeholder, className }: RichTextEditorProps) {
-	const [content, setContent] = useState(value || '')
+	const editorRef = useRef<HTMLDivElement>(null)
+	const initializedRef = useRef(false)
 
-	function handleChange(e: React.FormEvent<HTMLDivElement>) {
-		const html = e.currentTarget.innerHTML
-		setContent(html)
+	// Set initial content only once (not on every render)
+	const setEditorRef = useCallback(
+		(node: HTMLDivElement | null) => {
+			editorRef.current = node
+			if (node && !initializedRef.current && value) {
+				node.innerHTML = value
+				initializedRef.current = true
+			}
+		},
+		[value],
+	)
+
+	function handleInput() {
+		const html = editorRef.current?.innerHTML ?? ''
 		onChange?.(html)
 	}
 
@@ -71,18 +83,16 @@ function RichTextEditor({ value, onChange, placeholder, className }: RichTextEdi
 				})}
 			</div>
 
-			{/* biome-ignore lint/security/noDangerouslySetInnerHtml: rich text editor content */}
 			<div
+				ref={setEditorRef}
 				contentEditable
 				suppressContentEditableWarning
-				onInput={handleChange}
-				className="min-h-[200px] p-4 text-body focus:outline-none *:text-left"
-				style={{ textAlign: 'left', direction: 'ltr', unicodeBidi: 'plaintext' }}
+				onInput={handleInput}
+				className="min-h-[200px] p-4 text-body focus:outline-none"
 				role="textbox"
 				aria-multiline="true"
 				aria-label="Email body"
 				data-placeholder={placeholder}
-				dangerouslySetInnerHTML={{ __html: content || '<p><br></p>' }}
 			/>
 		</div>
 	)
