@@ -269,10 +269,53 @@ async function signInWithApple() {
 	redirect(data.url)
 }
 
+async function requestPasswordReset(formData: FormData): Promise<{ error?: string }> {
+	const email = formData.get('email') as string
+	if (!email) return { error: 'Email is required' }
+
+	const supabase = await createClient()
+	const { error } = await supabase.auth.resetPasswordForEmail(email, {
+		redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/reset-password`,
+	})
+
+	if (error) {
+		console.warn('[requestPasswordReset] Error:', error.message)
+		// Don't reveal whether the email exists — always show success
+	}
+
+	return {}
+}
+
+async function updatePassword(formData: FormData): Promise<{ error?: string }> {
+	const password = formData.get('password') as string
+	if (!password || password.length < 8) {
+		return { error: 'Password must be at least 8 characters' }
+	}
+
+	const supabase = await createClient()
+	const { error } = await supabase.auth.updateUser({ password })
+
+	if (error) {
+		console.error('[updatePassword] Error:', error.message)
+		return { error: 'Failed to update password. The link may have expired.' }
+	}
+
+	return {}
+}
+
 async function logout() {
 	const supabase = await createClient()
 	await supabase.auth.signOut()
 	redirect('/login')
 }
 
-export { completeSignup, login, logout, signInWithApple, signInWithGoogle, signup }
+export {
+	completeSignup,
+	login,
+	logout,
+	requestPasswordReset,
+	signInWithApple,
+	signInWithGoogle,
+	signup,
+	updatePassword,
+}
