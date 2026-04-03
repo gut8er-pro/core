@@ -170,8 +170,10 @@ function useTabCompletion(reportId: string, reportType?: string): TabCompletion 
 			(calcData?.additionalCosts?.length ?? 0) > 0,
 		]
 		if (!isKG) {
-			// Correction + Results (HS only)
-			sections.push(false) // Correction (DAT/Manual/AI) — check if datCalculationResult exists
+			// Correction (HS only) — count as filled if any calc data exists
+			sections.push(
+				hasValue(c?.replacementValue) && hasValue(c?.repairMethod),
+			)
 		}
 		return { filled: sections.filter(Boolean).length, total: sections.length }
 	})()

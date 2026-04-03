@@ -268,7 +268,11 @@ function CalculationPage() {
 				{/* Section heading with completion badge */}
 				<div className="flex items-center justify-between">
 					<h3 className="text-h3 font-semibold text-black">{sectionTitle}</h3>
-					<CompletionBadge percentage={30} />
+					<CompletionBadge percentage={(() => {
+						const fields = ['replacementValue', 'residualValue', 'diminutionInValue', 'repairMethod', 'costPerDay'] as const
+						const filled = fields.filter(f => getValues(f as keyof CalculationFormData)).length
+						return Math.round((filled / fields.length) * 100)
+					})()} />
 				</div>
 
 				{isOldtimerReport ? (

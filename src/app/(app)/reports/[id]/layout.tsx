@@ -29,14 +29,13 @@ function ReportLayout({ children }: { children: ReactNode }) {
 	const hasPhotos = (photoData?.photos?.length ?? 0) > 0
 	const hasGenerated = !!report?.aiGenerationSummary
 
-	// Gallery shows report sidebar only after report has been generated.
-	// Before generation: gallery page renders its own instruction sidebar.
-	// After generation: layout renders the report nav sidebar.
-	const showReportSidebar = !isGallery || (isGallery && hasGenerated)
+	// Show report sidebar when user has photos (can navigate to details/export)
+	// or when not on gallery page. Only hide on gallery with zero photos.
+	const showReportSidebar = !isGallery || hasPhotos
 
-	// Title: "Upload Images" during upload phase, report title after
+	// Title: "Upload Images" only when gallery has no photos
 	const title =
-		isGallery && !hasPhotos && !hasGenerated
+		isGallery && !hasPhotos
 			? 'Upload Images'
 			: (report?.title ?? 'Create New Report')
 

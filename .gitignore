@@ -54,5 +54,8 @@ next-env.d.ts
 .claude/settings.json
 tempImg/
 /images/
-testing/
 .playwright-mcp/
+testing/e2e/.auth/
+testing/screenshots/test-results/
+testing/reports/playwright-html/
+pw-final/

@@ -98,9 +98,9 @@ function OpponentSection({
 					<TextField
 						label="IBAN"
 						placeholder="123/456/78901"
-						error={errors.opponentPhone?.message}
-						{...register('opponentPhone')}
-						onBlur={() => onFieldBlur?.('opponentPhone')}
+						error={errors.opponentIban?.message}
+						{...register('opponentIban')}
+						onBlur={() => onFieldBlur?.('opponentIban')}
 					/>
 					<TextField
 						label="Phone Number"
