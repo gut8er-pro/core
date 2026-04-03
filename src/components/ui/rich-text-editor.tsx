@@ -74,8 +74,9 @@ function RichTextEditor({ value, onChange, placeholder, className }: RichTextEdi
 			<div
 				contentEditable
 				suppressContentEditableWarning
+				dir="ltr"
 				onInput={handleChange}
-				className="min-h-[200px] p-4 text-body focus:outline-none"
+				className="min-h-[200px] p-4 text-left text-body focus:outline-none"
 				role="textbox"
 				aria-multiline="true"
 				aria-label="Email body"

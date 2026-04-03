@@ -20,7 +20,7 @@ function hasValue(val: unknown): boolean {
 	return true
 }
 
-function countFilled(obj: Record<string, unknown> | null | undefined, keys: string[]): number {
+function _countFilled(obj: Record<string, unknown> | null | undefined, keys: string[]): number {
 	if (!obj) return 0
 	return keys.filter((k) => hasValue((obj as Record<string, unknown>)[k])).length
 }
@@ -54,9 +54,7 @@ function useTabCompletion(reportId: string, reportType?: string): TabCompletion 
 
 		// Claimant / Client section
 		const cl = accidentData?.claimantInfo
-		sections.push(
-			hasValue(cl?.firstName) || hasValue(cl?.lastName) || hasValue(cl?.company),
-		)
+		sections.push(hasValue(cl?.firstName) || hasValue(cl?.lastName) || hasValue(cl?.company))
 
 		// Opponent section (not for BE/OT)
 		if (!isBE && !isOT) {
@@ -89,8 +87,7 @@ function useTabCompletion(reportId: string, reportType?: string): TabCompletion 
 		const identification = hasValue(v?.vin) || hasValue(v?.manufacturer) || hasValue(v?.mainType)
 		const specification =
 			hasValue(v?.powerKw) || hasValue(v?.engineDesign) || hasValue(v?.transmission)
-		const details =
-			hasValue(v?.vehicleType) || hasValue(v?.motorType) || hasValue(v?.doors)
+		const details = hasValue(v?.vehicleType) || hasValue(v?.motorType) || hasValue(v?.doors)
 		const source = hasValue(v?.sourceOfTechnicalData)
 
 		const sections = [identification, specification, details, source]
@@ -172,9 +169,7 @@ function useTabCompletion(reportId: string, reportType?: string): TabCompletion 
 		]
 		if (!isKG) {
 			// Correction (HS only) — count as filled if any calc data exists
-			sections.push(
-				hasValue(c?.replacementValue) && hasValue(c?.repairMethod),
-			)
+			sections.push(hasValue(c?.replacementValue) && hasValue(c?.repairMethod))
 		}
 		return { filled: sections.filter(Boolean).length, total: sections.length }
 	})()

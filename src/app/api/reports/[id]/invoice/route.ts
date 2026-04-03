@@ -14,7 +14,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -55,7 +55,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -117,7 +117,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 			if (data.invoice?.invoiceNumber && !invoice.invoiceNumber) {
 				const { createNotification } = await import('@/lib/notifications/create')
 				await createNotification({
-					userId: user!.id,
+					userId: user?.id,
 					eventType: 'INVOICE_GENERATED',
 					title: 'Invoice Generated',
 					description: `Invoice ${data.invoice.invoiceNumber} has been generated.`,

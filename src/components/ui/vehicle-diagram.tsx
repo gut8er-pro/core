@@ -41,10 +41,7 @@ function VehicleDiagram({
 
 			<div className="relative rounded-lg border border-border bg-white p-4">
 				<div
-					className={cn(
-						'relative mx-auto',
-						editable && 'cursor-crosshair',
-					)}
+					className={cn('relative mx-auto', editable && 'cursor-crosshair')}
 					style={{ maxWidth: 320 }}
 					onClick={handleClick}
 					onKeyDown={(e) => {
@@ -54,9 +51,7 @@ function VehicleDiagram({
 					}}
 					role={editable ? 'button' : 'img'}
 					tabIndex={editable ? 0 : undefined}
-					aria-label={
-						mode === 'damages' ? 'Vehicle damage diagram' : 'Vehicle paint diagram'
-					}
+					aria-label={mode === 'damages' ? 'Vehicle damage diagram' : 'Vehicle paint diagram'}
 				>
 					{/* Car silhouette — portrait orientation, front facing up */}
 					<img
@@ -83,8 +78,7 @@ function VehicleDiagram({
 								}}
 								className={cn(
 									'absolute flex items-center justify-center rounded-full -translate-x-1/2 -translate-y-1/2',
-									onMarkerClick &&
-										'cursor-pointer hover:scale-110 transition-transform',
+									onMarkerClick && 'cursor-pointer hover:scale-110 transition-transform',
 								)}
 								style={{
 									left: `${marker.x}%`,

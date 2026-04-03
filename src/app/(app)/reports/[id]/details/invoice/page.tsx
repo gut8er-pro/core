@@ -19,7 +19,12 @@ function InvoicePage() {
 	const { data, isLoading } = useInvoice(reportId)
 	const { data: report } = useReport(reportId)
 
-	const { saveField, saveFields, flushNow, state: autoSaveState } = useAutoSave({
+	const {
+		saveField,
+		saveFields,
+		flushNow,
+		state: autoSaveState,
+	} = useAutoSave({
 		reportId,
 		section: 'invoice',
 		disabled: report?.isLocked,

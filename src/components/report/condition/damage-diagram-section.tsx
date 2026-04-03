@@ -91,9 +91,7 @@ function DamageDiagramSection({
 						onClick={() => setActiveTab('damages')}
 						className={cn(
 							'flex-1 cursor-pointer rounded-full px-5 py-3 text-center text-body font-medium transition-colors',
-							activeTab === 'damages'
-								? 'bg-black text-white'
-								: 'bg-transparent text-[#919191]',
+							activeTab === 'damages' ? 'bg-black text-white' : 'bg-transparent text-[#919191]',
 						)}
 					>
 						Damage
@@ -103,9 +101,7 @@ function DamageDiagramSection({
 						onClick={() => setActiveTab('paint')}
 						className={cn(
 							'flex-1 cursor-pointer rounded-full px-5 py-3 text-center text-body font-medium transition-colors',
-							activeTab === 'paint'
-								? 'bg-black text-white'
-								: 'bg-transparent text-[#919191]',
+							activeTab === 'paint' ? 'bg-black text-white' : 'bg-transparent text-[#919191]',
 						)}
 					>
 						Paint
@@ -373,10 +369,7 @@ function PaintView({ paintMarkers, onDiagramClick, onUpdatePaintMarker }: PaintV
 				<span className="text-body font-medium text-black">Standard View</span>
 				{PAINT_LEGEND.map((item) => (
 					<div key={item.label} className="flex items-center gap-1">
-						<div
-							className="h-2 w-10 rounded-full"
-							style={{ backgroundColor: item.color }}
-						/>
+						<div className="h-2 w-10 rounded-full" style={{ backgroundColor: item.color }} />
 						<span className="text-body-sm text-black">{item.label}</span>
 					</div>
 				))}
@@ -406,8 +399,7 @@ function PaintView({ paintMarkers, onDiagramClick, onUpdatePaintMarker }: PaintV
 								if (existing) {
 									onUpdatePaintMarker(existing.id, val)
 								} else {
-									const approxX =
-										pos.side === 'left' ? 20 : pos.side === 'right' ? 80 : 50
+									const approxX = pos.side === 'left' ? 20 : pos.side === 'right' ? 80 : 50
 									onDiagramClick(approxX, pos.top)
 								}
 							}}
@@ -454,11 +446,10 @@ function PaintCallout({ position, side, top, value, onSubmit }: PaintCalloutProp
 					ref={inputRef}
 					type="text"
 					inputMode="numeric"
+					dir="ltr"
 					className={cn(
-						'w-12 border-b border-black bg-transparent py-1 text-body outline-none',
-						value != null
-							? 'font-normal text-black'
-							: 'text-black/30 placeholder:text-black/30',
+						'w-12 border-b border-black bg-transparent py-1 text-left text-body outline-none',
+						value != null ? 'font-normal text-black' : 'text-black/30 placeholder:text-black/30',
 					)}
 					placeholder="μm"
 					defaultValue={value != null ? `${value}μm` : ''}
@@ -482,8 +473,7 @@ function PaintCallout({ position, side, top, value, onSubmit }: PaintCalloutProp
 					onKeyDown={(e) => {
 						if (e.key === 'Enter') e.currentTarget.blur()
 						if (e.key === 'Escape') {
-							e.currentTarget.value =
-								value != null ? `${value}μm` : ''
+							e.currentTarget.value = value != null ? `${value}μm` : ''
 							e.currentTarget.blur()
 						}
 					}}

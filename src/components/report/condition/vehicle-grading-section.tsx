@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Info } from 'lucide-react'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
 import { cn } from '@/lib/utils'
@@ -20,7 +19,7 @@ const GRADING_CATEGORIES = [
 ] as const
 
 const SCORE_OPTIONS = ['Non', '1', '2', '3', '4', '5'] as const
-const MODIFIERS = ['+', '', '-'] as const
+const _MODIFIERS = ['+', '', '-'] as const
 
 type GradeScore = {
 	value: string
@@ -64,9 +63,7 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 						onClick={() => setActiveTab('grading')}
 						className={cn(
 							'flex-1 rounded-full px-6 py-2.5 text-body-sm font-medium transition-colors',
-							activeTab === 'grading'
-								? 'bg-black text-white'
-								: 'text-grey-100 hover:text-black',
+							activeTab === 'grading' ? 'bg-black text-white' : 'text-grey-100 hover:text-black',
 						)}
 					>
 						Grading
@@ -76,9 +73,7 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 						onClick={() => setActiveTab('paint')}
 						className={cn(
 							'flex-1 rounded-full px-6 py-2.5 text-body-sm font-medium transition-colors',
-							activeTab === 'paint'
-								? 'bg-black text-white'
-								: 'text-grey-100 hover:text-black',
+							activeTab === 'paint' ? 'bg-black text-white' : 'text-grey-100 hover:text-black',
 						)}
 					>
 						Paint
@@ -142,11 +137,7 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 						{/* Auto-calculate toggle */}
 						<div className="flex items-center justify-between">
 							<span className="text-body-sm text-black">Automatically calculate grade</span>
-							<ToggleSwitch
-								label=""
-								checked={autoCalculate}
-								onCheckedChange={setAutoCalculate}
-							/>
+							<ToggleSwitch label="" checked={autoCalculate} onCheckedChange={setAutoCalculate} />
 						</div>
 					</>
 				)}
@@ -180,9 +171,14 @@ function ScorePopup({
 			</p>
 			{showModifiers && (
 				<div className="mb-1 flex gap-1 pl-14">
-					{['', '+', '+', '+', '+'].map((m, i) =>
-						i === 0 ? <div key="spacer" className="w-10" /> : (
-							<div key={`plus-${i}`} className="flex w-10 items-center justify-center text-caption text-grey-100">
+					{['', '+', '+', '+', '+'].map((_m, i) =>
+						i === 0 ? (
+							<div key="spacer" className="w-10" />
+						) : (
+							<div
+								key={`plus-${i}`}
+								className="flex w-10 items-center justify-center text-caption text-grey-100"
+							>
 								+
 							</div>
 						),
@@ -203,8 +199,10 @@ function ScorePopup({
 			</div>
 			{showModifiers && (
 				<div className="mt-1 flex gap-1 pl-14">
-					{['', '-', '-', '-', '-'].map((m, i) =>
-						i === 0 ? <div key="spacer2" className="w-10" /> : (
+					{['', '-', '-', '-', '-'].map((_m, i) =>
+						i === 0 ? (
+							<div key="spacer2" className="w-10" />
+						) : (
 							<button
 								key={`minus-${i}`}
 								type="button"

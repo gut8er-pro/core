@@ -36,7 +36,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 
 	// Validate report exists and belongs to user
 	const report = await prisma.report.findFirst({
-		where: { id: reportId, userId: user!.id },
+		where: { id: reportId, userId: user?.id },
 	})
 
 	if (!report) {

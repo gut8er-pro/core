@@ -11,7 +11,7 @@ async function PATCH(_request: NextRequest, context: RouteContext) {
 	const { id } = await context.params
 
 	const notification = await prisma.notification.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!notification) {

@@ -179,13 +179,18 @@ function ClaimantSection({
 							<Checkbox
 								id="claimant-represented-by-lawyer"
 								onCheckedChange={(checked) => {
-									const event = { target: { name: 'claimantRepresentedByLawyer', value: !!checked } }
+									const event = {
+										target: { name: 'claimantRepresentedByLawyer', value: !!checked },
+									}
 									register('claimantRepresentedByLawyer').onChange(event)
 									onFieldBlur?.('claimantRepresentedByLawyer')
 								}}
 								{...register('claimantRepresentedByLawyer')}
 							/>
-							<Label htmlFor="claimant-represented-by-lawyer" className="cursor-pointer font-normal">
+							<Label
+								htmlFor="claimant-represented-by-lawyer"
+								className="cursor-pointer font-normal"
+							>
 								Represented by a lawyer
 							</Label>
 						</div>

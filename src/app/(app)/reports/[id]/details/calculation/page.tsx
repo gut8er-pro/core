@@ -112,17 +112,19 @@ function CalculationPage() {
 				amount: ac.amount.toString(),
 			})),
 			// BE valuation fields
-			generalCondition: (c as Record<string, unknown>).generalCondition as string ?? '',
-			taxation: (c as Record<string, unknown>).taxation as string ?? '2.4',
-			dataSource: (c as Record<string, unknown>).dataSource as string ?? '',
+			generalCondition: ((c as Record<string, unknown>).generalCondition as string) ?? '',
+			taxation: ((c as Record<string, unknown>).taxation as string) ?? '2.4',
+			dataSource: ((c as Record<string, unknown>).dataSource as string) ?? '',
 			valuationMax: ((c as Record<string, unknown>).valuationMax as number)?.toString() ?? '',
 			valuationAvg: ((c as Record<string, unknown>).valuationAvg as number)?.toString() ?? '',
 			valuationMin: ((c as Record<string, unknown>).valuationMin as number)?.toString() ?? '',
-			valuationDate: (c as Record<string, unknown>).valuationDate as string ?? '',
+			valuationDate: ((c as Record<string, unknown>).valuationDate as string) ?? '',
 			// OT valuation fields
 			marketValue: ((c as Record<string, unknown>).marketValue as number)?.toString() ?? '',
-			baseVehicleValue: ((c as Record<string, unknown>).baseVehicleValue as number)?.toString() ?? '',
-			restorationValue: ((c as Record<string, unknown>).restorationValue as number)?.toString() ?? '',
+			baseVehicleValue:
+				((c as Record<string, unknown>).baseVehicleValue as number)?.toString() ?? '',
+			restorationValue:
+				((c as Record<string, unknown>).restorationValue as number)?.toString() ?? '',
 		}
 
 		reset(formData as CalculationFormData)
@@ -134,9 +136,16 @@ function CalculationPage() {
 			if (value === undefined) return
 
 			const floatFields = [
-				'replacementValue', 'residualValue', 'diminutionInValue', 'costPerDay',
-				'valuationMax', 'valuationAvg', 'valuationMin',
-				'marketValue', 'baseVehicleValue', 'restorationValue',
+				'replacementValue',
+				'residualValue',
+				'diminutionInValue',
+				'costPerDay',
+				'valuationMax',
+				'valuationAvg',
+				'valuationMin',
+				'marketValue',
+				'baseVehicleValue',
+				'restorationValue',
 			]
 			const intFields = ['repairTimeDays', 'replacementTimeDays']
 
@@ -205,9 +214,7 @@ function CalculationPage() {
 		)
 	}
 
-	const sectionTitle = isOldtimerReport
-		? 'Vehicle Value'
-		: 'Value and Repair Calculation'
+	const sectionTitle = isOldtimerReport ? 'Vehicle Value' : 'Value and Repair Calculation'
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -268,11 +275,19 @@ function CalculationPage() {
 				{/* Section heading with completion badge */}
 				<div className="flex items-center justify-between">
 					<h3 className="text-h3 font-semibold text-black">{sectionTitle}</h3>
-					<CompletionBadge percentage={(() => {
-						const fields = ['replacementValue', 'residualValue', 'diminutionInValue', 'repairMethod', 'costPerDay'] as const
-						const filled = fields.filter(f => getValues(f as keyof CalculationFormData)).length
-						return Math.round((filled / fields.length) * 100)
-					})()} />
+					<CompletionBadge
+						percentage={(() => {
+							const fields = [
+								'replacementValue',
+								'residualValue',
+								'diminutionInValue',
+								'repairMethod',
+								'costPerDay',
+							] as const
+							const filled = fields.filter((f) => getValues(f as keyof CalculationFormData)).length
+							return Math.round((filled / fields.length) * 100)
+						})()}
+					/>
 				</div>
 
 				{isOldtimerReport ? (

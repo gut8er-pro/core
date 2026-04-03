@@ -27,7 +27,7 @@ async function GET(request: NextRequest) {
 	const skip = (page - 1) * limit
 
 	const where = {
-		userId: user!.id,
+		userId: user?.id,
 		...(status ? { status } : {}),
 	}
 
@@ -97,7 +97,7 @@ async function POST(request: NextRequest) {
 
 	const report = await prisma.report.create({
 		data: {
-			userId: user!.id,
+			userId: user?.id,
 			title: parsed.data.title,
 			reportType: parsed.data.reportType,
 		},

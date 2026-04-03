@@ -6,7 +6,7 @@ async function GET() {
 	const { user, error } = await getAuthenticatedUser()
 	if (error) return unauthorizedResponse()
 
-	const userId = user!.id
+	const userId = user?.id
 
 	// Total revenue from invoices
 	const revenueResult = await prisma.invoice.aggregate({

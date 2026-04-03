@@ -61,7 +61,8 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 	const activeTab = DETAIL_TABS.find((t) => pathname.endsWith(`/${t.key}`))?.key ?? 'accident-info'
 
 	const totalMissing =
-		(completion.accidentInfo.total - completion.accidentInfo.filled) +
+		completion.accidentInfo.total -
+		completion.accidentInfo.filled +
 		(completion.vehicle.total - completion.vehicle.filled) +
 		(completion.condition.total - completion.condition.filled) +
 		(completion.calculation.total - completion.calculation.filled) +

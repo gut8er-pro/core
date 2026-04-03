@@ -56,7 +56,9 @@ async function updateSession(request: NextRequest) {
 
 	// Redirect authenticated users away from auth pages (but allow /signup/complete and /reset-password)
 	const isAuthPage =
-		pathname === '/login' || pathname === '/forgot-password' || (pathname.startsWith('/signup') && pathname !== '/signup/complete')
+		pathname === '/login' ||
+		pathname === '/forgot-password' ||
+		(pathname.startsWith('/signup') && pathname !== '/signup/complete')
 	if (user && isAuthPage && pathname !== '/reset-password') {
 		const url = request.nextUrl.clone()
 		url.pathname = '/dashboard'
