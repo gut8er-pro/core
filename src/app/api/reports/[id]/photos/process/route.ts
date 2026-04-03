@@ -28,7 +28,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	const { id: reportId } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id: reportId, userId: user!.id },
+		where: { id: reportId, userId: user?.id },
 	})
 
 	if (!report) {

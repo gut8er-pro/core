@@ -22,7 +22,10 @@ function ReportSidebar({
 }: ReportSidebarProps) {
 	return (
 		<nav
-			className={cn('flex w-full shrink-0 gap-2 overflow-x-auto rounded-2xl bg-white p-3 lg:w-75.5 lg:flex-col lg:gap-4 lg:p-6', className)}
+			className={cn(
+				'flex w-full shrink-0 gap-2 overflow-x-auto rounded-2xl bg-white p-3 lg:w-75.5 lg:flex-col lg:gap-4 lg:p-6',
+				className,
+			)}
 			aria-label="Report navigation"
 		>
 			{sections.map((section) => {

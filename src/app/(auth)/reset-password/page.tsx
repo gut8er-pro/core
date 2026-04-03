@@ -123,19 +123,13 @@ function ResetPasswordPage() {
 											onClick={() => setShowPassword((p) => !p)}
 											aria-label={showPassword ? 'Hide password' : 'Show password'}
 										>
-											{showPassword ? (
-												<EyeOff className="h-6 w-6" />
-											) : (
-												<Eye className="h-6 w-6" />
-											)}
+											{showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
 										</button>
 									</div>
 								</div>
 
 								<div className="flex flex-col gap-3">
-									<label className="text-[18px] font-medium text-black">
-										Confirm password
-									</label>
+									<label className="text-[18px] font-medium text-black">Confirm password</label>
 									<div className="relative">
 										<input
 											name="confirmPassword"
@@ -153,11 +147,7 @@ function ResetPasswordPage() {
 											onClick={() => setShowConfirm((p) => !p)}
 											aria-label={showConfirm ? 'Hide password' : 'Show password'}
 										>
-											{showConfirm ? (
-												<EyeOff className="h-6 w-6" />
-											) : (
-												<Eye className="h-6 w-6" />
-											)}
+											{showConfirm ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
 										</button>
 									</div>
 								</div>

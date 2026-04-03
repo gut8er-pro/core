@@ -246,8 +246,13 @@ function AccidentInfoPage() {
 					)}
 					<span className="text-body-sm text-grey-100">
 						{(() => {
-							const fields = ['claimantFirstName', 'claimantLastName', 'claimantStreet', 'claimantEmail'] as const
-							const filled = fields.filter(f => getValues(f as keyof AccidentInfoFormData)).length
+							const fields = [
+								'claimantFirstName',
+								'claimantLastName',
+								'claimantStreet',
+								'claimantEmail',
+							] as const
+							const filled = fields.filter((f) => getValues(f as keyof AccidentInfoFormData)).length
 							return `${Math.round((filled / fields.length) * 100)}% Complete`
 						})()}
 					</span>
@@ -336,7 +341,14 @@ function AccidentInfoPage() {
 
 			{/* Update Report button */}
 			<div className="flex justify-end">
-				<Button variant="primary" onClick={() => { flushNow(); toast.success('Report updated', 2000) }} loading={autoSaveState.status === 'saving'}>
+				<Button
+					variant="primary"
+					onClick={() => {
+						flushNow()
+						toast.success('Report updated', 2000)
+					}}
+					loading={autoSaveState.status === 'saving'}
+				>
 					Update Report
 				</Button>
 			</div>

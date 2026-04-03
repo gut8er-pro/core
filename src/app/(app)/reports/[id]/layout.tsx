@@ -27,17 +27,14 @@ function ReportLayout({ children }: { children: ReactNode }) {
 
 	const isGallery = activeSection === 'gallery'
 	const hasPhotos = (photoData?.photos?.length ?? 0) > 0
-	const hasGenerated = !!report?.aiGenerationSummary
+	const _hasGenerated = !!report?.aiGenerationSummary
 
 	// Show report sidebar when user has photos (can navigate to details/export)
 	// or when not on gallery page. Only hide on gallery with zero photos.
 	const showReportSidebar = !isGallery || hasPhotos
 
 	// Title: "Upload Images" only when gallery has no photos
-	const title =
-		isGallery && !hasPhotos
-			? 'Upload Images'
-			: (report?.title ?? 'Create New Report')
+	const title = isGallery && !hasPhotos ? 'Upload Images' : (report?.title ?? 'Create New Report')
 
 	function handleSectionChange(key: string) {
 		router.push(`/reports/${params.id}/${key}`)

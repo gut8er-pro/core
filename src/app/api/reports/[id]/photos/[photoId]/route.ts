@@ -14,7 +14,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 	const { id, photoId } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -40,7 +40,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	const { id, photoId } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {
@@ -106,7 +106,7 @@ async function DELETE(_request: NextRequest, context: RouteContext) {
 	const { id, photoId } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user!.id },
+		where: { id, userId: user?.id },
 	})
 
 	if (!report) {

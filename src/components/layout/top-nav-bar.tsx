@@ -90,7 +90,12 @@ function TopNavBar({
 	const recentNotifications = notifications.slice(0, 3)
 
 	return (
-		<header className={cn('flex items-center justify-between px-3 py-3 sm:px-4 md:px-6 md:py-4', className)}>
+		<header
+			className={cn(
+				'flex items-center justify-between px-3 py-3 sm:px-4 md:px-6 md:py-4',
+				className,
+			)}
+		>
 			{/* Left: Logo */}
 			<div className="flex shrink-0 items-center">
 				<button
@@ -99,7 +104,14 @@ function TopNavBar({
 					onClick={() => onNavigate?.('/dashboard')}
 					aria-label="Gut8erPRO home"
 				>
-					<Image src="/images/logo.svg" alt="Gut8erPRO" width={131} height={31} priority className="h-6 w-auto sm:h-8" />
+					<Image
+						src="/images/logo.svg"
+						alt="Gut8erPRO"
+						width={131}
+						height={31}
+						priority
+						className="h-6 w-auto sm:h-8"
+					/>
 				</button>
 			</div>
 

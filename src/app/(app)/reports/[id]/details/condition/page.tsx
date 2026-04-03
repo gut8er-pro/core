@@ -8,12 +8,11 @@ import { ConditionSection } from '@/components/report/condition/condition-sectio
 import { DamageDiagramSection } from '@/components/report/condition/damage-diagram-section'
 import { PriorDamageSection } from '@/components/report/condition/prior-damage-section'
 import { TireSection } from '@/components/report/condition/tire-section'
+import type { ConditionFormData } from '@/components/report/condition/types'
 import { ValueIncreasingFeaturesSection } from '@/components/report/condition/value-increasing-features-section'
 import { VehicleGradingSection } from '@/components/report/condition/vehicle-grading-section'
-import type { ConditionFormData } from '@/components/report/condition/types'
 import { Button } from '@/components/ui/button'
 import { CompletionBadge } from '@/components/ui/completion-badge'
-import { ToggleSwitch } from '@/components/ui/toggle-switch'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import {
 	useCondition,
@@ -40,7 +39,7 @@ function ConditionPage() {
 	const deletePaintMarker = useDeletePaintMarker(reportId)
 	const saveTireSet = useSaveTireSet(reportId)
 	const deleteTireSet = useDeleteTireSet(reportId)
-	const [showMissing, setShowMissing] = useState(false)
+	const [_showMissing, _setShowMissing] = useState(false)
 
 	const {
 		saveField,
@@ -227,7 +226,7 @@ function ConditionPage() {
 	)
 
 	// Count missing fields for the banner
-	const missingFieldCount = (() => {
+	const _missingFieldCount = (() => {
 		const values = getValues()
 		let count = 0
 		const stringFields: (keyof ConditionFormData)[] = [
@@ -348,7 +347,10 @@ function ConditionPage() {
 				<Button
 					variant="primary"
 					size="lg"
-					onClick={() => { flushNow(); toast.success('Report updated', 2000) }}
+					onClick={() => {
+						flushNow()
+						toast.success('Report updated', 2000)
+					}}
 					loading={autoSaveState.status === 'saving'}
 				>
 					Update Report

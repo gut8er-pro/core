@@ -32,13 +32,10 @@ function AnnotationModal({
 	const canvasRef = useRef<fabric.Canvas | null>(null)
 	const exportFnRef = useRef<(() => string | null) | null>(null)
 
-	const handleCanvasReady = useCallback(
-		(canvas: fabric.Canvas, exportFn: () => string | null) => {
-			canvasRef.current = canvas
-			exportFnRef.current = exportFn
-		},
-		[],
-	)
+	const handleCanvasReady = useCallback((canvas: fabric.Canvas, exportFn: () => string | null) => {
+		canvasRef.current = canvas
+		exportFnRef.current = exportFn
+	}, [])
 
 	const handleClear = useCallback(() => {
 		const canvas = canvasRef.current

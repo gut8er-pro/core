@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import { Info } from 'lucide-react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { CalculationSectionProps } from './types'
 
@@ -37,20 +37,12 @@ function OldtimerValuationSection({
 					</div>
 
 					{!showRestoration ? (
-						<Button
-							type="button"
-							variant="primary"
-							onClick={() => setShowRestoration(true)}
-						>
+						<Button type="button" variant="primary" onClick={() => setShowRestoration(true)}>
 							Restoration Value
 						</Button>
 					) : (
 						<>
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setShowRestoration(false)}
-							>
+							<Button type="button" variant="outline" onClick={() => setShowRestoration(false)}>
 								Remove Additional Value
 							</Button>
 

@@ -61,8 +61,8 @@ function ForgotPasswordPage() {
 								Check your email
 							</h2>
 							<p className="mt-3.5 text-[16px] leading-6 text-grey-100">
-								We sent a password reset link to your email address. Click the link to set a
-								new password.
+								We sent a password reset link to your email address. Click the link to set a new
+								password.
 							</p>
 							<p className="mt-2 text-[14px] text-grey-100">
 								Didn&apos;t receive the email? Check your spam folder or try again.
@@ -85,12 +85,9 @@ function ForgotPasswordPage() {
 						</>
 					) : (
 						<>
-							<h2 className="text-[36px] font-medium leading-[46px] text-black">
-								Reset password
-							</h2>
+							<h2 className="text-[36px] font-medium leading-[46px] text-black">Reset password</h2>
 							<p className="mt-3.5 text-[16px] leading-6 text-grey-100">
-								Enter your email address and we&apos;ll send you a link to reset your
-								password.
+								Enter your email address and we&apos;ll send you a link to reset your password.
 							</p>
 
 							{error && (

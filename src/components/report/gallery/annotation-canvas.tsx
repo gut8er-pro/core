@@ -47,7 +47,7 @@ function AnnotationCanvas({
 	// Reset imgLoaded when photo changes
 	useEffect(() => {
 		setImgLoaded(false)
-	}, [photoUrl])
+	}, [])
 
 	const handleImgLoad = useCallback(() => {
 		setImgLoaded(true)
@@ -190,7 +190,7 @@ function AnnotationCanvas({
 			setReady(false)
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [imgLoaded, photoUrl])
+	}, [imgLoaded, getExportDataUrl, initialAnnotations, onCanvasReady])
 
 	// Tool handling
 	useEffect(() => {
@@ -350,10 +350,7 @@ function AnnotationCanvas({
 	return (
 		<div
 			ref={containerRef}
-			className={cn(
-				'absolute inset-0 overflow-hidden rounded-xl',
-				className,
-			)}
+			className={cn('absolute inset-0 overflow-hidden rounded-xl', className)}
 		>
 			{/* Image layer: CSS object-contain handles display reliably */}
 			<img

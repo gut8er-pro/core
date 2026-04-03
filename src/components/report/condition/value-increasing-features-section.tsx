@@ -77,7 +77,7 @@ type ValueIncreasingFeaturesSectionProps = {
 }
 
 function ValueIncreasingFeaturesSection({ className }: ValueIncreasingFeaturesSectionProps) {
-	const [originality, setOriginality] = useState('')
+	const [_originality, setOriginality] = useState('')
 	const [rareEquipment, setRareEquipment] = useState<string[]>([])
 	const [condition, setCondition] = useState<string[]>([])
 	const [technicalFeatures, setTechnicalFeatures] = useState<string[]>([])
@@ -85,7 +85,7 @@ function ValueIncreasingFeaturesSection({ className }: ValueIncreasingFeaturesSe
 	const [history, setHistory] = useState<string[]>([])
 	const [rarity, setRarity] = useState<string[]>([])
 	const [particulars, setParticulars] = useState('')
-	const [marketReputation, setMarketReputation] = useState('')
+	const [_marketReputation, setMarketReputation] = useState('')
 
 	return (
 		<CollapsibleSection title="Value Increasing Features" info className={className}>

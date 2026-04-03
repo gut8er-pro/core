@@ -10,7 +10,6 @@ import { SpecificationSection } from '@/components/report/vehicle/specification-
 import type { VehicleFormData } from '@/components/report/vehicle/types'
 import { Button } from '@/components/ui/button'
 import { CompletionBadge } from '@/components/ui/completion-badge'
-import { ToggleSwitch } from '@/components/ui/toggle-switch'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useReport } from '@/hooks/use-reports'
 import { useVehicleInfo } from '@/hooks/use-vehicle-info'
@@ -22,7 +21,7 @@ function VehiclePage() {
 	const { data, isLoading } = useVehicleInfo(reportId)
 	const { data: report } = useReport(reportId)
 	const toast = useToastStore()
-	const [showMissing, setShowMissing] = useState(false)
+	const [_showMissing, _setShowMissing] = useState(false)
 
 	const {
 		saveField,
@@ -109,7 +108,17 @@ function VehiclePage() {
 			const value = getValues(field as keyof VehicleFormData)
 			if (value === undefined) return
 
-			const numericFields = ['axles', 'drivenAxles', 'doors', 'seats', 'previousOwners', 'powerKw', 'powerHp', 'cylinders', 'displacement']
+			const numericFields = [
+				'axles',
+				'drivenAxles',
+				'doors',
+				'seats',
+				'previousOwners',
+				'powerKw',
+				'powerHp',
+				'cylinders',
+				'displacement',
+			]
 
 			if (numericFields.includes(field)) {
 				const num = Number(value)
@@ -122,7 +131,7 @@ function VehiclePage() {
 	)
 
 	// Count missing fields for the banner
-	const missingFieldCount = (() => {
+	const _missingFieldCount = (() => {
 		const values = getValues()
 		let count = 0
 		const stringFields: (keyof VehicleFormData)[] = [
@@ -244,7 +253,10 @@ function VehiclePage() {
 				<Button
 					variant="primary"
 					size="lg"
-					onClick={() => { flushNow(); toast.success('Report updated', 2000) }}
+					onClick={() => {
+						flushNow()
+						toast.success('Report updated', 2000)
+					}}
 					loading={autoSaveState.status === 'saving'}
 				>
 					Update Report
