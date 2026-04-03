@@ -138,7 +138,8 @@ function useTabCompletion(reportId: string, reportType?: string): TabCompletion 
 
 	// ── Calculation / Valuation ──
 	const calculationSections = (() => {
-		const c = calcData?.calculation
+		// Cast to Record for BE/OT fields that may not be in the strict TS type
+		const c = calcData?.calculation as Record<string, unknown> | null | undefined
 		if (isOT) {
 			// OT: Market value, Replacement value, Restoration, Total
 			const sections = [

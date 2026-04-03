@@ -75,7 +75,7 @@ async function generateReportPdfBuffer(
 		report: {
 			id: report.id,
 			title: report.title,
-			reportType: report.reportType,
+			reportType: report.reportType ?? 'HS',
 			createdAt: report.createdAt,
 			updatedAt: report.updatedAt,
 		},
@@ -169,11 +169,11 @@ async function generateReportPdfBuffer(
 					subsequentDamage: report.condition.subsequentDamage,
 					tireSets: report.condition.tireSets.map((ts) => ({
 						setNumber: ts.setNumber,
-						matchAndAlloy: ts.matchAndAlloy,
+						matchAndAlloy: ts.matchAndAlloy ? String(ts.matchAndAlloy) : null,
 						tires: ts.tires.map((t) => ({
 							position: t.position,
 							size: t.size,
-							profileLevel: t.profileLevel,
+							profileLevel: t.profileLevel != null ? Number(t.profileLevel) : null,
 							manufacturer: t.manufacturer,
 							dotCode: t.dotCode,
 							tireType: t.tireType,
