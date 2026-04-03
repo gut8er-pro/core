@@ -29,13 +29,23 @@ async function updateSession(request: NextRequest) {
 		data: { user },
 	} = await supabase.auth.getUser()
 
-	const { pathname } = request.nextUrl
+	const { pathname, searchParams } = request.nextUrl
+
+	// Handle Supabase PKCE auth codes — redirect to callback route
+	const code = searchParams.get('code')
+	if (code && (pathname === '/' || pathname === '/login')) {
+		const next = searchParams.get('next') ?? '/dashboard'
+		const url = request.nextUrl.clone()
+		url.pathname = '/auth/callback'
+		url.search = `?code=${code}&next=${encodeURIComponent(next)}`
+		return NextResponse.redirect(url)
+	}
 
 	// Public routes that don't need auth
-	const publicRoutes = ['/', '/login', '/signup', '/forgot-password']
-	const isPublicRoute = publicRoutes.some(
-		(route) => pathname === route || pathname.startsWith('/signup/'),
-	)
+	const publicRoutes = ['/', '/login', '/signup', '/forgot-password', '/reset-password']
+	const isPublicRoute =
+		publicRoutes.some((route) => pathname === route || pathname.startsWith('/signup/')) ||
+		pathname.startsWith('/auth/callback')
 
 	// Redirect unauthenticated users to login
 	if (!user && !isPublicRoute) {
@@ -44,10 +54,10 @@ async function updateSession(request: NextRequest) {
 		return NextResponse.redirect(url)
 	}
 
-	// Redirect authenticated users away from auth pages (but allow /signup/complete)
+	// Redirect authenticated users away from auth pages (but allow /signup/complete and /reset-password)
 	const isAuthPage =
-		pathname === '/login' || (pathname.startsWith('/signup') && pathname !== '/signup/complete')
-	if (user && isAuthPage) {
+		pathname === '/login' || pathname === '/forgot-password' || (pathname.startsWith('/signup') && pathname !== '/signup/complete')
+	if (user && isAuthPage && pathname !== '/reset-password') {
 		const url = request.nextUrl.clone()
 		url.pathname = '/dashboard'
 		return NextResponse.redirect(url)
