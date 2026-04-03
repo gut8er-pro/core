@@ -45,6 +45,8 @@ function SpecificationSection({
 			}
 		}
 		onFieldBlur?.('powerKw')
+		// Also save the auto-calculated HP
+		setTimeout(() => onFieldBlur?.('powerHp'), 100)
 	}, [onFieldBlur, setValue])
 
 	const handleHpBlur = useCallback(() => {
@@ -57,6 +59,8 @@ function SpecificationSection({
 			}
 		}
 		onFieldBlur?.('powerHp')
+		// Also save the auto-calculated kW
+		setTimeout(() => onFieldBlur?.('powerKw'), 100)
 	}, [onFieldBlur, setValue])
 
 	return (

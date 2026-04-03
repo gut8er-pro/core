@@ -19,7 +19,7 @@ function InvoicePage() {
 	const { data, isLoading } = useInvoice(reportId)
 	const { data: report } = useReport(reportId)
 
-	const { saveField, state: autoSaveState } = useAutoSave({
+	const { saveField, saveFields, flushNow, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'invoice',
 		disabled: report?.isLocked,
@@ -68,11 +68,42 @@ function InvoicePage() {
 			})),
 		}
 
+		// Generate invoice number if missing
+		if (!formData.invoiceNumber) {
+			const { generateInvoiceNumber } = require('@/lib/utils/invoice-calculations')
+			formData.invoiceNumber = generateInvoiceNumber('GH')
+		}
+
 		reset(formData as InvoiceFormData)
-	}, [data, reset])
+
+		// Auto-save invoice number if it was just generated (not yet in DB)
+		if (!inv?.invoiceNumber && formData.invoiceNumber) {
+			saveField('invoice.invoiceNumber', formData.invoiceNumber)
+		}
+	}, [data, reset, saveField])
 
 	const handleFieldBlur = useCallback(
 		(field: string) => {
+			// Line items: replace all — delete existing + create new
+			if (field.startsWith('lineItems')) {
+				const items = (getValues('lineItems') ?? []).filter(
+					(li) => li.description || Number(li.rate) > 0,
+				)
+				if (items.length > 0) {
+					const formatted = items.map((li, i) => ({
+						description: li.description || '',
+						specialFeature: li.specialFeature || '',
+						isLumpSum: li.isLumpSum ?? false,
+						rate: parseFloat(String(li.rate)) || 0,
+						amount: parseFloat(String(li.amount)) || parseFloat(String(li.rate)) || 0,
+						quantity: parseInt(String(li.quantity), 10) || 1,
+						order: i,
+					}))
+					saveFields({ lineItems: formatted })
+				}
+				return
+			}
+
 			const value = getValues(field as keyof InvoiceFormData)
 			if (value === undefined) return
 
@@ -86,7 +117,7 @@ function InvoicePage() {
 				saveField(`invoice.${field}`, value)
 			}
 		},
-		[saveField, getValues],
+		[saveField, saveFields, getValues],
 	)
 
 	const handleApplyBvskRate = useCallback(

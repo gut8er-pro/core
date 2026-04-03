@@ -61,7 +61,7 @@ const visitTypeEnum = z.enum(['claimant_residence', 'claimant_office', 'other'])
 
 const visitSchema = z.object({
 	id: z.string().uuid().optional(),
-	type: visitTypeEnum,
+	type: visitTypeEnum.optional().default('other'),
 	street: z.string().max(200).nullable().optional(),
 	postcode: z.string().max(10).nullable().optional(),
 	location: z.string().max(200).nullable().optional(),

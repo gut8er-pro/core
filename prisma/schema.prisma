@@ -457,7 +457,7 @@ model ExportConfig {
   recipientName            String?
   subject                  String?
   body                     String?
-  includeVehicleValuation  Boolean @default(false)
+  includeVehicleValuation  Boolean @default(true)
   includeCommission        Boolean @default(true)
   includeInvoice           Boolean @default(true)
   lockReport               Boolean @default(true)

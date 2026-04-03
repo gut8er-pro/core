@@ -471,7 +471,11 @@ function HeaderSection({ data }: { data: ReportData }) {
 			<View style={styles.headerRow}>
 				<View style={styles.headerLeft}>
 					<Text style={styles.headerTitle}>{data.report.title}</Text>
-					<Text style={styles.headerSubtitle}>Vehicle Damage Assessment Report</Text>
+					<Text style={styles.headerSubtitle}>
+						{data.report.reportType === 'BE' ? 'Vehicle Valuation Report' :
+						 data.report.reportType === 'OT' ? 'Oldtimer Valuation Report' :
+						 'Vehicle Damage Assessment Report'}
+					</Text>
 				</View>
 				<View style={styles.headerRight}>
 					<Text style={styles.reportNumber}>Report No. {reportId}</Text>
@@ -683,9 +687,9 @@ function ConditionSection({ condition }: { condition: ReportData['condition'] })
 							<Text style={[styles.dataValue, { fontSize: 9, marginBottom: 2 }]}>
 								Set {ts.setNumber}{ts.matchAndAlloy ? ` — ${ts.matchAndAlloy}` : ''}
 							</Text>
-							{ts.tires.map((t, j) => (
+							{ts.tires.filter(t => t.size || t.manufacturer || t.profileLevel).map((t, j) => (
 								<Text key={`tire-${j}`} style={[styles.dataValue, { fontSize: 8, color: GREY_TEXT }]}>
-									{t.position}: {t.size ?? '—'} | Profile: {t.profileLevel ?? '—'}mm | {t.manufacturer ?? '—'} | DOT: {t.dotCode ?? '—'}
+									{t.position}: {[t.size, t.profileLevel ? `${t.profileLevel}mm profile` : null, t.manufacturer, t.dotCode ? `DOT ${t.dotCode}` : null].filter(Boolean).join(' | ')}
 								</Text>
 							))}
 						</View>
@@ -696,31 +700,39 @@ function ConditionSection({ condition }: { condition: ReportData['condition'] })
 	)
 }
 
-function CalculationSection({ calculation }: { calculation: ReportData['calculation'] }) {
+function CalculationSection({ calculation, reportType }: { calculation: ReportData['calculation']; reportType: string }) {
 	if (!calculation) return null
+
+	const isBE = reportType === 'BE'
+	const isOT = reportType === 'OT'
+	const sectionTitle = isBE || isOT ? 'Valuation' : 'Valuation & Calculation'
 
 	return (
 		<View style={styles.section}>
-			<Text style={styles.sectionTitle}>Valuation &amp; Calculation</Text>
+			<Text style={styles.sectionTitle}>{sectionTitle}</Text>
 
-			<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
-				Vehicle Value
-			</Text>
-			<DataRow label="Replacement Value" value={formatCurrency(calculation.replacementValue)} />
-			{calculation.residualValue !== null && calculation.residualValue !== undefined && (
-				<DataRow label="Residual Value" value={formatCurrency(calculation.residualValue)} />
-			)}
-			{calculation.diminutionInValue !== null && calculation.diminutionInValue !== undefined && (
-				<DataRow
-					label="Diminution in Value"
-					value={formatCurrency(calculation.diminutionInValue)}
-				/>
-			)}
-			{calculation.taxRate && (
-				<DataRow label="Tax Rate" value={displayValue(calculation.taxRate)} />
+			{/* HS/KG: Vehicle Value + Repair + Loss of Use */}
+			{!isBE && !isOT && (
+				<View>
+					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
+						Vehicle Value
+					</Text>
+					{calculation.replacementValue != null && (
+						<DataRow label="Replacement Value" value={formatCurrency(calculation.replacementValue)} />
+					)}
+					{calculation.residualValue != null && (
+						<DataRow label="Residual Value" value={formatCurrency(calculation.residualValue)} />
+					)}
+					{calculation.diminutionInValue != null && (
+						<DataRow label="Diminution in Value" value={formatCurrency(calculation.diminutionInValue)} />
+					)}
+					{calculation.taxRate && (
+						<DataRow label="Tax Rate" value={displayValue(calculation.taxRate)} />
+					)}
+				</View>
 			)}
 
-			{(calculation.repairMethod || calculation.damageClass || calculation.wheelAlignment) && (
+			{!isBE && !isOT && (calculation.repairMethod || calculation.damageClass || calculation.wheelAlignment) && (
 				<View style={{ marginTop: 8 }}>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
 						Repair
@@ -745,7 +757,7 @@ function CalculationSection({ calculation }: { calculation: ReportData['calculat
 				</View>
 			)}
 
-			{(calculation.dropoutGroup || calculation.costPerDay || calculation.repairTimeDays) && (
+			{!isBE && !isOT && (calculation.dropoutGroup || calculation.costPerDay || calculation.repairTimeDays) && (
 				<View style={{ marginTop: 8 }}>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
 						Loss of Use
@@ -808,6 +820,9 @@ function CalculationSection({ calculation }: { calculation: ReportData['calculat
 					</Text>
 					{calculation.marketValue != null && (
 						<DataRow label="Market Value" value={formatCurrency(calculation.marketValue)} />
+					)}
+					{isOT && calculation.replacementValue != null && (
+						<DataRow label="Replacement Value" value={formatCurrency(calculation.replacementValue)} />
 					)}
 					{calculation.baseVehicleValue != null && (
 						<DataRow label="Base Vehicle Value" value={formatCurrency(calculation.baseVehicleValue)} />
@@ -889,7 +904,12 @@ function InvoiceSection({ invoice }: { invoice: ReportData['invoice'] }) {
 	if (!invoice) return null
 
 	const sortedItems = [...invoice.lineItems].sort((a, b) => a.order - b.order)
-	const taxAmount = invoice.totalGross - invoice.totalNet
+	// Calculate totals from line items if stored totals are zero
+	const computedNet = sortedItems.reduce((sum, item) => sum + (item.amount || item.rate * item.quantity), 0)
+	const netTotal = invoice.totalNet > 0 ? invoice.totalNet : computedNet
+	const taxRate = invoice.taxRate > 0 ? invoice.taxRate : 19
+	const grossTotal = invoice.totalGross > 0 ? invoice.totalGross : netTotal * (1 + taxRate / 100)
+	const taxAmount = grossTotal - netTotal
 
 	return (
 		<View style={styles.section}>
@@ -935,15 +955,15 @@ function InvoiceSection({ invoice }: { invoice: ReportData['invoice'] }) {
 					<View style={styles.totalsContainer}>
 						<View style={styles.totalRow}>
 							<Text style={styles.totalLabel}>Net Total</Text>
-							<Text style={styles.totalValue}>{formatCurrency(invoice.totalNet)}</Text>
+							<Text style={styles.totalValue}>{formatCurrency(netTotal)}</Text>
 						</View>
 						<View style={styles.totalRow}>
-							<Text style={styles.totalLabel}>VAT ({formatNumber(invoice.taxRate)}%)</Text>
+							<Text style={styles.totalLabel}>VAT ({formatNumber(taxRate)}%)</Text>
 							<Text style={styles.totalValue}>{formatCurrency(taxAmount)}</Text>
 						</View>
 						<View style={styles.totalGrossRow}>
 							<Text style={styles.totalGrossLabel}>Gross Total</Text>
-							<Text style={styles.totalGrossValue}>{formatCurrency(invoice.totalGross)}</Text>
+							<Text style={styles.totalGrossValue}>{formatCurrency(grossTotal)}</Text>
 						</View>
 					</View>
 				</View>
@@ -1079,7 +1099,7 @@ function ReportPdfDocument({ data }: { data: ReportData }) {
 				/>
 				<VisitsSection visits={data.visits} expertOpinion={data.expertOpinion} />
 				<ConditionSection condition={data.condition} />
-				{includeValuation && <CalculationSection calculation={data.calculation} />}
+				{includeValuation && <CalculationSection calculation={data.calculation} reportType={data.report.reportType} />}
 				{includeInvoice && <InvoiceSection invoice={data.invoice} />}
 				<PhotoGallerySection photos={data.photos} />
 				<FooterSection expert={data.expert} />

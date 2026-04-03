@@ -222,6 +222,45 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 
 ---
 
+### 1.9 Forgot Password
+
+| Field | Value |
+|-------|-------|
+| **Route** | `/forgot-password` |
+| **Description** | Password reset request. Same split-screen layout as login. Email input + "Send reset link" button. After submit: shows "Check your email" confirmation with "Try again" and "Back to login" options. |
+| **Navigates to** | Login (`/login`) |
+| **Navigates from** | Login (via "Forgot password?" link) |
+| **User actions** | Enter email, send reset link, try again, back to login |
+| **Form fields** | |
+
+| Field | Type | Validation |
+|-------|------|-----------|
+| Email address | email input | Required, valid email format |
+
+**Implementation:** `src/app/(auth)/forgot-password/page.tsx` — calls `requestPasswordReset()` server action which uses Supabase `resetPasswordForEmail()` with redirect to `/auth/callback?next=/reset-password`.
+
+---
+
+### 1.10 Reset Password
+
+| Field | Value |
+|-------|-------|
+| **Route** | `/reset-password` |
+| **Description** | Set new password. Same split-screen layout. Two password fields with eye toggles. User arrives here after clicking the email reset link (via `/auth/callback` code exchange). |
+| **Navigates to** | Login (`/login`, auto-redirect after success) |
+| **Navigates from** | Email reset link → `/auth/callback` → redirect here |
+| **User actions** | Enter new password, confirm password, update |
+| **Form fields** | |
+
+| Field | Type | Validation |
+|-------|------|-----------|
+| New password | password input (with toggle) | Required, min 8 characters |
+| Confirm password | password input (with toggle) | Required, must match |
+
+**Implementation:** `src/app/(auth)/reset-password/page.tsx` — calls `updatePassword()` server action. Middleware allows authenticated users on this route (recovery session from token).
+
+---
+
 ### 2.1 Report — Upload Photos (Single View)
 
 | Field | Value |
@@ -1509,6 +1548,86 @@ Reports should auto-save on field blur or after 2-second debounce. Show a subtle
   - Digital Signature
   - DAT Calculator
 ```
+
+---
+
+---
+
+## 7. AUTO-SAVE SYSTEM
+
+All report detail pages use a shared `useAutoSave` hook (`src/hooks/use-auto-save.ts`).
+
+**Behavior:**
+- Field changes are batched and debounced (800ms)
+- Saves silently — no toast on auto-save, only inline "Saving..."/"Saved" indicator
+- "Update Report" button triggers immediate flush + success toast
+- If a save is in-flight and new changes arrive, they're queued and auto-flushed after
+- On tab switch / unmount: flushes pending changes (fire-and-forget)
+- `beforeunload` warning if unsaved changes exist
+- All field reads use React Hook Form `getValues()` (not DOM queries)
+
+**Key files:**
+- `src/hooks/use-auto-save.ts` — core hook
+- Each detail page: `handleFieldBlur` → `saveField()` or `saveFields()`
+- Form `reset()` only runs on initial load (not on refetch after save)
+- `invalidateQueries` uses `refetchType: 'none'` to avoid form reset loops
+
+**Array fields (visits, line items):**
+- Visits: saves entire array on any visit field blur, filters empty rows
+- Line items: saves entire array, API replaces all when items have no IDs
+
+---
+
+## 8. PDF EXPORT
+
+PDF generation uses `@react-pdf/renderer` in `src/lib/pdf/`.
+
+**Key files:**
+- `src/lib/pdf/report-template.tsx` — React PDF template (~1000 lines)
+- `src/lib/pdf/generate-buffer.ts` — Fetches all report data, renders PDF buffer
+- `src/app/api/reports/[id]/send/route.ts` — Sends email with PDF via Resend
+
+**Report type handling in PDF:**
+| Section | HS | BE | KG | OT |
+|---------|----|----|----|----|
+| Subtitle | "Vehicle Damage Assessment Report" | "Vehicle Valuation Report" | "Vehicle Damage Assessment Report" | "Oldtimer Valuation Report" |
+| Vehicle Value/Repair/Loss of Use | ✓ | Hidden | ✓ | Hidden |
+| BE Valuation (DAT/Manual) | Hidden | ✓ | Hidden | Hidden |
+| OT Valuation (Market/Replacement/Restoration) | Hidden | Hidden | Hidden | ✓ |
+| Correction section | ✓ | ✓ | Hidden | Hidden |
+
+**Invoice totals:** Calculated from line items at render time if stored values are zero.
+**Tires:** Only tires with actual data are rendered (empty positions filtered).
+**Export config toggles:** Vehicle valuation (default ON), Commission, Invoice, Lock Report.
+
+---
+
+## 9. E2E TESTING
+
+Playwright-based E2E tests in `testing/e2e/` with 16 spec files (~100 test cases).
+
+**Structure:**
+```
+testing/
+├── e2e/                         # Playwright specs
+│   ├── playwright.config.ts
+│   ├── auth.setup.ts            # Login + save session
+│   ├── helpers/test-data.ts     # Shared constants
+│   ├── 01-auth.spec.ts          # Auth flow
+│   ├── 05-report-types.spec.ts  # HS/BE/KG/OT conditional UI
+│   ├── 12-hs-complete-flow.spec.ts  # Full HS E2E
+│   ├── 13-be-complete-flow.spec.ts  # Full BE E2E
+│   ├── 14-kg-complete-flow.spec.ts  # Full KG E2E
+│   ├── 15-ot-complete-flow.spec.ts  # Full OT E2E
+│   └── 16-all-reports-send.spec.ts  # All 4 types → email
+├── testing-images/              # Car photos for upload
+├── reference-pdfs/              # Baseline PDFs for comparison
+├── reports/                     # QA bug reports
+└── suites/                      # Manual test checklists
+```
+
+**Commands:** `npm run test:e2e`, `npm run test:e2e:hs`, `npm run test:e2e:flows`, etc.
+See `testing/README.md` for full documentation.
 
 ---
 

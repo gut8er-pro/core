@@ -29,6 +29,7 @@ type AccidentInfoFormData = {
 	opponentPostcode: string
 	opponentLocation: string
 	opponentEmail: string
+	opponentIban: string
 	opponentPhone: string
 	opponentInsuranceCompany: string
 	opponentInsuranceNumber: string

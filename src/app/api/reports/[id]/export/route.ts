@@ -83,10 +83,6 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		return NextResponse.json({ error: 'Report not found' }, { status: 404 })
 	}
 
-	if (report.isLocked) {
-		return NextResponse.json({ error: 'Report is locked' }, { status: 403 })
-	}
-
 	const body = await request.json()
 	const parsed = exportConfigSchema.safeParse(body)
 
@@ -119,10 +115,13 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		update: updateData,
 	})
 
-	// Touch the report's updatedAt timestamp
+	// Sync report lock status + touch updatedAt
 	await prisma.report.update({
 		where: { id },
-		data: { updatedAt: new Date() },
+		data: {
+			updatedAt: new Date(),
+			...(data.lockReport !== undefined ? { isLocked: data.lockReport } : {}),
+		},
 	})
 
 	return NextResponse.json({

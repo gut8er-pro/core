@@ -80,12 +80,76 @@ Open [http://localhost:3000](http://localhost:3000).
 | `pnpm test` | Run unit/component tests |
 | `pnpm test:watch` | Run tests in watch mode |
 | `pnpm test:coverage` | Run tests with coverage report |
-| `pnpm test:e2e` | Run Playwright E2E tests |
+| `pnpm test:e2e` | Run all Playwright E2E tests |
+| `pnpm test:e2e:ui` | Run E2E tests with interactive UI |
+| `pnpm test:e2e:hs` | Run full HS Liability flow |
+| `pnpm test:e2e:be` | Run full BE Valuation flow |
+| `pnpm test:e2e:kg` | Run full KG Short Report flow |
+| `pnpm test:e2e:ot` | Run full OT Oldtimer flow |
+| `pnpm test:e2e:flows` | Run all 4 report flows |
+| `pnpm test:e2e:all-reports` | Create + fill + send all 4 report types |
 | `pnpm lint` | Lint with Biome |
 | `pnpm lint:fix` | Lint and auto-fix |
 | `pnpm format` | Format with Biome |
 | `pnpm type-check` | TypeScript type checking |
 | `pnpm analyze` | Bundle size analysis |
+
+## E2E Testing
+
+Full end-to-end testing with Playwright covering all 4 report types (HS, BE, KG, OT), every tab, save/reload persistence, and PDF export.
+
+### Setup
+
+```bash
+# Install Playwright browsers (first time only)
+npx playwright install chromium
+
+# Make sure dev server is running
+pnpm dev
+```
+
+### Running Tests
+
+```bash
+# All tests (16 spec files, ~100 test cases)
+pnpm test:e2e
+
+# Interactive mode (select and debug tests visually)
+pnpm test:e2e:ui
+
+# Individual report type flows
+pnpm test:e2e:hs           # HS Liability — full create → fill → verify
+pnpm test:e2e:be           # BE Valuation — DAT + Manual valuation
+pnpm test:e2e:kg           # KG Short Report — no correction/results
+pnpm test:e2e:ot           # OT Oldtimer — market/replacement/restoration
+
+# All 4 flows in sequence
+pnpm test:e2e:flows
+
+# Create all 4 reports, fill, and send PDFs via email
+pnpm test:e2e:all-reports
+
+# Individual modules
+pnpm test:e2e:auth         # Login, forgot password, signup
+pnpm test:e2e:save         # Save → reload → verify persistence
+pnpm test:e2e:edge         # Validation, rapid input, console errors
+```
+
+### Test Account
+
+| Field | Value |
+|-------|-------|
+| Email | `ivanvukasino+2@gmail.com` |
+| Password | `Ivanivan1!` |
+
+### Test Structure
+
+See [`testing/README.md`](testing/README.md) for full documentation including:
+- Directory structure and all 16 test files
+- Report type comparison matrix
+- Reference PDFs for baseline comparison
+- QA bug reports from test runs
+- Troubleshooting guide
 
 ## Project Structure
 

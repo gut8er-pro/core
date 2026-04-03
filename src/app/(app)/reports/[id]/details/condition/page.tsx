@@ -283,17 +283,6 @@ function ConditionPage() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{/* Show missing information banner */}
-			<div className="flex items-center justify-between rounded-lg bg-grey-25 px-4 py-3">
-				<div className="flex flex-col">
-					<span className="text-body-sm font-semibold text-black">Show missing information</span>
-					<span className="text-caption text-grey-100">
-						{missingFieldCount} fields need attention
-					</span>
-				</div>
-				<ToggleSwitch label="" checked={showMissing} onCheckedChange={setShowMissing} />
-			</div>
-
 			{/* Page heading with completion */}
 			<div className="flex items-center justify-between">
 				<h2 className="text-h2 font-bold text-black">Condition</h2>

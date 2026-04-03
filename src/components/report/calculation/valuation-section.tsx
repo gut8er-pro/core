@@ -57,7 +57,10 @@ function ValuationSection({
 								render={({ field }) => (
 									<select
 										{...field}
-										onBlur={() => onFieldBlur?.('generalCondition')}
+										onChange={(e) => {
+											field.onChange(e.target.value)
+											setTimeout(() => onFieldBlur?.('generalCondition'), 100)
+										}}
 										className="h-[53px] w-full appearance-none rounded-2xl border-[1.5px] border-border-card bg-white px-3.5 pr-10 text-body text-black focus:border-primary focus:outline-none"
 									>
 										<option value="">Select condition</option>
@@ -141,7 +144,10 @@ function ValuationSection({
 							render={({ field }) => (
 								<select
 									{...field}
-									onBlur={() => onFieldBlur?.('dataSource')}
+									onChange={(e) => {
+										field.onChange(e.target.value)
+										setTimeout(() => onFieldBlur?.('dataSource'), 100)
+									}}
 									className="h-[53px] w-full appearance-none rounded-2xl border-[1.5px] border-border-card bg-white px-3.5 pr-10 text-body text-black focus:border-primary focus:outline-none"
 								>
 									<option value="">Select source</option>

@@ -127,12 +127,18 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		}
 	}
 
-	// Handle line items
+	// Handle line items — if all items lack IDs, replace all existing
 	if (data.lineItems) {
+		const allNew = data.lineItems.every((li) => !li.id)
+		if (allNew) {
+			// Replace all: delete existing, create new
+			await prisma.invoiceLineItem.deleteMany({ where: { invoiceId: invoice.id } })
+		}
+
 		const lineItemResults = []
 		for (const lineItem of data.lineItems) {
 			const { id: lineItemId, ...lineItemData } = lineItem
-			if (lineItemId) {
+			if (lineItemId && !allNew) {
 				const existing = await prisma.invoiceLineItem.findFirst({
 					where: { id: lineItemId, invoiceId: invoice.id },
 				})

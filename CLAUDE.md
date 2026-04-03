@@ -117,34 +117,24 @@ Each type has distinct sections — see `docs/ARCHITECTURE.md` for the full matr
 
 ---
 
-## Tech Stack (TO BE DECIDED)
+## Tech Stack
 
-> The designs are clearly a **desktop-first web application** (wide layouts, sidebars, multi-column forms, rich text editor, canvas drawing tools).
-> Stack decision pending — see section below.
+- **Framework:** Next.js 14 (App Router, Turbopack dev)
+- **Language:** TypeScript strict mode
+- **Styling:** Tailwind CSS v4 with `@theme inline` design tokens
+- **Forms:** React Hook Form + Zod validation
+- **Server state:** TanStack Query (React Query)
+- **Database:** Supabase PostgreSQL + Prisma ORM
+- **Auth:** Supabase Auth (email/password + Google/Apple OAuth)
+- **Storage:** Supabase Storage (photo uploads)
+- **Canvas:** Fabric.js for photo annotation
+- **PDF:** @react-pdf/renderer for report generation
+- **Email:** Resend for transactional emails
+- **Payments:** Stripe (Pro plan subscriptions)
+- **Linting:** Biome v2.4
+- **Testing:** Vitest (unit) + Playwright (E2E)
 
-### Important Consideration
-The designs show a **web app**, NOT a mobile app. The original suggestion of React Native CLI should be reconsidered. Options:
-
-**Option A — Web App (recommended based on designs):**
-- Next.js or Vite + React
-- TypeScript strict mode
-- Zustand or Redux Toolkit for state
-- React Query (TanStack Query) for server state
-- React Hook Form + Zod validation
-- Tailwind CSS or CSS Modules
-- Fabric.js / Konva.js for canvas annotation
-- Signature pad library for digital signatures
-
-**Option B — React Native (if mobile is required):**
-- React Native CLI + react-native-web for cross-platform
-- This would require significant adaptation of the desktop-first designs
-
-**Option C — Both:**
-- Web app first (matches designs), mobile later as separate project
-
-### Decision needed from you:
-- Is this a web app, mobile app, or both?
-- If web: Next.js (SSR) or Vite+React (SPA)?
+See `docs/TECH_STACK.md` for full details.
 
 ---
 
@@ -177,7 +167,7 @@ The designs show a **web app**, NOT a mobile app. The original suggestion of Rea
 
 ---
 
-## File/Folder Convention (once we start coding)
+## File/Folder Convention
 
 ```
 src/
@@ -255,7 +245,7 @@ All styles MUST use Tailwind design tokens from `src/app/globals.css`. **Never h
 
 ---
 
-## Coding Conventions (once we start)
+## Coding Conventions
 
 - TypeScript strict mode — no `any`
 - Functional components only
@@ -278,8 +268,59 @@ All styles MUST use Tailwind design tokens from `src/app/globals.css`. **Never h
 
 ## What NOT to Do
 
-- Do NOT write code until the tech stack is confirmed
 - Do NOT skip reading `docs/ARCHITECTURE.md` before implementing any feature
 - Do NOT hardcode German text — keep strings separate for future localization
-- Do NOT implement authentication from scratch — use a proven auth library/service
+- Do NOT implement authentication from scratch — Supabase Auth is already set up
 - Do NOT store sensitive data (DAT credentials, signatures) in plain local storage
+
+---
+
+## Current Implementation Status (April 2026)
+
+The app is **feature-complete** with all 4 report types working end-to-end.
+
+### What's Built
+- Auth: login, signup (5-step wizard), forgot/reset password, Google/Apple OAuth
+- Dashboard: revenue chart, report list with pagination, create/delete reports
+- Gallery: photo upload (max 20), grid/single view, Fabric.js annotation canvas, AI generation
+- Report Details: 5 tabs with auto-save, dynamic tab completion badges
+- All 4 report types (HS/BE/KG/OT) with correct conditional sections
+- PDF export with report-type-specific templates
+- Email send via Resend with PDF attachment
+- Report locking (read-only after send, unlockable from Export)
+- Settings: Profile, Business, Integrations (DAT), Billing (Stripe), Templates
+- Notifications with click-to-navigate
+- Statistics with revenue chart and invoice history
+
+### Key Architecture Decisions
+- **Auto-save** via `useAutoSave` hook — debounced, silent, queued, flush-on-unmount
+- **Form data** read via `getValues()` (not DOM queries) for React Hook Form compatibility
+- **Array fields** (visits, line items) — save entire array on blur, API replaces all when no IDs
+- **Tab completion** — dynamic `useTabCompletion` hook counts filled sections per report type
+- **PDF template** — conditionally renders sections based on `reportType` (hides HS fields for BE/OT)
+- **Gallery sidebar** — shows report nav when photos exist (not just after AI generation)
+
+### Documentation
+| Document | Location | Purpose |
+|----------|----------|---------|
+| This file (CLAUDE.md) | `/CLAUDE.md` | Project brain — conventions, tokens, rules |
+| Architecture spec | `docs/ARCHITECTURE.md` | Full screen inventory, data model, auto-save, PDF, testing |
+| Tech stack | `docs/TECH_STACK.md` | Technology decisions |
+| Figma registry | `docs/figma-registry.md` | Figma node IDs |
+| Design screenshots | `design/` | 58 Figma references by flow |
+| Email templates | `supabase/email-templates/` | 5 branded Supabase email templates |
+
+### E2E Testing
+16 Playwright test specs in `testing/e2e/` covering all flows. Reference PDFs in `testing/reference-pdfs/`.
+
+```bash
+npm run test:e2e              # All tests
+npm run test:e2e:hs           # Full HS Liability flow
+npm run test:e2e:be           # Full BE Valuation flow
+npm run test:e2e:kg           # Full KG Short Report flow
+npm run test:e2e:ot           # Full OT Oldtimer flow
+npm run test:e2e:flows        # All 4 flows
+npm run test:e2e:all-reports  # Create + fill + send all 4 via email
+```
+
+See `testing/README.md` for full testing documentation.

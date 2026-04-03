@@ -75,6 +75,7 @@ function AccidentInfoPage() {
 			opponentPostcode: '',
 			opponentLocation: '',
 			opponentEmail: '',
+			opponentIban: '',
 			opponentPhone: '',
 			opponentInsuranceCompany: '',
 			opponentInsuranceNumber: '',
@@ -170,10 +171,12 @@ function AccidentInfoPage() {
 			const value = getValues(field as keyof AccidentInfoFormData)
 			if (value === undefined) return
 
-			// Visits: save the entire visits array
+			// Visits: save the entire visits array, filtering out empty rows
 			if (field.startsWith('visits')) {
-				const visits = getValues('visits')
-				saveField('visits', visits)
+				const visits = (getValues('visits') ?? []).filter(
+					(v) => v.street || v.postcode || v.location || v.date || v.expert,
+				)
+				if (visits.length > 0) saveField('visits', visits)
 			} else if (field.startsWith('claimant')) {
 				const apiField = field.replace('claimant', '')
 				const key = apiField.charAt(0).toLowerCase() + apiField.slice(1)
@@ -241,7 +244,13 @@ function AccidentInfoPage() {
 					{autoSaveState.status === 'error' && (
 						<span className="text-caption text-error">Failed to save</span>
 					)}
-					<span className="text-body-sm text-grey-100">50% Complete</span>
+					<span className="text-body-sm text-grey-100">
+						{(() => {
+							const fields = ['claimantFirstName', 'claimantLastName', 'claimantStreet', 'claimantEmail'] as const
+							const filled = fields.filter(f => getValues(f as keyof AccidentInfoFormData)).length
+							return `${Math.round((filled / fields.length) * 100)}% Complete`
+						})()}
+					</span>
 				</div>
 			</div>
 
