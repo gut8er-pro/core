@@ -25,7 +25,7 @@ const DATA_SOURCE_OPTIONS = [
 function ValuationSection({
 	register,
 	control,
-	errors,
+	errors: _errors,
 	onFieldBlur,
 	className,
 }: CalculationSectionProps) {

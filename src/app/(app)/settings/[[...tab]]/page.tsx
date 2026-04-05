@@ -90,7 +90,7 @@ function ProfileSection() {
 		register,
 		handleSubmit,
 		reset,
-		formState: { errors, isDirty },
+		formState: { errors },
 	} = useForm<ProfileSettingsInput>({
 		resolver: zodResolver(profileSettingsSchema),
 	})
@@ -247,7 +247,7 @@ function BusinessSection() {
 		register,
 		handleSubmit,
 		reset,
-		formState: { errors, isDirty },
+		formState: { errors },
 	} = useForm<BusinessSettingsInput>({
 		resolver: zodResolver(businessSettingsSchema),
 	})

@@ -102,7 +102,6 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 									setOverallScore(value)
 									setEditingCategory(null)
 								}}
-								onClose={() => setEditingCategory(null)}
 							/>
 						)}
 
@@ -129,7 +128,6 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 								onSelect={(value, modifier) => {
 									handleScoreChange(editingCategory, value, modifier ?? '')
 								}}
-								onClose={() => setEditingCategory(null)}
 								showModifiers
 							/>
 						)}
@@ -155,12 +153,10 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 function ScorePopup({
 	title,
 	onSelect,
-	onClose,
 	showModifiers = false,
 }: {
 	title: string
 	onSelect: (value: string, modifier?: string) => void
-	onClose: () => void
 	showModifiers?: boolean
 }) {
 	return (

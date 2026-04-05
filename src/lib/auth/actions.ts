@@ -86,7 +86,7 @@ type CompleteSignupInput = {
 async function completeSignup(
 	input: CompleteSignupInput,
 ): Promise<{ error?: string; checkoutUrl?: string }> {
-	const { account, personal, business, plan, integrations } = input
+	const { account, personal, business, integrations } = input
 
 	console.log('[completeSignup] START', {
 		email: account.email,
