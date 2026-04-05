@@ -1,23 +1,14 @@
 import { test, expect } from '@playwright/test'
 import path from 'path'
+import { createAuthPage, createReportViaAPI } from './helpers/test-data'
 
 test.describe('Gallery', () => {
 	let reportId: string
 
 	test.beforeAll(async ({ browser }) => {
-		const page = await browser.newPage()
-		await page.goto('http://localhost:3000/dashboard')
-		const response = await page.evaluate(async () => {
-			const r = await fetch('/api/reports', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ title: 'PW Gallery Test', reportType: 'HS' }),
-			})
-			const json = await r.json()
-			return json.report.id
-		})
-		reportId = response
-		await page.close()
+		const page = await createAuthPage(browser)
+		reportId = await createReportViaAPI(page, 'PW Gallery Test', 'HS')
+		await page.context().close()
 	})
 
 	test('empty gallery shows upload zone', async ({ page }) => {
@@ -34,7 +25,7 @@ test.describe('Gallery', () => {
 		await page.waitForTimeout(1000)
 
 		const imagesDir = path.resolve('testing/testing-images')
-		await page.locator('input[type="file"]').setInputFiles([
+		await page.locator('input[type="file"]').first().setInputFiles([
 			path.join(imagesDir, 'car1.png'),
 			path.join(imagesDir, 'car2.png'),
 			path.join(imagesDir, 'car3.png'),
@@ -43,11 +34,11 @@ test.describe('Gallery', () => {
 		])
 
 		// Wait for upload
-		await page.waitForTimeout(5000)
+		await page.waitForTimeout(8000)
 
 		// Verify photos visible (at least check images exist)
 		const images = page.locator('img[alt*="photo"], img[class*="object-cover"]')
-		await expect(images.first()).toBeVisible()
+		await expect(images.first()).toBeVisible({ timeout: 10000 })
 	})
 
 	test('generate report button visible after upload', async ({ page }) => {

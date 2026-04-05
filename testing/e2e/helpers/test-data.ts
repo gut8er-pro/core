@@ -1,6 +1,39 @@
+import path from 'path'
+import type { Browser } from '@playwright/test'
+
 export const TEST_ACCOUNT = {
 	email: 'ivanvukasino+2@gmail.com',
 	password: 'Ivanivan1!',
+}
+
+const AUTH_FILE = path.join(__dirname, '../.auth/user.json')
+
+/** Create an authenticated page from browser.newPage() in beforeAll */
+export async function createAuthPage(browser: Browser) {
+	const context = await browser.newContext({ storageState: AUTH_FILE })
+	return context.newPage()
+}
+
+/** Create a report via API from an authenticated page */
+export async function createReportViaAPI(
+	page: Awaited<ReturnType<typeof createAuthPage>>,
+	title: string,
+	reportType: string,
+): Promise<string> {
+	await page.goto('http://localhost:3000/dashboard')
+	await page.waitForTimeout(500)
+	const id = await page.evaluate(
+		async (args: { title: string; reportType: string }) => {
+			const r = await fetch('/api/reports', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ title: args.title, reportType: args.reportType }),
+			})
+			return (await r.json()).report.id
+		},
+		{ title, reportType },
+	)
+	return id
 }
 
 export const TEST_IMAGES_DIR = 'testing/testing-images'

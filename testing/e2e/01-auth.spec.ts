@@ -7,8 +7,8 @@ test.describe('Auth Flow', () => {
 	test('landing page loads', async ({ page }) => {
 		await page.goto('/')
 		await expect(page).toHaveTitle(/Gut8erPRO/)
-		await expect(page.getByText('Professional Vehicle Assessment Made Simple')).toBeVisible()
-		await expect(page.getByRole('link', { name: 'Start Free Trial' })).toBeVisible()
+		await expect(page.getByText('Professional Vehicle Assessment')).toBeVisible()
+		await expect(page.getByRole('link', { name: 'Start Free Trial' }).first()).toBeVisible()
 		await expect(page.getByText('Log In')).toBeVisible()
 	})
 

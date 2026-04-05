@@ -16,13 +16,14 @@ import {
 	User,
 	X,
 } from 'lucide-react'
+import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { Skeleton, SkeletonGroup } from '@/components/ui/skeleton'
 import { TextField } from '@/components/ui/text-field'
 import { useSaveSettings, useUserSettings } from '@/hooks/use-settings'
-import { useCreateCheckout, useCreatePortal } from '@/hooks/use-subscription'
+import { useBilling, useCreateCheckout, useCreatePortal } from '@/hooks/use-subscription'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import {
@@ -620,8 +621,31 @@ function IntegrationsSection() {
 	)
 }
 
+function formatDate(dateStr: string | null): string {
+	if (!dateStr) return '—'
+	const d = new Date(dateStr)
+	return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+function getStatusLabel(status: string | null): {
+	label: string
+	color: 'green' | 'yellow' | 'red'
+} {
+	switch (status) {
+		case 'paid':
+			return { label: 'Paid', color: 'green' }
+		case 'open':
+			return { label: 'Open', color: 'yellow' }
+		case 'void':
+		case 'uncollectible':
+			return { label: 'Failed', color: 'red' }
+		default:
+			return { label: status ?? 'Unknown', color: 'yellow' }
+	}
+}
+
 function BillingSection() {
-	const { data: settings, isLoading } = useUserSettings()
+	const { data: billing, isLoading } = useBilling()
 	const checkoutMutation = useCreateCheckout()
 	const portalMutation = useCreatePortal()
 
@@ -635,61 +659,30 @@ function BillingSection() {
 		)
 	}
 
-	const trialEndsAt = settings?.trialEndsAt ? new Date(settings.trialEndsAt) : null
-	const isTrialing = trialEndsAt !== null && trialEndsAt.getTime() > Date.now()
+	const trialEndsAt = billing?.trialEndsAt ? new Date(billing.trialEndsAt) : null
+	const isTrialing =
+		billing?.subscription?.status === 'trialing' ||
+		(trialEndsAt !== null && trialEndsAt.getTime() > Date.now())
+	const hasSubscription = !!billing?.subscription
+	const nextBillingDate = billing?.subscription?.currentPeriodEnd
+	const isCancelling = billing?.subscription?.cancelAtPeriodEnd
 
-	// Mock billing history data for display
-	const billingHistory = [
-		{
-			date: '14.12.2025',
-			description: 'Pro Plan - December',
-			amount: '49.00',
-			status: 'Paid' as const,
-		},
-		{
-			date: '14.11.2025',
-			description: 'Pro Plan - November',
-			amount: '49.00',
-			status: 'Paid' as const,
-		},
-		{
-			date: '14.10.2025',
-			description: 'Pro Plan - October',
-			amount: '49.00',
-			status: 'Paid' as const,
-		},
-		{
-			date: '14.09.2025',
-			description: 'Pro Plan - September',
-			amount: '49.00',
-			status: 'Paid' as const,
-		},
-		{
-			date: '14.08.2025',
-			description: 'Pro Plan - August',
-			amount: '49.00',
-			status: 'Paid' as const,
-		},
-		{
-			date: '14.07.2025',
-			description: 'Pro Plan - July',
-			amount: '49.00',
-			status: 'Paid' as const,
-		},
-		{
-			date: '14.06.2025',
-			description: 'Pro Plan - June',
-			amount: '49.00',
-			status: 'Paid' as const,
-		},
-		{ date: '14.05.2025', description: 'Pro Plan - May', amount: '49.00', status: 'Paid' as const },
-		{
-			date: '14.04.2025',
-			description: 'Pro Plan - April',
-			amount: '49.00',
-			status: 'Paid' as const,
-		},
-	]
+	function getPlanStatusText(): string {
+		if (isCancelling && billing?.subscription?.cancelAt) {
+			return `Cancels on ${formatDate(billing.subscription.cancelAt)}`
+		}
+		if (isTrialing && trialEndsAt) {
+			const daysLeft = Math.max(
+				0,
+				Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+			)
+			return `Trial active \u2022 ${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining`
+		}
+		if (nextBillingDate) {
+			return `\u20ac69.00 / month \u2022 Renews on ${formatDate(nextBillingDate)}`
+		}
+		return 'No active subscription'
+	}
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -703,28 +696,18 @@ function BillingSection() {
 								Pro Plan
 							</p>
 						</div>
-						<p className="text-body tracking-[0.16px] text-white">
-							{isTrialing ? 'Trial period active' : '€49.00 / month • Renews on Feb 14, 2026'}
-						</p>
+						<p className="text-body tracking-[0.16px] text-white">{getPlanStatusText()}</p>
 					</div>
 					<div className="flex gap-4">
-						{settings?.stripeCustomerId ? (
-							<>
-								<button
-									type="button"
-									onClick={() => portalMutation.mutate()}
-									disabled={portalMutation.isPending}
-									className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
-								>
-									{portalMutation.isPending ? '…' : 'Cancel Plan'}
-								</button>
-								<button
-									type="button"
-									className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-white/25 text-input font-medium tracking-[0.18px] text-white"
-								>
-									Upgrade
-								</button>
-							</>
+						{hasSubscription ? (
+							<button
+								type="button"
+								onClick={() => portalMutation.mutate()}
+								disabled={portalMutation.isPending}
+								className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-white/25 text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
+							>
+								{portalMutation.isPending ? '\u2026' : 'Manage Plan'}
+							</button>
 						) : (
 							<button
 								type="button"
@@ -732,7 +715,7 @@ function BillingSection() {
 								disabled={checkoutMutation.isPending}
 								className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-white/25 text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 							>
-								{checkoutMutation.isPending ? '…' : 'Set up payment'}
+								{checkoutMutation.isPending ? '\u2026' : 'Set up payment'}
 							</button>
 						)}
 					</div>
@@ -743,7 +726,7 @@ function BillingSection() {
 				<div className="flex gap-3">
 					<div className="flex flex-1 flex-col gap-[6px]">
 						<p className="text-body-sm tracking-[0.14px] text-white">Reports this month</p>
-						<p className="text-h2 font-medium tracking-[0.24px] text-white">5 / 100</p>
+						<p className="text-h2 font-medium tracking-[0.24px] text-white">Unlimited</p>
 					</div>
 					<div className="flex flex-1 flex-col gap-[6px]">
 						<p className="text-body-sm tracking-[0.14px] text-white">AI Auto-fills</p>
@@ -759,62 +742,104 @@ function BillingSection() {
 			{/* Payment Method */}
 			<div className="flex flex-col gap-4 rounded-section bg-white p-8">
 				<h3 className="text-section-title font-medium leading-none text-black">Payment Method</h3>
-				<div className="flex items-center justify-between rounded-card border-2 border-border-card px-[14px] py-3">
-					<div className="flex items-center gap-6">
-						<div className="flex h-8 w-[51px] shrink-0 items-center justify-center">
-							<CreditCard className="h-7 w-7 text-info-blue" />
+				{billing?.paymentMethod ? (
+					<div className="flex items-center justify-between rounded-card border-2 border-border-card px-[14px] py-3">
+						<div className="flex items-center gap-6">
+							<div className="flex h-8 w-[51px] shrink-0 items-center justify-center">
+								<CreditCard className="h-7 w-7 text-info-blue" />
+							</div>
+							<div className="flex flex-col gap-1">
+								<p className="text-body-sm font-medium leading-[18px] text-text-secondary">
+									{billing.paymentMethod.brand.charAt(0).toUpperCase() +
+										billing.paymentMethod.brand.slice(1)}{' '}
+									ending in {billing.paymentMethod.last4}
+								</p>
+								<p className="text-caption leading-5 text-black opacity-70">
+									Expires {String(billing.paymentMethod.expMonth).padStart(2, '0')}/
+									{billing.paymentMethod.expYear}
+								</p>
+							</div>
 						</div>
-						<div className="flex flex-col gap-1">
-							<p className="text-body-sm font-medium leading-[18px] text-text-secondary">
-								Visa ending in 4242
-							</p>
-							<p className="text-caption leading-5 text-black opacity-70">Expires 12/2027</p>
-						</div>
+						<button
+							type="button"
+							onClick={() => portalMutation.mutate()}
+							className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-border-card px-6 text-input font-medium tracking-[0.18px] text-grey-100 hover:text-black"
+						>
+							Update
+						</button>
 					</div>
-					<button
-						type="button"
-						className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-danger px-6 text-input font-medium tracking-[0.18px] text-danger"
-					>
-						Remove
-					</button>
-				</div>
+				) : (
+					<div className="flex items-center justify-between rounded-card border-2 border-dashed border-border-card px-[14px] py-6">
+						<p className="text-body-sm text-grey-100">No payment method on file</p>
+						<button
+							type="button"
+							onClick={() => checkoutMutation.mutate()}
+							disabled={checkoutMutation.isPending}
+							className="flex h-[42px] cursor-pointer items-center justify-center rounded-btn bg-primary px-6 text-body-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
+						>
+							{checkoutMutation.isPending ? 'Loading...' : 'Add payment method'}
+						</button>
+					</div>
+				)}
 			</div>
 
 			{/* Billing History */}
 			<div className="flex flex-col gap-6 rounded-section bg-white p-8">
 				<h3 className="text-section-title font-medium leading-none text-black">Billing History</h3>
-				<div className="overflow-hidden rounded-xl border-2 border-border-card">
-					<table className="w-full">
-						<tbody>
-							{billingHistory.map((item) => (
-								<tr key={item.date} className="border-b border-border-card last:border-0">
-									<td className="h-[54px] px-6 text-body-sm leading-5 text-grey-100">
-										{item.date}
-									</td>
-									<td className="h-[54px] px-6 text-body-sm leading-5 text-grey-100">
-										{item.description}
-									</td>
-									<td className="h-[54px] px-6 text-body-sm font-medium leading-5 text-black">
-										€{item.amount}
-									</td>
-									<td className="h-[54px] px-6">
-										<span className="inline-flex items-center justify-center rounded-md border border-[0.5px] border-primary bg-primary/10 p-[6px] text-caption leading-none text-success-dark">
-											{item.status}
-										</span>
-									</td>
-									<td className="h-[54px] w-[54px] p-3 text-center">
-										<button
-											type="button"
-											className="cursor-pointer text-black opacity-60 hover:opacity-100"
-										>
-											<Download className="h-4 w-4" />
-										</button>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+				{billing?.invoices && billing.invoices.length > 0 ? (
+					<div className="overflow-hidden rounded-xl border-2 border-border-card">
+						<table className="w-full">
+							<tbody>
+								{billing.invoices.map((invoice) => {
+									const status = getStatusLabel(invoice.status)
+									return (
+										<tr key={invoice.id} className="border-b border-border-card last:border-0">
+											<td className="h-[54px] px-6 text-body-sm leading-5 text-grey-100">
+												{formatDate(invoice.date)}
+											</td>
+											<td className="h-[54px] px-6 text-body-sm leading-5 text-grey-100">
+												{invoice.description}
+											</td>
+											<td className="h-[54px] px-6 text-body-sm font-medium leading-5 text-black">
+												&euro;{invoice.amount}
+											</td>
+											<td className="h-[54px] px-6">
+												<span
+													className={cn(
+														'inline-flex items-center justify-center rounded-md border border-[0.5px] p-[6px] text-caption leading-none',
+														status.color === 'green' &&
+															'border-primary bg-primary/10 text-success-dark',
+														status.color === 'yellow' &&
+															'border-warning-border bg-warning-border/10 text-warning-dark',
+														status.color === 'red' && 'border-danger bg-danger/10 text-danger',
+													)}
+												>
+													{status.label}
+												</span>
+											</td>
+											<td className="h-[54px] w-[54px] p-3 text-center">
+												{invoice.invoicePdf && (
+													<a
+														href={invoice.invoicePdf}
+														target="_blank"
+														rel="noopener noreferrer"
+														className="cursor-pointer text-black opacity-60 hover:opacity-100"
+													>
+														<Download className="h-4 w-4" />
+													</a>
+												)}
+											</td>
+										</tr>
+									)
+								})}
+							</tbody>
+						</table>
+					</div>
+				) : (
+					<div className="rounded-xl border-2 border-dashed border-border-card px-6 py-8 text-center">
+						<p className="text-body-sm text-grey-100">No billing history yet</p>
+					</div>
+				)}
 			</div>
 		</div>
 	)
@@ -992,8 +1017,17 @@ function TemplatesSection() {
 	)
 }
 
+const VALID_TABS: SettingsTab[] = ['profile', 'business', 'integrations', 'billing', 'templates']
+
 function SettingsPage() {
-	const [activeTab, setActiveTab] = useState<SettingsTab>('profile')
+	const router = useRouter()
+	const params = useParams<{ tab?: string[] }>()
+	const tabParam = params.tab?.[0] as SettingsTab | undefined
+	const activeTab: SettingsTab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : 'profile'
+
+	function handleTabChange(tab: SettingsTab) {
+		router.push(`/settings/${tab}`)
+	}
 
 	return (
 		<ErrorBoundary>
@@ -1002,7 +1036,7 @@ function SettingsPage() {
 
 				<div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
 					{/* Sidebar Navigation */}
-					<SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+					<SettingsSidebar activeTab={activeTab} onTabChange={handleTabChange} />
 
 					{/* Content Area */}
 					<div className="min-w-0 flex-1">

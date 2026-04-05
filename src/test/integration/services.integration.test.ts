@@ -36,7 +36,7 @@ describe('Stripe Integration', () => {
 		expect(price.active).toBe(true)
 	})
 
-	it('creates a checkout session with 14-day trial', async () => {
+	it('creates a checkout session with 7-day trial', async () => {
 		const stripe = new Stripe(requireEnv('STRIPE_SECRET_KEY'))
 		const priceId = requireEnv('STRIPE_PRO_PRICE_ID')
 
@@ -45,7 +45,7 @@ describe('Stripe Integration', () => {
 			payment_method_types: ['card'],
 			line_items: [{ price: priceId, quantity: 1 }],
 			subscription_data: {
-				trial_period_days: 14,
+				trial_period_days: 7,
 				metadata: { userId: 'test-user-integration' },
 			},
 			metadata: { userId: 'test-user-integration' },

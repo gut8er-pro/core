@@ -11,7 +11,7 @@
 
 **Target users:** Independent vehicle assessors, appraisal firms, and insurance adjusters in Germany.
 
-**Monetization:** Freemium — Free tier (manual data entry, PDF export) and Pro tier (€49/month, AI auto-fill, image analysis, VIN detection, priority support, custom branding). 14-day free trial for Pro.
+**Monetization:** Single plan — Pro tier (€69/month) with 7-day free trial. Card required upfront during signup via Stripe Checkout. All features included: AI auto-fill, image analysis, VIN detection, priority support, custom branding.
 
 **Language/Locale:** German market (DE). UI is in English but forms contain German-specific fields (Steuernummer, USt-IdNr, KBA numbers, Zulassungsbescheinigung). Currency is EUR (€).
 
@@ -162,7 +162,7 @@ See `docs/TECH_STACK.md` for full details.
 5. **Paint thickness scale:** Color-coded: Blue (<70µm) → Green (≥70µm) → Yellow (>160µm) → Orange (>300µm) → Red (>700µm).
 6. **Photo limit:** Maximum 20 images per report.
 7. **Photo requirements:** Good lighting, no flash, JPG/PNG format.
-8. **14-day free trial:** Pro plan starts with trial. Payment details collected upfront but not charged until trial ends.
+8. **7-day free trial:** Pro plan starts with trial. Card collected upfront via Stripe Checkout but not charged until trial ends.
 9. **Completion tracking:** Each report section shows completion percentage (e.g., "50% Complete", "3/4 fields").
 
 ---

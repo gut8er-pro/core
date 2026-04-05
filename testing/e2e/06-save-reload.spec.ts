@@ -1,23 +1,13 @@
 import { test, expect } from '@playwright/test'
-import { CLAIMANT_DATA, VEHICLE_DATA, CALCULATION_DATA } from './helpers/test-data'
+import { CLAIMANT_DATA, VEHICLE_DATA, CALCULATION_DATA, createAuthPage, createReportViaAPI } from './helpers/test-data'
 
 test.describe('Save & Reload Persistence', () => {
 	let reportId: string
 
 	test.beforeAll(async ({ browser }) => {
-		const page = await browser.newPage()
-		await page.goto('http://localhost:3000/dashboard')
-		const response = await page.evaluate(async () => {
-			const r = await fetch('/api/reports', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ title: 'PW Save Test', reportType: 'HS' }),
-			})
-			const json = await r.json()
-			return json.report.id
-		})
-		reportId = response
-		await page.close()
+		const page = await createAuthPage(browser)
+		reportId = await createReportViaAPI(page, 'PW Save Test', 'HS')
+		await page.context().close()
 	})
 
 	test('claimant fields persist after reload', async ({ page }) => {

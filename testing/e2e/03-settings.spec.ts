@@ -25,7 +25,7 @@ test.describe('Settings', () => {
 		await page.goto('/settings')
 		await page.locator('text=Integrations').first().click()
 		await page.waitForTimeout(500)
-		await expect(page.getByText('DAT')).toBeVisible()
+		await expect(page.getByText('DAT', { exact: true })).toBeVisible()
 	})
 
 	test('billing tab shows plan', async ({ page }) => {

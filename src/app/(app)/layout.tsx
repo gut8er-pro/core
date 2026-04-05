@@ -30,7 +30,9 @@ function AppLayout({ children }: { children: ReactNode }) {
 		logout()
 	}
 
-	if (loading) {
+	// Show loading spinner while checking auth (but not on public pages)
+	const isPublicAppPage = pathname === '/help'
+	if (loading && !isPublicAppPage) {
 		return (
 			<div className="flex min-h-screen items-center justify-center">
 				<div className="h-8 w-8 animate-spin rounded-full border-4 border-grey-25 border-t-primary" />

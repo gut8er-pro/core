@@ -1,30 +1,21 @@
 import { test, expect } from '@playwright/test'
-import { CALCULATION_DATA } from './helpers/test-data'
+import { CALCULATION_DATA, createAuthPage, createReportViaAPI } from './helpers/test-data'
 
 test.describe('Calculation / Valuation Tab', () => {
 	const reportIds: Record<string, string> = {}
 
 	test.beforeAll(async ({ browser }) => {
-		const page = await browser.newPage()
-		await page.goto('http://localhost:3000/dashboard')
+		const page = await createAuthPage(browser)
 		for (const type of ['HS', 'BE', 'KG', 'OT']) {
-			const res = await page.evaluate(async (t) => {
-				const r = await fetch('/api/reports', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ title: `PW Calc ${t}`, reportType: t }),
-				})
-				return (await r.json()).report.id
-			}, type)
-			reportIds[type] = res
+			reportIds[type] = await createReportViaAPI(page, `PW Calc ${type}`, type)
 		}
-		await page.close()
+		await page.context().close()
 	})
 
 	test('HS: Vehicle Value + Repair + Loss of Use visible', async ({ page }) => {
 		await page.goto(`/reports/${reportIds.HS}/details/calculation`)
 		await expect(page.getByText('Vehicle Value')).toBeVisible()
-		await expect(page.getByText('Repair')).toBeVisible()
+		await expect(page.getByRole('heading', { name: 'Repair', exact: true })).toBeVisible()
 		await expect(page.getByText('Loss of Use')).toBeVisible()
 		await expect(page.getByText('Correction Calculation')).toBeVisible()
 		await expect(page.getByText('Results without repair')).toBeVisible()

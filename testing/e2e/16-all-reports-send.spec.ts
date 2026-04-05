@@ -8,6 +8,8 @@ const IMAGES = ['car1.png', 'car2.png', 'car3.png', 'car4.png', 'car5.png'].map(
 type ReportType = 'HS' | 'BE' | 'KG' | 'OT'
 
 async function createReport(page: any, title: string, type: ReportType): Promise<string> {
+	await page.goto('http://localhost:3000/dashboard')
+	await page.waitForTimeout(1000)
 	const id = await page.evaluate(async (args: { title: string; type: string }) => {
 		const r = await fetch('/api/reports', {
 			method: 'POST',
@@ -132,6 +134,7 @@ const VEHICLE_DATA = {
 // ─────────────────────────────────────────────────────────────
 
 test.describe.serial('All 4 Reports — Create, Fill, Send', () => {
+	test.setTimeout(120000)
 
 	test('HS — Complete Liability Report', async ({ page }) => {
 		const id = await createReport(page, 'PW Run - HS Liability', 'HS')

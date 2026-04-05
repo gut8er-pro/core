@@ -172,12 +172,9 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 | Plan selection | radio (Free / Pro) | Required |
 | Card number | Stripe card element | Required if Pro |
 | Expiry date | MM/YY input | Required if Pro |
-| CVC | 3-digit input | Required if Pro |
-| Cardholder name | text input | Required if Pro |
-
 **Plan Details:**
-- **Free:** €0/forever — Unlimited reports, Manual data entry, PDF export, Email support. No AI, no image analysis.
-- **Pro:** €49/month (14 days free) — Everything in Free + AI-powered auto-fill, Image damage analysis, VIN auto-detection, Priority support, Custom branding.
+- **Pro:** €69/month (7 days free) — All features: Unlimited reports, AI-powered auto-fill, Image damage analysis, VIN auto-detection, Priority support, Custom branding, PDF export, Email support.
+- Card details collected via Stripe Checkout after account creation (not in-app form).
 
 ---
 
@@ -215,7 +212,7 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 | Field | Value |
 |-------|-------|
 | **Route** | `/signup/complete` |
-| **Description** | Success screen. Large green checkmark, "Welcome aboard!" heading, plan badge ("Pro Plan · 14-day free trial started"), three quick-start cards (Create Report, Enjoy AI, Settings), two CTAs. |
+| **Description** | Success screen. Large green checkmark, "Welcome aboard!" heading, plan badge ("Pro Plan · 7-day free trial started"), three quick-start cards (Create Report, Enjoy AI, Settings), two CTAs. |
 | **Navigates to** | Create Report (`/reports/new`), Dashboard (`/dashboard`) |
 | **Navigates from** | Step 5 |
 | **User actions** | "Create your first report", "Go to Dashboard" |

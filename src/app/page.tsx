@@ -108,12 +108,12 @@ const FAQ_ITEMS = [
 	{
 		question: 'Is there a free trial?',
 		answer:
-			'Yes! When you sign up for the Pro plan, you get full access to all premium features for 14 days at no charge. Your payment details are collected upfront but you will not be charged until the trial period ends. You can cancel anytime during the trial.',
+			'Yes! When you sign up, you get full access to all features for 7 days at no charge. Your payment details are collected upfront but you will not be charged until the trial period ends. You can cancel anytime during the trial.',
 	},
 	{
 		question: 'What support is available?',
 		answer:
-			'Free tier users have access to our knowledge base and community forum. Pro subscribers receive priority email support with guaranteed response times, along with onboarding assistance and dedicated account management.',
+			'All users receive priority email support with guaranteed response times, along with onboarding assistance and dedicated account management.',
 	},
 ] as const
 
@@ -172,7 +172,7 @@ function LandingPage() {
 									Log In
 								</Link>
 								<Button asChild variant="outline" size="md">
-									<Link href="/signup/account">Sign Up for Free</Link>
+									<Link href="/signup/account">Start Free Trial</Link>
 								</Button>
 							</>
 						)}

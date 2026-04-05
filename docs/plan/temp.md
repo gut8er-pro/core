@@ -61,7 +61,7 @@
 **Verdict**: OK
 
 ### 8. Signup Complete
-**Design**: Checkmark, "Welcome aboard!", "Pro Plan - 14-day free trial started" badge, 3 quick-start cards (Create Report, Enjoy AI, Settings), buttons: "Create your first report" + "Go to Dashboard".
+**Design**: Checkmark, "Welcome aboard!", "Pro Plan - 7-day free trial started" badge, 3 quick-start cards (Create Report, Enjoy AI, Settings), buttons: "Create your first report" + "Go to Dashboard".
 **Implementation**: Same layout, Pro badge, quick-start cards, buttons.
 **Verdict**: OK
 
@@ -428,7 +428,7 @@ After "Generate Report" classifies all photos, update these counts.
 | Overview | Sonnet 4.5 | 1 | ~$0.010 |
 | **Total** | | **7** | **~$0.06** |
 
-At 100 reports/month = ~$6/month in AI costs. Well within margin for €49/month subscription.
+At 100 reports/month = ~$6/month in AI costs. Well within margin for €69/month subscription.
 
 ---
 

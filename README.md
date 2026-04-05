@@ -202,9 +202,8 @@ src/
 
 ### Monetization
 
-- **Free Plan**: Manual data entry, PDF export
-- **Pro Plan** (EUR 49/month): AI auto-fill, image analysis, VIN detection, priority support
-- 14-day free trial with Stripe billing
+- **Pro Plan** (EUR 69/month): All features — AI auto-fill, image analysis, VIN detection, priority support
+- 7-day free trial with Stripe billing, card required upfront
 
 ## Testing
 

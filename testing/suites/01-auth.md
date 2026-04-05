@@ -100,12 +100,12 @@
 - **Figma:** `design/Login and Sign Up/🟢 LOGIN/03-Gut8erPRO - Signup _ Business.png`
 
 ### Step 4: Plan (`/signup/plan`)
-- [ ] "Choose your plan" heading
-- [ ] Two plan cards: Free (€0) and Pro (€49/month)
-- [ ] Pro card: "MOST POPULAR" badge, feature checkmarks, "14-day free trial"
-- [ ] Stripe payment form appears when Pro selected
-- [ ] Payment fields: Cardholder name, Card number, Expiry, CVC
-- [ ] "Start free trial" button
+- [ ] "Your plan" heading
+- [ ] Single Pro plan card: €69/month, "7 days free"
+- [ ] All features listed (AI auto-fill, image analysis, VIN detection, etc.)
+- [ ] Payment info note: card collected via Stripe Checkout after account creation
+- [ ] "You won't be charged until your 7-day trial ends. Cancel anytime."
+- [ ] Back and Continue buttons
 - **Figma:** `design/Login and Sign Up/🟢 LOGIN/04-Gut8erPRO - Signup _ Plans.png`
 
 ### Step 5: Integrations (`/signup/integrations`)
@@ -120,7 +120,7 @@
 - [ ] Green checkmark icon
 - [ ] "Welcome aboard!" heading
 - [ ] "Your account has been created successfully."
-- [ ] Plan badge: "Pro Plan · 14-day free trial started"
+- [ ] Plan badge: "Pro Plan · 7-day free trial started"
 - [ ] 3 quick-start cards: Create Report, Enjoy AI, Settings
 - [ ] "Create your first report" and "Go to Dashboard" buttons
 - [ ] "We've sent a confirmation email to your email"

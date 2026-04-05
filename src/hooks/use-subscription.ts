@@ -68,11 +68,70 @@ function useCreatePortal() {
 	})
 }
 
-export type { SubscriptionStatus }
+type BillingInvoice = {
+	id: string
+	date: string | null
+	amount: string
+	currency: string
+	status: string | null
+	description: string
+	invoicePdf: string | null
+	hostedInvoiceUrl: string | null
+}
+
+type BillingPaymentMethod = {
+	brand: string
+	last4: string
+	expMonth: number
+	expYear: number
+}
+
+type BillingSubscription = {
+	id: string
+	status: string
+	currentPeriodEnd: string
+	currentPeriodStart: string
+	trialEnd: string | null
+	cancelAtPeriodEnd: boolean
+	cancelAt: string | null
+}
+
+type BillingData = {
+	plan: 'FREE' | 'PRO'
+	trialEndsAt: string | null
+	subscription: BillingSubscription | null
+	paymentMethod: BillingPaymentMethod | null
+	invoices: BillingInvoice[]
+}
+
+async function fetchBilling(): Promise<BillingData> {
+	const response = await fetch('/api/stripe/billing')
+	if (!response.ok) {
+		throw new Error('Failed to fetch billing data')
+	}
+	return response.json()
+}
+
+function useBilling() {
+	return useQuery({
+		queryKey: ['billing'],
+		queryFn: fetchBilling,
+	})
+}
+
+export type {
+	BillingData,
+	BillingInvoice,
+	BillingPaymentMethod,
+	BillingSubscription,
+	SubscriptionStatus,
+}
 export {
 	createCheckout,
 	createPortal,
+	fetchBilling,
 	fetchSubscription,
+	useBilling,
 	useCreateCheckout,
 	useCreatePortal,
 	useSubscription,

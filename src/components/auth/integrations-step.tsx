@@ -77,6 +77,14 @@ function IntegrationsStep() {
 				return
 			}
 
+			// Redirect to Stripe Checkout for payment setup
+			if (result.checkoutUrl) {
+				reset()
+				window.location.href = result.checkoutUrl
+				return
+			}
+
+			// Fallback: if no Stripe configured, go to complete page
 			const email = account.email || ''
 			reset()
 			const params = new URLSearchParams()
