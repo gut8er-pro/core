@@ -12,6 +12,7 @@ import {
 	Shield,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { EmptyState, Pagination, ReportTable } from '@/components/dashboard/report-list'
 import { Button } from '@/components/ui/button'
@@ -21,27 +22,27 @@ import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import type { ReportType } from '@/lib/validations/reports'
 
-const REPORT_TYPE_OPTIONS: Array<{ type: ReportType; label: string; icon: typeof Shield }> = [
-	{ type: 'HS', label: 'Liability', icon: Shield },
-	{ type: 'KG', label: 'Short Report', icon: FileText },
-	{ type: 'BE', label: 'Evaluation', icon: BarChart3 },
-	{ type: 'OT', label: 'Oldtimer Valuation', icon: Car },
+const REPORT_TYPE_OPTIONS: Array<{ type: ReportType; labelKey: string; icon: typeof Shield }> = [
+	{ type: 'HS', labelKey: 'reportTypes.liability', icon: Shield },
+	{ type: 'KG', labelKey: 'reportTypes.shortReport', icon: FileText },
+	{ type: 'BE', labelKey: 'reportTypes.evaluation', icon: BarChart3 },
+	{ type: 'OT', labelKey: 'reportTypes.oldtimerValuation', icon: Car },
 ]
 
-const CHART_MONTHS = [
-	'Jan',
-	'Feb',
-	'Mar',
-	'Apr',
-	'May',
-	'Jun',
-	'Jul',
-	'Aug',
-	'Sep',
-	'Oct',
-	'Nov',
-	'Dec',
-]
+const CHART_MONTH_KEYS = [
+	'months.jan',
+	'months.feb',
+	'months.mar',
+	'months.apr',
+	'months.may',
+	'months.jun',
+	'months.jul',
+	'months.aug',
+	'months.sep',
+	'months.oct',
+	'months.nov',
+	'months.dec',
+] as const
 
 type ChartPeriod = 'yearly' | 'monthly' | 'weekly'
 
@@ -54,6 +55,8 @@ function formatRevenue(amount: number): string {
 }
 
 function DashboardPage() {
+	const t = useTranslations('dashboard')
+	const tt = useTranslations('toast')
 	const [page, setPage] = useState(1)
 	const [search, setSearch] = useState('')
 	const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('yearly')
@@ -86,13 +89,13 @@ function DashboardPage() {
 	function handleCreateReport(reportType: ReportType) {
 		setShowReportTypeMenu(false)
 		createReport.mutate(
-			{ title: 'Untitled Report', reportType },
+			{ title: t('untitledReport'), reportType },
 			{
 				onSuccess: (data) => {
 					router.push(`/reports/${data.report.id}/gallery`)
 				},
 				onError: () => {
-					toast.error('Failed to create report. Please try again.')
+					toast.error(tt('reportCreateError'))
 				},
 			},
 		)
@@ -101,10 +104,10 @@ function DashboardPage() {
 	function handleDeleteReport(id: string) {
 		deleteReport.mutate(id, {
 			onSuccess: () => {
-				toast.success('Report deleted successfully')
+				toast.success(tt('reportDeleted'))
 			},
 			onError: () => {
-				toast.error('Failed to delete report. Please try again.')
+				toast.error(tt('reportDeleteError'))
 			},
 		})
 	}
@@ -121,18 +124,24 @@ function DashboardPage() {
 		)
 	})
 
+	const periodLabels: Record<ChartPeriod, string> = {
+		yearly: t('yearly'),
+		monthly: t('monthly'),
+		weekly: t('weekly'),
+	}
+
 	return (
 		<div>
-			<h1 className="mb-6 text-h1 font-bold text-black">Dashboard</h1>
+			<h1 className="mb-6 text-h1 font-bold text-black">{t('title')}</h1>
 
 			{/* Revenue Chart Card */}
 			<div className="mb-8 overflow-hidden rounded-card bg-linear-to-br from-chart-from via-chart-mid to-dark-green p-6">
 				{/* Top section: revenue + tabs */}
 				<div className="mb-6 flex items-start justify-between border-b border-white/40 pb-3">
 					<div>
-						<p className="text-plan-label font-medium text-white/50">Total Revenue</p>
+						<p className="text-plan-label font-medium text-white/50">{t('totalRevenue')}</p>
 						<p className="mt-3 text-hero font-medium capitalize leading-none tracking-[-0.44px] text-white">
-							{stats ? formatRevenue(stats.totalRevenue) : '€0,00'}
+							{stats ? formatRevenue(stats.totalRevenue) : '\u20ac0,00'}
 						</p>
 					</div>
 					<div className="flex items-center gap-3">
@@ -149,7 +158,7 @@ function DashboardPage() {
 											: 'text-white/30 hover:text-white',
 									)}
 								>
-									{period.charAt(0).toUpperCase() + period.slice(1)}
+									{periodLabels[period]}
 								</button>
 							))}
 						</div>
@@ -169,7 +178,7 @@ function DashboardPage() {
 						const heightPct = maxChartValue > 0 ? (value / maxChartValue) * 100 : 2
 						return (
 							<div
-								key={CHART_MONTHS[i]}
+								key={CHART_MONTH_KEYS[i]}
 								className="relative flex-1"
 								style={{ height: `${Math.max(heightPct, 2)}%` }}
 							>
@@ -188,28 +197,30 @@ function DashboardPage() {
 				<div className="flex items-end justify-between">
 					<div className="flex items-center gap-8">
 						<div>
-							<p className="text-body-sm tracking-[0.14px] text-white/50">Completed Payments:</p>
+							<p className="text-body-sm tracking-[0.14px] text-white/50">
+								{t('completedPayments')}
+							</p>
 							<p className="text-h2 font-medium tracking-[0.24px] text-white">
 								{stats?.completedPayments ?? 0}
 							</p>
 						</div>
 						<div>
-							<p className="text-body-sm tracking-[0.14px] text-white/50">Pending Payments:</p>
+							<p className="text-body-sm tracking-[0.14px] text-white/50">{t('pendingPayments')}</p>
 							<p className="text-h2 font-medium tracking-[0.24px] text-white">
 								{stats?.pendingPayments ?? 0}
 							</p>
 						</div>
 						<div>
-							<p className="text-body-sm tracking-[0.14px] text-white/50">Delayed Payments:</p>
+							<p className="text-body-sm tracking-[0.14px] text-white/50">{t('delayedPayments')}</p>
 							<p className="text-h2 font-medium tracking-[0.24px] text-white">
 								{stats?.delayedPayments ?? 0}
 							</p>
 						</div>
 					</div>
 					<div className="flex items-center gap-4 px-4">
-						{CHART_MONTHS.map((month) => (
-							<span key={month} className="text-body-sm text-white/50">
-								{month}
+						{CHART_MONTH_KEYS.map((key) => (
+							<span key={key} className="text-body-sm text-white/50">
+								{t(key)}
 							</span>
 						))}
 					</div>
@@ -219,7 +230,7 @@ function DashboardPage() {
 			{/* Recent Reports Header */}
 			<div className="mb-4 flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center gap-2">
-					<h2 className="text-subsection font-medium text-black">Recent Reports</h2>
+					<h2 className="text-subsection font-medium text-black">{t('recentReports')}</h2>
 					<Info className="h-4 w-4 text-grey-100" />
 					{data?.pagination.total != null && (
 						<span className="flex h-6 min-w-6 items-center justify-center rounded-md bg-primary/10 px-2 text-body-sm font-medium text-primary">
@@ -231,7 +242,7 @@ function DashboardPage() {
 					<button
 						type="button"
 						className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 opacity-80 transition-colors hover:bg-grey-25 hover:text-black"
-						aria-label="Filter reports"
+						aria-label={t('filterReports')}
 					>
 						<ListFilter className="h-5 w-5" />
 					</button>
@@ -239,7 +250,7 @@ function DashboardPage() {
 						<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-grey-100" />
 						<input
 							type="text"
-							placeholder="Search..."
+							placeholder={t('searchPlaceholder')}
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
 							className="h-11 w-full max-w-[320px] rounded-lg border border-border bg-white pl-9 pr-3 text-body-sm text-black outline-none placeholder:text-grey-100 focus:border-primary focus:ring-1 focus:ring-primary"
@@ -253,7 +264,7 @@ function DashboardPage() {
 							icon={<Plus className="h-3.5 w-3.5" />}
 							iconPosition="right"
 						>
-							New Report
+							{t('newReport')}
 						</Button>
 						{showReportTypeMenu && (
 							<div className="absolute right-0 top-full z-50 mt-2 w-54.5 overflow-hidden rounded-xl bg-white shadow-dropdown">
@@ -270,7 +281,7 @@ function DashboardPage() {
 											)}
 										>
 											<Icon className="h-4.5 w-4.5 shrink-0 text-black" />
-											{option.label}
+											{t(option.labelKey)}
 										</button>
 									)
 								})}
@@ -287,7 +298,7 @@ function DashboardPage() {
 				</div>
 			) : error ? (
 				<div className="rounded-lg border border-error bg-error-light px-6 py-4 text-body-sm text-error">
-					Failed to load reports. Please try again.
+					{t('failedToLoad')}
 				</div>
 			) : filteredReports && filteredReports.length > 0 ? (
 				<>

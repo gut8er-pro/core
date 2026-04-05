@@ -11,6 +11,9 @@ const AUTH_FILE = path.join(__dirname, '../.auth/user.json')
 /** Create an authenticated page from browser.newPage() in beforeAll */
 export async function createAuthPage(browser: Browser) {
 	const context = await browser.newContext({ storageState: AUTH_FILE })
+	await context.addCookies([
+		{ name: 'NEXT_LOCALE', value: 'en', domain: 'localhost', path: '/' },
+	])
 	return context.newPage()
 }
 

@@ -1,21 +1,22 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
 import { cn } from '@/lib/utils'
 
-const GRADING_CATEGORIES = [
-	{ key: 'bodywork', label: 'Bodywork / Sheet Metal' },
-	{ key: 'tires', label: 'Tires' },
-	{ key: 'paint', label: 'Paint' },
-	{ key: 'interior', label: 'Passenger compartment / Interior' },
-	{ key: 'chrome', label: 'Chrome / trim parts' },
-	{ key: 'engineBay', label: 'Engine bay' },
-	{ key: 'seals', label: 'Seals / rubber parts' },
-	{ key: 'engine', label: 'Engine' },
-	{ key: 'glass', label: 'Glass' },
-	{ key: 'trunk', label: 'Trunk' },
+const GRADING_CATEGORY_KEYS = [
+	'bodywork',
+	'tires',
+	'paint',
+	'interior',
+	'chrome',
+	'engineBay',
+	'seals',
+	'engine',
+	'glass',
+	'trunk',
 ] as const
 
 const SCORE_OPTIONS = ['Non', '1', '2', '3', '4', '5'] as const
@@ -31,13 +32,20 @@ type VehicleGradingSectionProps = {
 }
 
 function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
+	const t = useTranslations('report.condition')
+
+	const GRADING_CATEGORIES = GRADING_CATEGORY_KEYS.map((key) => ({
+		key,
+		label: t(`vehicleGrading.${key}` as `vehicleGrading.${typeof key}`),
+	}))
+
 	const [activeTab, setActiveTab] = useState<'grading' | 'paint'>('grading')
 	const [autoCalculate, setAutoCalculate] = useState(true)
 	const [overallScore, setOverallScore] = useState<string>('5')
 	const [scores, setScores] = useState<Record<string, GradeScore>>(() => {
 		const initial: Record<string, GradeScore> = {}
-		for (const cat of GRADING_CATEGORIES) {
-			initial[cat.key] = { value: '5', modifier: '' }
+		for (const key of GRADING_CATEGORY_KEYS) {
+			initial[key] = { value: '5', modifier: '' }
 		}
 		return initial
 	})
@@ -54,7 +62,7 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 	}
 
 	return (
-		<CollapsibleSection title="Vehicle Grading" info className={className}>
+		<CollapsibleSection title={t('vehicleGrading.title')} info className={className}>
 			<div className="flex flex-col gap-6">
 				{/* Grading / Paint toggle */}
 				<div className="flex rounded-full bg-grey-25 p-1">
@@ -66,7 +74,7 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 							activeTab === 'grading' ? 'bg-black text-white' : 'text-grey-100 hover:text-black',
 						)}
 					>
-						Grading
+						{t('vehicleGrading.grading')}
 					</button>
 					<button
 						type="button"
@@ -76,7 +84,7 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 							activeTab === 'paint' ? 'bg-black text-white' : 'text-grey-100 hover:text-black',
 						)}
 					>
-						Paint
+						{t('vehicleGrading.paint')}
 					</button>
 				</div>
 
@@ -84,7 +92,9 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 					<>
 						{/* Overall Condition */}
 						<div className="flex items-center justify-between">
-							<span className="text-body font-medium text-black">Overall Condition</span>
+							<span className="text-body font-medium text-black">
+								{t('vehicleGrading.overallCondition')}
+							</span>
 							<button
 								type="button"
 								onClick={() => setEditingCategory('overall')}
@@ -97,7 +107,8 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 						{/* Score popup for overall */}
 						{editingCategory === 'overall' && (
 							<ScorePopup
-								title="Overall condition"
+								title={t('vehicleGrading.overallConditionTitle')}
+								hint={t('vehicleGrading.scorePopupHint')}
 								onSelect={(value) => {
 									setOverallScore(value)
 									setEditingCategory(null)
@@ -125,6 +136,7 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 						{editingCategory && editingCategory !== 'overall' && (
 							<ScorePopup
 								title={GRADING_CATEGORIES.find((c) => c.key === editingCategory)?.label ?? ''}
+								hint={t('vehicleGrading.scorePopupHint')}
 								onSelect={(value, modifier) => {
 									handleScoreChange(editingCategory, value, modifier ?? '')
 								}}
@@ -134,16 +146,16 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 
 						{/* Auto-calculate toggle */}
 						<div className="flex items-center justify-between">
-							<span className="text-body-sm text-black">Automatically calculate grade</span>
+							<span className="text-body-sm text-black">
+								{t('vehicleGrading.autoCalculateGrade')}
+							</span>
 							<ToggleSwitch label="" checked={autoCalculate} onCheckedChange={setAutoCalculate} />
 						</div>
 					</>
 				)}
 
 				{activeTab === 'paint' && (
-					<p className="text-body-sm text-grey-100">
-						Paint grading will use the same paint thickness data from the Condition tab.
-					</p>
+					<p className="text-body-sm text-grey-100">{t('vehicleGrading.paintGradingNote')}</p>
 				)}
 			</div>
 		</CollapsibleSection>
@@ -152,19 +164,19 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 
 function ScorePopup({
 	title,
+	hint,
 	onSelect,
 	showModifiers = false,
 }: {
 	title: string
+	hint: string
 	onSelect: (value: string, modifier?: string) => void
 	showModifiers?: boolean
 }) {
 	return (
 		<div className="rounded-xl border border-border bg-white p-4 shadow-dropdown">
 			<p className="mb-1 text-body-sm font-medium text-black">{title}</p>
-			<p className="mb-3 text-caption text-grey-100">
-				Click + for above standard, number for standard, or - for below
-			</p>
+			<p className="mb-3 text-caption text-grey-100">{hint}</p>
 			{showModifiers && (
 				<div className="mb-1 flex gap-1 pl-14">
 					{['', '+', '+', '+', '+'].map((_m, i) =>

@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useCallback, useRef, useState } from 'react'
 
 /** Upload cloud icon from Figma (node 4178:3347) */
@@ -58,6 +59,7 @@ function UploadZone({
 	disabled = false,
 	className,
 }: UploadZoneProps) {
+	const t = useTranslations('report')
 	const [isDragOver, setIsDragOver] = useState(false)
 	const inputRef = useRef<HTMLInputElement>(null)
 
@@ -193,10 +195,10 @@ function UploadZone({
 				</div>
 
 				<p className="text-body-sm font-semibold text-black">
-					{isMaxReached ? 'Maximum photos reached' : 'Drag and drop here or click to upload'}
+					{isMaxReached ? t('gallery.maxPhotosReached') : t('gallery.dropzoneText')}
 				</p>
 
-				{!isMaxReached && <p className="text-caption text-grey-100">PDF, PNG or JPG</p>}
+				{!isMaxReached && <p className="text-caption text-grey-100">{t('gallery.fileTypes')}</p>}
 			</div>
 		</div>
 	)

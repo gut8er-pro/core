@@ -1,4 +1,5 @@
 import { Sparkles, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import type { GenerationStatus } from '@/hooks/use-generate-report'
 import { cn } from '@/lib/utils'
@@ -9,14 +10,15 @@ type GenerateProgressProps = {
 	className?: string
 }
 
-const STEP_LABELS: Record<string, string> = {
-	classify: 'Classifying photos',
-	process: 'Analyzing photos',
-	lookup: 'Looking up vehicle data',
-	autofill: 'Auto-filling report',
-}
-
 function GenerateProgress({ status, onCancel, className }: GenerateProgressProps) {
+	const t = useTranslations('report')
+
+	const STEP_LABELS: Record<string, string> = {
+		classify: t('gallery.classifyingPhotos'),
+		process: t('gallery.analyzingPhotos'),
+		lookup: t('gallery.lookingUpVehicleData'),
+		autofill: t('gallery.autoFillingReport'),
+	}
 	if (!status.isGenerating) return null
 
 	const stepLabel = STEP_LABELS[status.step] || status.step
@@ -34,7 +36,12 @@ function GenerateProgress({ status, onCancel, className }: GenerateProgressProps
 						<span className="truncate text-caption text-grey-100">{status.message}</span>
 					</div>
 				</div>
-				<Button variant="ghost" size="icon" onClick={onCancel} aria-label="Cancel generation">
+				<Button
+					variant="ghost"
+					size="icon"
+					onClick={onCancel}
+					aria-label={t('gallery.cancelGeneration')}
+				>
 					<X className="h-4 w-4" />
 				</Button>
 			</div>

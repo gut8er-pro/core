@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
+import { defaultLocale, LOCALE_COOKIE, type Locale, locales } from '@/i18n/config'
 
 async function updateSession(request: NextRequest) {
 	let supabaseResponse = NextResponse.next({ request })
@@ -63,6 +64,21 @@ async function updateSession(request: NextRequest) {
 		const url = request.nextUrl.clone()
 		url.pathname = '/dashboard'
 		return NextResponse.redirect(url)
+	}
+
+	// Set locale cookie if missing (auto-detect from Accept-Language)
+	if (!request.cookies.get(LOCALE_COOKIE)?.value) {
+		const acceptLang = request.headers.get('accept-language') ?? ''
+		const preferred = acceptLang
+			.split(',')
+			.map((l) => l.split(';')[0]?.trim().substring(0, 2).toLowerCase())
+			.filter(Boolean)
+		const detected = preferred.find((l) => locales.includes(l as Locale)) ?? defaultLocale
+		supabaseResponse.cookies.set(LOCALE_COOKIE, detected, {
+			path: '/',
+			maxAge: 365 * 24 * 60 * 60,
+			sameSite: 'lax',
+		})
 	}
 
 	return supabaseResponse

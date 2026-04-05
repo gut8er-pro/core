@@ -1,6 +1,7 @@
 'use client'
 
 import { QrCode } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { SelectField } from '@/components/ui/select'
@@ -8,54 +9,7 @@ import { TextField } from '@/components/ui/text-field'
 import { cn } from '@/lib/utils'
 import type { ConditionSectionProps } from './types'
 
-const PAINT_TYPE_OPTIONS = [
-	{ value: 'Uni (2 Schicht)', label: 'Uni (2 Schicht)' },
-	{ value: 'Metallic', label: 'Metallic' },
-	{ value: 'Pearl', label: 'Pearl' },
-	{ value: 'Matte', label: 'Matte' },
-]
-
-const PAINT_OPTIONS = [
-	{ value: 'Original manufacturer paint', label: 'Original manufacturer paint' },
-	{ value: 'Repainted', label: 'Repainted' },
-	{ value: 'Mixed', label: 'Mixed' },
-]
-
-const PAINT_CONDITION_OPTIONS = [
-	{ value: 'Good', label: 'Good' },
-	{ value: 'Fair', label: 'Fair' },
-	{ value: 'Poor', label: 'Poor' },
-]
-
-const GENERAL_CONDITION_OPTIONS = [
-	{ value: 'Well maintained', label: 'Well maintained' },
-	{ value: 'Average', label: 'Average' },
-	{ value: 'Poor', label: 'Poor' },
-]
-
-const BODY_CONDITION_OPTIONS = [
-	{ value: 'Minor cosmetic', label: 'Minor cosmetic' },
-	{ value: 'No damage', label: 'No damage' },
-	{ value: 'Structural damage', label: 'Structural damage' },
-]
-
-const INTERIOR_CONDITION_OPTIONS = [
-	{ value: 'Clean, no structural damage.', label: 'Clean, no structural damage.' },
-	{ value: 'Minor wear', label: 'Minor wear' },
-	{ value: 'Significant wear', label: 'Significant wear' },
-]
-
-const DRIVING_ABILITY_OPTIONS = [
-	{ value: 'Roadworthy', label: 'Roadworthy' },
-	{ value: 'Limited', label: 'Limited' },
-	{ value: 'Not roadworthy', label: 'Not roadworthy' },
-]
-
-const UNIT_OPTIONS = [
-	{ value: 'km', label: 'km' },
-	{ value: 'MKR', label: 'MKR' },
-	{ value: 'miles', label: 'miles' },
-]
+// Options are defined inside the component to access translations
 
 const MULTI_HIT_COLORS = [
 	{ value: 1, bg: 'bg-grey-50', border: 'border-grey-50', text: 'text-black' },
@@ -103,8 +57,64 @@ function ConditionSection({
 	onFieldBlur,
 	className,
 }: ConditionSectionProps) {
+	const t = useTranslations('report')
+
+	const PAINT_TYPE_OPTIONS = [
+		{ value: 'Uni (2 Schicht)', label: t('condition.paintTypeOptions.uni') },
+		{ value: 'Metallic', label: t('condition.paintTypeOptions.metallic') },
+		{ value: 'Pearl', label: t('condition.paintTypeOptions.pearl') },
+		{ value: 'Matte', label: t('condition.paintTypeOptions.matte') },
+	]
+
+	const PAINT_OPTIONS = [
+		{ value: 'Original manufacturer paint', label: t('condition.paintOptions.original') },
+		{ value: 'Repainted', label: t('condition.paintOptions.repainted') },
+		{ value: 'Mixed', label: t('condition.paintOptions.mixed') },
+	]
+
+	const PAINT_CONDITION_OPTIONS = [
+		{ value: 'Good', label: t('condition.paintConditionOptions.good') },
+		{ value: 'Fair', label: t('condition.paintConditionOptions.fair') },
+		{ value: 'Poor', label: t('condition.paintConditionOptions.poor') },
+	]
+
+	const GENERAL_CONDITION_OPTIONS = [
+		{ value: 'Well maintained', label: t('condition.generalConditionOptions.wellMaintained') },
+		{ value: 'Average', label: t('condition.generalConditionOptions.average') },
+		{ value: 'Poor', label: t('condition.paintConditionOptions.poor') },
+	]
+
+	const BODY_CONDITION_OPTIONS = [
+		{ value: 'Minor cosmetic', label: t('condition.bodyConditionOptions.minorCosmetic') },
+		{ value: 'No damage', label: t('condition.bodyConditionOptions.noDamage') },
+		{ value: 'Structural damage', label: t('condition.bodyConditionOptions.structuralDamage') },
+	]
+
+	const INTERIOR_CONDITION_OPTIONS = [
+		{ value: 'Clean, no structural damage.', label: t('condition.interiorConditionOptions.clean') },
+		{ value: 'Minor wear', label: t('condition.interiorConditionOptions.minorWear') },
+		{ value: 'Significant wear', label: t('condition.interiorConditionOptions.significantWear') },
+	]
+
+	const DRIVING_ABILITY_OPTIONS = [
+		{ value: 'Roadworthy', label: t('condition.drivingAbilityOptions.roadworthy') },
+		{ value: 'Limited', label: t('condition.drivingAbilityOptions.limited') },
+		{ value: 'Not roadworthy', label: t('condition.drivingAbilityOptions.notRoadworthy') },
+	]
+
+	const UNIT_OPTIONS = [
+		{ value: 'km', label: t('condition.unitOptions.km') },
+		{ value: 'MKR', label: t('condition.unitOptions.mkr') },
+		{ value: 'miles', label: t('condition.unitOptions.miles') },
+	]
+
 	return (
-		<CollapsibleSection title="Vehicle Condition" info defaultOpen className={className}>
+		<CollapsibleSection
+			title={t('condition.vehicleCondition')}
+			info
+			defaultOpen
+			className={className}
+		>
 			<div className="flex flex-col gap-6">
 				{/* Row 1: Paint type / Paint / Paint condition */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -113,7 +123,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<SelectField
-								label="Paint type"
+								label={t('condition.paintType')}
 								options={PAINT_TYPE_OPTIONS}
 								placeholder="Select"
 								value={field.value}
@@ -131,7 +141,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<SelectField
-								label="Paint"
+								label={t('condition.paint')}
 								options={PAINT_OPTIONS}
 								placeholder="Select"
 								value={field.value}
@@ -149,7 +159,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<SelectField
-								label="Paint condition"
+								label={t('condition.paintCondition')}
 								options={PAINT_CONDITION_OPTIONS}
 								placeholder="Select"
 								value={field.value}
@@ -170,7 +180,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<SelectField
-								label="General condition"
+								label={t('condition.generalCondition')}
 								options={GENERAL_CONDITION_OPTIONS}
 								placeholder="Select"
 								value={field.value}
@@ -188,7 +198,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<SelectField
-								label="Body condition"
+								label={t('condition.bodyCondition')}
 								options={BODY_CONDITION_OPTIONS}
 								placeholder="Select"
 								value={field.value}
@@ -206,7 +216,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<SelectField
-								label="Interior condition"
+								label={t('condition.interiorCondition')}
 								options={INTERIOR_CONDITION_OPTIONS}
 								placeholder="Select"
 								value={field.value}
@@ -227,7 +237,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<SelectField
-								label="Driving ability"
+								label={t('condition.drivingAbility')}
 								options={DRIVING_ABILITY_OPTIONS}
 								placeholder="Select"
 								value={field.value}
@@ -241,8 +251,8 @@ function ConditionSection({
 					/>
 
 					<TextField
-						label="Special features"
-						placeholder="Parking sensors"
+						label={t('condition.specialFeatures')}
+						placeholder={t('condition.parkingSensors')}
 						error={errors.specialFeatures?.message}
 						{...register('specialFeatures')}
 						onBlur={() => onFieldBlur?.('specialFeatures')}
@@ -252,7 +262,7 @@ function ConditionSection({
 				{/* Row 4: Mileage Read / Estimation mileage / Unit in km */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 					<TextField
-						label="Mileage Read"
+						label={t('condition.mileageRead')}
 						type="number"
 						placeholder="e.g. 125,450 km"
 						error={errors.mileageRead?.message}
@@ -261,7 +271,7 @@ function ConditionSection({
 					/>
 
 					<TextField
-						label="Estimation mileage"
+						label={t('condition.estimationMileage')}
 						type="number"
 						placeholder="e.g. 125,450 km"
 						error={errors.estimateMileage?.message}
@@ -274,7 +284,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<SelectField
-								label="Unit in km"
+								label={t('condition.unitInKm')}
 								options={UNIT_OPTIONS}
 								value={field.value || 'km'}
 								onValueChange={(val) => {
@@ -291,7 +301,7 @@ function ConditionSection({
 				<div className="flex items-end gap-4">
 					<div className="w-full max-w-xs">
 						<TextField
-							label="Next MOT"
+							label={t('condition.nextMot')}
 							type="date"
 							placeholder="MM/YY/YY"
 							error={errors.nextMot?.message}
@@ -311,7 +321,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<CheckboxPill
-								label="Full serviced history"
+								label={t('condition.fullServiceHistory')}
 								checked={field.value}
 								onChange={(checked) => {
 									field.onChange(checked)
@@ -325,7 +335,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<CheckboxPill
-								label="Test drive performed"
+								label={t('condition.testDrivePerformed')}
 								checked={field.value}
 								onChange={(checked) => {
 									field.onChange(checked)
@@ -339,7 +349,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<CheckboxPill
-								label="Error memory read"
+								label={t('condition.errorMemoryRead')}
 								checked={field.value}
 								onChange={(checked) => {
 									field.onChange(checked)
@@ -353,7 +363,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<CheckboxPill
-								label="Airbags deployed"
+								label={t('condition.airbagsDeployed')}
 								checked={field.value}
 								onChange={(checked) => {
 									field.onChange(checked)
@@ -367,7 +377,7 @@ function ConditionSection({
 						control={control}
 						render={({ field }) => (
 							<CheckboxPill
-								label="Parking sensors"
+								label={t('condition.parkingSensors')}
 								checked={field.value}
 								onChange={(checked) => {
 									field.onChange(checked)
@@ -381,7 +391,9 @@ function ConditionSection({
 				{/* Multi-hit Groups */}
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2">
-						<span className="text-body-sm font-medium text-black">Multi-hit Groups</span>
+						<span className="text-body-sm font-medium text-black">
+							{t('condition.multiHitGroups')}
+						</span>
 					</div>
 					<div className="flex items-center gap-1">
 						{MULTI_HIT_COLORS.map((item) => (
@@ -401,10 +413,10 @@ function ConditionSection({
 
 				{/* Notes */}
 				<div className="flex flex-col gap-1">
-					<span className="text-body-sm font-medium text-black">Notes</span>
+					<span className="text-body-sm font-medium text-black">{t('condition.notes')}</span>
 					<textarea
 						className="min-h-30 w-full rounded-md border border-border bg-white px-4 py-3 text-body-sm text-black placeholder:text-placeholder focus:border-border-focus focus:outline-none"
-						placeholder="Add notes"
+						placeholder={t('condition.addNotes')}
 						{...register('notes')}
 						onBlur={() => onFieldBlur?.('notes')}
 					/>

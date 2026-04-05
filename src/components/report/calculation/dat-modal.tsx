@@ -1,6 +1,7 @@
 'use client'
 
 import { ExternalLink, Info } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useCallback, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -35,6 +36,8 @@ const LOCATION_OPTIONS = [
 ]
 
 function DatModal({ open, onClose, initialData, onSave }: DatModalProps) {
+	const t = useTranslations('report.calculation')
+	const tc = useTranslations('common')
 	const [location, setLocation] = useState(initialData?.location ?? '')
 	const [dekraUsed, setDekraUsed] = useState(initialData?.dekraUsed ?? false)
 	const [mechanics, setMechanics] = useState(initialData?.mechanics ?? '')
@@ -48,14 +51,14 @@ function DatModal({ open, onClose, initialData, onSave }: DatModalProps) {
 
 	return (
 		<Modal
-			title="Repair Cost Calculator"
+			title={t('datModal.repairCostCalculator')}
 			open={open}
 			onClose={onClose}
 			size="md"
 			footer={
 				<div className="flex w-full justify-start">
 					<Button type="button" variant="primary" size="md" onClick={handleSave}>
-						Save
+						{tc('save')}
 					</Button>
 				</div>
 			}
@@ -74,7 +77,7 @@ function DatModal({ open, onClose, initialData, onSave }: DatModalProps) {
 				{/* Workshop Section */}
 				<div className="flex flex-col gap-4">
 					<div className="flex items-center gap-2">
-						<h4 className="text-body font-semibold text-black">Workshop</h4>
+						<h4 className="text-body font-semibold text-black">{t('datModal.workshop')}</h4>
 						<Info className="h-4 w-4 text-grey-100" />
 					</div>
 
@@ -85,12 +88,12 @@ function DatModal({ open, onClose, initialData, onSave }: DatModalProps) {
 									checked={dekraUsed}
 									onCheckedChange={(checked) => setDekraUsed(checked === true)}
 								/>
-								<span className="text-body-sm text-black">DEKRA set are used</span>
+								<span className="text-body-sm text-black">{t('datModal.dekraUsed')}</span>
 							</label>
 
 							<div className="flex-1">
 								<SelectField
-									label="Location"
+									label={t('datModal.location')}
 									options={LOCATION_OPTIONS}
 									placeholder="Choose"
 									value={location}
@@ -100,22 +103,22 @@ function DatModal({ open, onClose, initialData, onSave }: DatModalProps) {
 						</div>
 
 						<TextField
-							label="Mechanics"
-							placeholder="Mechanics name"
+							label={t('datModal.mechanics')}
+							placeholder={t('datModal.mechanicsPlaceholder')}
 							value={mechanics}
 							onChange={(e) => setMechanics(e.target.value)}
 						/>
 
 						<TextField
-							label="Body"
-							placeholder="Vehicle body"
+							label={t('datModal.body')}
+							placeholder={t('datModal.bodyPlaceholder')}
 							value={body}
 							onChange={(e) => setBody(e.target.value)}
 						/>
 
 						<TextField
-							label="Paintwork"
-							placeholder="Vehicle paintwork"
+							label={t('datModal.paintwork')}
+							placeholder={t('datModal.paintworkPlaceholder')}
 							value={paintwork}
 							onChange={(e) => setPaintwork(e.target.value)}
 						/>
@@ -125,7 +128,7 @@ function DatModal({ open, onClose, initialData, onSave }: DatModalProps) {
 				{/* Market Value Section */}
 				<div className="flex flex-col gap-4">
 					<div className="flex items-center gap-2">
-						<h4 className="text-body font-semibold text-black">Market Value</h4>
+						<h4 className="text-body font-semibold text-black">{t('datModal.marketValue')}</h4>
 						<Info className="h-4 w-4 text-grey-100" />
 					</div>
 
@@ -141,7 +144,9 @@ function DatModal({ open, onClose, initialData, onSave }: DatModalProps) {
 									alt="DAT"
 									className="h-[34px] w-[21px] object-contain"
 								/>
-								<span className="text-body font-medium text-black">DAT SilverDAT3</span>
+								<span className="text-body font-medium text-black">
+									{t('datModal.datSilverdat3')}
+								</span>
 							</div>
 							<ExternalLink className="h-5 w-5 text-grey-100" />
 						</button>

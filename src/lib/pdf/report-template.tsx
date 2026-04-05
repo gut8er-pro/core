@@ -1,4 +1,6 @@
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
+import type { PdfTranslations } from './translations'
+import { translateValue } from './translations'
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -89,6 +91,15 @@ type ReportData = {
 		previousDamageReported: string | null
 		existingDamageNotReported: string | null
 		subsequentDamage: string | null
+		damageMarkers: {
+			x: number
+			y: number
+			comment: string | null
+		}[]
+		paintMarkers: {
+			position: string | null
+			thickness: number
+		}[]
 		tireSets: {
 			setNumber: number
 			matchAndAlloy: string | null
@@ -462,7 +473,7 @@ function DataRow({ label, value }: { label: string; value: string }) {
 	)
 }
 
-function HeaderSection({ data }: { data: ReportData }) {
+function HeaderSection({ data, t }: { data: ReportData; t: PdfTranslations }) {
 	const reportDate = formatDate(data.report.createdAt)
 	const reportId = data.report.id.slice(0, 8).toUpperCase()
 
@@ -473,63 +484,78 @@ function HeaderSection({ data }: { data: ReportData }) {
 					<Text style={styles.headerTitle}>{data.report.title}</Text>
 					<Text style={styles.headerSubtitle}>
 						{data.report.reportType === 'BE'
-							? 'Vehicle Valuation Report'
+							? t.vehicleValuation
 							: data.report.reportType === 'OT'
-								? 'Oldtimer Valuation Report'
-								: 'Vehicle Damage Assessment Report'}
+								? t.oldtimerValuation
+								: t.vehicleDamageAssessment}
 					</Text>
 				</View>
 				<View style={styles.headerRight}>
-					<Text style={styles.reportNumber}>Report No. {reportId}</Text>
-					<Text style={styles.reportNumber}>Date: {reportDate}</Text>
+					<Text style={styles.reportNumber}>
+						{t.reportNo} {reportId}
+					</Text>
+					<Text style={styles.reportNumber}>
+						{t.date}: {reportDate}
+					</Text>
 				</View>
 			</View>
 		</View>
 	)
 }
 
-function VehicleInfoSection({ vehicleInfo }: { vehicleInfo: ReportData['vehicleInfo'] }) {
+function VehicleInfoSection({
+	vehicleInfo,
+	t,
+	locale = 'en',
+}: {
+	vehicleInfo: ReportData['vehicleInfo']
+	t: PdfTranslations
+	locale?: string
+}) {
+	const tv = (v: string | null | undefined) => translateValue(v, locale)
 	if (!vehicleInfo) return null
 
 	return (
 		<View style={styles.section}>
-			<Text style={styles.sectionTitle}>Vehicle Information</Text>
-			<DataRow label="Manufacturer" value={displayValue(vehicleInfo.manufacturer)} />
-			<DataRow label="Type" value={displayValue(vehicleInfo.mainType)} />
-			{vehicleInfo.subtype && <DataRow label="Subtype" value={displayValue(vehicleInfo.subtype)} />}
-			<DataRow label="VIN" value={displayValue(vehicleInfo.vin)} />
-			{vehicleInfo.kbaNumber && (
-				<DataRow label="KBA Number" value={displayValue(vehicleInfo.kbaNumber)} />
+			<Text style={styles.sectionTitle}>{t.vehicleInformation}</Text>
+			<DataRow label={t.manufacturer} value={displayValue(vehicleInfo.manufacturer)} />
+			<DataRow label={t.type} value={displayValue(vehicleInfo.mainType)} />
+			{vehicleInfo.subtype && (
+				<DataRow label={t.subtype} value={displayValue(vehicleInfo.subtype)} />
 			)}
-			<DataRow label="First Registration" value={formatDate(vehicleInfo.firstRegistration)} />
+			<DataRow label={t.vin} value={displayValue(vehicleInfo.vin)} />
+			{vehicleInfo.kbaNumber && (
+				<DataRow label={t.kbaNumber} value={displayValue(vehicleInfo.kbaNumber)} />
+			)}
+			<DataRow label={t.firstRegistration} value={formatDate(vehicleInfo.firstRegistration)} />
 			{vehicleInfo.lastRegistration && (
 				<DataRow label="Last Registration" value={formatDate(vehicleInfo.lastRegistration)} />
 			)}
 			{vehicleInfo.powerKw && (
 				<DataRow
-					label="Power"
+					label={t.power}
 					value={`${formatNumber(vehicleInfo.powerKw)} kW / ${formatNumber(vehicleInfo.powerHp)} PS`}
 				/>
 			)}
 			{vehicleInfo.engineDesign && (
-				<DataRow label="Engine Design" value={displayValue(vehicleInfo.engineDesign)} />
+				<DataRow label={t.engineDesign} value={tv(vehicleInfo.engineDesign)} />
 			)}
 			{vehicleInfo.engineDisplacementCcm && (
 				<DataRow
-					label="Displacement"
+					label={t.displacement}
 					value={formatNumber(vehicleInfo.engineDisplacementCcm, 'ccm')}
 				/>
 			)}
 			{vehicleInfo.transmission && (
-				<DataRow label="Transmission" value={displayValue(vehicleInfo.transmission)} />
+				<DataRow label={t.transmission} value={tv(vehicleInfo.transmission)} />
 			)}
 			{vehicleInfo.vehicleType && (
-				<DataRow label="Vehicle Type" value={displayValue(vehicleInfo.vehicleType)} />
+				<DataRow label={t.vehicleType} value={tv(vehicleInfo.vehicleType)} />
 			)}
-			{vehicleInfo.doors && <DataRow label="Doors" value={formatNumber(vehicleInfo.doors)} />}
-			{vehicleInfo.seats && <DataRow label="Seats" value={formatNumber(vehicleInfo.seats)} />}
+			{vehicleInfo.doors && <DataRow label={t.doors} value={formatNumber(vehicleInfo.doors)} />}
+			{vehicleInfo.seats && <DataRow label={t.seats} value={formatNumber(vehicleInfo.seats)} />}
 			{vehicleInfo.previousOwners !== null && vehicleInfo.previousOwners !== undefined && (
-				<DataRow label="Previous Owners" value={formatNumber(vehicleInfo.previousOwners)} />
+				<DataRow label={t.previousOwners} value={formatNumber(vehicleInfo.previousOwners)} />
 			)}
 		</View>
 	)
@@ -539,20 +565,22 @@ function AccidentInfoSection({
 	accidentInfo,
 	claimantInfo,
 	opponentInfo,
+	t,
 }: {
 	accidentInfo: ReportData['accidentInfo']
 	claimantInfo: ReportData['claimantInfo']
 	opponentInfo: ReportData['opponentInfo']
+	t: PdfTranslations
 }) {
 	if (!accidentInfo && !claimantInfo && !opponentInfo) return null
 
 	return (
 		<View style={styles.section}>
-			<Text style={styles.sectionTitle}>Accident Information</Text>
+			<Text style={styles.sectionTitle}>{t.accidentInformation}</Text>
 
 			{accidentInfo && (
 				<View style={{ marginBottom: 8 }}>
-					<DataRow label="Accident Date" value={formatDate(accidentInfo.accidentDay)} />
+					<DataRow label={t.date} value={formatDate(accidentInfo.accidentDay)} />
 					<DataRow label="Accident Scene" value={displayValue(accidentInfo.accidentScene)} />
 				</View>
 			)}
@@ -560,10 +588,10 @@ function AccidentInfoSection({
 			{claimantInfo && (
 				<View style={{ marginBottom: 8 }}>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 6, fontSize: 10 }]}>
-						Claimant
+						{t.claimant}
 					</Text>
 					<DataRow
-						label="Name"
+						label={t.name}
 						value={
 							[claimantInfo.salutation, claimantInfo.firstName, claimantInfo.lastName]
 								.filter(Boolean)
@@ -571,20 +599,24 @@ function AccidentInfoSection({
 						}
 					/>
 					{claimantInfo.company && (
-						<DataRow label="Company" value={displayValue(claimantInfo.company)} />
+						<DataRow label={t.company} value={displayValue(claimantInfo.company)} />
 					)}
 					<DataRow
-						label="Address"
+						label={t.address}
 						value={
 							[claimantInfo.street, claimantInfo.postcode, claimantInfo.location]
 								.filter(Boolean)
 								.join(', ') || '-'
 						}
 					/>
-					{claimantInfo.email && <DataRow label="Email" value={displayValue(claimantInfo.email)} />}
-					{claimantInfo.phone && <DataRow label="Phone" value={displayValue(claimantInfo.phone)} />}
+					{claimantInfo.email && (
+						<DataRow label={t.email} value={displayValue(claimantInfo.email)} />
+					)}
+					{claimantInfo.phone && (
+						<DataRow label={t.phone} value={displayValue(claimantInfo.phone)} />
+					)}
 					{claimantInfo.licensePlate && (
-						<DataRow label="License Plate" value={displayValue(claimantInfo.licensePlate)} />
+						<DataRow label={t.licensePlate} value={displayValue(claimantInfo.licensePlate)} />
 					)}
 				</View>
 			)}
@@ -595,7 +627,7 @@ function AccidentInfoSection({
 						Opponent
 					</Text>
 					<DataRow
-						label="Name"
+						label={t.name}
 						value={
 							[opponentInfo.salutation, opponentInfo.firstName, opponentInfo.lastName]
 								.filter(Boolean)
@@ -603,7 +635,7 @@ function AccidentInfoSection({
 						}
 					/>
 					{opponentInfo.company && (
-						<DataRow label="Company" value={displayValue(opponentInfo.company)} />
+						<DataRow label={t.company} value={displayValue(opponentInfo.company)} />
 					)}
 					{opponentInfo.insuranceCompany && (
 						<DataRow
@@ -620,95 +652,153 @@ function AccidentInfoSection({
 	)
 }
 
-function ConditionSection({ condition }: { condition: ReportData['condition'] }) {
+function ConditionSection({
+	condition,
+	t,
+	locale = 'en',
+}: {
+	condition: ReportData['condition']
+	t: PdfTranslations
+	locale?: string
+}) {
+	const tv = (v: string | null | undefined) => translateValue(v, locale)
 	if (!condition) return null
 
 	return (
 		<View style={styles.section}>
-			<Text style={styles.sectionTitle}>Vehicle Condition</Text>
-			<DataRow label="General Condition" value={displayValue(condition.generalCondition)} />
+			<Text style={styles.sectionTitle}>{t.vehicleCondition}</Text>
+			<DataRow label={t.generalCondition} value={tv(condition.generalCondition)} />
 			{condition.bodyCondition && (
-				<DataRow label="Body Condition" value={displayValue(condition.bodyCondition)} />
+				<DataRow label={t.bodyCondition} value={tv(condition.bodyCondition)} />
 			)}
 			{condition.interiorCondition && (
-				<DataRow label="Interior Condition" value={displayValue(condition.interiorCondition)} />
+				<DataRow label={t.interiorCondition} value={tv(condition.interiorCondition)} />
 			)}
-			{condition.paintType && (
-				<DataRow label="Paint Type" value={displayValue(condition.paintType)} />
-			)}
-			{condition.hard && <DataRow label="Paint Finish" value={displayValue(condition.hard)} />}
+			{condition.paintType && <DataRow label={t.paintType} value={tv(condition.paintType)} />}
+			{condition.hard && <DataRow label={t.paintFinish} value={tv(condition.hard)} />}
 			{condition.paintCondition && (
-				<DataRow label="Paint Condition" value={displayValue(condition.paintCondition)} />
+				<DataRow label={t.paintCondition} value={tv(condition.paintCondition)} />
 			)}
 			{condition.vehicleColor && (
 				<DataRow label="Vehicle Color" value={displayValue(condition.vehicleColor)} />
 			)}
 			{condition.drivingAbility && (
-				<DataRow label="Driving Ability" value={displayValue(condition.drivingAbility)} />
+				<DataRow label={t.drivingAbility} value={tv(condition.drivingAbility)} />
 			)}
 			{condition.mileageRead != null && (
-				<DataRow label="Mileage" value={formatNumber(condition.mileageRead, condition.unit)} />
+				<DataRow label={t.mileage} value={formatNumber(condition.mileageRead, condition.unit)} />
 			)}
 			{condition.estimateMileage != null && (
 				<DataRow
-					label="Estimated Mileage"
+					label={t.estimatedMileage}
 					value={formatNumber(condition.estimateMileage, condition.unit)}
 				/>
 			)}
-			{condition.nextMot && <DataRow label="Next MOT" value={formatDate(condition.nextMot)} />}
+			{condition.nextMot && <DataRow label={t.nextMot} value={formatDate(condition.nextMot)} />}
 			{condition.specialFeatures && (
-				<DataRow label="Special Features" value={displayValue(condition.specialFeatures)} />
+				<DataRow label={t.specialFeatures} value={displayValue(condition.specialFeatures)} />
 			)}
-			{condition.parkingSensors && <DataRow label="Parking Sensors" value="Yes" />}
-			{condition.fullServiceHistory && <DataRow label="Full Service History" value="Yes" />}
-			{condition.testDrivePerformed && <DataRow label="Test Drive Performed" value="Yes" />}
-			{condition.errorMemoryRead && <DataRow label="Error Memory Read" value="Yes" />}
-			{condition.airbagsDeployed && <DataRow label="Airbags Deployed" value="Yes" />}
-			{condition.notes && <DataRow label="Notes" value={displayValue(condition.notes)} />}
+			{condition.parkingSensors && <DataRow label={t.parkingSensors} value={t.yes} />}
+			{condition.fullServiceHistory && <DataRow label={t.fullServiceHistory} value={t.yes} />}
+			{condition.testDrivePerformed && <DataRow label={t.testDrivePerformed} value={t.yes} />}
+			{condition.errorMemoryRead && <DataRow label={t.errorMemoryRead} value={t.yes} />}
+			{condition.airbagsDeployed && <DataRow label="Airbags Deployed" value={t.yes} />}
+			{condition.notes && <DataRow label={t.notes} value={displayValue(condition.notes)} />}
 			{condition.previousDamageReported && (
 				<DataRow
-					label="Previous Damage Reported"
+					label={t.previousDamageReported}
 					value={displayValue(condition.previousDamageReported)}
 				/>
 			)}
 			{condition.existingDamageNotReported && (
 				<DataRow
-					label="Existing Damage (Not Reported)"
+					label={t.existingDamageNotReported}
 					value={displayValue(condition.existingDamageNotReported)}
 				/>
 			)}
 			{condition.subsequentDamage && (
-				<DataRow label="Subsequent Damage" value={displayValue(condition.subsequentDamage)} />
+				<DataRow label={t.subsequentDamage} value={displayValue(condition.subsequentDamage)} />
+			)}
+
+			{/* Damage Markers */}
+			{condition.damageMarkers.length > 0 && (
+				<View style={{ marginTop: 10 }}>
+					<Text style={[styles.sectionTitle, { fontSize: 11, marginBottom: 6 }]}>
+						{t.damageMarkersTitle}
+					</Text>
+					<View style={{ flexDirection: 'column', gap: 3 }}>
+						{condition.damageMarkers
+							.filter((m) => m.comment)
+							.map((m, i) => (
+								<View key={`dm-${i}`} style={{ flexDirection: 'row' }}>
+									<Text style={[styles.dataLabel, { fontSize: 9, width: 30 }]}>#{i + 1}:</Text>
+									<Text style={[styles.dataValue, { fontSize: 9, flex: 1 }]}>{m.comment}</Text>
+								</View>
+							))}
+						{condition.damageMarkers.filter((m) => !m.comment).length > 0 && (
+							<Text style={[styles.dataValue, { fontSize: 8, color: GREY_TEXT, marginTop: 2 }]}>
+								+{condition.damageMarkers.filter((m) => !m.comment).length}{' '}
+								{t.markersWithoutDescription}
+							</Text>
+						)}
+					</View>
+				</View>
+			)}
+
+			{/* Paint Thickness Readings */}
+			{condition.paintMarkers.length > 0 && (
+				<View style={{ marginTop: 8 }}>
+					<Text style={[styles.sectionTitle, { fontSize: 11, marginBottom: 4 }]}>
+						{t.paintReadingsTitle}
+					</Text>
+					<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
+						{condition.paintMarkers
+							.filter((m) => m.position)
+							.map((m, i) => (
+								<Text
+									key={`pm-${i}`}
+									style={[styles.dataValue, { fontSize: 9, color: GREY_TEXT, marginBottom: 2 }]}
+								>
+									{m.position}: {m.thickness} µm
+								</Text>
+							))}
+					</View>
+				</View>
 			)}
 
 			{/* Tire Sets */}
 			{condition.tireSets.length > 0 && (
-				<View style={{ marginTop: 8 }}>
-					<Text style={[styles.dataLabel, { marginBottom: 4, fontSize: 10 }]}>Tires</Text>
+				<View style={{ marginTop: 10 }}>
+					<Text style={[styles.sectionTitle, { fontSize: 11, marginBottom: 6 }]}>
+						{t.tiresTitle}
+					</Text>
 					{condition.tireSets.map((ts, i) => (
-						<View key={`tireset-${i}`} style={{ marginBottom: 6 }}>
-							<Text style={[styles.dataValue, { fontSize: 9, marginBottom: 2 }]}>
-								Set {ts.setNumber}
-								{ts.matchAndAlloy ? ` — ${ts.matchAndAlloy}` : ''}
+						<View key={`tireset-${i}`} style={{ marginBottom: 8 }}>
+							<Text style={[styles.dataLabel, { fontSize: 9, marginBottom: 4 }]}>
+								{t.tireSet} {ts.setNumber}
 							</Text>
-							{ts.tires
-								.filter((t) => t.size || t.manufacturer || t.profileLevel)
-								.map((t, j) => (
-									<Text
-										key={`tire-${j}`}
-										style={[styles.dataValue, { fontSize: 8, color: GREY_TEXT }]}
-									>
-										{t.position}:{' '}
-										{[
-											t.size,
-											t.profileLevel ? `${t.profileLevel}mm profile` : null,
-											t.manufacturer,
-											t.dotCode ? `DOT ${t.dotCode}` : null,
-										]
-											.filter(Boolean)
-											.join(' | ')}
-									</Text>
-								))}
+							<View style={{ flexDirection: 'column', gap: 3 }}>
+								{ts.tires
+									.filter((tr) => tr.size || tr.manufacturer || tr.profileLevel)
+									.map((tr, j) => (
+										<View key={`tire-${j}`} style={{ flexDirection: 'row' }}>
+											<Text style={[styles.dataLabel, { fontSize: 9, width: 25 }]}>
+												{tr.position}:
+											</Text>
+											<Text style={[styles.dataValue, { fontSize: 9, flex: 1 }]}>
+												{[
+													tr.size,
+													tr.profileLevel ? `${tr.profileLevel}mm ${t.tireProfile}` : null,
+													tr.manufacturer,
+													tr.tireType,
+													tr.dotCode ? `DOT ${tr.dotCode}` : null,
+												]
+													.filter(Boolean)
+													.join(' | ')}
+											</Text>
+										</View>
+									))}
+							</View>
 						</View>
 					))}
 				</View>
@@ -720,15 +810,17 @@ function ConditionSection({ condition }: { condition: ReportData['condition'] })
 function CalculationSection({
 	calculation,
 	reportType,
+	t,
 }: {
 	calculation: ReportData['calculation']
 	reportType: string
+	t: PdfTranslations
 }) {
 	if (!calculation) return null
 
 	const isBE = reportType === 'BE'
 	const isOT = reportType === 'OT'
-	const sectionTitle = isBE || isOT ? 'Valuation' : 'Valuation & Calculation'
+	const sectionTitle = isBE || isOT ? t.valuation : t.valuationAndCalculation
 
 	return (
 		<View style={styles.section}>
@@ -738,20 +830,20 @@ function CalculationSection({
 			{!isBE && !isOT && (
 				<View>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
-						Vehicle Value
+						{t.vehicleValue}
 					</Text>
 					{calculation.replacementValue != null && (
 						<DataRow
-							label="Replacement Value"
+							label={t.replacementValue}
 							value={formatCurrency(calculation.replacementValue)}
 						/>
 					)}
 					{calculation.residualValue != null && (
-						<DataRow label="Residual Value" value={formatCurrency(calculation.residualValue)} />
+						<DataRow label={t.residualValue} value={formatCurrency(calculation.residualValue)} />
 					)}
 					{calculation.diminutionInValue != null && (
 						<DataRow
-							label="Diminution in Value"
+							label={t.diminutionInValue}
 							value={formatCurrency(calculation.diminutionInValue)}
 						/>
 					)}
@@ -766,7 +858,7 @@ function CalculationSection({
 				(calculation.repairMethod || calculation.damageClass || calculation.wheelAlignment) && (
 					<View style={{ marginTop: 8 }}>
 						<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
-							Repair
+							{t.repair}
 						</Text>
 						{calculation.wheelAlignment && (
 							<DataRow label="Wheel Alignment" value={displayValue(calculation.wheelAlignment)} />
@@ -780,12 +872,12 @@ function CalculationSection({
 						{calculation.bodyPaint && (
 							<DataRow label="Body Paint" value={displayValue(calculation.bodyPaint)} />
 						)}
-						{calculation.plasticRepair && <DataRow label="Plastic Repair" value="Yes" />}
+						{calculation.plasticRepair && <DataRow label="Plastic Repair" value={t.yes} />}
 						{calculation.repairMethod && (
-							<DataRow label="Repair Method" value={displayValue(calculation.repairMethod)} />
+							<DataRow label={t.repairMethod} value={displayValue(calculation.repairMethod)} />
 						)}
 						{calculation.damageClass && (
-							<DataRow label="Damage Class" value={displayValue(calculation.damageClass)} />
+							<DataRow label={t.damageClass} value={displayValue(calculation.damageClass)} />
 						)}
 						{calculation.risks && <DataRow label="Risks" value={displayValue(calculation.risks)} />}
 					</View>
@@ -796,28 +888,28 @@ function CalculationSection({
 				(calculation.dropoutGroup || calculation.costPerDay || calculation.repairTimeDays) && (
 					<View style={{ marginTop: 8 }}>
 						<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
-							Loss of Use
+							{t.lossOfUse}
 						</Text>
 						{calculation.dropoutGroup && (
 							<DataRow label="Dropout Group" value={displayValue(calculation.dropoutGroup)} />
 						)}
 						{calculation.costPerDay !== null && calculation.costPerDay !== undefined && (
-							<DataRow label="Cost per Day" value={formatCurrency(calculation.costPerDay)} />
+							<DataRow label={t.costPerDay} value={formatCurrency(calculation.costPerDay)} />
 						)}
 						{calculation.rentalCarClass && (
 							<DataRow label="Rental Car Class" value={displayValue(calculation.rentalCarClass)} />
 						)}
 						{calculation.repairTimeDays !== null && calculation.repairTimeDays !== undefined && (
 							<DataRow
-								label="Repair Time"
-								value={formatNumber(calculation.repairTimeDays, 'days')}
+								label={t.repairTime}
+								value={formatNumber(calculation.repairTimeDays, t.days)}
 							/>
 						)}
 						{calculation.replacementTimeDays !== null &&
 							calculation.replacementTimeDays !== undefined && (
 								<DataRow
-									label="Replacement Time"
-									value={formatNumber(calculation.replacementTimeDays, 'days')}
+									label={t.replacementTime}
+									value={formatNumber(calculation.replacementTimeDays, t.days)}
 								/>
 							)}
 					</View>
@@ -827,26 +919,31 @@ function CalculationSection({
 			{(calculation.valuationMax != null || calculation.valuationAvg != null) && (
 				<View style={{ marginTop: 8 }}>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
-						Valuation
+						{t.valuation}
 					</Text>
 					{calculation.generalCondition && (
-						<DataRow label="General Condition" value={displayValue(calculation.generalCondition)} />
+						<DataRow
+							label={t.generalCondition}
+							value={displayValue(calculation.generalCondition)}
+						/>
 					)}
-					{calculation.taxation && <DataRow label="Taxation" value={`${calculation.taxation}%`} />}
+					{calculation.taxation && (
+						<DataRow label={t.taxation} value={`${calculation.taxation}%`} />
+					)}
 					{calculation.dataSource && (
-						<DataRow label="Data Source" value={displayValue(calculation.dataSource)} />
+						<DataRow label={t.dataSource} value={displayValue(calculation.dataSource)} />
 					)}
 					{calculation.valuationMax != null && (
-						<DataRow label="Maximum Value" value={formatCurrency(calculation.valuationMax)} />
+						<DataRow label={t.maximumValue} value={formatCurrency(calculation.valuationMax)} />
 					)}
 					{calculation.valuationAvg != null && (
-						<DataRow label="Average Value" value={formatCurrency(calculation.valuationAvg)} />
+						<DataRow label={t.averageValue} value={formatCurrency(calculation.valuationAvg)} />
 					)}
 					{calculation.valuationMin != null && (
-						<DataRow label="Minimum Value" value={formatCurrency(calculation.valuationMin)} />
+						<DataRow label={t.minimumValue} value={formatCurrency(calculation.valuationMin)} />
 					)}
 					{calculation.valuationDate && (
-						<DataRow label="Valuation Date" value={displayValue(calculation.valuationDate)} />
+						<DataRow label={t.valuationDate} value={displayValue(calculation.valuationDate)} />
 					)}
 				</View>
 			)}
@@ -855,26 +952,26 @@ function CalculationSection({
 			{(calculation.marketValue != null || calculation.baseVehicleValue != null) && (
 				<View style={{ marginTop: 8 }}>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
-						Oldtimer Valuation
+						{t.oldtimerValuationSection}
 					</Text>
 					{calculation.marketValue != null && (
-						<DataRow label="Market Value" value={formatCurrency(calculation.marketValue)} />
+						<DataRow label={t.marketValue} value={formatCurrency(calculation.marketValue)} />
 					)}
 					{isOT && calculation.replacementValue != null && (
 						<DataRow
-							label="Replacement Value"
+							label={t.replacementValue}
 							value={formatCurrency(calculation.replacementValue)}
 						/>
 					)}
 					{calculation.baseVehicleValue != null && (
 						<DataRow
-							label="Base Vehicle Value"
+							label={t.baseVehicleValue}
 							value={formatCurrency(calculation.baseVehicleValue)}
 						/>
 					)}
 					{calculation.restorationValue != null && (
 						<DataRow
-							label="Restoration Value"
+							label={t.restorationValue}
 							value={formatCurrency(calculation.restorationValue)}
 						/>
 					)}
@@ -885,7 +982,7 @@ function CalculationSection({
 			{calculation.additionalCosts.length > 0 && (
 				<View style={{ marginTop: 8 }}>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
-						Additional Costs
+						{t.additionalCosts}
 					</Text>
 					{calculation.additionalCosts.map((ac, i) => (
 						<DataRow key={`ac-${i}`} label={ac.description} value={formatCurrency(ac.amount)} />
@@ -960,7 +1057,7 @@ function VisitsSection({
 	)
 }
 
-function InvoiceSection({ invoice }: { invoice: ReportData['invoice'] }) {
+function InvoiceSection({ invoice, t }: { invoice: ReportData['invoice']; t: PdfTranslations }) {
 	if (!invoice) return null
 
 	const sortedItems = [...invoice.lineItems].sort((a, b) => a.order - b.order)
@@ -976,22 +1073,22 @@ function InvoiceSection({ invoice }: { invoice: ReportData['invoice'] }) {
 
 	return (
 		<View style={styles.section}>
-			<Text style={styles.sectionTitle}>Invoice</Text>
+			<Text style={styles.sectionTitle}>{t.invoice}</Text>
 
 			{invoice.invoiceNumber && (
-				<DataRow label="Invoice Number" value={displayValue(invoice.invoiceNumber)} />
+				<DataRow label={t.invoiceNumber} value={displayValue(invoice.invoiceNumber)} />
 			)}
-			{invoice.date && <DataRow label="Invoice Date" value={formatDate(invoice.date)} />}
+			{invoice.date && <DataRow label={t.invoiceDate} value={formatDate(invoice.date)} />}
 
 			{sortedItems.length > 0 && (
 				<View style={{ marginTop: 10 }}>
 					{/* Table Header */}
 					<View style={styles.tableHeader}>
 						<Text style={[styles.tableHeaderText, styles.colPos]}>#</Text>
-						<Text style={[styles.tableHeaderText, styles.colDescription]}>Description</Text>
-						<Text style={[styles.tableHeaderText, styles.colQuantity]}>Qty</Text>
-						<Text style={[styles.tableHeaderText, styles.colRate]}>Rate</Text>
-						<Text style={[styles.tableHeaderText, styles.colAmount]}>Amount</Text>
+						<Text style={[styles.tableHeaderText, styles.colDescription]}>{t.description}</Text>
+						<Text style={[styles.tableHeaderText, styles.colQuantity]}>{t.qty}</Text>
+						<Text style={[styles.tableHeaderText, styles.colRate]}>{t.rate}</Text>
+						<Text style={[styles.tableHeaderText, styles.colAmount]}>{t.amount}</Text>
 					</View>
 
 					{/* Table Rows */}
@@ -1017,15 +1114,17 @@ function InvoiceSection({ invoice }: { invoice: ReportData['invoice'] }) {
 					{/* Totals */}
 					<View style={styles.totalsContainer}>
 						<View style={styles.totalRow}>
-							<Text style={styles.totalLabel}>Net Total</Text>
+							<Text style={styles.totalLabel}>{t.netTotal}</Text>
 							<Text style={styles.totalValue}>{formatCurrency(netTotal)}</Text>
 						</View>
 						<View style={styles.totalRow}>
-							<Text style={styles.totalLabel}>VAT ({formatNumber(taxRate)}%)</Text>
+							<Text style={styles.totalLabel}>
+								{t.vat} ({formatNumber(taxRate)}%)
+							</Text>
 							<Text style={styles.totalValue}>{formatCurrency(taxAmount)}</Text>
 						</View>
 						<View style={styles.totalGrossRow}>
-							<Text style={styles.totalGrossLabel}>Gross Total</Text>
+							<Text style={styles.totalGrossLabel}>{t.grossTotal}</Text>
 							<Text style={styles.totalGrossValue}>{formatCurrency(grossTotal)}</Text>
 						</View>
 					</View>
@@ -1045,7 +1144,7 @@ const PHOTO_CATEGORIES: { key: string; label: string; matchTypes: string[] }[] =
 	{ key: 'document', label: 'Documents', matchTypes: ['document', 'vin', 'plate'] },
 ]
 
-function PhotoGallerySection({ photos }: { photos: ReportData['photos'] }) {
+function PhotoGallerySection({ photos, t }: { photos: ReportData['photos']; t: PdfTranslations }) {
 	if (photos.length === 0) return null
 
 	// Group photos by classification
@@ -1071,7 +1170,7 @@ function PhotoGallerySection({ photos }: { photos: ReportData['photos'] }) {
 
 	return (
 		<View style={styles.section} break>
-			<Text style={styles.sectionTitle}>Photo Documentation</Text>
+			<Text style={styles.sectionTitle}>{t.photoDocumentation}</Text>
 
 			{PHOTO_CATEGORIES.map((cat) => {
 				const catPhotos = categorized.get(cat.key)
@@ -1097,7 +1196,9 @@ function PhotoGallerySection({ photos }: { photos: ReportData['photos'] }) {
 
 			{uncategorized.length > 0 && (
 				<View wrap={false}>
-					<Text style={styles.photoCategoryTitle}>Other Photos ({uncategorized.length})</Text>
+					<Text style={styles.photoCategoryTitle}>
+						{t.otherPhotos} ({uncategorized.length})
+					</Text>
 					<View style={styles.photoGrid}>
 						{uncategorized.map((photo) => (
 							<View key={photo.id} style={styles.photoItem}>
@@ -1114,7 +1215,7 @@ function PhotoGallerySection({ photos }: { photos: ReportData['photos'] }) {
 	)
 }
 
-function FooterSection({ expert }: { expert: ReportData['expert'] }) {
+function FooterSection({ expert, t }: { expert: ReportData['expert']; t: PdfTranslations }) {
 	const expertName = expert ? [expert.firstName, expert.lastName].filter(Boolean).join(' ') : null
 	const companyName = expert?.companyName ?? null
 	const footerText = [expertName, companyName].filter(Boolean).join(' | ')
@@ -1132,7 +1233,7 @@ function FooterSection({ expert }: { expert: ReportData['expert'] }) {
 			<Text
 				style={styles.footerRight}
 				render={({ pageNumber, totalPages }) =>
-					`Page ${String(pageNumber)} of ${String(totalPages)}`
+					`${t.page} ${String(pageNumber)} ${t.of} ${String(totalPages)}`
 				}
 			/>
 		</View>
@@ -1141,7 +1242,15 @@ function FooterSection({ expert }: { expert: ReportData['expert'] }) {
 
 // ─── Main Document ────────────────────────────────────────────
 
-function ReportPdfDocument({ data }: { data: ReportData }) {
+function ReportPdfDocument({
+	data,
+	t,
+	locale = 'en',
+}: {
+	data: ReportData
+	t: PdfTranslations
+	locale?: string
+}) {
 	const includeValuation = data.exportConfig.includeVehicleValuation
 	const includeInvoice = data.exportConfig.includeInvoice
 
@@ -1149,25 +1258,30 @@ function ReportPdfDocument({ data }: { data: ReportData }) {
 		<Document
 			title={data.report.title}
 			author="Gut8erPRO"
-			subject="Vehicle Damage Assessment Report"
+			subject={t.vehicleDamageAssessment}
 			creator="Gut8erPRO"
 		>
 			<Page size="A4" style={styles.page}>
-				<HeaderSection data={data} />
-				<VehicleInfoSection vehicleInfo={data.vehicleInfo} />
+				<HeaderSection data={data} t={t} />
+				<VehicleInfoSection vehicleInfo={data.vehicleInfo} t={t} locale={locale} />
 				<AccidentInfoSection
 					accidentInfo={data.accidentInfo}
 					claimantInfo={data.claimantInfo}
 					opponentInfo={data.opponentInfo}
+					t={t}
 				/>
 				<VisitsSection visits={data.visits} expertOpinion={data.expertOpinion} />
-				<ConditionSection condition={data.condition} />
+				<ConditionSection condition={data.condition} t={t} locale={locale} />
 				{includeValuation && (
-					<CalculationSection calculation={data.calculation} reportType={data.report.reportType} />
+					<CalculationSection
+						calculation={data.calculation}
+						reportType={data.report.reportType}
+						t={t}
+					/>
 				)}
-				{includeInvoice && <InvoiceSection invoice={data.invoice} />}
-				<PhotoGallerySection photos={data.photos} />
-				<FooterSection expert={data.expert} />
+				{includeInvoice && <InvoiceSection invoice={data.invoice} t={t} />}
+				<PhotoGallerySection photos={data.photos} t={t} />
+				<FooterSection expert={data.expert} t={t} />
 			</Page>
 		</Document>
 	)

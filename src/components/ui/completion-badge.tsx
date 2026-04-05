@@ -1,3 +1,6 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 
 type CompletionBadgeProps = {
@@ -7,6 +10,7 @@ type CompletionBadgeProps = {
 }
 
 function CompletionBadge({ percentage, label, className }: CompletionBadgeProps) {
+	const t = useTranslations('common')
 	return (
 		<span
 			className={cn(
@@ -14,7 +18,7 @@ function CompletionBadge({ percentage, label, className }: CompletionBadgeProps)
 				className,
 			)}
 		>
-			{percentage}% {label || 'Complete'}
+			{percentage}% {label || t('complete')}
 		</span>
 	)
 }

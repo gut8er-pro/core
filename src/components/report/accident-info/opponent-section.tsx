@@ -1,17 +1,10 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import type { SectionProps } from './types'
-
-const salutationOptions = [
-	{ value: 'mr', label: 'Mr' },
-	{ value: 'mrs', label: 'Mrs' },
-	{ value: 'dr', label: 'Dr' },
-	{ value: 'prof', label: 'Prof' },
-	{ value: 'company', label: 'Company' },
-]
 
 function OpponentSection({
 	register,
@@ -19,12 +12,22 @@ function OpponentSection({
 	onFieldBlur,
 	className,
 }: SectionProps & { className?: string }) {
+	const t = useTranslations('report')
+
+	const salutationOptions = [
+		{ value: 'mr', label: t('accidentInfo.salutationOptions.mr') },
+		{ value: 'mrs', label: t('accidentInfo.salutationOptions.mrs') },
+		{ value: 'dr', label: t('accidentInfo.salutationOptions.dr') },
+		{ value: 'prof', label: t('accidentInfo.salutationOptions.prof') },
+		{ value: 'company', label: t('accidentInfo.company') },
+	]
+
 	return (
-		<CollapsibleSection title="Opponent in Accident" info className={className}>
+		<CollapsibleSection title={t('accidentInfo.opponent.title')} info className={className}>
 			<div className="flex flex-col gap-4">
 				<TextField
-					label="Company"
-					placeholder="Company name"
+					label={t('accidentInfo.company')}
+					placeholder={t('accidentInfo.companyPlaceholder')}
 					error={errors.opponentCompany?.message}
 					{...register('opponentCompany')}
 					onBlur={() => onFieldBlur?.('opponentCompany')}
@@ -33,9 +36,9 @@ function OpponentSection({
 				{/* Salutation / First Name / Last Name — 3 columns */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<SelectField
-						label="Salutation"
+						label={t('accidentInfo.salutation')}
 						options={salutationOptions}
-						placeholder="Select"
+						placeholder={t('accidentInfo.salutationPlaceholder')}
 						error={errors.opponentSalutation?.message}
 						onValueChange={(value) => {
 							const event = { target: { name: 'opponentSalutation', value } }
@@ -44,15 +47,15 @@ function OpponentSection({
 						}}
 					/>
 					<TextField
-						label="First Name"
-						placeholder="First name"
+						label={t('accidentInfo.firstName')}
+						placeholder={t('accidentInfo.firstName')}
 						error={errors.opponentFirstName?.message}
 						{...register('opponentFirstName')}
 						onBlur={() => onFieldBlur?.('opponentFirstName')}
 					/>
 					<TextField
-						label="Last Name"
-						placeholder="Last name"
+						label={t('accidentInfo.lastName')}
+						placeholder={t('accidentInfo.lastName')}
 						error={errors.opponentLastName?.message}
 						{...register('opponentLastName')}
 						onBlur={() => onFieldBlur?.('opponentLastName')}
@@ -62,21 +65,21 @@ function OpponentSection({
 				{/* Street / Postcode / Location — 3 columns */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<TextField
-						label="Street & house number or PO box"
+						label={t('accidentInfo.street')}
 						placeholder="Street address or p.o. box"
 						error={errors.opponentStreet?.message}
 						{...register('opponentStreet')}
 						onBlur={() => onFieldBlur?.('opponentStreet')}
 					/>
 					<TextField
-						label="Postcode"
+						label={t('accidentInfo.postcode')}
 						placeholder="eg 0565012"
 						error={errors.opponentPostcode?.message}
 						{...register('opponentPostcode')}
 						onBlur={() => onFieldBlur?.('opponentPostcode')}
 					/>
 					<TextField
-						label="Location"
+						label={t('accidentInfo.location')}
 						placeholder="Berlin"
 						error={errors.opponentLocation?.message}
 						{...register('opponentLocation')}
@@ -87,7 +90,7 @@ function OpponentSection({
 				{/* Email / BAN / Phone — 3 columns */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<TextField
-						label="Email"
+						label={t('accidentInfo.email')}
 						type="email"
 						placeholder="email@example.com"
 						error={errors.opponentEmail?.message}
@@ -95,14 +98,14 @@ function OpponentSection({
 						onBlur={() => onFieldBlur?.('opponentEmail')}
 					/>
 					<TextField
-						label="IBAN"
+						label={t('accidentInfo.iban')}
 						placeholder="123/456/78901"
 						error={errors.opponentIban?.message}
 						{...register('opponentIban')}
 						onBlur={() => onFieldBlur?.('opponentIban')}
 					/>
 					<TextField
-						label="Phone Number"
+						label={t('accidentInfo.opponent.phoneNumber')}
 						type="tel"
 						placeholder="+49523568410"
 						error={errors.opponentPhone?.message}
@@ -113,8 +116,8 @@ function OpponentSection({
 
 				{/* Insurance company */}
 				<TextField
-					label="Insurance company"
-					placeholder="Insurance company name"
+					label={t('accidentInfo.opponent.insuranceCompany')}
+					placeholder={t('accidentInfo.opponent.insuranceCompany')}
 					error={errors.opponentInsuranceCompany?.message}
 					{...register('opponentInsuranceCompany')}
 					onBlur={() => onFieldBlur?.('opponentInsuranceCompany')}
@@ -123,15 +126,15 @@ function OpponentSection({
 				{/* Insurance number / Claim number — 2 columns */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<TextField
-						label="Insurance number"
-						placeholder="Policy number"
+						label={t('accidentInfo.opponent.insuranceNumber')}
+						placeholder={t('accidentInfo.opponent.insuranceNumber')}
 						error={errors.opponentInsuranceNumber?.message}
 						{...register('opponentInsuranceNumber')}
 						onBlur={() => onFieldBlur?.('opponentInsuranceNumber')}
 					/>
 					<TextField
-						label="Claim number"
-						placeholder="Claim reference"
+						label={t('accidentInfo.opponent.claimNumber')}
+						placeholder={t('accidentInfo.opponent.claimNumber')}
 						error={errors.opponentClaimNumber?.message}
 						{...register('opponentClaimNumber')}
 						onBlur={() => onFieldBlur?.('opponentClaimNumber')}

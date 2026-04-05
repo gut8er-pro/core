@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useCallback } from 'react'
 import { useWatch } from 'react-hook-form'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
@@ -7,22 +8,6 @@ import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import { hpToKw, kwToHp } from '@/lib/utils/power-conversion'
 import type { VehicleSectionProps } from './types'
-
-const ENGINE_DESIGN_OPTIONS = [
-	{ value: 'Inline', label: 'Inline' },
-	{ value: 'V-Type', label: 'V-Type' },
-	{ value: 'Boxer', label: 'Boxer' },
-	{ value: 'Rotary', label: 'Rotary' },
-	{ value: 'Other', label: 'Other' },
-]
-
-const TRANSMISSION_OPTIONS = [
-	{ value: 'Manual (5-speed)', label: 'Manual (5-speed)' },
-	{ value: 'Manual (6-speed)', label: 'Manual (6-speed)' },
-	{ value: 'Automatic', label: 'Automatic' },
-	{ value: 'CVT', label: 'CVT' },
-	{ value: 'DCT', label: 'DCT' },
-]
 
 function SpecificationSection({
 	register,
@@ -32,8 +17,25 @@ function SpecificationSection({
 	setValue,
 	className,
 }: VehicleSectionProps & { className?: string }) {
+	const t = useTranslations('report')
 	const engineDesign = useWatch({ control, name: 'engineDesign' })
 	const transmission = useWatch({ control, name: 'transmission' })
+
+	const ENGINE_DESIGN_OPTIONS = [
+		{ value: 'Inline', label: t('vehicle.identification.engineDesignOptions.inline') },
+		{ value: 'V-Type', label: t('vehicle.identification.engineDesignOptions.vType') },
+		{ value: 'Boxer', label: t('vehicle.identification.engineDesignOptions.boxer') },
+		{ value: 'Rotary', label: t('vehicle.identification.engineDesignOptions.rotary') },
+		{ value: 'Other', label: 'Other' },
+	]
+
+	const TRANSMISSION_OPTIONS = [
+		{ value: 'Manual (5-speed)', label: t('vehicle.identification.transmissionOptions.manual5') },
+		{ value: 'Manual (6-speed)', label: t('vehicle.identification.transmissionOptions.manual6') },
+		{ value: 'Automatic', label: t('vehicle.identification.transmissionOptions.automatic') },
+		{ value: 'CVT', label: t('vehicle.identification.transmissionOptions.cvt') },
+		{ value: 'DCT', label: t('vehicle.identification.transmissionOptions.dct') },
+	]
 
 	const handleKwBlur = useCallback(() => {
 		const kwInput = document.querySelector<HTMLInputElement>('[name="powerKw"]')
@@ -64,12 +66,16 @@ function SpecificationSection({
 	}, [onFieldBlur, setValue])
 
 	return (
-		<CollapsibleSection title="Specification" info className={className}>
+		<CollapsibleSection
+			title={t('vehicle.identification.specification')}
+			info
+			className={className}
+		>
 			<div className="flex flex-col gap-4">
 				{/* Row 1: Power (kW) / Power (HP) / Engine Design */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 					<TextField
-						label="Power (kW)"
+						label={t('vehicle.identification.powerKw')}
 						type="number"
 						placeholder="e.g. 110 kW"
 						error={errors.powerKw?.message}
@@ -77,7 +83,7 @@ function SpecificationSection({
 						onBlur={handleKwBlur}
 					/>
 					<TextField
-						label="Power ( HP)"
+						label={t('vehicle.identification.powerHp')}
 						type="number"
 						placeholder="e.g. 150 HP"
 						error={errors.powerHp?.message}
@@ -85,7 +91,7 @@ function SpecificationSection({
 						onBlur={handleHpBlur}
 					/>
 					<SelectField
-						label="Engine Design"
+						label={t('vehicle.identification.engineDesign')}
 						options={ENGINE_DESIGN_OPTIONS}
 						placeholder="Select"
 						value={engineDesign || undefined}
@@ -100,7 +106,7 @@ function SpecificationSection({
 				{/* Row 2: Cylinder / Transmission / Engine displacement */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 					<TextField
-						label="Cylinder"
+						label={t('vehicle.identification.cylinder')}
 						type="number"
 						placeholder="e.g. 4"
 						error={errors.cylinders?.message}
@@ -108,7 +114,7 @@ function SpecificationSection({
 						onBlur={() => onFieldBlur?.('cylinders')}
 					/>
 					<SelectField
-						label="Transmission"
+						label={t('vehicle.identification.transmission')}
 						options={TRANSMISSION_OPTIONS}
 						placeholder="Select"
 						value={transmission || undefined}
@@ -119,7 +125,7 @@ function SpecificationSection({
 						error={errors.transmission?.message}
 					/>
 					<TextField
-						label="Engine displacement (ccm)"
+						label={t('vehicle.identification.displacement')}
 						type="number"
 						placeholder="e.g. 1968 ccm"
 						error={errors.displacement?.message}
@@ -131,22 +137,22 @@ function SpecificationSection({
 				{/* Row 3: First registration / Last registration / Source of technical data */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 					<TextField
-						label="First registration"
+						label={t('vehicle.identification.firstRegistration')}
 						type="date"
 						error={errors.firstRegistration?.message}
 						{...register('firstRegistration')}
 						onBlur={() => onFieldBlur?.('firstRegistration')}
 					/>
 					<TextField
-						label="Last registration"
+						label={t('vehicle.identification.lastRegistration')}
 						type="date"
 						error={errors.lastRegistration?.message}
 						{...register('lastRegistration')}
 						onBlur={() => onFieldBlur?.('lastRegistration')}
 					/>
 					<TextField
-						label="Source of technical data"
-						placeholder="KBA (Kraftfahrt-Bundesamt)"
+						label={t('vehicle.identification.technicalDataSource')}
+						placeholder={t('vehicle.identification.kba')}
 						error={errors.sourceOfTechnicalData?.message}
 						{...register('sourceOfTechnicalData')}
 						onBlur={() => onFieldBlur?.('sourceOfTechnicalData')}

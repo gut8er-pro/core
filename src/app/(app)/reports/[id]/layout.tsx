@@ -2,6 +2,7 @@
 
 import { ChevronLeft, FileText, ImageIcon, Lock, Send, Sparkles } from 'lucide-react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 import { ReportSidebar } from '@/components/layout/report-sidebar'
 import { Badge } from '@/components/ui/badge'
@@ -9,12 +10,14 @@ import { usePhotos } from '@/hooks/use-photos'
 import { useReport } from '@/hooks/use-reports'
 
 const REPORT_SECTIONS = [
-	{ key: 'gallery', label: 'Gallery', icon: ImageIcon },
-	{ key: 'details', label: 'Report Details', icon: FileText },
-	{ key: 'export', label: 'Export & Send', icon: Send },
-]
+	{ key: 'gallery', labelKey: 'sidebar.gallery', icon: ImageIcon },
+	{ key: 'details', labelKey: 'sidebar.reportDetails', icon: FileText },
+	{ key: 'export', labelKey: 'sidebar.exportAndSend', icon: Send },
+] as const
 
 function ReportLayout({ children }: { children: ReactNode }) {
+	const t = useTranslations('report')
+	const tc = useTranslations('common')
 	const params = useParams<{ id: string }>()
 	const pathname = usePathname()
 	const router = useRouter()
@@ -34,7 +37,10 @@ function ReportLayout({ children }: { children: ReactNode }) {
 	const showReportSidebar = !isGallery || hasPhotos
 
 	// Title: "Upload Images" only when gallery has no photos
-	const title = isGallery && !hasPhotos ? 'Upload Images' : (report?.title ?? 'Create New Report')
+	const title =
+		isGallery && !hasPhotos
+			? t('gallery.uploadPhotos')
+			: (report?.title ?? t('gallery.uploadPhotos'))
 
 	function handleSectionChange(key: string) {
 		router.push(`/reports/${params.id}/${key}`)
@@ -52,7 +58,7 @@ function ReportLayout({ children }: { children: ReactNode }) {
 					<div className="flex items-center justify-center rounded-[13.5px] bg-white p-1.5">
 						<ChevronLeft className="h-3.5 w-3.5" />
 					</div>
-					Go Back
+					{tc('back')}
 				</button>
 				<div className="flex flex-1 flex-wrap items-center gap-2">
 					<h1 className="text-h2 font-medium leading-none text-black md:text-[34px]">{title}</h1>
@@ -60,7 +66,7 @@ function ReportLayout({ children }: { children: ReactNode }) {
 					{report?.isLocked && (
 						<Badge variant="default">
 							<Lock className="mr-1 h-3 w-3" />
-							Locked
+							{t('export.lockReport')}
 						</Badge>
 					)}
 				</div>
@@ -75,8 +81,8 @@ function ReportLayout({ children }: { children: ReactNode }) {
 						}}
 					>
 						<Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
-						<span className="hidden sm:inline">Generate Report</span>
-						<span className="sm:hidden">Generate</span>
+						<span className="hidden sm:inline">{t('gallery.generateReport')}</span>
+						<span className="sm:hidden">{t('gallery.generateReport')}</span>
 					</button>
 				)}
 			</div>
@@ -84,8 +90,7 @@ function ReportLayout({ children }: { children: ReactNode }) {
 			{report?.isLocked && (
 				<div className="flex items-center gap-2 rounded-btn border border-warning bg-warning-light px-4 py-2.5 text-body-sm text-warning">
 					<Lock className="h-4 w-4 shrink-0" />
-					This report has been locked and is read-only. Unlock it from Export &amp; Send to make
-					changes.
+					{t('sidebar.lockedMessage')}
 				</div>
 			)}
 
@@ -93,7 +98,10 @@ function ReportLayout({ children }: { children: ReactNode }) {
 			{showReportSidebar ? (
 				<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
 					<ReportSidebar
-						sections={REPORT_SECTIONS}
+						sections={REPORT_SECTIONS.map((s) => ({
+							...s,
+							label: t(s.labelKey),
+						}))}
 						activeSection={activeSection}
 						onSectionChange={handleSectionChange}
 					/>

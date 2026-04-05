@@ -3,16 +3,17 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Controller, useForm } from 'react-hook-form'
 import { type SignupPersonalInput, signupPersonalSchema } from '@/lib/validations/auth'
 import { useSignupStore } from '@/stores/signup-store'
 
 const TITLE_OPTIONS = [
-	{ value: 'mr', label: 'Mr' },
-	{ value: 'mrs', label: 'Mrs' },
-	{ value: 'dr', label: 'Dr' },
-	{ value: 'prof', label: 'Prof' },
-	{ value: 'prof_dr', label: 'Prof. Dr.' },
+	{ value: 'mr', labelKey: 'mr' },
+	{ value: 'mrs', labelKey: 'mrs' },
+	{ value: 'dr', labelKey: 'dr' },
+	{ value: 'prof', labelKey: 'prof' },
+	{ value: 'prof_dr', labelKey: 'profDr' },
 ]
 
 const INPUT_CLS =
@@ -22,6 +23,10 @@ const FIELD_CLS = 'flex flex-col gap-3'
 
 function PersonalStep() {
 	const router = useRouter()
+	const t = useTranslations('auth.signup.personal')
+	const tSteps = useTranslations('auth.signup.steps.personal')
+	const tAccount = useTranslations('auth.signup.account')
+	const tCommon = useTranslations('common')
 	const { personal, setPersonal, completeStep, setCurrentStep } = useSignupStore()
 
 	const {
@@ -56,9 +61,9 @@ function PersonalStep() {
 		<div className="flex flex-col gap-8">
 			{/* Header */}
 			<div className="flex flex-col gap-3.5">
-				<h2 className="text-[44px] font-medium leading-none text-black">Personal details</h2>
+				<h2 className="text-[44px] font-medium leading-none text-black">{tSteps('title')}</h2>
 				<p className="text-[18px] leading-snug tracking-[0.18px] text-black/70">
-					Tell us a bit about yourself.
+					{tSteps('subtitle')}
 				</p>
 			</div>
 
@@ -68,7 +73,7 @@ function PersonalStep() {
 					<div className="grid grid-cols-3 gap-3.5">
 						{/* Title dropdown */}
 						<div className={FIELD_CLS}>
-							<label className={LABEL_CLS}>Title</label>
+							<label className={LABEL_CLS}>{t('title')}</label>
 							<div className="relative">
 								<Controller
 									name="title"
@@ -78,10 +83,10 @@ function PersonalStep() {
 											{...field}
 											className="h-[53px] w-full appearance-none rounded-[15px] border-[1.5px] border-[#e5e7eb] bg-white px-3.5 pr-10 text-[18px] text-black focus:border-primary focus:outline-none"
 										>
-											<option value="">Select</option>
+											<option value="">{t('titlePlaceholder')}</option>
 											{TITLE_OPTIONS.map((o) => (
 												<option key={o.value} value={o.value}>
-													{o.label}
+													{t(`titleOptions.${o.labelKey}`)}
 												</option>
 											))}
 										</select>
@@ -94,8 +99,12 @@ function PersonalStep() {
 
 						{/* First name */}
 						<div className={FIELD_CLS}>
-							<label className={LABEL_CLS}>First name</label>
-							<input {...register('firstName')} placeholder="Name" className={INPUT_CLS} />
+							<label className={LABEL_CLS}>{t('firstName')}</label>
+							<input
+								{...register('firstName')}
+								placeholder={t('firstNamePlaceholder')}
+								className={INPUT_CLS}
+							/>
 							{errors.firstName && (
 								<p className="text-[14px] text-error">{errors.firstName.message}</p>
 							)}
@@ -103,8 +112,8 @@ function PersonalStep() {
 
 						{/* Last name */}
 						<div className={FIELD_CLS}>
-							<label className={LABEL_CLS}>Last name</label>
-							<input {...register('lastName')} placeholder="Last name" className={INPUT_CLS} />
+							<label className={LABEL_CLS}>{t('lastName')}</label>
+							<input {...register('lastName')} placeholder={t('lastName')} className={INPUT_CLS} />
 							{errors.lastName && (
 								<p className="text-[14px] text-error">{errors.lastName.message}</p>
 							)}
@@ -113,11 +122,11 @@ function PersonalStep() {
 
 					{/* Phone */}
 					<div className={FIELD_CLS}>
-						<label className={LABEL_CLS}>Phone number</label>
+						<label className={LABEL_CLS}>{t('phoneNumber')}</label>
 						<input
 							{...register('phone')}
 							type="tel"
-							placeholder="+49 123 456789"
+							placeholder={t('phonePlaceholder')}
 							className={INPUT_CLS}
 						/>
 						{errors.phone && <p className="text-[14px] text-error">{errors.phone.message}</p>}
@@ -125,10 +134,10 @@ function PersonalStep() {
 
 					{/* Professional qualification */}
 					<div className={FIELD_CLS}>
-						<label className={LABEL_CLS}>Professional qualification</label>
+						<label className={LABEL_CLS}>{t('professionalQualification')}</label>
 						<input
 							{...register('professionalQualification')}
-							placeholder="e.g., Kfz-Sachverständiger, Dipl.-Ing."
+							placeholder={t('qualificationPlaceholder')}
 							className={INPUT_CLS}
 						/>
 					</div>
@@ -137,7 +146,7 @@ function PersonalStep() {
 				{/* Generic fallback — catches any field error not shown above */}
 				{Object.keys(errors).length > 0 && (
 					<div className="rounded-[15px] bg-error-light px-4 py-2.5 text-[14px] text-error">
-						Please fill in all required fields above.
+						{tAccount('fillRequiredFields')}
 					</div>
 				)}
 
@@ -148,14 +157,14 @@ function PersonalStep() {
 						onClick={handleBack}
 						className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] border border-[#e5e7eb] bg-white px-[30px] text-[18px] font-medium text-black transition-colors hover:bg-grey-25"
 					>
-						Back
+						{tCommon('back')}
 					</button>
 					<button
 						type="submit"
 						disabled={isSubmitting}
 						className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] bg-primary px-[30px] text-[18px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
 					>
-						{isSubmitting ? 'Saving...' : 'Continue'}
+						{isSubmitting ? tCommon('saving') : tCommon('continue')}
 					</button>
 				</div>
 			</form>

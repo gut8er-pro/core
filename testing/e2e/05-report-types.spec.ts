@@ -54,11 +54,9 @@ test.describe('Report Type Differences', () => {
 		await expect(page.locator('text=Results without repair')).not.toBeVisible()
 	})
 
-	test('OT: Customer tab label + Client heading', async ({ page }) => {
+	test('OT: Client Information tab label + heading', async ({ page }) => {
 		await page.goto(`/reports/${reportIds.OT}/details/accident-info`)
-		await expect(page.getByText('Customer')).toBeVisible()
-		await expect(page.getByText('Client Information')).toBeVisible()
-		await expect(page.getByText('Client').first()).toBeVisible()
+		await expect(page.getByText('Client Information').first()).toBeVisible({ timeout: 10000 })
 	})
 
 	test('OT: Only 2 checkboxes (no lawyer)', async ({ page }) => {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useParams, usePathname, useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { type ReactNode, useState } from 'react'
 import { TabBar } from '@/components/ui/tab-bar'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
@@ -8,6 +9,7 @@ import { useReport } from '@/hooks/use-reports'
 import { useTabCompletion } from '@/hooks/use-tab-completion'
 
 function DetailsLayout({ children }: { children: ReactNode }) {
+	const t = useTranslations('report')
 	const params = useParams<{ id: string }>()
 	const pathname = usePathname()
 	const router = useRouter()
@@ -18,8 +20,8 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 	const isOT = reportType === 'OT'
 	const isBEorOT = reportType === 'BE' || reportType === 'OT'
 
-	const firstTabLabel = isOT ? 'Customer' : 'Accident Info'
-	const calcTabLabel = isBEorOT ? 'Valuation' : 'Calculation'
+	const firstTabLabel = isOT ? t('accidentInfo.clientInformation') : t('accidentInfo.title')
+	const calcTabLabel = isBEorOT ? t('calculation.valuationTab') : t('calculation.title')
 
 	const completion = useTabCompletion(params.id, reportType ?? undefined)
 
@@ -34,13 +36,13 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 		},
 		{
 			key: 'vehicle',
-			label: 'Vehicle',
+			label: t('vehicle.title'),
 			isComplete: completion.vehicle.isComplete,
 			completion: completion.vehicle.isComplete ? undefined : fmt(completion.vehicle),
 		},
 		{
 			key: 'condition',
-			label: 'Condition',
+			label: t('condition.title'),
 			isComplete: completion.condition.isComplete,
 			completion: completion.condition.isComplete ? undefined : fmt(completion.condition),
 		},
@@ -52,13 +54,14 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 		},
 		{
 			key: 'invoice',
-			label: 'Invoice',
+			label: t('invoice.title'),
 			isComplete: completion.invoice.isComplete,
 			completion: completion.invoice.isComplete ? undefined : fmt(completion.invoice),
 		},
 	]
 
-	const activeTab = DETAIL_TABS.find((t) => pathname.endsWith(`/${t.key}`))?.key ?? 'accident-info'
+	const activeTab =
+		DETAIL_TABS.find((tab) => pathname.endsWith(`/${tab.key}`))?.key ?? 'accident-info'
 
 	const totalMissing =
 		completion.accidentInfo.total -
@@ -79,13 +82,13 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 			{/* Show missing information banner */}
 			<div className="flex items-center justify-between rounded-xl bg-white px-5 py-3.5">
 				<div className="flex flex-col gap-0.5">
-					<p className="text-body font-medium text-black">Show missing information</p>
+					<p className="text-body font-medium text-black">{t('details.showMissing')}</p>
 					<p className="text-body-sm text-grey-100">
 						{showMissing
-							? 'Highlighting empty fields'
+							? t('details.highlightingEmpty')
 							: totalMissing > 0
-								? `${totalMissing} sections need attention`
-								: 'All sections completed'}
+								? t('details.sectionsNeedAttention', { count: totalMissing })
+								: t('details.allCompleted')}
 					</p>
 				</div>
 				<ToggleSwitch label="" checked={showMissing} onCheckedChange={setShowMissing} />

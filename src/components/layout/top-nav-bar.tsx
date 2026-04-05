@@ -15,11 +15,13 @@ import {
 	User,
 } from 'lucide-react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { LanguageSwitcher } from '@/components/ui/language-switcher'
 import type { NotificationEventType } from '@/hooks/use-notifications'
 import { useNotifications } from '@/hooks/use-notifications'
 import { cn } from '@/lib/utils'
@@ -58,13 +60,13 @@ function getNotificationPath(eventType: NotificationEventType, reportId: string 
 type NavItem = {
 	path: string
 	icon: typeof Home
-	label: string
+	labelKey: string
 }
 
 const CENTER_NAV_ITEMS: NavItem[] = [
-	{ path: '/dashboard', icon: Home, label: 'Dashboard' },
-	{ path: '/statistics', icon: BarChart3, label: 'Statistics' },
-	{ path: '/settings', icon: Settings, label: 'Settings' },
+	{ path: '/dashboard', icon: Home, labelKey: 'dashboard' },
+	{ path: '/statistics', icon: BarChart3, labelKey: 'statistics' },
+	{ path: '/settings', icon: Settings, labelKey: 'settings' },
 ]
 
 type TopNavBarProps = {
@@ -86,6 +88,7 @@ function TopNavBar({
 	onLogout,
 	className,
 }: TopNavBarProps) {
+	const t = useTranslations('nav')
 	const { notifications, unreadCount, markAllRead, markRead } = useNotifications()
 	const recentNotifications = notifications.slice(0, 3)
 
@@ -102,7 +105,7 @@ function TopNavBar({
 					type="button"
 					className="cursor-pointer"
 					onClick={() => onNavigate?.('/dashboard')}
-					aria-label="Gut8erPRO home"
+					aria-label={t('gut8erproHome')}
 				>
 					<Image
 						src="/images/logo.svg"
@@ -123,7 +126,7 @@ function TopNavBar({
 						<CenterNavItem
 							key={item.path}
 							icon={item.icon}
-							label={item.label}
+							label={t(item.labelKey)}
 							isActive={isActive}
 							onClick={() => onNavigate?.(item.path)}
 						/>
@@ -139,7 +142,7 @@ function TopNavBar({
 						<button
 							type="button"
 							className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-btn bg-white text-grey-100 transition-colors hover:bg-grey-25 hover:text-black sm:h-12.5 sm:w-12.5"
-							aria-label="Notifications"
+							aria-label={t('notifications')}
 						>
 							<Bell className="h-5 w-5 sm:h-6 sm:w-6" />
 							{unreadCount > 0 && (
@@ -150,21 +153,21 @@ function TopNavBar({
 					<DropdownMenuContent align="end" className="w-[275px] p-0 overflow-hidden">
 						{/* Header */}
 						<div className="flex items-center justify-between border-b border-border px-3.5 py-3">
-							<span className="text-body font-medium text-black">Notifications</span>
+							<span className="text-body font-medium text-black">{t('notifications')}</span>
 							<button
 								type="button"
 								onClick={markAllRead}
 								disabled={unreadCount === 0}
 								className="text-body-sm font-medium text-primary hover:underline disabled:opacity-40 disabled:cursor-default"
 							>
-								Mark all as read
+								{t('markAllAsRead')}
 							</button>
 						</div>
 
 						{/* Notification items */}
 						{recentNotifications.length === 0 ? (
 							<div className="px-3.5 py-6 text-center text-body-sm text-black/45">
-								No notifications yet
+								{t('noNotificationsYet')}
 							</div>
 						) : (
 							recentNotifications.map((n) => {
@@ -210,7 +213,7 @@ function TopNavBar({
 								onClick={() => onNavigate?.('/notifications')}
 								className="text-body-sm font-medium text-primary hover:underline"
 							>
-								View all notifications
+								{t('viewAllNotifications')}
 							</button>
 						</div>
 					</DropdownMenuContent>
@@ -250,30 +253,35 @@ function TopNavBar({
 						{/* Profile */}
 						<ProfileMenuItem
 							icon={User}
-							label="Profile"
+							label={t('profile')}
 							onClick={() => onNavigate?.('/settings/profile')}
 						/>
 
 						{/* Settings */}
 						<ProfileMenuItem
 							icon={Settings}
-							label="Settings"
+							label={t('settings')}
 							onClick={() => onNavigate?.('/settings')}
 						/>
 
 						{/* Analytics */}
 						<ProfileMenuItem
 							icon={BarChart3}
-							label="Analytics"
+							label={t('analytics')}
 							onClick={() => onNavigate?.('/statistics')}
 						/>
 
 						{/* Help & Support */}
 						<ProfileMenuItem
 							icon={HelpCircle}
-							label="Help & Support"
+							label={t('helpAndSupport')}
 							onClick={() => onNavigate?.('/help')}
 						/>
+
+						{/* Language Switcher */}
+						<div className="border-t border-border px-3.5 py-3">
+							<LanguageSwitcher />
+						</div>
 
 						{/* Log Out */}
 						<button
@@ -282,7 +290,7 @@ function TopNavBar({
 							className="flex w-full items-center gap-2.5 border-t border-border px-3.5 py-3 text-body-sm font-medium text-error transition-colors hover:bg-grey-25"
 						>
 							<LogOut className="h-[17px] w-[17px]" />
-							Log Out
+							{t('logOut')}
 						</button>
 					</DropdownMenuContent>
 				</DropdownMenu>

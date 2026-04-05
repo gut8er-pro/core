@@ -1,6 +1,7 @@
 import { renderToBuffer } from '@react-pdf/renderer'
 import { prisma } from '@/lib/prisma'
 import { type ReportData, ReportPdfDocument } from './report-template'
+import { getPdfTranslations } from './translations'
 
 /**
  * Generates a PDF buffer for a report.
@@ -9,6 +10,7 @@ import { type ReportData, ReportPdfDocument } from './report-template'
 async function generateReportPdfBuffer(
 	reportId: string,
 	userId: string,
+	locale?: string,
 ): Promise<{ buffer: Buffer; filename: string } | { error: string }> {
 	const report = await prisma.report.findFirst({
 		where: { id: reportId, userId },
@@ -167,6 +169,15 @@ async function generateReportPdfBuffer(
 					previousDamageReported: report.condition.previousDamageReported,
 					existingDamageNotReported: report.condition.existingDamageNotReported,
 					subsequentDamage: report.condition.subsequentDamage,
+					damageMarkers: report.condition.damageMarkers.map((m) => ({
+						x: m.x,
+						y: m.y,
+						comment: m.comment,
+					})),
+					paintMarkers: report.condition.paintMarkers.map((m) => ({
+						position: m.position,
+						thickness: m.thickness,
+					})),
 					tireSets: report.condition.tireSets.map((ts) => ({
 						setNumber: ts.setNumber,
 						matchAndAlloy: ts.matchAndAlloy ? String(ts.matchAndAlloy) : null,
@@ -277,7 +288,9 @@ async function generateReportPdfBuffer(
 		},
 	}
 
-	const pdfBuffer = await renderToBuffer(ReportPdfDocument({ data: pdfData }))
+	const pdfLocale = locale ?? 'en'
+	const t = getPdfTranslations(pdfLocale)
+	const pdfBuffer = await renderToBuffer(ReportPdfDocument({ data: pdfData, t, locale: pdfLocale }))
 
 	const safeTitle = report.title
 		.replace(/[^a-zA-Z0-9_\-\s]/g, '')

@@ -19,7 +19,8 @@ async function GET(request: NextRequest, context: RouteContext) {
 	// If ?format=pdf, generate and return the PDF
 	if (format === 'pdf') {
 		try {
-			const result = await generateReportPdfBuffer(id, user.id)
+			const locale = searchParams.get('locale') ?? 'de'
+			const result = await generateReportPdfBuffer(id, user.id, locale)
 			if ('error' in result) {
 				return NextResponse.json({ error: result.error }, { status: 404 })
 			}

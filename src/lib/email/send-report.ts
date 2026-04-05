@@ -12,6 +12,10 @@ interface SendReportEmailParams {
 		filename: string
 		content: Buffer
 	}
+	pdfAttachments?: {
+		filename: string
+		content: Buffer
+	}[]
 }
 
 interface SendReportEmailResult {
@@ -98,6 +102,7 @@ async function sendReportEmail(params: SendReportEmailParams): Promise<SendRepor
 		senderName,
 		senderCompany,
 		pdfAttachment,
+		pdfAttachments,
 	} = params
 
 	const html = buildReportEmailHtml({
@@ -120,7 +125,12 @@ async function sendReportEmail(params: SendReportEmailParams): Promise<SendRepor
 			html,
 		}
 
-		if (pdfAttachment) {
+		if (pdfAttachments && pdfAttachments.length > 0) {
+			emailPayload.attachments = pdfAttachments.map((a) => ({
+				filename: a.filename,
+				content: a.content,
+			}))
+		} else if (pdfAttachment) {
 			emailPayload.attachments = [
 				{
 					filename: pdfAttachment.filename,

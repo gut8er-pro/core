@@ -3,6 +3,7 @@
 import { Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
 import { login, signInWithApple, signInWithGoogle } from '@/lib/auth/actions'
 
@@ -16,6 +17,8 @@ function LoginPage() {
 	)
 
 	const [showPassword, setShowPassword] = useState(false)
+	const t = useTranslations('auth.login')
+	const tCommon = useTranslations('common')
 
 	return (
 		<div className="flex min-h-screen bg-white">
@@ -31,15 +34,13 @@ function LoginPage() {
 
 					{/* Title */}
 					<h1 className="z-10 mt-12 text-[36px] font-medium leading-[46px] text-black">
-						Professional Vehicle
-						<br />
-						Assessment Web App
+						{t('tagline')}
 					</h1>
 
 					{/* Stat badges */}
 					<div className="z-10 mt-8 flex gap-3.5">
-						<StatBadge label="Report time" value="-35%" />
-						<StatBadge label="Less manual work" value="-40%" />
+						<StatBadge label={t('reportTime')} value={t('reportTimeValue')} />
+						<StatBadge label={t('lessManualWork')} value={t('lessManualWorkValue')} />
 					</div>
 
 					{/* Car illustration — anchored to bottom */}
@@ -67,10 +68,8 @@ function LoginPage() {
 					</div>
 
 					{/* Header */}
-					<h2 className="text-[36px] font-medium leading-[46px] text-black">Welcome back</h2>
-					<p className="mt-3.5 text-[16px] leading-6 text-grey-100">
-						Please log in to your account to continue.
-					</p>
+					<h2 className="text-[36px] font-medium leading-[46px] text-black">{t('welcomeBack')}</h2>
+					<p className="mt-3.5 text-[16px] leading-6 text-grey-100">{t('subtitle')}</p>
 
 					{error && (
 						<div className="mt-4 rounded-[15px] bg-error-light px-4 py-2.5 text-[16px] text-error">
@@ -82,11 +81,11 @@ function LoginPage() {
 					<form action={formAction} className="mt-10 flex flex-col gap-6">
 						{/* Email */}
 						<div className="flex flex-col gap-3">
-							<label className="text-[18px] font-medium text-black">Email address</label>
+							<label className="text-[18px] font-medium text-black">{t('emailAddress')}</label>
 							<input
 								name="email"
 								type="email"
-								placeholder="Enter your email"
+								placeholder={t('enterYourEmail')}
 								required
 								autoComplete="email"
 								className="h-[58px] w-full rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-3.5 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
@@ -96,19 +95,19 @@ function LoginPage() {
 						{/* Password */}
 						<div className="flex flex-col gap-3">
 							<div className="flex items-center justify-between">
-								<label className="text-[18px] font-medium text-black">Password</label>
+								<label className="text-[18px] font-medium text-black">{t('password')}</label>
 								<Link
 									href="/forgot-password"
 									className="text-[16px] font-medium text-primary hover:text-primary-hover"
 								>
-									Forgot password?
+									{t('forgotPassword')}
 								</Link>
 							</div>
 							<div className="relative">
 								<input
 									name="password"
 									type={showPassword ? 'text' : 'password'}
-									placeholder="Enter your password"
+									placeholder={t('enterYourPassword')}
 									required
 									autoComplete="current-password"
 									className="h-[58px] w-full rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-3.5 pr-12 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
@@ -118,7 +117,7 @@ function LoginPage() {
 									tabIndex={-1}
 									className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer text-grey-100 hover:text-black"
 									onClick={() => setShowPassword((prev) => !prev)}
-									aria-label={showPassword ? 'Hide password' : 'Show password'}
+									aria-label={showPassword ? tCommon('hidePassword') : tCommon('showPassword')}
 								>
 									{showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
 								</button>
@@ -131,25 +130,25 @@ function LoginPage() {
 							disabled={isPending}
 							className="flex h-[58px] w-full cursor-pointer items-center justify-center rounded-[15px] bg-primary text-[18px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
 						>
-							{isPending ? 'Logging in...' : 'Log in'}
+							{isPending ? t('loggingIn') : t('logIn')}
 						</button>
 					</form>
 
 					{/* Sign up link */}
 					<p className="mt-6 text-center text-[16px] text-black">
-						Don&apos;t have an account?{' '}
+						{t('dontHaveAccount')}{' '}
 						<Link
 							href="/signup/account"
 							className="font-medium text-primary underline hover:text-primary-hover"
 						>
-							Sign Up
+							{t('signUp')}
 						</Link>
 					</p>
 
 					{/* Or divider */}
 					<div className="my-5 flex items-center gap-3">
 						<div className="h-px flex-1 bg-[#e5e7eb]" />
-						<span className="text-[16px] text-grey-100">Or</span>
+						<span className="text-[16px] text-grey-100">{tCommon('or')}</span>
 						<div className="h-px flex-1 bg-[#e5e7eb]" />
 					</div>
 
@@ -161,9 +160,7 @@ function LoginPage() {
 								className="flex h-[53px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-5 text-[16px] transition-colors hover:bg-grey-25"
 							>
 								<Image src="/images/icon-google.svg" alt="" width={24} height={24} />
-								<span className="text-black">
-									Login with <span className="font-medium">Google</span>
-								</span>
+								<span className="text-black">{t('loginWithGoogle')}</span>
 							</button>
 						</form>
 						<form action={signInWithApple} className="flex-1">
@@ -172,9 +169,7 @@ function LoginPage() {
 								className="flex h-[53px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-5 text-[16px] transition-colors hover:bg-grey-25"
 							>
 								<Image src="/images/icon-apple.svg" alt="" width={24} height={24} />
-								<span className="text-black">
-									Login with <span className="font-medium">Apple</span>
-								</span>
+								<span className="text-black">{t('loginWithApple')}</span>
 							</button>
 						</form>
 					</div>

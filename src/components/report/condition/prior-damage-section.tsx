@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
@@ -15,10 +16,11 @@ function PriorDamageSection({
 	className,
 }: Omit<ConditionSectionProps, 'control'> & { className?: string }) {
 	const [activeTab, setActiveTab] = useState<PriorDamageTab>('damage-notes')
+	const t = useTranslations('report.condition')
 
 	return (
 		<CollapsibleSection
-			title="Prior and Existing Damage"
+			title={t('priorDamage.title')}
 			info
 			defaultOpen={false}
 			className={className}
@@ -36,7 +38,7 @@ function PriorDamageSection({
 								: 'bg-transparent text-grey-100 hover:bg-grey-25',
 						)}
 					>
-						Damage Notes
+						{t('priorDamage.damageNotes')}
 					</button>
 					<button
 						type="button"
@@ -48,7 +50,7 @@ function PriorDamageSection({
 								: 'bg-transparent text-grey-100 hover:bg-grey-25',
 						)}
 					>
-						Damage Description
+						{t('priorDamage.damageDescription')}
 					</button>
 				</div>
 
@@ -58,15 +60,15 @@ function PriorDamageSection({
 						{/* Previous damage (repaired) / Existing damage (not repaired) */}
 						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 							<TextField
-								label="Previous damage (repaired)"
-								placeholder="Add repaired damage"
+								label={t('priorDamage.previousDamage')}
+								placeholder={t('priorDamage.addRepairedDamage')}
 								error={errors.previousDamageReported?.message}
 								{...register('previousDamageReported')}
 								onBlur={() => onFieldBlur?.('previousDamageReported')}
 							/>
 							<TextField
-								label="Existing damage (not repaired)"
-								placeholder="Current car age"
+								label={t('priorDamage.existingDamage')}
+								placeholder={t('priorDamage.currentCarAge')}
 								error={errors.existingDamageNotReported?.message}
 								{...register('existingDamageNotReported')}
 								onBlur={() => onFieldBlur?.('existingDamageNotReported')}
@@ -75,8 +77,8 @@ function PriorDamageSection({
 
 						{/* Subsequent damage */}
 						<TextField
-							label="Subsequent damage (occurred between accident and inspection)"
-							placeholder="Subsequent damage"
+							label={t('priorDamage.subsequentDamage')}
+							placeholder={t('priorDamage.subsequentDamagePlaceholder')}
 							error={errors.subsequentDamage?.message}
 							{...register('subsequentDamage')}
 							onBlur={() => onFieldBlur?.('subsequentDamage')}
@@ -88,7 +90,7 @@ function PriorDamageSection({
 					<div className="flex flex-col gap-4">
 						<textarea
 							className="min-h-30 w-full rounded-md border border-border bg-white px-4 py-3 text-body-sm text-black placeholder:text-placeholder focus:border-border-focus focus:outline-none"
-							placeholder="Describe damage in detail..."
+							placeholder={t('priorDamage.describeDamage')}
 						/>
 					</div>
 				)}

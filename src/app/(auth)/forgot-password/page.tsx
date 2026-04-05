@@ -2,10 +2,13 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
 import { requestPasswordReset } from '@/lib/auth/actions'
 
 function ForgotPasswordPage() {
+	const t = useTranslations('auth.forgotPassword')
+	const tLogin = useTranslations('auth.login')
 	const [sent, setSent] = useState(false)
 	const [error, formAction, isPending] = useActionState(
 		async (_prev: string | null, formData: FormData) => {
@@ -28,9 +31,7 @@ function ForgotPasswordPage() {
 						</Link>
 					</div>
 					<h1 className="z-10 mt-12 text-[36px] font-medium leading-[46px] text-black">
-						Professional Vehicle
-						<br />
-						Assessment Web App
+						{tLogin('tagline')}
 					</h1>
 					<div className="absolute bottom-0 left-0 right-0">
 						<Image
@@ -58,37 +59,30 @@ function ForgotPasswordPage() {
 					{sent ? (
 						<>
 							<h2 className="text-[36px] font-medium leading-[46px] text-black">
-								Check your email
+								{t('checkYourEmail')}
 							</h2>
-							<p className="mt-3.5 text-[16px] leading-6 text-grey-100">
-								We sent a password reset link to your email address. Click the link to set a new
-								password.
-							</p>
-							<p className="mt-2 text-[14px] text-grey-100">
-								Didn&apos;t receive the email? Check your spam folder or try again.
-							</p>
+							<p className="mt-3.5 text-[16px] leading-6 text-grey-100">{t('emailSentMessage')}</p>
+							<p className="mt-2 text-[14px] text-grey-100">{t('didntReceiveEmail')}</p>
 
 							<button
 								type="button"
 								onClick={() => setSent(false)}
 								className="mt-8 flex h-[58px] w-full cursor-pointer items-center justify-center rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white text-[18px] font-medium text-black transition-colors hover:bg-grey-25"
 							>
-								Try again
+								{t('tryAgain')}
 							</button>
 
 							<Link
 								href="/login"
 								className="mt-4 block text-center text-[16px] font-medium text-primary hover:text-primary-hover"
 							>
-								Back to login
+								{t('backToLogin')}
 							</Link>
 						</>
 					) : (
 						<>
-							<h2 className="text-[36px] font-medium leading-[46px] text-black">Reset password</h2>
-							<p className="mt-3.5 text-[16px] leading-6 text-grey-100">
-								Enter your email address and we&apos;ll send you a link to reset your password.
-							</p>
+							<h2 className="text-[36px] font-medium leading-[46px] text-black">{t('title')}</h2>
+							<p className="mt-3.5 text-[16px] leading-6 text-grey-100">{t('subtitle')}</p>
 
 							{error && (
 								<div className="mt-4 rounded-[15px] bg-error-light px-4 py-2.5 text-[16px] text-error">
@@ -98,11 +92,13 @@ function ForgotPasswordPage() {
 
 							<form action={formAction} className="mt-10 flex flex-col gap-6">
 								<div className="flex flex-col gap-3">
-									<label className="text-[18px] font-medium text-black">Email address</label>
+									<label className="text-[18px] font-medium text-black">
+										{tLogin('emailAddress')}
+									</label>
 									<input
 										name="email"
 										type="email"
-										placeholder="Enter your email"
+										placeholder={tLogin('enterYourEmail')}
 										required
 										autoComplete="email"
 										className="h-[58px] w-full rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-3.5 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
@@ -114,7 +110,7 @@ function ForgotPasswordPage() {
 									disabled={isPending}
 									className="flex h-[58px] w-full cursor-pointer items-center justify-center rounded-[15px] bg-primary text-[18px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
 								>
-									{isPending ? 'Sending...' : 'Send reset link'}
+									{isPending ? t('sending') : t('sendResetLink')}
 								</button>
 							</form>
 
@@ -122,7 +118,7 @@ function ForgotPasswordPage() {
 								href="/login"
 								className="mt-6 block text-center text-[16px] font-medium text-primary hover:text-primary-hover"
 							>
-								Back to login
+								{t('backToLogin')}
 							</Link>
 						</>
 					)}

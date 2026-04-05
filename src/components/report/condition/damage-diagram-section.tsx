@@ -1,6 +1,7 @@
 'use client'
 
 import { Trash2, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
@@ -36,6 +37,8 @@ function DamageDiagramSection({
 	onDeletePaintMarker,
 	className,
 }: DamageDiagramSectionProps) {
+	const t = useTranslations('report')
+	const _tc = useTranslations('common')
 	const [activeTab, setActiveTab] = useState<DiagramTab>('damages')
 	const [editingMarkerId, setEditingMarkerId] = useState<string | null>(null)
 	const [manualSetup, setManualSetup] = useState(true)
@@ -78,7 +81,7 @@ function DamageDiagramSection({
 
 	return (
 		<CollapsibleSection
-			title="Visual Accident Details"
+			title={t('condition.visualAccidentDetails')}
 			info
 			defaultOpen={false}
 			className={className}
@@ -94,7 +97,7 @@ function DamageDiagramSection({
 							activeTab === 'damages' ? 'bg-black text-white' : 'bg-transparent text-[#919191]',
 						)}
 					>
-						Damage
+						{t('condition.damage')}
 					</button>
 					<button
 						type="button"
@@ -104,13 +107,17 @@ function DamageDiagramSection({
 							activeTab === 'paint' ? 'bg-black text-white' : 'bg-transparent text-[#919191]',
 						)}
 					>
-						Paint
+						{t('condition.paintTab')}
 					</button>
 				</div>
 
 				{/* Manual Setup toggle */}
 				<ToggleSwitch
-					label={activeTab === 'damages' ? 'Damage Manual Setup' : 'Paint Manual Setup'}
+					label={
+						activeTab === 'damages'
+							? t('condition.damageManualSetup')
+							: t('condition.paintManualSetup')
+					}
 					checked={manualSetup}
 					onCheckedChange={setManualSetup}
 				/>
@@ -146,7 +153,7 @@ function DamageDiagramSection({
 							/* Clicking on the diagram is the main way to add markers */
 						}}
 					>
-						Add Marker
+						{t('condition.addMarker')}
 					</Button>
 				</div>
 			</div>
@@ -268,6 +275,8 @@ type MarkerPopoverProps = {
 }
 
 function MarkerPopover({ marker, onUpdate, onDelete, onClose }: MarkerPopoverProps) {
+	const t = useTranslations('report')
+	const tc = useTranslations('common')
 	const inputRef = useRef<HTMLInputElement>(null)
 
 	useEffect(() => {
@@ -286,7 +295,7 @@ function MarkerPopover({ marker, onUpdate, onDelete, onClose }: MarkerPopoverPro
 			style={{ left, top: topStyle, bottom: bottomStyle }}
 		>
 			<div className="mb-2 flex items-center justify-between">
-				<span className="text-caption font-medium text-grey-100">Damage comment</span>
+				<span className="text-caption font-medium text-grey-100">{t('condition.damage')}</span>
 				<button
 					type="button"
 					onClick={onClose}
@@ -299,7 +308,7 @@ function MarkerPopover({ marker, onUpdate, onDelete, onClose }: MarkerPopoverPro
 				ref={inputRef}
 				type="text"
 				className="mb-2 w-full rounded-md border border-border bg-white px-3 py-2 text-body-sm text-black placeholder:text-placeholder outline-none focus:border-border-focus"
-				placeholder="Add comment..."
+				placeholder={t('gallery.addComment')}
 				defaultValue={marker.comment ?? ''}
 				onKeyDown={(e) => {
 					if (e.key === 'Enter') onUpdate(e.currentTarget.value)
@@ -312,14 +321,14 @@ function MarkerPopover({ marker, onUpdate, onDelete, onClose }: MarkerPopoverPro
 					onClick={onDelete}
 					className="cursor-pointer text-caption text-error hover:underline"
 				>
-					Delete marker
+					{t('gallery.deleteMarker')}
 				</button>
 				<button
 					type="button"
 					onClick={() => onUpdate(inputRef.current?.value ?? '')}
 					className="cursor-pointer rounded-md bg-primary px-3 py-1 text-caption font-medium text-white hover:bg-primary-hover"
 				>
-					Save
+					{tc('save')}
 				</button>
 			</div>
 		</div>

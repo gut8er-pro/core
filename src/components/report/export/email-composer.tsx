@@ -1,6 +1,7 @@
 'use client'
 
 import { FileText, User, Users, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useState } from 'react'
 import type { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form'
 import { RichTextEditor } from '@/components/ui/rich-text-editor.dynamic'
@@ -23,6 +24,7 @@ type EmailComposerProps = {
 }
 
 function EmailComposer({ register, setValue, errors, className }: EmailComposerProps) {
+	const t = useTranslations('report.export')
 	const [recipients, setRecipients] = useState<Recipient[]>([])
 	const [recipientInput, setRecipientInput] = useState('')
 
@@ -55,12 +57,12 @@ function EmailComposer({ register, setValue, errors, className }: EmailComposerP
 		<div
 			className={cn('flex flex-col gap-6 rounded-xl border border-border bg-white p-6', className)}
 		>
-			<h3 className="text-h4 font-semibold text-black">Email</h3>
+			<h3 className="text-h4 font-semibold text-black">{t('email')}</h3>
 
 			{/* Recipient row with icon buttons */}
 			<div className="flex flex-col gap-3">
 				<div className="flex items-center justify-between">
-					<span className="text-body-sm font-medium text-black">Recipient</span>
+					<span className="text-body-sm font-medium text-black">{t('recipient')}</span>
 					<div className="flex items-center gap-2">
 						<button
 							type="button"
@@ -68,21 +70,21 @@ function EmailComposer({ register, setValue, errors, className }: EmailComposerP
 								'flex h-10 w-10 items-center justify-center rounded-lg border transition-colors',
 								'border-primary bg-primary text-white',
 							)}
-							aria-label="Individual recipient"
+							aria-label={t('individualRecipient')}
 						>
 							<User className="h-4 w-4" />
 						</button>
 						<button
 							type="button"
 							className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label="Group recipient"
+							aria-label={t('groupRecipient')}
 						>
 							<Users className="h-4 w-4" />
 						</button>
 						<button
 							type="button"
 							className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label="Document recipient"
+							aria-label={t('documentRecipient')}
 						>
 							<FileText className="h-4 w-4" />
 						</button>
@@ -104,7 +106,7 @@ function EmailComposer({ register, setValue, errors, className }: EmailComposerP
 								type="button"
 								onClick={() => removeRecipient(r.email)}
 								className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-full text-grey-100 hover:bg-grey-50 hover:text-black"
-								aria-label={`Remove ${r.email}`}
+								aria-label={t('removeEmail', { email: r.email })}
 							>
 								<X className="h-3 w-3" />
 							</button>
@@ -113,7 +115,7 @@ function EmailComposer({ register, setValue, errors, className }: EmailComposerP
 					<input
 						type="email"
 						className="min-w-32 flex-1 border-none bg-transparent text-body-sm text-black placeholder:text-placeholder outline-none"
-						placeholder={recipients.length === 0 ? 'Add recipient email...' : ''}
+						placeholder={recipients.length === 0 ? t('addRecipientPlaceholder') : ''}
 						value={recipientInput}
 						onChange={(e) => setRecipientInput(e.target.value)}
 						onKeyDown={(e) => {
@@ -138,15 +140,13 @@ function EmailComposer({ register, setValue, errors, className }: EmailComposerP
 
 				{/* Empty state hint */}
 				{recipients.length === 0 && !recipientInput && !errors.recipientEmail && (
-					<p className="text-caption text-grey-100">
-						Type an email address and press Enter to add a recipient
-					</p>
+					<p className="text-caption text-grey-100">{t('recipientPlaceholder')}</p>
 				)}
 			</div>
 
 			{/* Subject */}
 			<TextField
-				label="Subject"
+				label={t('subject')}
 				placeholder="DD/MM/YYYY"
 				error={errors.emailSubject?.message}
 				{...register('emailSubject')}
@@ -157,7 +157,7 @@ function EmailComposer({ register, setValue, errors, className }: EmailComposerP
 				<RichTextEditor
 					value=""
 					onChange={() => {}}
-					placeholder="Write your email message..."
+					placeholder={t('messagePlaceholder')}
 					className="min-h-64"
 				/>
 				{errors.emailBody && (

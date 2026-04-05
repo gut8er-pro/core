@@ -1,6 +1,7 @@
 'use client'
 
 import { Plus } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useCallback } from 'react'
 import type { Photo } from '@/hooks/use-photos'
 import { cn } from '@/lib/utils'
@@ -14,6 +15,7 @@ type FilmstripProps = {
 }
 
 function Filmstrip({ photos, selectedId, onSelect, onAdd, className }: FilmstripProps) {
+	const t = useTranslations('report')
 	const handleSelect = useCallback(
 		(photoId: string) => {
 			onSelect?.(photoId)
@@ -29,7 +31,7 @@ function Filmstrip({ photos, selectedId, onSelect, onAdd, className }: Filmstrip
 		<div
 			className={cn('flex gap-3.5 overflow-x-auto scroll-smooth', className)}
 			role="listbox"
-			aria-label="Photo filmstrip"
+			aria-label={t('gallery.photoFilmstrip')}
 		>
 			{photos.map((photo) => {
 				const isSelected = selectedId === photo.id
@@ -61,7 +63,7 @@ function Filmstrip({ photos, selectedId, onSelect, onAdd, className }: Filmstrip
 					type="button"
 					onClick={onAdd}
 					className="flex h-[60px] w-[60px] shrink-0 cursor-pointer items-center justify-center rounded-xl bg-border-card transition-colors hover:bg-grey-50"
-					aria-label="Add more photos"
+					aria-label={t('gallery.addMorePhotos')}
 				>
 					<Plus className="h-6 w-6 text-grey-100" />
 				</button>

@@ -1,24 +1,13 @@
 'use client'
 
 import { X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 
-const ORIGINALITY_OPTIONS = [
-	{ value: 'original', label: 'Original' },
-	{ value: 'partially_original', label: 'Partially Original' },
-	{ value: 'restored', label: 'Restored' },
-	{ value: 'modified', label: 'Modified' },
-]
-
-const MARKET_REPUTATION_OPTIONS = [
-	{ value: 'excellent', label: 'Excellent' },
-	{ value: 'good', label: 'Good' },
-	{ value: 'average', label: 'Average' },
-	{ value: 'below_average', label: 'Below Average' },
-]
+// Options moved inside component for translation access
 
 type TagInputProps = {
 	label: string
@@ -77,6 +66,28 @@ type ValueIncreasingFeaturesSectionProps = {
 }
 
 function ValueIncreasingFeaturesSection({ className }: ValueIncreasingFeaturesSectionProps) {
+	const t = useTranslations('report.condition')
+
+	const ORIGINALITY_OPTIONS = [
+		{ value: 'original', label: t('valueIncreasingFeatures.originalityOptions.original') },
+		{
+			value: 'partially_original',
+			label: t('valueIncreasingFeatures.originalityOptions.partiallyOriginal'),
+		},
+		{ value: 'restored', label: t('valueIncreasingFeatures.originalityOptions.restored') },
+		{ value: 'modified', label: t('valueIncreasingFeatures.originalityOptions.modified') },
+	]
+
+	const MARKET_REPUTATION_OPTIONS = [
+		{ value: 'excellent', label: t('valueIncreasingFeatures.marketReputationOptions.excellent') },
+		{ value: 'good', label: t('valueIncreasingFeatures.marketReputationOptions.good') },
+		{ value: 'average', label: t('valueIncreasingFeatures.marketReputationOptions.average') },
+		{
+			value: 'below_average',
+			label: t('valueIncreasingFeatures.marketReputationOptions.belowAverage'),
+		},
+	]
+
 	const [_originality, setOriginality] = useState('')
 	const [rareEquipment, setRareEquipment] = useState<string[]>([])
 	const [condition, setCondition] = useState<string[]>([])
@@ -88,72 +99,72 @@ function ValueIncreasingFeaturesSection({ className }: ValueIncreasingFeaturesSe
 	const [_marketReputation, setMarketReputation] = useState('')
 
 	return (
-		<CollapsibleSection title="Value Increasing Features" info className={className}>
+		<CollapsibleSection title={t('valueIncreasingFeatures.title')} info className={className}>
 			<div className="flex flex-col gap-6">
 				<SelectField
-					label="Originality"
+					label={t('valueIncreasingFeatures.originality')}
 					options={ORIGINALITY_OPTIONS}
 					placeholder="Select"
 					onValueChange={setOriginality}
 				/>
 
 				<TagInput
-					label="Rare equipment"
+					label={t('valueIncreasingFeatures.rareEquipment')}
 					tags={rareEquipment}
 					onAdd={(tag) => setRareEquipment((prev) => [...prev, tag])}
 					onRemove={(i) => setRareEquipment((prev) => prev.filter((_, j) => j !== i))}
-					placeholder="Add rare equipment"
+					placeholder={t('valueIncreasingFeatures.addRareEquipment')}
 				/>
 
 				<TagInput
-					label="Condition"
+					label={t('valueIncreasingFeatures.condition')}
 					tags={condition}
 					onAdd={(tag) => setCondition((prev) => [...prev, tag])}
 					onRemove={(i) => setCondition((prev) => prev.filter((_, j) => j !== i))}
-					placeholder="Add condition note"
+					placeholder={t('valueIncreasingFeatures.addConditionNote')}
 				/>
 
 				<TagInput
-					label="Technical features"
+					label={t('valueIncreasingFeatures.technicalFeatures')}
 					tags={technicalFeatures}
 					onAdd={(tag) => setTechnicalFeatures((prev) => [...prev, tag])}
 					onRemove={(i) => setTechnicalFeatures((prev) => prev.filter((_, j) => j !== i))}
-					placeholder="Add technical feature"
+					placeholder={t('valueIncreasingFeatures.addTechnicalFeature')}
 				/>
 
 				<TagInput
-					label="Mileage"
+					label={t('valueIncreasingFeatures.mileage')}
 					tags={mileage}
 					onAdd={(tag) => setMileage((prev) => [...prev, tag])}
 					onRemove={(i) => setMileage((prev) => prev.filter((_, j) => j !== i))}
-					placeholder="Add mileage note"
+					placeholder={t('valueIncreasingFeatures.addMileageNote')}
 				/>
 
 				<TagInput
-					label="History & documentation"
+					label={t('valueIncreasingFeatures.historyDocumentation')}
 					tags={history}
 					onAdd={(tag) => setHistory((prev) => [...prev, tag])}
 					onRemove={(i) => setHistory((prev) => prev.filter((_, j) => j !== i))}
-					placeholder="Add history item"
+					placeholder={t('valueIncreasingFeatures.addHistoryItem')}
 				/>
 
 				<TagInput
-					label="Rarity & market demand"
+					label={t('valueIncreasingFeatures.rarityMarketDemand')}
 					tags={rarity}
 					onAdd={(tag) => setRarity((prev) => [...prev, tag])}
 					onRemove={(i) => setRarity((prev) => prev.filter((_, j) => j !== i))}
-					placeholder="Add rarity note"
+					placeholder={t('valueIncreasingFeatures.addRarityNote')}
 				/>
 
 				<TextField
-					label="Particulars/notes"
-					placeholder="Additional notes"
+					label={t('valueIncreasingFeatures.particularsNotes')}
+					placeholder={t('valueIncreasingFeatures.additionalNotes')}
 					value={particulars}
 					onChange={(e) => setParticulars(e.target.value)}
 				/>
 
 				<SelectField
-					label="Market Reputation"
+					label={t('valueIncreasingFeatures.marketReputation')}
 					options={MARKET_REPUTATION_OPTIONS}
 					placeholder="Select"
 					onValueChange={setMarketReputation}

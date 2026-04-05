@@ -1,6 +1,7 @@
 'use client'
 
 import { ArrowBigRight, Check, Circle, Crop, Paintbrush, Square, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Fragment, type ReactNode, useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -16,12 +17,12 @@ type AnnotationToolbarProps = {
 	className?: string
 }
 
-const TOOLS: { id: AnnotationTool; label: string; icon: ReactNode }[] = [
-	{ id: 'pen', label: 'Draw', icon: <Paintbrush className="h-5 w-5" /> },
-	{ id: 'crop', label: 'Crop', icon: <Crop className="h-5 w-5" /> },
-	{ id: 'circle', label: 'Circle', icon: <Circle className="h-5 w-5" /> },
-	{ id: 'rectangle', label: 'Rectangle', icon: <Square className="h-5 w-5" /> },
-	{ id: 'arrow', label: 'Arrow', icon: <ArrowBigRight className="h-5 w-5" /> },
+const TOOLS: { id: AnnotationTool; labelKey: string; icon: ReactNode }[] = [
+	{ id: 'pen', labelKey: 'draw', icon: <Paintbrush className="h-5 w-5" /> },
+	{ id: 'crop', labelKey: 'crop', icon: <Crop className="h-5 w-5" /> },
+	{ id: 'circle', labelKey: 'circle', icon: <Circle className="h-5 w-5" /> },
+	{ id: 'rectangle', labelKey: 'rectangle', icon: <Square className="h-5 w-5" /> },
+	{ id: 'arrow', labelKey: 'arrow', icon: <ArrowBigRight className="h-5 w-5" /> },
 ]
 
 const COLOR_PALETTE = [
@@ -54,6 +55,8 @@ function AnnotationToolbar({
 	onSave,
 	className,
 }: AnnotationToolbarProps) {
+	const t = useTranslations('report.annotation')
+	const tc = useTranslations('common')
 	const [showColorPicker, setShowColorPicker] = useState(false)
 	const pickerRef = useRef<HTMLDivElement>(null)
 
@@ -109,7 +112,7 @@ function AnnotationToolbar({
 						{index > 0 && <div className="mx-0.5 h-6 w-px bg-border" />}
 						<button
 							type="button"
-							aria-label={tool.label}
+							aria-label={t(tool.labelKey as 'draw')}
 							aria-pressed={activeTool === tool.id}
 							onClick={() => {
 								onToolChange(tool.id)
@@ -137,7 +140,7 @@ function AnnotationToolbar({
 				{/* Delete/clear */}
 				<button
 					type="button"
-					aria-label="Delete annotations"
+					aria-label={t('deleteAnnotations')}
 					onClick={onClear}
 					className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
 				>
@@ -150,12 +153,12 @@ function AnnotationToolbar({
 						<div className="mx-0.5 h-6 w-px bg-border" />
 						<button
 							type="button"
-							aria-label="Save annotations"
+							aria-label={t('saveAnnotations')}
 							onClick={onSave}
 							className="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-primary px-4 text-white transition-colors hover:bg-primary/90"
 						>
 							<Check className="h-4 w-4" />
-							<span className="text-body-sm font-medium">Save</span>
+							<span className="text-body-sm font-medium">{tc('save')}</span>
 						</button>
 					</>
 				)}

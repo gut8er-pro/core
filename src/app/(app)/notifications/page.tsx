@@ -3,6 +3,7 @@
 import { formatDistanceToNow } from 'date-fns'
 import { Bell, CheckCircle2, CreditCard, FileText, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { NotificationEventType } from '@/hooks/use-notifications'
@@ -66,6 +67,7 @@ const NOTIFICATION_ICON_MAP: Record<
 }
 
 function NotificationsPage() {
+	const t = useTranslations('notifications')
 	const router = useRouter()
 	const { notifications, unreadCount, markRead, markAllRead, isLoading, error } = useNotifications()
 
@@ -74,7 +76,7 @@ function NotificationsPage() {
 			<div className="mx-auto max-w-2xl">
 				<PageHeader unreadCount={0} onMarkAllRead={() => {}} />
 				<div className="mt-6 rounded-lg border border-error bg-error-light px-6 py-4 text-body-sm text-error">
-					Failed to load notifications. Please try again.
+					{t('failedToLoad')}
 				</div>
 			</div>
 		)
@@ -164,10 +166,11 @@ function PageHeader({
 	onMarkAllRead: () => void
 	isLoading?: boolean
 }) {
+	const t = useTranslations('notifications')
 	return (
 		<div className="flex items-center justify-between">
 			<div className="flex items-center gap-3">
-				<h1 className="text-h2 font-bold text-black">Notifications</h1>
+				<h1 className="text-h2 font-bold text-black">{t('title')}</h1>
 				{!isLoading && unreadCount > 0 && <Badge variant="info">{unreadCount}</Badge>}
 			</div>
 			{!isLoading && unreadCount > 0 && (
@@ -176,7 +179,7 @@ function PageHeader({
 					onClick={onMarkAllRead}
 					className="cursor-pointer text-body-sm font-medium text-primary hover:text-primary-hover"
 				>
-					Mark all as read
+					{t('markAllAsRead')}
 				</button>
 			)}
 		</div>
@@ -184,15 +187,14 @@ function PageHeader({
 }
 
 function EmptyState() {
+	const t = useTranslations('notifications')
 	return (
 		<div className="mt-6 flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-white py-16">
 			<div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-grey-25">
 				<Bell className="h-8 w-8 text-grey-50" />
 			</div>
-			<p className="text-body-sm font-medium text-grey-100">No notifications yet</p>
-			<p className="mt-1 text-caption text-grey-100">
-				Notifications will appear here when there is activity on your reports.
-			</p>
+			<p className="text-body-sm font-medium text-grey-100">{t('noNotifications')}</p>
+			<p className="mt-1 text-caption text-grey-100">{t('noNotificationsSubtitle')}</p>
 		</div>
 	)
 }

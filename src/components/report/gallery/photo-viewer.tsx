@@ -1,6 +1,7 @@
 'use client'
 
 import { ImageOff, Palette, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import type { Photo } from '@/hooks/use-photos'
 import { cn } from '@/lib/utils'
 
@@ -13,6 +14,7 @@ type PhotoViewerProps = {
 }
 
 function PhotoViewer({ photo, onDelete, onAnnotate, className }: PhotoViewerProps) {
+	const t = useTranslations('report')
 	if (!photo) {
 		return (
 			<div
@@ -22,7 +24,7 @@ function PhotoViewer({ photo, onDelete, onAnnotate, className }: PhotoViewerProp
 				)}
 			>
 				<ImageOff className="h-10 w-10 text-grey-100" />
-				<p className="text-body text-grey-100">Select a photo to view</p>
+				<p className="text-body text-grey-100">{t('gallery.selectPhotoToView')}</p>
 			</div>
 		)
 	}
@@ -50,7 +52,7 @@ function PhotoViewer({ photo, onDelete, onAnnotate, className }: PhotoViewerProp
 						type="button"
 						onClick={onAnnotate}
 						className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-lg bg-black/90 backdrop-blur-sm transition-colors hover:bg-black"
-						aria-label="Annotate photo"
+						aria-label={t('gallery.annotatePhoto')}
 					>
 						<Palette className="h-6 w-6 text-white" />
 					</button>
@@ -60,7 +62,7 @@ function PhotoViewer({ photo, onDelete, onAnnotate, className }: PhotoViewerProp
 						type="button"
 						onClick={onDelete}
 						className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-lg bg-black/90 backdrop-blur-sm transition-colors hover:bg-black"
-						aria-label="Delete photo"
+						aria-label={t('gallery.deletePhoto')}
 					>
 						<Trash2 className="h-6 w-6 text-white" />
 					</button>

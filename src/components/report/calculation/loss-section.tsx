@@ -1,6 +1,7 @@
 'use client'
 
 import { Info } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
@@ -41,11 +42,13 @@ function LossSection({
 	onFieldBlur,
 	className,
 }: CalculationSectionProps) {
+	const t = useTranslations('report.calculation')
+
 	return (
 		<div className={cn('flex flex-col gap-5', className)}>
 			{/* Section header */}
 			<div className="flex items-center gap-2">
-				<h4 className="text-body font-semibold text-black">Loss of Use</h4>
+				<h4 className="text-body font-semibold text-black">{t('lossOfUse.title')}</h4>
 				<Info className="h-4 w-4 text-grey-100" />
 			</div>
 
@@ -56,7 +59,7 @@ function LossSection({
 					control={control}
 					render={({ field }) => (
 						<SelectField
-							label="Dropout group"
+							label={t('lossOfUse.dropoutGroup')}
 							options={DROPOUT_GROUP_OPTIONS}
 							placeholder="Choose"
 							value={field.value}
@@ -70,7 +73,7 @@ function LossSection({
 				/>
 
 				<TextField
-					label="Cost per Day (€)"
+					label={t('lossOfUse.costPerDay')}
 					type="number"
 					prefix="€"
 					placeholder="0.00"
@@ -85,7 +88,7 @@ function LossSection({
 					control={control}
 					render={({ field }) => (
 						<SelectField
-							label="Rental Car Class"
+							label={t('lossOfUse.rentalCarClass')}
 							options={RENTAL_CLASS_OPTIONS}
 							placeholder="Choose"
 							value={field.value}
@@ -102,18 +105,18 @@ function LossSection({
 			{/* Second row: Repair time, Replacement time */}
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 				<TextField
-					label="Repair time (days)"
+					label={t('lossOfUse.repairTimeDays')}
 					type="number"
-					placeholder="Add days"
+					placeholder={t('lossOfUse.addDays')}
 					error={errors.repairTimeDays?.message}
 					{...register('repairTimeDays')}
 					onBlur={() => onFieldBlur?.('repairTimeDays')}
 				/>
 
 				<TextField
-					label="Replacement time (days)"
+					label={t('lossOfUse.replacementTimeDays')}
 					type="number"
-					placeholder="Add days"
+					placeholder={t('lossOfUse.addDays')}
 					error={errors.replacementTimeDays?.message}
 					{...register('replacementTimeDays')}
 					onBlur={() => onFieldBlur?.('replacementTimeDays')}

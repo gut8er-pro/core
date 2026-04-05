@@ -1,6 +1,7 @@
 'use client'
 
 import { Plus } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 import { Controller, useFieldArray } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
@@ -29,25 +30,30 @@ function LineItemsSection({
 	className,
 	bvskContent,
 }: LineItemsSectionProps) {
+	const t = useTranslations('report.invoice')
 	const { fields, append } = useFieldArray({
 		control,
 		name: 'lineItems',
 	})
 
 	return (
-		<CollapsibleSection title="Item Details" info defaultOpen className={className}>
+		<CollapsibleSection title={t('itemDetails')} info defaultOpen className={className}>
 			<div className="flex flex-col gap-5">
 				{/* BVSK rate table content, passed from parent */}
 				{bvskContent}
 
 				{/* Column headers */}
 				<div className="hidden border-b border-border pb-2 md:grid md:grid-cols-12 md:gap-4 md:px-1">
-					<span className="col-span-3 text-caption font-medium text-grey-100">Description</span>
-					<span className="col-span-2 text-caption font-medium text-grey-100">Special Feature</span>
+					<span className="col-span-3 text-caption font-medium text-grey-100">
+						{t('description')}
+					</span>
+					<span className="col-span-2 text-caption font-medium text-grey-100">
+						{t('specialFeature')}
+					</span>
 					<span className="col-span-2 text-caption font-medium text-grey-100 text-center"></span>
-					<span className="col-span-2 text-caption font-medium text-grey-100">Rate</span>
+					<span className="col-span-2 text-caption font-medium text-grey-100">{t('rate')}</span>
 					<span className="col-span-3 text-caption font-medium text-grey-100 text-right">
-						Amount
+						{t('amount')}
 					</span>
 				</div>
 
@@ -70,8 +76,8 @@ function LineItemsSection({
 							{/* Description */}
 							<div className="md:col-span-3">
 								<TextField
-									label="Description"
-									placeholder="Service description"
+									label={t('description')}
+									placeholder={t('serviceDescription')}
 									error={errors.lineItems?.[index]?.description?.message}
 									{...register(`lineItems.${index}.description`)}
 									onBlur={() => onFieldBlur?.(`lineItems.${index}.description`)}
@@ -93,7 +99,7 @@ function LineItemsSection({
 													onFieldBlur?.(`lineItems.${index}.isLumpSum`)
 												}}
 											/>
-											<span className="text-body-sm text-black">Lump sum</span>
+											<span className="text-body-sm text-black">{t('lumpSum')}</span>
 										</label>
 									)}
 								/>
@@ -104,7 +110,7 @@ function LineItemsSection({
 
 							<div className="md:col-span-2">
 								<TextField
-									label="Rate"
+									label={t('rate')}
 									type="number"
 									prefix="€"
 									placeholder="0,00"
@@ -142,7 +148,7 @@ function LineItemsSection({
 					}
 					className="self-start"
 				>
-					Add Row
+					{t('addRow')}
 				</Button>
 			</div>
 		</CollapsibleSection>

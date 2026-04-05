@@ -1,6 +1,7 @@
 'use client'
 
 import { Plus } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
@@ -14,11 +15,7 @@ const TIRE_POSITIONS = [
 	{ key: 'HR', label: 'HR' },
 ] as const
 
-const TIRE_TYPES = [
-	{ value: 'summer', label: 'Summer' },
-	{ value: 'winter', label: 'Winter/Snow' },
-	{ value: 'all-season', label: 'All-Season' },
-] as const
+// TIRE_TYPES moved inside component for translation access
 
 const DEFAULT_TIRE: TireData = {
 	position: '',
@@ -36,7 +33,144 @@ type TireSectionProps = {
 	className?: string
 }
 
+/** Extracted component — uses local state so typing doesn't trigger API on every keystroke */
+function TirePositionFields({
+	activeTireSet,
+	activePosition,
+	onSaveTireSet,
+}: {
+	activeTireSet: TireSetData & { id: string }
+	activePosition: string
+	onSaveTireSet: (tireSet: TireSetData & { id?: string }) => void
+}) {
+	const t = useTranslations('report.condition')
+	const existingTire = activeTireSet.tires.find((tr) => tr.position === activePosition)
+	const baseTire = existingTire ?? { ...DEFAULT_TIRE, position: activePosition }
+
+	const [tire, setTire] = useState<TireData>(baseTire)
+
+	// Sync local state when position or set changes
+	useEffect(() => {
+		const found = activeTireSet.tires.find((tr) => tr.position === activePosition)
+		setTire(found ?? { ...DEFAULT_TIRE, position: activePosition })
+	}, [activePosition, activeTireSet.tires.find])
+
+	const TIRE_TYPES = [
+		{ value: 'summer', label: t('tires.tireTypeOptions.summer') },
+		{ value: 'winter', label: t('tires.tireTypeOptions.winter') },
+		{ value: 'all-season', label: t('tires.tireTypeOptions.allSeason') },
+	] as const
+
+	function saveCurrentTire(updated: TireData) {
+		const hasTire = activeTireSet.tires.some((tr) => tr.position === activePosition)
+		const updatedTires = hasTire
+			? activeTireSet.tires.map((tr) => (tr.position === activePosition ? updated : tr))
+			: [...activeTireSet.tires, updated]
+		onSaveTireSet({ ...activeTireSet, tires: updatedTires })
+	}
+
+	function handleLocalChange(field: keyof TireData, value: string | number) {
+		const updated = { ...tire, [field]: value }
+		setTire(updated)
+	}
+
+	function handleBlur() {
+		saveCurrentTire(tire)
+	}
+
+	function handleImmediateChange(field: keyof TireData, value: string | number) {
+		const updated = { ...tire, [field]: value }
+		setTire(updated)
+		saveCurrentTire(updated)
+	}
+
+	return (
+		<div className="flex flex-col gap-6">
+			{/* Tire size / Profile (mm) / Manufacturer */}
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+				<TextField
+					label={t('tires.tireSize')}
+					placeholder={t('tires.tireSizePlaceholder')}
+					value={tire.size}
+					onChange={(e) => handleLocalChange('size', e.target.value)}
+					onBlur={handleBlur}
+				/>
+				<TextField
+					label={t('tires.profileMm')}
+					placeholder="0mm"
+					value={tire.profileLevel}
+					onChange={(e) => handleLocalChange('profileLevel', e.target.value)}
+					onBlur={handleBlur}
+				/>
+				<TextField
+					label={t('tires.manufacturer')}
+					placeholder={t('tires.manufacturerPlaceholder')}
+					value={tire.manufacturer}
+					onChange={(e) => handleLocalChange('manufacturer', e.target.value)}
+					onBlur={handleBlur}
+				/>
+			</div>
+
+			{/* Tires Usability */}
+			<div className="flex items-center justify-between">
+				<div className="flex items-center gap-3">
+					<TireIcon className="h-6 w-6 text-black" />
+					<span className="text-body-sm text-black">{t('tires.tiresUsability')}</span>
+				</div>
+				<div className="flex items-center gap-3">
+					{[1, 2, 3, 4, 5].map((level) => (
+						<button
+							key={level}
+							type="button"
+							onClick={() => handleImmediateChange('usability', level)}
+							className={cn(
+								'flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn transition-colors',
+								level <= tire.usability
+									? 'border-2 border-primary bg-white'
+									: 'border border-border-card bg-white hover:border-grey-100',
+							)}
+							aria-label={`${level}/5`}
+							aria-pressed={level <= tire.usability}
+						>
+							<TireWheelIcon className="h-[34px] w-[34px]" filled={level <= tire.usability} />
+						</button>
+					))}
+					<button
+						type="button"
+						className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn border border-border-card bg-white text-black transition-colors hover:border-grey-100"
+					>
+						<Plus className="h-4 w-4" />
+					</button>
+				</div>
+			</div>
+
+			{/* Tire Type */}
+			<div className="flex flex-col gap-2">
+				<span className="text-body-sm font-medium text-black">{t('tires.tireType')}</span>
+				<div className="flex items-center gap-2">
+					{TIRE_TYPES.map((tt) => (
+						<button
+							key={tt.value}
+							type="button"
+							onClick={() => handleImmediateChange('tireType', tt.value)}
+							className={cn(
+								'cursor-pointer rounded-full border px-4 py-1.5 text-body-sm font-medium transition-colors',
+								tire.tireType === tt.value
+									? 'border-primary bg-primary text-white'
+									: 'border-border bg-white text-grey-100 hover:border-grey-100',
+							)}
+						>
+							{tt.label}
+						</button>
+					))}
+				</div>
+			</div>
+		</div>
+	)
+}
+
 function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
+	const t = useTranslations('report.condition')
 	const [activeSetIndex, setActiveSetIndex] = useState(0)
 	const [activePosition, setActivePosition] = useState<string>('VL')
 	const autoCreated = useRef(false)
@@ -72,7 +206,7 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 	const activeTireSet = tireSets[activeSetIndex] ?? null
 
 	return (
-		<CollapsibleSection title="Tires" info defaultOpen={false} className={className}>
+		<CollapsibleSection title={t('tires.title')} info defaultOpen={false} className={className}>
 			<div className="flex flex-col gap-6">
 				{/* Set selector tabs — black active per Figma */}
 				<div className="flex rounded-full bg-[rgba(224,225,229,0.6)] p-1.5">
@@ -88,7 +222,7 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 									: 'bg-transparent text-grey-100 hover:bg-white/50',
 							)}
 						>
-							{index === 0 ? 'First Set of Tires' : 'Second Set of Tires'}
+							{index === 0 ? t('tires.firstSet') : t('tires.secondSet')}
 						</button>
 					))}
 					{tireSets.length < 2 && (
@@ -97,7 +231,7 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 							onClick={handleAddTireSet}
 							className="flex-1 cursor-pointer rounded-full py-3 text-center text-body-sm font-medium text-grey-100 transition-colors hover:bg-white/50"
 						>
-							{tireSets.length === 0 ? 'First Set of Tires' : 'Second Set of Tires'}
+							{tireSets.length === 0 ? t('tires.firstSet') : t('tires.secondSet')}
 						</button>
 					)}
 				</div>
@@ -124,121 +258,24 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 						</div>
 
 						{/* Tire fields for active position */}
-						{(() => {
-							const existingTire = activeTireSet.tires.find((t) => t.position === activePosition)
-							const tire = existingTire ?? { ...DEFAULT_TIRE, position: activePosition }
-
-							const handleChange = (field: keyof TireData, value: string | number) => {
-								const updatedTire = { ...tire, [field]: value }
-								const hasTire = activeTireSet.tires.some((t) => t.position === activePosition)
-								const updatedTires = hasTire
-									? activeTireSet.tires.map((t) =>
-											t.position === activePosition ? updatedTire : t,
-										)
-									: [...activeTireSet.tires, updatedTire]
-								onSaveTireSet({ ...activeTireSet, tires: updatedTires })
-							}
-
-							return (
-								<div className="flex flex-col gap-6">
-									{/* Tire size / Profile (mm) / Manufacturer */}
-									<div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-										<TextField
-											label="Tire size"
-											placeholder="add size in inches"
-											value={tire.size}
-											onChange={(e) => handleChange('size', e.target.value)}
-											onBlur={(e) => handleChange('size', e.target.value)}
-										/>
-										<TextField
-											label="Profile (mm)"
-											placeholder="0mm"
-											value={tire.profileLevel}
-											onChange={(e) => handleChange('profileLevel', e.target.value)}
-											onBlur={(e) => handleChange('profileLevel', e.target.value)}
-										/>
-										<TextField
-											label="Manufacturer"
-											placeholder="Add manufacturer"
-											value={tire.manufacturer}
-											onChange={(e) => handleChange('manufacturer', e.target.value)}
-											onBlur={(e) => handleChange('manufacturer', e.target.value)}
-										/>
-									</div>
-
-									{/* Tires Usability — icon + label left, picker boxes right */}
-									<div className="flex items-center justify-between">
-										<div className="flex items-center gap-3">
-											<TireIcon className="h-6 w-6 text-black" />
-											<span className="text-body-sm text-black">Tires Usability</span>
-										</div>
-										<div className="flex items-center gap-3">
-											{[1, 2, 3, 4, 5].map((level) => (
-												<button
-													key={level}
-													type="button"
-													onClick={() => handleChange('usability', level)}
-													className={cn(
-														'flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn transition-colors',
-														level <= tire.usability
-															? 'border-2 border-primary bg-white'
-															: 'border border-border-card bg-white hover:border-grey-100',
-													)}
-													aria-label={`Set usability to ${level} of 5`}
-													aria-pressed={level <= tire.usability}
-												>
-													<TireWheelIcon
-														className="h-[34px] w-[34px]"
-														filled={level <= tire.usability}
-													/>
-												</button>
-											))}
-											<button
-												type="button"
-												className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn border border-border-card bg-white text-black transition-colors hover:border-grey-100"
-											>
-												<Plus className="h-4 w-4" />
-											</button>
-										</div>
-									</div>
-
-									{/* Tire Type */}
-									<div className="flex flex-col gap-2">
-										<span className="text-body-sm font-medium text-black">Tire Type</span>
-										<div className="flex items-center gap-2">
-											{TIRE_TYPES.map((tt) => (
-												<button
-													key={tt.value}
-													type="button"
-													onClick={() => handleChange('tireType', tt.value)}
-													className={cn(
-														'cursor-pointer rounded-full border px-4 py-1.5 text-body-sm font-medium transition-colors',
-														tire.tireType === tt.value
-															? 'border-primary bg-primary text-white'
-															: 'border-border bg-white text-grey-100 hover:border-grey-100',
-													)}
-												>
-													{tt.label}
-												</button>
-											))}
-										</div>
-									</div>
-								</div>
-							)
-						})()}
+						<TirePositionFields
+							activeTireSet={activeTireSet}
+							activePosition={activePosition}
+							onSaveTireSet={onSaveTireSet}
+						/>
 
 						{/* Match and Align — icon + label left, buttons right (no checkbox per Figma) */}
 						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-3">
 								<TireIcon className="h-6 w-6 text-black" />
-								<span className="text-body-sm text-black">Match and Align</span>
+								<span className="text-body-sm text-black">{t('tires.matchAndAlign')}</span>
 							</div>
 							<div className="flex items-center gap-4">
 								<button
 									type="button"
 									className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-grey-50 px-4 text-body-md font-medium text-black transition-colors hover:border-grey-100"
 								>
-									Align Axes
+									{t('tires.alignAxes')}
 								</button>
 								<button
 									type="button"
@@ -247,7 +284,7 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 									}}
 									className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn bg-primary px-4 text-body-md font-medium text-white transition-colors hover:bg-primary/90"
 								>
-									Match The Set
+									{t('tires.matchTheSet')}
 								</button>
 							</div>
 						</div>

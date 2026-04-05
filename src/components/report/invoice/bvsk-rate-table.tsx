@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronDown, TriangleAlert } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -20,6 +21,7 @@ function formatEUR(value: number): string {
 }
 
 function BvskRateTable({ repairCost, onApplyRate, className }: BvskRateTableProps) {
+	const t = useTranslations('report.invoice')
 	const handleApply = useCallback(() => {
 		if (!repairCost || !onApplyRate) return
 		const rate = lookupBvskRate(repairCost)
@@ -58,7 +60,7 @@ function BvskRateTable({ repairCost, onApplyRate, className }: BvskRateTableProp
 									)}
 								>
 									<span className="text-[10px] text-grey-100 whitespace-nowrap">
-										Amount of damage
+										{t('amountOfDamage')}
 									</span>
 									<span className="text-caption font-medium text-black whitespace-nowrap">
 										{formatEUR(rate.minRepairCost)}
@@ -89,7 +91,7 @@ function BvskRateTable({ repairCost, onApplyRate, className }: BvskRateTableProp
 					onClick={handleApply}
 					className="self-start"
 				>
-					Apply BVSK Rate
+					{t('applyBvskRate')}
 				</Button>
 			)}
 		</div>

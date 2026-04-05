@@ -1,6 +1,7 @@
 'use client'
 
 import { Bus, Car, Fuel, Leaf, Plus, Truck, Zap } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useController } from 'react-hook-form'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { IconSelector } from '@/components/ui/icon-selector'
@@ -8,23 +9,7 @@ import { Label } from '@/components/ui/label'
 import { NumberChipSelector } from '@/components/ui/number-chip-selector'
 import type { VehicleSectionProps } from './types'
 
-const VEHICLE_TYPE_OPTIONS = [
-	{ value: 'sedan', label: 'Sedan', icon: Car },
-	{ value: 'compact', label: 'Compact Car', icon: Car },
-	{ value: 'suv', label: 'SUV', icon: Truck },
-	{ value: 'wagon', label: 'Wagon', icon: Bus },
-	{ value: 'coupe', label: 'Coupe', icon: Car },
-	{ value: 'convertible', label: 'Convertible', icon: Car },
-	{ value: 'van', label: 'Van', icon: Truck },
-]
-
-const MOTOR_TYPE_OPTIONS = [
-	{ value: 'petrol', label: 'Petrol', icon: Fuel },
-	{ value: 'diesel', label: 'Diesel', icon: Fuel },
-	{ value: 'electric', label: 'Electric', icon: Zap },
-	{ value: 'hybrid', label: 'Hybrid', icon: Leaf },
-	{ value: 'gas', label: 'Gas', icon: Fuel },
-]
+// Options defined inside component to access translations
 
 const AXLE_OPTIONS = [
 	{ value: '1', label: '1' },
@@ -58,19 +43,38 @@ const SEAT_OPTIONS = [
 	{ value: '4', label: '4' },
 ]
 
-const PREVIOUS_OWNER_OPTIONS = [
-	{ value: '0', label: 'New' },
-	{ value: '1', label: '1' },
-	{ value: '2', label: '2' },
-	{ value: '3', label: '3' },
-	{ value: '4', label: '4' },
-]
-
 function DetailsSection({
 	control,
 	onFieldBlur,
 	className,
 }: VehicleSectionProps & { className?: string }) {
+	const t = useTranslations('report')
+
+	const VEHICLE_TYPE_OPTIONS = [
+		{ value: 'sedan', label: t('vehicle.details.vehicleTypeOptions.sedan'), icon: Car },
+		{ value: 'compact', label: t('vehicle.details.vehicleTypeOptions.compactCar'), icon: Car },
+		{ value: 'suv', label: t('vehicle.details.vehicleTypeOptions.suv'), icon: Truck },
+		{ value: 'wagon', label: t('vehicle.details.vehicleTypeOptions.wagon'), icon: Bus },
+		{ value: 'coupe', label: t('vehicle.details.vehicleTypeOptions.coupe'), icon: Car },
+		{ value: 'convertible', label: t('vehicle.details.vehicleTypeOptions.convertible'), icon: Car },
+		{ value: 'van', label: t('vehicle.details.vehicleTypeOptions.van'), icon: Truck },
+	]
+
+	const MOTOR_TYPE_OPTIONS = [
+		{ value: 'petrol', label: t('vehicle.details.motorTypeOptions.petrol'), icon: Fuel },
+		{ value: 'diesel', label: t('vehicle.details.motorTypeOptions.diesel'), icon: Fuel },
+		{ value: 'electric', label: t('vehicle.details.motorTypeOptions.electric'), icon: Zap },
+		{ value: 'hybrid', label: t('vehicle.details.motorTypeOptions.hybrid'), icon: Leaf },
+		{ value: 'gas', label: t('vehicle.details.motorTypeOptions.gas'), icon: Fuel },
+	]
+
+	const PREVIOUS_OWNER_OPTIONS = [
+		{ value: '0', label: t('vehicle.details.new') },
+		{ value: '1', label: '1' },
+		{ value: '2', label: '2' },
+		{ value: '3', label: '3' },
+		{ value: '4', label: '4' },
+	]
 	const vehicleType = useController({ control, name: 'vehicleType' })
 	const motorType = useController({ control, name: 'motorType' })
 	const axles = useController({ control, name: 'axles' })
@@ -80,11 +84,11 @@ function DetailsSection({
 	const previousOwners = useController({ control, name: 'previousOwners' })
 
 	return (
-		<CollapsibleSection title="Vehicle Details" info className={className}>
+		<CollapsibleSection title={t('vehicle.details.heading')} info className={className}>
 			<div className="flex flex-col gap-6">
 				{/* Vehicle Type row */}
 				<div className="flex items-center justify-between">
-					<Label className="min-w-35">Vehicle Type</Label>
+					<Label className="min-w-35">{t('vehicle.details.vehicleType')}</Label>
 					<div className="flex items-center gap-2">
 						<IconSelector
 							options={VEHICLE_TYPE_OPTIONS}
@@ -97,7 +101,7 @@ function DetailsSection({
 						<button
 							type="button"
 							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label="Add vehicle type"
+							aria-label={t('vehicle.details.addVehicleType')}
 						>
 							<Plus className="h-4 w-4" />
 						</button>
@@ -106,7 +110,7 @@ function DetailsSection({
 
 				{/* Motor Type row */}
 				<div className="flex items-center justify-between">
-					<Label className="min-w-35">Motor Type</Label>
+					<Label className="min-w-35">{t('vehicle.details.motorType')}</Label>
 					<div className="flex items-center gap-2">
 						<IconSelector
 							options={MOTOR_TYPE_OPTIONS}
@@ -119,7 +123,7 @@ function DetailsSection({
 						<button
 							type="button"
 							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label="Add motor type"
+							aria-label={t('vehicle.details.addMotorType')}
 						>
 							<Plus className="h-4 w-4" />
 						</button>
@@ -128,7 +132,7 @@ function DetailsSection({
 
 				{/* Axles row */}
 				<div className="flex items-center justify-between">
-					<Label className="min-w-35">Axles</Label>
+					<Label className="min-w-35">{t('vehicle.details.axles')}</Label>
 					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={AXLE_OPTIONS}
@@ -141,7 +145,7 @@ function DetailsSection({
 						<button
 							type="button"
 							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label="Add axle option"
+							aria-label={t('vehicle.details.addAxleOption')}
 						>
 							<Plus className="h-4 w-4" />
 						</button>
@@ -150,7 +154,7 @@ function DetailsSection({
 
 				{/* Driven by this row */}
 				<div className="flex items-center justify-between">
-					<Label className="min-w-35">Driven by this</Label>
+					<Label className="min-w-35">{t('vehicle.details.drivenBy')}</Label>
 					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={DRIVEN_AXLE_OPTIONS}
@@ -163,7 +167,7 @@ function DetailsSection({
 						<button
 							type="button"
 							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label="Add driven option"
+							aria-label={t('vehicle.details.addDrivenOption')}
 						>
 							<Plus className="h-4 w-4" />
 						</button>
@@ -172,7 +176,7 @@ function DetailsSection({
 
 				{/* Doors row */}
 				<div className="flex items-center justify-between">
-					<Label className="min-w-35">Doors</Label>
+					<Label className="min-w-35">{t('vehicle.details.doors')}</Label>
 					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={DOOR_OPTIONS}
@@ -185,7 +189,7 @@ function DetailsSection({
 						<button
 							type="button"
 							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label="Add door option"
+							aria-label={t('vehicle.details.addDoorOption')}
 						>
 							<Plus className="h-4 w-4" />
 						</button>
@@ -194,7 +198,7 @@ function DetailsSection({
 
 				{/* Seats row */}
 				<div className="flex items-center justify-between">
-					<Label className="min-w-35">Seats</Label>
+					<Label className="min-w-35">{t('vehicle.details.seats')}</Label>
 					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={SEAT_OPTIONS}
@@ -207,7 +211,7 @@ function DetailsSection({
 						<button
 							type="button"
 							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label="Add seat option"
+							aria-label={t('vehicle.details.addSeatOption')}
 						>
 							<Plus className="h-4 w-4" />
 						</button>
@@ -216,7 +220,7 @@ function DetailsSection({
 
 				{/* Previous Owners row */}
 				<div className="flex items-center justify-between">
-					<Label className="min-w-35">Previous Owners</Label>
+					<Label className="min-w-35">{t('vehicle.details.previousOwners')}</Label>
 					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={PREVIOUS_OWNER_OPTIONS}
@@ -229,7 +233,7 @@ function DetailsSection({
 						<button
 							type="button"
 							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label="Add previous owner option"
+							aria-label={t('vehicle.details.addPreviousOwnerOption')}
 						>
 							<Plus className="h-4 w-4" />
 						</button>

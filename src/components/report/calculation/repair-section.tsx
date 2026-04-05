@@ -1,30 +1,13 @@
 'use client'
 
 import { Info } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
 import { Checkbox } from '@/components/ui/checkbox'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import { cn } from '@/lib/utils'
 import type { CalculationSectionProps } from './types'
-
-const WHEEL_ALIGNMENT_OPTIONS = [
-	{ value: 'not_required', label: 'Not required' },
-	{ value: 'required', label: 'Required' },
-	{ value: 'completed', label: 'Completed' },
-]
-
-const BODY_MEASUREMENTS_OPTIONS = [
-	{ value: 'not_required', label: 'Not required' },
-	{ value: 'required', label: 'Required' },
-	{ value: 'completed', label: 'Completed' },
-]
-
-const BODY_PAINT_OPTIONS = [
-	{ value: 'not_required', label: 'Not required' },
-	{ value: 'partial', label: 'Partial' },
-	{ value: 'full', label: 'Full' },
-]
 
 function RepairSection({
 	register,
@@ -33,11 +16,31 @@ function RepairSection({
 	onFieldBlur,
 	className,
 }: CalculationSectionProps) {
+	const t = useTranslations('report.calculation')
+
+	const WHEEL_ALIGNMENT_OPTIONS = [
+		{ value: 'not_required', label: t('repair.wheelAlignmentOptions.notRequired') },
+		{ value: 'required', label: t('repair.wheelAlignmentOptions.required') },
+		{ value: 'completed', label: t('repair.wheelAlignmentOptions.completed') },
+	]
+
+	const BODY_MEASUREMENTS_OPTIONS = [
+		{ value: 'not_required', label: t('repair.wheelAlignmentOptions.notRequired') },
+		{ value: 'required', label: t('repair.wheelAlignmentOptions.required') },
+		{ value: 'completed', label: t('repair.wheelAlignmentOptions.completed') },
+	]
+
+	const BODY_PAINT_OPTIONS = [
+		{ value: 'not_required', label: t('repair.wheelAlignmentOptions.notRequired') },
+		{ value: 'partial', label: t('repair.bodyPaintOptions.partial') },
+		{ value: 'full', label: t('repair.bodyPaintOptions.full') },
+	]
+
 	return (
 		<div className={cn('flex flex-col gap-5', className)}>
 			{/* Section header */}
 			<div className="flex items-center gap-2">
-				<h4 className="text-body font-semibold text-black">Repair</h4>
+				<h4 className="text-body font-semibold text-black">{t('repair.title')}</h4>
 				<Info className="h-4 w-4 text-grey-100" />
 			</div>
 
@@ -48,7 +51,7 @@ function RepairSection({
 					control={control}
 					render={({ field }) => (
 						<SelectField
-							label="Wheel alignment"
+							label={t('repair.wheelAlignment')}
 							options={WHEEL_ALIGNMENT_OPTIONS}
 							placeholder="Choose"
 							value={field.value}
@@ -66,7 +69,7 @@ function RepairSection({
 					control={control}
 					render={({ field }) => (
 						<SelectField
-							label="Body measurements"
+							label={t('repair.bodyMeasurements')}
 							options={BODY_MEASUREMENTS_OPTIONS}
 							placeholder="Choose"
 							value={field.value}
@@ -86,9 +89,9 @@ function RepairSection({
 				control={control}
 				render={({ field }) => (
 					<SelectField
-						label="Body paint (optional)"
+						label={t('repair.bodyPaint')}
 						options={BODY_PAINT_OPTIONS}
-						placeholder="Optional choose"
+						placeholder="Choose"
 						value={field.value}
 						onValueChange={(val) => {
 							field.onChange(val)
@@ -112,15 +115,15 @@ function RepairSection({
 								onFieldBlur?.('plasticRepair')
 							}}
 						/>
-						<span className="text-body-sm text-black">Plastic Repair</span>
+						<span className="text-body-sm text-black">{t('repair.plasticRepair')}</span>
 					</label>
 				)}
 			/>
 
 			{/* Repair Method - full width */}
 			<TextField
-				label="Repair Method"
-				placeholder="Add method"
+				label={t('repair.repairMethod')}
+				placeholder={t('repair.addMethod')}
 				error={errors.repairMethod?.message}
 				{...register('repairMethod')}
 				onBlur={() => onFieldBlur?.('repairMethod')}
@@ -128,8 +131,8 @@ function RepairSection({
 
 			{/* Risks - full width */}
 			<TextField
-				label="Risks"
-				placeholder="Add risks"
+				label={t('repair.risks')}
+				placeholder={t('repair.addRisks')}
 				error={errors.risks?.message}
 				{...register('risks')}
 				onBlur={() => onFieldBlur?.('risks')}

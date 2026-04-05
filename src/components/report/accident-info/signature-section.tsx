@@ -1,18 +1,29 @@
 'use client'
 
 import { Ban, Scale, Users } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { cn } from '@/lib/utils'
 import type { SignatureSectionProps } from './types'
 
-const SIGNATURE_TYPES = [
-	{ type: 'LAWYER' as const, label: 'Lawyer', icon: Scale },
-	{ type: 'DATA_PERMISSION' as const, label: 'Data Permission', icon: Users },
-	{ type: 'CANCELLATION' as const, label: 'Cancellation', icon: Ban },
-]
-
 function SignatureSection({ signatures, onSignatureClick, className }: SignatureSectionProps) {
+	const t = useTranslations('report')
+	const _tc = useTranslations('common')
+
+	const SIGNATURE_TYPES = [
+		{ type: 'LAWYER' as const, label: t('accidentInfo.signatures.types.lawyer'), icon: Scale },
+		{
+			type: 'DATA_PERMISSION' as const,
+			label: t('accidentInfo.signatures.types.dataPermission'),
+			icon: Users,
+		},
+		{
+			type: 'CANCELLATION' as const,
+			label: t('accidentInfo.signatures.types.cancellation'),
+			icon: Ban,
+		},
+	]
 	function getSignatureForType(type: string) {
 		return signatures.find((sig) => sig.type === type)
 	}
@@ -27,10 +38,17 @@ function SignatureSection({ signatures, onSignatureClick, className }: Signature
 			: null
 
 	return (
-		<CollapsibleSection title="Signatures" info defaultOpen className={className}>
+		<CollapsibleSection
+			title={t('accidentInfo.signatures.title')}
+			info
+			defaultOpen
+			className={className}
+		>
 			<div className="flex flex-col gap-4">
 				{/* Permission Use label */}
-				<p className="text-body-sm font-medium text-black">Permission Use</p>
+				<p className="text-body-sm font-medium text-black">
+					{t('accidentInfo.signatures.types.permissionUse')}
+				</p>
 
 				{/* 3-card selector */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -74,7 +92,7 @@ function SignatureSection({ signatures, onSignatureClick, className }: Signature
 										// TODO: implement remove signature
 									}}
 								>
-									Remove
+									{t('accidentInfo.signatures.remove')}
 								</Button>
 								<Button
 									variant="primary"
@@ -83,7 +101,7 @@ function SignatureSection({ signatures, onSignatureClick, className }: Signature
 										onSignatureClick(sig.type as 'LAWYER' | 'DATA_PERMISSION' | 'CANCELLATION')
 									}
 								>
-									Update Signature
+									{t('accidentInfo.signatures.updateSignature')}
 								</Button>
 							</div>
 						</div>

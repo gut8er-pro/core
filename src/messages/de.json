@@ -1,0 +1,1409 @@
+{
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "continue": "Weiter",
+    "loading": "Wird geladen...",
+    "search": "Suchen",
+    "yes": "Ja",
+    "no": "Nein",
+    "or": "Oder",
+    "required": "Pflichtfeld",
+    "optional": "Optional",
+    "confirm": "Bestätigen",
+    "update": "Aktualisieren",
+    "remove": "Entfernen",
+    "add": "Hinzufügen",
+    "create": "Erstellen",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen",
+    "saving": "Wird gespeichert...",
+    "saved": "Gespeichert",
+    "failedToSave": "Speichern fehlgeschlagen",
+    "complete": "Abgeschlossen",
+    "previous": "Zurück"
+  },
+  "nav": {
+    "dashboard": "Übersicht",
+    "statistics": "Statistiken",
+    "settings": "Einstellungen",
+    "notifications": "Benachrichtigungen",
+    "helpAndSupport": "Hilfe & Support",
+    "profile": "Profil",
+    "analytics": "Auswertungen",
+    "logOut": "Abmelden",
+    "markAllAsRead": "Alle als gelesen markieren",
+    "noNotificationsYet": "Noch keine Benachrichtigungen",
+    "viewAllNotifications": "Alle Benachrichtigungen anzeigen",
+    "gut8erproHome": "Gut8erPRO Startseite",
+    "user": "Benutzer"
+  },
+  "auth": {
+    "login": {
+      "welcomeBack": "Willkommen zurück",
+      "subtitle": "Bitte melden Sie sich an, um fortzufahren.",
+      "emailAddress": "E-Mail-Adresse",
+      "enterYourEmail": "E-Mail eingeben",
+      "password": "Passwort",
+      "enterYourPassword": "Passwort eingeben",
+      "forgotPassword": "Passwort vergessen?",
+      "logIn": "Anmelden",
+      "loggingIn": "Anmeldung läuft...",
+      "dontHaveAccount": "Noch kein Konto?",
+      "signUp": "Registrieren",
+      "loginWithGoogle": "Mit Google anmelden",
+      "loginWithApple": "Mit Apple anmelden",
+      "invalidCredentials": "E-Mail oder Passwort ist falsch",
+      "tagline": "Professionelle Kfz-Begutachtungs-App",
+      "reportTime": "Gutachtenzeit",
+      "reportTimeValue": "-35%",
+      "lessManualWork": "Weniger manuelle Arbeit",
+      "lessManualWorkValue": "-40%"
+    },
+    "signup": {
+      "steps": {
+        "account": {
+          "title": "Konto erstellen",
+          "subtitle": "Geben Sie Ihre E-Mail-Adresse ein und erstellen Sie ein sicheres Passwort."
+        },
+        "personal": {
+          "title": "Persönliche Daten",
+          "subtitle": "Erzählen Sie uns etwas über sich."
+        },
+        "business": {
+          "title": "Geschäftsdaten",
+          "subtitle": "Ihre Firmendaten für Rechnungen und Gutachten."
+        },
+        "plan": {
+          "title": "Ihr Tarif",
+          "subtitle": "Alle Funktionen inklusive mit 7 Tagen kostenloser Testphase."
+        },
+        "integrations": {
+          "title": "Tools verbinden",
+          "subtitle": "Verknüpfen Sie Ihren Kalkulationsanbieter. Weitere können Sie später in den Einstellungen hinzufügen."
+        },
+        "complete": {
+          "title": "Willkommen an Bord!",
+          "subtitle": "Ihr Konto wurde erfolgreich erstellt."
+        }
+      },
+      "account": {
+        "emailAddress": "E-Mail-Adresse",
+        "emailPlaceholder": "sie@beispiel.de",
+        "password": "Passwort",
+        "passwordHint": "Mind. 8 Zeichen",
+        "confirmPassword": "Passwort bestätigen",
+        "confirmPasswordPlaceholder": "Passwort wiederholen",
+        "fillRequiredFields": "Bitte füllen Sie alle Pflichtfelder aus."
+      },
+      "personal": {
+        "title": "Anrede",
+        "titlePlaceholder": "Auswählen",
+        "titleOptions": {
+          "mr": "Herr",
+          "mrs": "Frau",
+          "dr": "Dr.",
+          "prof": "Prof.",
+          "profDr": "Prof. Dr."
+        },
+        "firstName": "Vorname",
+        "firstNamePlaceholder": "Vorname",
+        "lastName": "Nachname",
+        "phoneNumber": "Telefonnummer",
+        "phonePlaceholder": "+49 123 456789",
+        "professionalQualification": "Berufsbezeichnung",
+        "qualificationPlaceholder": "z.B. Kfz-Sachverständiger Dipl.-Ing."
+      },
+      "business": {
+        "companyName": "Firmenname",
+        "companyPlaceholder": "Mustermann Gutachten GmbH",
+        "street": "Straße & Hausnummer",
+        "streetPlaceholder": "Musterstraße 123",
+        "postcode": "Postleitzahl",
+        "postcodePlaceholder": "12345",
+        "city": "Ort",
+        "cityPlaceholder": "Berlin",
+        "taxId": "Steuernummer",
+        "taxIdPlaceholder": "123/456/78901",
+        "vatId": "USt-IdNr. (optional)",
+        "vatIdPlaceholder": "DE123456789"
+      },
+      "plan": {
+        "pro": "Pro",
+        "forProfessionals": "Für Profis",
+        "price": "€69",
+        "perMonth": "/Monat",
+        "trialDays": "7 Tage kostenlos",
+        "features": {
+          "unlimitedReports": "Unbegrenzte Gutachten",
+          "aiAutoFill": "KI-gestütztes Auto-Fill",
+          "imageDamageAnalysis": "Bildbasierte Schadensanalyse",
+          "vinAutoDetection": "Automatische VIN-Erkennung",
+          "prioritySupport": "Prioritäts-Support",
+          "customBranding": "Individuelles Branding",
+          "pdfExport": "PDF-Export",
+          "emailSupport": "E-Mail-Support"
+        },
+        "paymentDetails": "Zahlungsdaten",
+        "paymentNote": "Nach der Kontoerstellung geben Sie Ihre Kartendaten auf der sicheren Stripe-Checkout-Seite ein.",
+        "trialNote": "Ihnen wird erst nach Ablauf der 7-tägigen Testphase etwas berechnet. Jederzeit kündbar."
+      },
+      "integrations": {
+        "calculationProvider": "Kalkulationsanbieter",
+        "dat": "DAT",
+        "comingSoon": "Demnächst verfügbar",
+        "datCredentialsTitle": "DAT SilverDAT3 Zugangsdaten",
+        "username": "Benutzername",
+        "usernamePlaceholder": "Ihr Benutzername",
+        "password": "Passwort",
+        "passwordPlaceholder": "••••••••",
+        "dontHaveAccount": "Noch kein Konto?",
+        "registerWithDat": "Bei DAT registrieren",
+        "skipNote": "Sie können diesen Schritt überspringen und Integrationen später in den Einstellungen konfigurieren.",
+        "createAccount": "Konto erstellen",
+        "creating": "Wird erstellt...",
+        "selectProvider": "Wählen Sie oben einen Anbieter aus, um Ihre Zugangsdaten einzugeben"
+      },
+      "complete": {
+        "proPlan": "Pro-Tarif",
+        "paymentNotCompleted": "Zahlung nicht abgeschlossen",
+        "trialStarted": "7-tägige kostenlose Testphase gestartet",
+        "createReport": "Gutachten erstellen",
+        "startFirstAssessment": "Starten Sie Ihr erstes Gutachten",
+        "enjoyAi": "KI nutzen",
+        "learnFromTooltips": "Hinweise in Tooltips beachten",
+        "settings": "Einstellungen",
+        "customizeWorkspace": "Arbeitsbereich anpassen",
+        "createFirstReport": "Erstellen Sie Ihr erstes Gutachten",
+        "goToDashboard": "Zur Übersicht",
+        "paymentSetupNote": "Sie können Ihre Zahlungsmethode jederzeit einrichten unter",
+        "settingsBilling": "Einstellungen → Abrechnung",
+        "toStartTrial": "um Ihre 7-tägige kostenlose Testphase zu starten.",
+        "confirmationEmailSent": "Wir haben eine Bestätigungs-E-Mail gesendet an",
+        "yourEmail": "Ihre E-Mail-Adresse"
+      }
+    },
+    "forgotPassword": {
+      "title": "Passwort zurücksetzen",
+      "subtitle": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts.",
+      "sendResetLink": "Link senden",
+      "sending": "Wird gesendet...",
+      "checkYourEmail": "Prüfen Sie Ihr Postfach",
+      "emailSentMessage": "Wir haben einen Link zum Zurücksetzen Ihres Passworts an Ihre E-Mail-Adresse gesendet. Klicken Sie auf den Link, um ein neues Passwort festzulegen.",
+      "didntReceiveEmail": "Keine E-Mail erhalten? Überprüfen Sie Ihren Spam-Ordner oder versuchen Sie es erneut.",
+      "tryAgain": "Erneut versuchen",
+      "backToLogin": "Zurück zur Anmeldung"
+    },
+    "resetPassword": {
+      "title": "Neues Passwort festlegen",
+      "subtitle": "Geben Sie unten Ihr neues Passwort ein. Mindestens 8 Zeichen.",
+      "newPassword": "Neues Passwort",
+      "newPasswordPlaceholder": "Neues Passwort eingeben",
+      "confirmPassword": "Passwort bestätigen",
+      "confirmPasswordPlaceholder": "Neues Passwort bestätigen",
+      "updatePassword": "Passwort aktualisieren",
+      "updating": "Wird aktualisiert...",
+      "passwordUpdated": "Passwort aktualisiert",
+      "successMessage": "Ihr Passwort wurde erfolgreich aktualisiert. Weiterleitung zur Anmeldung...",
+      "goToLogin": "Zur Anmeldung",
+      "passwordsDoNotMatch": "Passwörter stimmen nicht überein",
+      "passwordMinLength": "Passwort muss mindestens 8 Zeichen lang sein"
+    }
+  },
+  "dashboard": {
+    "title": "Übersicht",
+    "newReport": "Neues Gutachten",
+    "createReport": "Gutachten erstellen",
+    "reportTypes": {
+      "liability": "Haftpflichtschaden",
+      "shortReport": "Kurzgutachten",
+      "evaluation": "Bewertung",
+      "oldtimerValuation": "Oldtimer-Bewertung"
+    },
+    "totalRevenue": "Gesamtumsatz",
+    "yearly": "Jährlich",
+    "monthly": "Monatlich",
+    "weekly": "Wöchentlich",
+    "completedPayments": "Abgeschlossene Zahlungen:",
+    "pendingPayments": "Ausstehende Zahlungen:",
+    "delayedPayments": "Überfällige Zahlungen:",
+    "recentReports": "Aktuelle Gutachten",
+    "searchPlaceholder": "Suchen...",
+    "filterReports": "Gutachten filtern",
+    "pagination": "Seite {current} von {total}",
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mär",
+      "apr": "Apr",
+      "may": "Mai",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Okt",
+      "nov": "Nov",
+      "dec": "Dez"
+    },
+    "untitledReport": "Unbenanntes Gutachten",
+    "failedToLoad": "Gutachten konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "table": {
+      "report": "Gutachten",
+      "reportNumber": "Gutachten-Nr.",
+      "plateNumber": "Kennzeichen",
+      "dateCreated": "Erstellt am",
+      "carModel": "Fahrzeugmodell"
+    },
+    "actions": {
+      "reportActions": "Gutachten-Aktionen",
+      "details": "Details",
+      "editReport": "Gutachten bearbeiten"
+    },
+    "emptyState": {
+      "title": "Noch keine Gutachten",
+      "subtitle": "Erstellen Sie Ihr erstes Gutachten, um mit der Fahrzeugbewertung zu beginnen."
+    }
+  },
+  "settings": {
+    "title": "Kontoeinstellungen",
+    "tabs": {
+      "profile": "Profil",
+      "business": "Geschäftsdaten",
+      "integrations": "Integrationen",
+      "billing": "Abrechnung",
+      "templates": "Vorlagen"
+    },
+    "profile": {
+      "heading": "Persönliche Daten",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "title": "Anrede",
+      "email": "E-Mail",
+      "phoneNumber": "Telefonnummer",
+      "remove": "Entfernen",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "linkedin": "LinkedIn",
+      "instagramPlaceholder": "@benutzername",
+      "facebookPlaceholder": "facebook.com/benutzername",
+      "linkedinPlaceholder": "linkedin.com/benutzername",
+      "saveSuccess": "Profil erfolgreich gespeichert",
+      "saveError": "Profil konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
+    },
+    "business": {
+      "heading": "Geschäftsdaten",
+      "empty": "Leer",
+      "uploadLogo": "Logo hochladen",
+      "uploading": "Wird hochgeladen…",
+      "companyName": "Firmenname",
+      "website": "Webseite",
+      "street": "Straße & Hausnummer",
+      "postcode": "Postleitzahl",
+      "city": "Ort",
+      "taxId": "Steuernummer",
+      "vatId": "USt-IdNr.",
+      "saveSuccess": "Geschäftsdaten erfolgreich gespeichert",
+      "saveError": "Geschäftsdaten konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+      "invalidFileType": "Bitte wählen Sie eine Bilddatei aus",
+      "logoTooLarge": "Logo muss unter 5 MB sein",
+      "logoUploadSuccess": "Logo erfolgreich hochgeladen",
+      "logoSaveError": "Logo konnte nicht gespeichert werden",
+      "logoUploadError": "Logo konnte nicht hochgeladen werden"
+    },
+    "integrations": {
+      "heading": "Verbundene Dienste",
+      "subtitle": "Verbinden Sie Drittanbieter-Dienste, um Ihren Arbeitsablauf zu optimieren",
+      "dat": "DAT",
+      "datDescription": "Automatische Sicherung der Gutachten von DAT",
+      "lastSync": "Letzte Synchronisation: vor 2 Stunden",
+      "configure": "Konfigurieren",
+      "disconnect": "Trennen",
+      "connect": "Verbinden",
+      "username": "Benutzername",
+      "usernamePlaceholder": "DAT-Benutzername",
+      "password": "Passwort",
+      "passwordPlaceholder": "DAT-Passwort",
+      "connectSuccess": "DAT-Integration erfolgreich verbunden",
+      "connectError": "Verbindung mit DAT fehlgeschlagen. Bitte überprüfen Sie Ihre Zugangsdaten.",
+      "disconnectSuccess": "DAT-Integration getrennt",
+      "disconnectError": "DAT-Integration konnte nicht getrennt werden. Bitte versuchen Sie es erneut."
+    },
+    "billing": {
+      "currentPlan": "Aktueller Tarif",
+      "proPlan": "Pro-Tarif",
+      "trialActive": "Testphase aktiv · noch {days} Tag(e)",
+      "renewsOn": "€69,00 / Monat · Verlängerung am {date}",
+      "cancelsOn": "Kündigung zum {date}",
+      "noActiveSubscription": "Kein aktives Abonnement",
+      "managePlan": "Tarif verwalten",
+      "setupPayment": "Zahlung einrichten",
+      "reportsThisMonth": "Gutachten diesen Monat",
+      "unlimited": "Unbegrenzt",
+      "aiAutoFills": "KI Auto-Fill",
+      "cloudStorage": "Cloud-Speicher",
+      "cloudStorageAmount": "50 GB",
+      "paymentMethod": "Zahlungsmethode",
+      "cardInfo": "{brand} endet auf {last4}",
+      "cardExpiry": "Gültig bis {month}/{year}",
+      "noPaymentMethod": "Keine Zahlungsmethode hinterlegt",
+      "addPaymentMethod": "Zahlungsmethode hinzufügen",
+      "billingHistory": "Zahlungsverlauf",
+      "noBillingHistory": "Noch kein Zahlungsverlauf vorhanden",
+      "paid": "Bezahlt",
+      "open": "Offen",
+      "failed": "Fehlgeschlagen",
+      "unknown": "Unbekannt",
+      "loading": "Wird geladen..."
+    },
+    "templates": {
+      "newTemplate": "Neue Vorlage",
+      "editTemplate": "Vorlage bearbeiten",
+      "subject": "Betreff",
+      "title": "Titel",
+      "body": "Inhalt",
+      "placeholder": "Text eingeben",
+      "addTemplate": "Vorlage hinzufügen",
+      "create": "Erstellen"
+    }
+  },
+  "report": {
+    "gallery": {
+      "dropzoneText": "Hierher ziehen oder klicken zum Hochladen",
+      "fileTypes": "PDF PNG oder JPG",
+      "maxPhotosReached": "Maximale Fotoanzahl erreicht",
+      "uploadPhotos": "Fotos hochladen",
+      "noPhotosYet": "Noch keine Fotos hochgeladen",
+      "annotatePhoto": "Foto beschriften",
+      "deletePhoto": "Foto löschen",
+      "selectPhotoToView": "Foto zum Anzeigen auswählen",
+      "instruction": "Anleitung",
+      "suggestedPhotos": "Empfohlene Fotos",
+      "goodLighting": "Gute Beleuchtung oder Blitzeinsatz",
+      "fileFormat": "JPG oder PNG Format",
+      "maxImages": "Maximal 20 Bilder",
+      "vehicleDiagonals": "Fahrzeug-Diagonalansichten",
+      "vehicleDiagonalsDesc": "Diagonale Aufnahmen der Fahrzeugfront und des Hecks",
+      "damageOverview": "Schadensübersicht",
+      "damageOverviewDesc": "Detaillierte Nahaufnahmen aller beschädigten Bereiche",
+      "documentShot": "Dokumentenaufnahme",
+      "documentShotDesc": "Fotos aller relevanten Fahrzeugdokumente",
+      "generateReport": "Gutachten generieren",
+      "photosProcessed": "Fotos verarbeitet",
+      "fieldsAutoFilled": "Felder automatisch ausgefüllt",
+      "damageMarkers": "Schadensmarkierungen",
+      "aiAnalysis": "KI-Analyse",
+      "classifyingPhotos": "Fotos werden klassifiziert",
+      "analyzingPhotos": "Fotos werden analysiert",
+      "lookingUpVehicleData": "Fahrzeugdaten werden abgerufen",
+      "autoFillingReport": "Gutachten wird automatisch ausgefüllt",
+      "cancelGeneration": "Generierung abbrechen",
+      "reportGenerated": "Gutachten generiert — {count} Felder automatisch ausgefüllt",
+      "damageMarkersPlaced": "{count} Schadensmarkierungen gesetzt",
+      "backToGallery": "Zurück zur Galerie",
+      "closeModal": "Fenster schließen",
+      "description": "Beschreibung",
+      "damageComment": "Schadenskommentar",
+      "addComment": "Kommentar hinzufügen...",
+      "deleteMarker": "Markierung löschen",
+      "editDescription": "Beschreibung bearbeiten",
+      "noDescription": "Keine Beschreibung verfügbar. Starten Sie «Gutachten generieren», um dieses Foto zu analysieren, oder klicken Sie, um eine hinzuzufügen.",
+      "photoFilmstrip": "Foto-Filmstreifen",
+      "addMorePhotos": "Weitere Fotos hinzufügen",
+      "previousPhoto": "Vorheriges Foto",
+      "nextPhoto": "Nächstes Foto"
+    },
+    "accidentInfo": {
+      "title": "Unfallübersicht",
+      "clientInformation": "Auftraggeberinformationen",
+      "accidentInformation": "Unfallinformationen",
+      "accidentDay": "Unfalltag",
+      "accidentScene": "Unfallort",
+      "accidentScenePlaceholder": "Unfallort eingeben",
+      "claimantInformation": "Angaben zum Geschädigten",
+      "client": "Auftraggeber",
+      "company": "Firma",
+      "companyPlaceholder": "Firmenname",
+      "salutation": "Anrede",
+      "salutationPlaceholder": "Anrede auswählen",
+      "salutationOptions": {
+        "mr": "Herr",
+        "mrs": "Frau",
+        "dr": "Dr.",
+        "prof": "Prof."
+      },
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "street": "Straße & Hausnummer oder Postfach",
+      "postcode": "Postleitzahl",
+      "location": "Ort",
+      "email": "E-Mail",
+      "iban": "IBAN",
+      "firstNumber": "Erstes Kennzeichen (Geschädigter)",
+      "licensePlate": "Kennzeichen",
+      "inputTaxDeduction": "Vorsteuerabzugsberechtigt",
+      "isVehicleOwner": "Ist Fahrzeughalter",
+      "representedByLawyer": "Anwaltlich vertreten",
+      "vatId": "USt-IdNr.",
+      "involvedLawyer": "Beteiligter Rechtsanwalt",
+      "opponent": {
+        "title": "Unfallgegner",
+        "insuranceCompany": "Versicherungsgesellschaft",
+        "insuranceNumber": "Versicherungsnummer",
+        "claimNumber": "Schadennummer",
+        "phoneNumber": "Telefonnummer"
+      },
+      "visits": {
+        "title": "Besichtigungen",
+        "visitIndex": "Besichtigung {index}",
+        "removeVisit": "Besichtigung entfernen",
+        "type": "Art",
+        "typeOptions": {
+          "claimantResidence": "Wohnsitz des Geschädigten",
+          "claimantOffice": "Büro des Geschädigten",
+          "other": "Sonstiges"
+        },
+        "data": "Datum",
+        "expert": "Sachverständiger",
+        "expertName": "Name des Sachverständigen",
+        "vehicleCondition": "Fahrzeugzustand",
+        "chooseCondition": "Zustand auswählen",
+        "conditionOptions": {
+          "drivable": "Fahrbereit",
+          "conditionallyDrivable": "Bedingt fahrbereit",
+          "notDrivable": "Nicht fahrbereit",
+          "totalLoss": "Totalschaden"
+        },
+        "present": "Anwesend",
+        "presentOptions": {
+          "client": "Auftraggeber",
+          "workshopEmployee": "Werkstattmitarbeiter"
+        },
+        "addVisit": "Besichtigung hinzufügen"
+      },
+      "expertOpinion": {
+        "title": "Gutachterliche Stellungnahme",
+        "fileNumber": "Aktennummer",
+        "caseDate": "Vorgangsdatum",
+        "orderPlacement": "Auftragserteilung",
+        "orderOptions": {
+          "personal": "Persönlich",
+          "direct": "Direkt",
+          "viaLawyer": "Über Rechtsanwalt",
+          "viaInsurance": "Über Versicherung"
+        },
+        "issuedDate": "Ausstellungsdatum",
+        "orderByClaimant": "Auftrag durch Geschädigten",
+        "mediator": "Vermittler"
+      },
+      "signatures": {
+        "title": "Unterschriften",
+        "types": {
+          "permissionUse": "Nutzungserlaubnis",
+          "lawyer": "Rechtsanwalt",
+          "dataPermission": "Datenschutzeinwilligung",
+          "cancellation": "Widerruf"
+        },
+        "remove": "Entfernen",
+        "updateSignature": "Unterschrift aktualisieren",
+        "yourSignature": "Ihre Unterschrift",
+        "signatureConsent": "Mit der elektronischen Unterschrift dieses Dokuments erkläre ich mich damit einverstanden, dass diese Unterschrift nach geltendem Recht Gültigkeit besitzt."
+      },
+      "updateReport": "Gutachten aktualisieren"
+    },
+    "vehicle": {
+      "title": "Fahrzeug",
+      "identification": {
+        "heading": "Fahrzeuginformationen",
+        "vin": "Fahrzeug-Identifizierungsnummer (VIN)",
+        "datsCode": "DATSCode",
+        "addCode": "Code hinzufügen",
+        "marketIndex": "Marktindex",
+        "findMarketIndex": "Marktindex suchen",
+        "manufacturer": "Hersteller",
+        "mainType": "Haupttyp",
+        "subtype": "Untertyp",
+        "kbaNumber": "Schlüsselnummer (KBA)",
+        "specification": "Ausstattung",
+        "powerKw": "Leistung (kW)",
+        "powerHp": "Leistung (PS)",
+        "engineDesign": "Motorbauart",
+        "engineDesignOptions": {
+          "inline": "Reihe",
+          "vType": "V-Motor",
+          "boxer": "Boxer",
+          "rotary": "Wankel"
+        },
+        "cylinder": "Zylinder",
+        "transmission": "Getriebe",
+        "transmissionOptions": {
+          "manual5": "Schaltgetriebe (5-Gang)",
+          "manual6": "Schaltgetriebe (6-Gang)",
+          "automatic": "Automatik",
+          "cvt": "CVT",
+          "dct": "Doppelkupplung (DCT)"
+        },
+        "displacement": "Hubraum (ccm)",
+        "firstRegistration": "Erstzulassung",
+        "lastRegistration": "Letzte Zulassung",
+        "technicalDataSource": "Quelle der technischen Daten",
+        "kba": "KBA (Kraftfahrt-Bundesamt)"
+      },
+      "details": {
+        "heading": "Fahrzeugdetails",
+        "vehicleType": "Fahrzeugart",
+        "addVehicleType": "Fahrzeugart hinzufügen",
+        "motorType": "Antriebsart",
+        "addMotorType": "Antriebsart hinzufügen",
+        "vehicleTypeOptions": {
+          "sedan": "Limousine",
+          "compactCar": "Kleinwagen",
+          "suv": "SUV",
+          "wagon": "Kombi",
+          "coupe": "Coupé",
+          "convertible": "Cabrio",
+          "van": "Van"
+        },
+        "motorTypeOptions": {
+          "petrol": "Benzin",
+          "diesel": "Diesel",
+          "electric": "Elektro",
+          "hybrid": "Hybrid",
+          "gas": "Gas"
+        },
+        "axles": "Achsen",
+        "addAxleOption": "Achsenoption hinzufügen",
+        "drivenBy": "Angetriebene Achse",
+        "addDrivenOption": "Antriebsoption hinzufügen",
+        "doors": "Türen",
+        "addDoorOption": "Türenoption hinzufügen",
+        "seats": "Sitze",
+        "addSeatOption": "Sitzeoption hinzufügen",
+        "previousOwners": "Vorbesitzer",
+        "new": "Neu",
+        "addPreviousOwnerOption": "Vorbesitzer-Option hinzufügen"
+      }
+    },
+    "condition": {
+      "title": "Zustand",
+      "vehicleCondition": "Fahrzeugzustand",
+      "paintType": "Lackart",
+      "paintTypeOptions": {
+        "uni": "Uni (2 Schicht)",
+        "metallic": "Metallic",
+        "pearl": "Perleffekt",
+        "matte": "Matt"
+      },
+      "paint": "Lack",
+      "paintOptions": {
+        "original": "Originallackierung",
+        "repainted": "Nachlackiert",
+        "mixed": "Gemischt"
+      },
+      "paintCondition": "Lackzustand",
+      "paintConditionOptions": {
+        "good": "Gut",
+        "fair": "Befriedigend",
+        "poor": "Schlecht"
+      },
+      "generalCondition": "Allgemeinzustand",
+      "generalConditionOptions": {
+        "wellMaintained": "Gepflegt",
+        "average": "Durchschnittlich"
+      },
+      "bodyCondition": "Karosseriezustand",
+      "bodyConditionOptions": {
+        "minorCosmetic": "Leichte kosmetische Mängel",
+        "noDamage": "Keine Schäden",
+        "structuralDamage": "Strukturschaden"
+      },
+      "interiorCondition": "Innenraumzustand",
+      "interiorConditionOptions": {
+        "clean": "Sauber, keine Strukturschäden.",
+        "minorWear": "Leichte Abnutzung",
+        "significantWear": "Deutliche Abnutzung"
+      },
+      "drivingAbility": "Fahrfähigkeit",
+      "drivingAbilityOptions": {
+        "roadworthy": "Verkehrssicher",
+        "limited": "Eingeschränkt",
+        "notRoadworthy": "Nicht verkehrssicher"
+      },
+      "specialFeatures": "Sonderausstattung",
+      "parkingSensors": "Einparkhilfe",
+      "mileageRead": "Kilometerstand abgelesen",
+      "estimationMileage": "Geschätzter Kilometerstand",
+      "unitInKm": "Einheit in km",
+      "unitOptions": {
+        "km": "km",
+        "mkr": "MKR",
+        "miles": "Meilen"
+      },
+      "nextMot": "Nächste HU/AU",
+      "fullServiceHistory": "Lückenlose Servicehistorie",
+      "testDrivePerformed": "Probefahrt durchgeführt",
+      "errorMemoryRead": "Fehlerspeicher ausgelesen",
+      "airbagsDeployed": "Airbags ausgelöst",
+      "multiHitGroups": "Mehrfachanstoßgruppen",
+      "notes": "Bemerkungen",
+      "addNotes": "Bemerkungen hinzufügen",
+      "visualAccidentDetails": "Visuelle Unfalldetails",
+      "damage": "Schaden",
+      "paintTab": "Lack",
+      "damageManualSetup": "Schaden manuell einrichten",
+      "paintManualSetup": "Lack manuell einrichten",
+      "addMarker": "Markierung hinzufügen",
+      "standardView": "Standardansicht",
+      "tires": {
+        "title": "Reifen",
+        "firstSet": "Erster Reifensatz",
+        "secondSet": "Zweiter Reifensatz",
+        "positions": {
+          "vl": "VL",
+          "vr": "VR",
+          "hl": "HL",
+          "hr": "HR"
+        },
+        "tireSize": "Reifengröße",
+        "tireSizePlaceholder": "Größe in Zoll angeben",
+        "profileMm": "Profil (mm)",
+        "manufacturer": "Hersteller",
+        "manufacturerPlaceholder": "Hersteller eingeben",
+        "tiresUsability": "Reifenzustand",
+        "tireType": "Reifenart",
+        "tireTypeOptions": {
+          "summer": "Sommer",
+          "winter": "Winter/Schnee",
+          "allSeason": "Ganzjahres"
+        },
+        "matchAndAlign": "Abgleichen und ausrichten",
+        "alignAxes": "Achsen ausrichten",
+        "matchTheSet": "Satz abgleichen"
+      },
+      "priorDamage": {
+        "title": "Vor- und Altschäden",
+        "damageNotes": "Schadensbemerkungen",
+        "damageDescription": "Schadensbeschreibung",
+        "previousDamage": "Vorschäden (repariert)",
+        "existingDamage": "Altschäden (nicht repariert)",
+        "subsequentDamage": "Nachfolgeschäden (zwischen Unfall und Besichtigung entstanden)",
+        "addRepairedDamage": "Reparierte Schäden hinzufügen",
+        "currentCarAge": "Aktuelles Fahrzeugalter",
+        "subsequentDamagePlaceholder": "Nachfolgeschäden",
+        "describeDamage": "Schaden detailliert beschreiben..."
+      },
+      "vehicleGrading": {
+        "title": "Fahrzeugbewertung",
+        "grading": "Bewertung",
+        "paint": "Lack",
+        "overallCondition": "Gesamtzustand",
+        "bodywork": "Karosserie / Blech",
+        "tires": "Reifen",
+        "paintLabel": "Lack",
+        "interior": "Fahrgastzelle / Innenraum",
+        "chrome": "Chrom- / Zierteile",
+        "engineBay": "Motorraum",
+        "seals": "Dichtungen / Gummiteile",
+        "engine": "Motor",
+        "glass": "Glas",
+        "trunk": "Kofferraum",
+        "autoCalculateGrade": "Note automatisch berechnen",
+        "scorePopupHint": "Klicken Sie + für überdurchschnittlich, Zahl für Standard oder - für unterdurchschnittlich",
+        "overallConditionTitle": "Gesamtzustand",
+        "paintGradingNote": "Die Lackbewertung verwendet die gleichen Lackschichtdicke-Daten aus dem Zustand-Tab."
+      },
+      "valueIncreasingFeatures": {
+        "title": "Wertsteigernde Merkmale",
+        "originality": "Originalität",
+        "originalityOptions": {
+          "original": "Original",
+          "partiallyOriginal": "Teilweise Original",
+          "restored": "Restauriert",
+          "modified": "Modifiziert"
+        },
+        "rareEquipment": "Seltene Ausstattung",
+        "addRareEquipment": "Seltene Ausstattung hinzufügen",
+        "condition": "Zustand",
+        "addConditionNote": "Zustandshinweis hinzufügen",
+        "technicalFeatures": "Technische Merkmale",
+        "addTechnicalFeature": "Technisches Merkmal hinzufügen",
+        "mileage": "Laufleistung",
+        "addMileageNote": "Laufleistungshinweis hinzufügen",
+        "historyDocumentation": "Historie & Dokumentation",
+        "addHistoryItem": "Historieeintrag hinzufügen",
+        "rarityMarketDemand": "Seltenheit & Marktnachfrage",
+        "addRarityNote": "Seltenheitshinweis hinzufügen",
+        "particularsNotes": "Besonderheiten/Anmerkungen",
+        "additionalNotes": "Zusätzliche Anmerkungen",
+        "marketReputation": "Marktreputation",
+        "marketReputationOptions": {
+          "excellent": "Ausgezeichnet",
+          "good": "Gut",
+          "average": "Durchschnittlich",
+          "belowAverage": "Unterdurchschnittlich"
+        },
+        "typeAndPressEnter": "Eingeben und Enter drücken"
+      }
+    },
+    "calculation": {
+      "title": "Wert- und Reparaturkalkulation",
+      "vehicleValueOt": "Fahrzeugwert",
+      "providers": {
+        "heading": "Reparatur- und Bewertungsanbieter",
+        "subtitle": "Kalkulationsanbieter auswählen und einrichten"
+      },
+      "vehicleValue": "Fahrzeugwert",
+      "replacementValue": "Wiederbeschaffungswert",
+      "addValue": "Wert hinzufügen",
+      "chooseTaxRate": "Steuersatz wählen",
+      "residualValue": "Restwert",
+      "diminutionInValue": "Wertminderung",
+      "description": "Beschreibung",
+      "costDescription": "Kostenbeschreibung",
+      "amount": "Betrag",
+      "additionalCosts": "Zusatzkosten",
+      "damageClass": "Schadensklasse",
+      "addDamageClass": "Schadensklasse hinzufügen",
+      "repair": {
+        "title": "Reparatur",
+        "wheelAlignment": "Achsvermessung",
+        "wheelAlignmentOptions": {
+          "notRequired": "Nicht erforderlich",
+          "required": "Erforderlich",
+          "completed": "Durchgeführt"
+        },
+        "bodyMeasurements": "Karosserievermessung",
+        "bodyPaint": "Karosserielackierung (optional)",
+        "bodyPaintOptions": {
+          "partial": "Teilweise",
+          "full": "Vollständig"
+        },
+        "plasticRepair": "Kunststoffreparatur",
+        "repairMethod": "Reparaturmethode",
+        "addMethod": "Methode hinzufügen",
+        "risks": "Risiken",
+        "addRisks": "Risiken hinzufügen"
+      },
+      "lossOfUse": {
+        "title": "Nutzungsausfall",
+        "dropoutGroup": "Ausfallgruppe",
+        "groupOptions": "Gruppe A-N",
+        "costPerDay": "Kosten pro Tag (€)",
+        "rentalCarClass": "Mietwagenklasse",
+        "classOptions": "Klasse 1-7",
+        "repairTimeDays": "Reparaturdauer (Tage)",
+        "addDays": "Tage hinzufügen",
+        "replacementTimeDays": "Wiederbeschaffungsdauer (Tage)"
+      },
+      "resultsWithoutRepair": "Ergebnis ohne Reparatur",
+      "resultsWithRepair": "Ergebnis mit Reparatur",
+      "valuationResultsManual": "Bewertungsergebnisse – Manuell",
+      "valuationAfterCorrection": "Bewertung nach Korrektur",
+      "autoFillFailed": "Automatisches Ausfüllen fehlgeschlagen",
+      "autoFilledFields": "{count} Felder automatisch ausgefüllt",
+      "uploadImageToAutoFill": "Bild hochladen zum Auto-Fill",
+      "autoFilling": "Wird automatisch ausgefüllt...",
+      "correction": {
+        "title": "Korrekturkalkulation",
+        "dat": "Dat",
+        "manual": "Manuell",
+        "aiCalculation": "KI-Kalkulation"
+      },
+      "valuation": {
+        "datValuation": "DAT-Bewertung",
+        "manualValuation": "Manuelle Bewertung",
+        "generalCondition": "Allgemeinzustand",
+        "selectCondition": "Zustand auswählen",
+        "taxation": "Besteuerung",
+        "natural": "Regulär",
+        "difference": "Differenz",
+        "standardRate": "Regelsteuersatz",
+        "quickValuation": "Schnellbewertung",
+        "detailValuation": "Detailbewertung",
+        "dataSource": "Datenquelle",
+        "selectSource": "Quelle auswählen",
+        "results": "Ergebnisse",
+        "maximum": "Maximum",
+        "average": "Durchschnitt",
+        "minimum": "Minimum",
+        "date": "Datum",
+        "datePlaceholder": "MM/JJJJ",
+        "removeCalculation": "Kalkulation entfernen"
+      },
+      "oldtimer": {
+        "value": "Wert",
+        "marketValue": "Marktwert",
+        "replacementValue": "Wiederbeschaffungswert",
+        "restorationValue": "Restaurierungswert",
+        "removeAdditionalValue": "Zusätzlichen Wert entfernen",
+        "additionalValue": "Zusätzlicher Wert",
+        "baseVehicleValue": "Fahrzeug-Grundwert",
+        "totalCost": "Gesamtkosten"
+      },
+      "datModal": {
+        "repairCostCalculator": "Reparaturkostenrechner",
+        "workshop": "Werkstatt",
+        "dekraUsed": "DEKRA-Sätze werden verwendet",
+        "location": "Standort",
+        "mechanics": "Mechanik",
+        "mechanicsPlaceholder": "Name der Mechanik",
+        "body": "Karosserie",
+        "bodyPlaceholder": "Fahrzeugkarosserie",
+        "paintwork": "Lackierung",
+        "paintworkPlaceholder": "Fahrzeuglackierung",
+        "marketValue": "Marktwert",
+        "datSilverdat3": "DAT SilverDAT3"
+      },
+      "valuationTab": "Bewertung"
+    },
+    "invoice": {
+      "title": "Rechnungsdetails",
+      "settings": "Einstellungen",
+      "recipient": "Empfänger",
+      "recipientTypes": {
+        "individual": "Einzelempfänger",
+        "group": "Gruppenempfänger",
+        "document": "Dokumentenempfänger"
+      },
+      "invoiceNumber": "Rechnungsnummer",
+      "date": "Datum",
+      "datePlaceholder": "TT.MM.JJJJ",
+      "payoutDelay": "Zahlungsziel (optional)",
+      "eInvoice": "E-Rechnung",
+      "itemDetails": "Positionen",
+      "description": "Beschreibung",
+      "specialFeature": "Besonderheit",
+      "rate": "Satz",
+      "amount": "Betrag",
+      "serviceDescription": "Leistungsbeschreibung",
+      "lumpSum": "Pauschal",
+      "addRow": "Zeile hinzufügen",
+      "invoiceAmount": "Rechnungsbetrag",
+      "beforeTax": "Vor Steuer {amount}",
+      "previewInvoice": "Rechnungsvorschau",
+      "amountOfDamage": "Schadenshöhe",
+      "applyBvskRate": "BVSK-Satz anwenden",
+      "bvskAppraisalFee": "BVSK-Gutachterhonorar"
+    },
+    "export": {
+      "title": "Export und Versand",
+      "vehicleValuation": "Fahrzeugbewertung",
+      "commission": "Provision",
+      "theInvoice": "Rechnung",
+      "lockReport": "Gutachten sperren",
+      "email": "E-Mail",
+      "recipient": "Empfänger",
+      "recipientPlaceholder": "E-Mail-Adresse eingeben und Enter drücken, um einen Empfänger hinzuzufügen",
+      "removeEmail": "{email} entfernen",
+      "subject": "Betreff",
+      "messagePlaceholder": "Ihre Nachricht verfassen...",
+      "addRecipientPlaceholder": "Empfänger-E-Mail hinzufügen...",
+      "sendReport": "Gutachten senden",
+      "reportSent": "Gutachten erfolgreich gesendet!",
+      "saving": "Wird gespeichert...",
+      "saved": "Gespeichert",
+      "failedToSave": "Speichern fehlgeschlagen",
+      "individualRecipient": "Einzelempfänger",
+      "groupRecipient": "Gruppenempfänger",
+      "documentRecipient": "Dokumentenempfänger",
+      "reportSentToast": "Gutachten erfolgreich gesendet",
+      "sendFailed": "Gutachten konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+      "pdfLanguage": "PDF-Sprache",
+      "bothLanguagesNote": "Es werden beide PDFs (Deutsch und Englisch) erstellt und angehängt."
+    },
+    "annotation": {
+      "draw": "Zeichnen",
+      "crop": "Zuschneiden",
+      "circle": "Kreis",
+      "rectangle": "Rechteck",
+      "arrow": "Pfeil",
+      "deleteAnnotations": "Beschriftungen löschen",
+      "saveAnnotations": "Beschriftungen speichern",
+      "enterDescription": "Beschreibung für dieses Foto eingeben...",
+      "noAiDescription": "Keine KI-Beschreibung verfügbar. Starten Sie «Gutachten generieren», um dieses Foto zu analysieren.",
+      "saveDescription": "Beschreibung speichern"
+    },
+    "sidebar": {
+      "gallery": "Galerie",
+      "reportDetails": "Gutachtendetails",
+      "exportAndSend": "Export & Versand",
+      "lockedMessage": "Dieses Gutachten wurde gesperrt und ist schreibgeschützt. Entsperren Sie es unter Export & Versand, um Änderungen vorzunehmen."
+    },
+    "details": {
+      "showMissing": "Fehlende Informationen anzeigen",
+      "highlightingEmpty": "Leere Felder werden hervorgehoben",
+      "sectionsNeedAttention": "{count} Abschnitte benötigen Aufmerksamkeit",
+      "allCompleted": "Alle Abschnitte ausgefüllt"
+    }
+  },
+  "help": {
+    "title": "Hilfe & Support",
+    "subtitle": "Finden Sie Antworten auf Ihre Fragen oder wenden Sie sich an unser Support-Team.",
+    "searchPlaceholder": "Hilfeartikel durchsuchen...",
+    "searchResults": "{count} Ergebnis(se) für «{query}»",
+    "noResults": "Keine Ergebnisse für «{query}» gefunden",
+    "backToHelp": "Zurück zur Hilfe",
+    "relatedArticles": "Verwandte Artikel",
+    "stillNeedHelp": "Noch Fragen?",
+    "stillNeedHelpSubtitle": "Unser Support-Team hilft Ihnen, das Beste aus Gut8erPRO herauszuholen.",
+    "emailSupport": "E-Mail-Support",
+    "faqTitle": "Häufig gestellte Fragen",
+    "categories": {
+      "gettingStarted": {
+        "title": "Erste Schritte",
+        "description": "Grundlagen von Gut8erPRO kennenlernen",
+        "articles": {
+          "firstReport": {
+            "title": "Ihr erstes Gutachten erstellen",
+            "description": "Schritt-für-Schritt-Anleitung für Ihre erste Fahrzeugbegutachtung",
+            "content": [
+              "Klicken Sie auf der Übersicht oben rechts auf die Schaltfläche «+ Neues Gutachten».",
+              "Wählen Sie den passenden Gutachtentyp: HS (Haftpflichtschaden), BE (Bewertung), KG (Kurzgutachten) oder OT (Oldtimer-Bewertung).",
+              "Sie gelangen zum Galerie-Tab, wo Sie Fahrzeugfotos hochladen können. Ziehen Sie bis zu 20 Bilder per Drag & Drop oder klicken Sie zum Hochladen.",
+              "Klicken Sie nach dem Hochladen auf «Gutachten generieren», damit die KI die Bilder analysiert und Gutachtenfelder automatisch ausfüllt.",
+              "Navigieren Sie durch die Tabs — Unfallübersicht, Fahrzeug, Zustand, Kalkulation und Rechnung — um alle Abschnitte zu prüfen und zu vervollständigen.",
+              "Gehen Sie abschließend zum Tab «Export und Versand», um ein PDF zu erzeugen und es per E-Mail an den Empfänger zu senden."
+            ]
+          },
+          "uploadingPhotos": {
+            "title": "Fotos hochladen",
+            "description": "Bewährte Methoden für die Schadensfotografie",
+            "content": [
+              "Gut8erPRO unterstützt die Bildformate JPG und PNG. Jedes Gutachten kann bis zu 20 Fotos enthalten.",
+              "Fotografieren Sie das Fahrzeug bei guten Lichtverhältnissen. Vermeiden Sie Blitzlicht, da es Reflexionen erzeugen kann, die Schäden verdecken.",
+              "Machen Sie Aufnahmen aus mehreren Blickwinkeln: vorne, hinten, beide Seiten sowie Nahaufnahmen jedes beschädigten Bereichs.",
+              "Fügen Sie mindestens ein Foto des VIN-Schilds oder der Zulassungsbescheinigung für die automatische Fahrzeugidentifikation hinzu.",
+              "Fotos können in der Galerie-Rasteransicht per Drag & Drop neu angeordnet werden.",
+              "Um ein Foto zu beschriften, klicken Sie darauf für die Einzelansicht und dann auf die Zeichen-/Beschriftungsschaltfläche, um Schadensbereiche zu markieren."
+            ]
+          },
+          "aiAutoFill": {
+            "title": "KI Auto-Fill verwenden",
+            "description": "KI analysiert Ihre Fotos und füllt Gutachtendaten automatisch aus",
+            "content": [
+              "Klicken Sie nach dem Hochladen der Fahrzeugfotos in der Galerie auf «Gutachten generieren».",
+              "Die KI analysiert jedes Foto, um Schäden zu erkennen, VIN-Nummern zu lesen und Fahrzeugdetails zu identifizieren.",
+              "Nach Abschluss der Verarbeitung werden die Gutachtenfelder in allen Tabs mit den erkannten Daten vorausgefüllt.",
+              "Überprüfen Sie die KI-generierten Daten stets sorgfältig. In den meisten Fällen sind sie korrekt, einzelne Felder können jedoch manuelle Korrekturen erfordern.",
+              "KI Auto-Fill steht allen Pro-Nutzern zur Verfügung. Die besten Ergebnisse erzielen Sie mit klaren, gut beleuchteten Fotos aus Standardblickwinkeln."
+            ]
+          },
+          "reportTypes": {
+            "title": "Gutachtentypen verstehen",
+            "description": "HS, BE, KG, OT — welchen Gutachtentyp verwenden",
+            "content": [
+              "HS (Haftpflichtschaden): Das Standardgutachten für Haftpflichtansprüche. Umfasst vollständige Unfalldetails, Angaben zum Unfallgegner, Fahrzeugdaten, Schadensbewertung, Reparaturkalkulation und Nutzungsausfall.",
+              "BE (Bewertung): Für Fahrzeugbewertungen ohne Unfallhintergrund. Umfasst DAT-Bewertung, manuelle Bewertung und Korrekturkalkulation. Keine Unfall- oder Gegner-Abschnitte.",
+              "KG (Kurzgutachten): Eine vereinfachte Version des HS-Gutachtens. Enthält die gleichen Abschnitte, jedoch ohne Korrekturkalkulation und Ergebniskarten. Ideal für kleinere Schadenfälle.",
+              "OT (Oldtimer-Bewertung): Spezialgutachten für Oldtimer und klassische Fahrzeuge. Umfasst Marktwert, Wiederbeschaffungswert, Restaurierungswert und Fahrzeugbewertung. Verwendet «Auftraggeber» statt «Geschädigter».",
+              "Wählen Sie den Gutachtentyp beim Erstellen eines neuen Gutachtens über die Übersicht. Der Typ bestimmt, welche Abschnitte und Felder verfügbar sind."
+            ]
+          }
+        }
+      },
+      "reportsAndDocuments": {
+        "title": "Gutachten & Dokumente",
+        "description": "Gutachten erstellen, bearbeiten und exportieren",
+        "articles": {
+          "reportSections": {
+            "title": "Gutachten-Abschnitte erklärt",
+            "description": "Unfallübersicht, Fahrzeug, Zustand, Kalkulation, Rechnung",
+            "content": [
+              "Unfallübersicht: Enthält Unfalldaten (Datum, Ort), Angaben zum Geschädigten, Daten des Unfallgegners, Besichtigungen, gutachterliche Stellungnahme und digitale Unterschriften. Bei OT-Gutachten heißt dieser Tab «Auftraggeber» und hat ein vereinfachtes Layout.",
+              "Fahrzeug: Fahrzeugidentifikation eingeben (VIN, Hersteller, Modell), technische Daten (Leistung, Motor, Getriebe) und Details (Typ, Antrieb, Achsen, Türen, Sitze).",
+              "Zustand: Fahrzeugzustand dokumentieren einschließlich Lackart, Karosserie-/Innenraumzustand, Kilometerstand und HU/AU-Termin. Nutzen Sie das interaktive Schadensdiagramm für Anstoßpunkte und den Lack-Tab für Lackschichtdicke-Messungen.",
+              "Kalkulation: Fahrzeugwert, Reparaturkosten und Nutzungsausfalldaten eingeben. Bei BE-Gutachten zeigt dieser Tab DAT- und manuelle Bewertungsabschnitte. Bei OT-Gutachten werden Marktwert und Restaurierungskosten angezeigt.",
+              "Rechnung: Rechnung mit BVSK-Standardsätzen erstellen. Individuelle Positionen hinzufügen, Steuersätze festlegen und E-Rechnungs-Einstellungen konfigurieren."
+            ]
+          },
+          "damageDiagram": {
+            "title": "Schadensdiagramm & Lackschichtdicke",
+            "description": "Schäden markieren und Lack messen",
+            "content": [
+              "Wechseln Sie im Zustand-Tab zum Unter-Tab «Schaden», um das interaktive Schadensdiagramm aufzurufen.",
+              "Klicken Sie auf einen beliebigen Bereich der Fahrzeugsilhouette, um eine Schadensmarkierung zu setzen. Jede Markierung kann mit einer Beschreibung versehen werden.",
+              "Wechseln Sie zum Unter-Tab «Lack», um Lackschichtdicke-Messungen zu erfassen. Geben Sie die Werte in Mikrometer (µm) für jedes Karosserieteil ein.",
+              "Die Lackschichtdicke wird automatisch farbcodiert: Blau (<70 µm), Grün (70–160 µm), Gelb (160–300 µm), Orange (300–700 µm), Rot (>700 µm).",
+              "Alle Schadensmarkierungen und Lackmessungen werden automatisch gespeichert und im PDF-Export berücksichtigt."
+            ]
+          },
+          "exportSend": {
+            "title": "Export und Versand von Gutachten",
+            "description": "PDF-Export, E-Mail-Versand und Gutachtensperre",
+            "content": [
+              "Gehen Sie zum Tab «Export und Versand», um Ihr Gutachten abzuschließen.",
+              "Konfigurieren Sie die Dokumentoptionen: Fahrzeugbewertung, Provision und Rechnungsabschnitte im PDF ein-/ausschließen.",
+              "Geben Sie die Empfänger-E-Mail-Adresse ein und passen Sie Betreff und Nachricht im Texteditor an.",
+              "Klicken Sie auf «Gutachten senden», um das PDF zu erzeugen und direkt per E-Mail an den Empfänger zu versenden.",
+              "Aktivieren Sie «Gutachten sperren», um das Gutachten nach dem Versand schreibgeschützt zu machen und versehentliche Änderungen zu verhindern.",
+              "Gesperrte Gutachten können jederzeit entsperrt werden, indem Sie zum Tab «Export und Versand» zurückkehren und die Sperre deaktivieren."
+            ]
+          },
+          "invoiceBvsk": {
+            "title": "Rechnung & BVSK-Sätze",
+            "description": "Rechnungen mit Standard-Honorartabellen erstellen",
+            "content": [
+              "Der Rechnungs-Tab generiert automatisch eine Rechnungsnummer für jedes Gutachten.",
+              "Klicken Sie auf «Satz anwenden», um BVSK-Standard-Honorarsätze (Bundesverband der freiberuflichen und unabhängigen Sachverständigen) zu laden.",
+              "BVSK-Sätze werden auf Basis der Reparaturkosten und Standard-Honorartabellen berechnet.",
+              "Fügen Sie individuelle Positionen über «Zeile hinzufügen» hinzu. Jede Position enthält Beschreibung, Menge, Einzelpreis und Steuersatz.",
+              "Der Rechnungsbetrag einschließlich Mehrwertsteuer wird automatisch berechnet und unten angezeigt.",
+              "Aktivieren Sie «E-Rechnung», um eine elektronische Rechnung im ZUGFeRD-Format für den deutschen Markt zu erstellen."
+            ]
+          }
+        }
+      },
+      "integrations": {
+        "title": "Integrationen",
+        "description": "DAT, Audatex und weitere Tools",
+        "articles": {
+          "datSetup": {
+            "title": "DAT SilverDAT3 einrichten",
+            "description": "DAT-Konto für Fahrzeugdaten und Bewertungen verbinden",
+            "content": [
+              "Gehen Sie zu Einstellungen → Integrationen, um Ihre DAT SilverDAT3-Verbindung zu konfigurieren.",
+              "Geben Sie Ihren DAT-Benutzernamen und Ihr Passwort ein. Diese Zugangsdaten werden verschlüsselt und sicher gespeichert.",
+              "Nach erfolgreicher Verbindung stehen Ihnen DAT-Fahrzeugdaten und Bewertungsdienste in Ihren Gutachten zur Verfügung.",
+              "Falls Sie noch kein DAT-Konto haben, besuchen Sie dat.de, um sich für den SilverDAT3-Zugang zu registrieren.",
+              "Sie können DAT-Zugangsdaten auch während der Registrierung im Schritt «Integrationen» konfigurieren.",
+              "Unterstützung für Audatex und GT Motive Integrationen folgt in Kürze."
+            ]
+          },
+          "vinLookup": {
+            "title": "VIN-Abfrage & Fahrzeugidentifikation",
+            "description": "Automatische Fahrzeugdatenabfrage per VIN",
+            "content": [
+              "Geben Sie die 17-stellige Fahrzeug-Identifizierungsnummer (VIN) im Fahrzeug-Tab unter Identifikation ein.",
+              "Bei aktiver DAT-Integration kann das System automatisch Fahrzeugdaten abrufen, darunter Hersteller, Modell, Motordaten und mehr.",
+              "Die KI-Fotoanalyse kann VIN-Nummern auch von Fotos des VIN-Schilds oder der Zulassungsbescheinigung erkennen.",
+              "Das VIN-Feld prüft auf genau 17 Zeichen im zulässigen alphanumerischen Format.",
+              "Abgerufene Daten füllen die Felder im Fahrzeug-Tab automatisch aus und sparen manuelle Eingabezeit."
+            ]
+          },
+          "repairCalculation": {
+            "title": "Reparaturkostenkalkulation",
+            "description": "DAT für Reparaturkostenschätzungen nutzen",
+            "content": [
+              "Im Kalkulations-Tab können Sie die DAT-Integration für professionelle Reparaturkostenschätzungen nutzen.",
+              "Geben Sie die Fahrzeugdetails und Schadensbeschreibung ein, um eine Kalkulation über DAT zu erstellen.",
+              "Die Kalkulation umfasst Teilekosten, Arbeitsstunden, Lackmaterial und Nebenkosten.",
+              "Die Ergebnisse werden automatisch in die Felder des Kalkulations-Tabs übernommen.",
+              "Sie können alle berechneten Werte bei Bedarf manuell für Ihre spezifische Begutachtung anpassen."
+            ]
+          }
+        }
+      },
+      "accountAndBilling": {
+        "title": "Konto & Abrechnung",
+        "description": "Abonnement, Zahlungen und Einstellungen",
+        "articles": {
+          "subscription": {
+            "title": "Abonnement verwalten",
+            "description": "Abrechnung einsehen, Zahlungsmethode ändern, Tarif kündigen",
+            "content": [
+              "Gehen Sie zu Einstellungen → Abrechnung, um Ihren aktuellen Abonnementstatus, Ihre Zahlungsmethode und Ihren Zahlungsverlauf einzusehen.",
+              "Ihr Pro-Tarif kostet €69/Monat mit einer 7-tägigen kostenlosen Testphase.",
+              "Klicken Sie auf «Tarif verwalten», um das Stripe-Abrechnungsportal zu öffnen. Dort können Sie Ihre Zahlungsmethode aktualisieren, Rechnungen einsehen oder Ihr Abonnement kündigen.",
+              "Bei Kündigung bleibt Ihr Zugang bis zum Ende des aktuellen Abrechnungszeitraums bestehen.",
+              "Vergangene Rechnungen können direkt im Bereich Zahlungsverlauf über die Download-Schaltfläche heruntergeladen werden."
+            ]
+          },
+          "freeTrial": {
+            "title": "Informationen zur kostenlosen Testphase",
+            "description": "7-tägige Testphase — was passiert nach Ablauf",
+            "content": [
+              "Jedes neue Konto startet mit einer 7-tägigen kostenlosen Testphase mit vollem Zugriff auf alle Pro-Funktionen.",
+              "Ihre Zahlungskarte wird bei der Registrierung validiert, es wird jedoch erst nach Ablauf der Testphase eine Belastung vorgenommen.",
+              "Sie können während der Testphase jederzeit kündigen, ohne dass Kosten anfallen.",
+              "Nach der Testphase wird Ihr Abonnement automatisch in den kostenpflichtigen Pro-Tarif zu €69/Monat umgewandelt.",
+              "Bei einer Kündigung während oder nach der Testphase bleibt Ihr Konto zugänglich, Funktionen können jedoch eingeschränkt sein.",
+              "Sie können Ihr Abonnement jederzeit unter Einstellungen → Abrechnung reaktivieren."
+            ]
+          },
+          "profileSettings": {
+            "title": "Profil- & Geschäftseinstellungen",
+            "description": "Persönliche und Firmendaten aktualisieren",
+            "content": [
+              "Gehen Sie zu Einstellungen → Profil, um Ihren Namen, Ihre Telefonnummer und Social-Media-Links zu aktualisieren.",
+              "Gehen Sie zu Einstellungen → Geschäftsdaten, um Firmenname, Adresse, Steuernummer und USt-IdNr. zu aktualisieren.",
+              "Laden Sie ein Firmenlogo im Bereich Geschäftsdaten hoch. Dieses Logo erscheint auf Ihren erstellten PDF-Gutachten.",
+              "Ihre Berufsbezeichnung (z.B. Sachverständiger) wird in der App-Kopfzeile und auf Gutachten angezeigt.",
+              "Änderungen an Profil- und Geschäftseinstellungen werden beim Klicken auf «Speichern» automatisch gespeichert."
+            ]
+          }
+        }
+      }
+    },
+    "faq": {
+      "resetPassword": {
+        "question": "Wie setze ich mein Passwort zurück?",
+        "answer": "Gehen Sie zur Anmeldeseite und klicken Sie auf «Passwort vergessen?», um einen Zurücksetzungslink per E-Mail zu erhalten."
+      },
+      "exportPdf": {
+        "question": "Kann ich Gutachten als PDF exportieren?",
+        "answer": "Ja. Gehen Sie in einem beliebigen Gutachten zum Tab «Export und Versand», um ein PDF zu erstellen und herunterzuladen. Sie können es auch direkt per E-Mail an Empfänger senden."
+      },
+      "trialWork": {
+        "question": "Wie funktioniert die 7-tägige Testphase?",
+        "answer": "Bei der Registrierung erhalten Sie 7 Tage lang vollen Zugriff auf alle Funktionen. Ihre Karte wird validiert, aber erst nach Ablauf der Testphase belastet. Sie können jederzeit vorher kündigen."
+      },
+      "imageFormats": {
+        "question": "Welche Bildformate werden unterstützt?",
+        "answer": "JPG und PNG werden unterstützt. Für beste Ergebnisse nutzen Sie gute Beleuchtung und vermeiden Blitzlicht. Maximal 20 Fotos pro Gutachten."
+      },
+      "unlockReport": {
+        "question": "Kann ich ein gesperrtes Gutachten entsperren?",
+        "answer": "Ja. Gehen Sie zum Tab «Export und Versand» und deaktivieren Sie den Schalter «Gutachten sperren», um es wieder bearbeitbar zu machen."
+      },
+      "connectDat": {
+        "question": "Wie verbinde ich mein DAT-Konto?",
+        "answer": "Gehen Sie zu Einstellungen → Integrationen und geben Sie Ihre DAT SilverDAT3-Zugangsdaten ein. Dies können Sie auch während der Registrierung einrichten."
+      }
+    }
+  },
+  "statistics": {
+    "title": "Statistiken",
+    "subtitle": "Überblick über Ihren Umsatz und Ihre Gutachtenaktivität",
+    "revenue": "Umsatz",
+    "revenueOverview": "Umsatzübersicht",
+    "revenueOverviewSubtitle": "Umsatzübersicht der vergangenen Wochen, Monate und Jahre",
+    "invoiceHistory": "Rechnungsverlauf",
+    "totalRevenue": "Gesamtumsatz",
+    "totalReports": "Gesamtgutachten",
+    "avgReportValue": "Durchschn. Gutachtenwert",
+    "completionRate": "Abschlussquote",
+    "last6Months": "Letzte 6 Monate",
+    "downloadReport": "Bericht herunterladen",
+    "searchPlaceholder": "Suchen...",
+    "weekly": "Wöchentlich",
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mär",
+      "apr": "Apr",
+      "may": "Mai",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Okt",
+      "nov": "Nov",
+      "dec": "Dez"
+    },
+    "table": {
+      "clients": "Kunden",
+      "invoiceId": "Rechnungsnr.",
+      "dateCreated": "Erstellt am",
+      "amount": "Betrag",
+      "status": "Status"
+    },
+    "status": {
+      "completed": "Abgeschlossen",
+      "pending": "Ausstehend",
+      "rejected": "Abgelehnt"
+    }
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "markAllAsRead": "Alle als gelesen markieren",
+    "noNotifications": "Noch keine Benachrichtigungen",
+    "noNotificationsSubtitle": "Benachrichtigungen erscheinen hier, sobald es Aktivitäten zu Ihren Gutachten gibt.",
+    "viewAll": "Alle Benachrichtigungen anzeigen",
+    "failedToLoad": "Benachrichtigungen konnten nicht geladen werden. Bitte versuchen Sie es erneut."
+  },
+  "validation": {
+    "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    "passwordMinLength": "Passwort muss mindestens 8 Zeichen lang sein",
+    "confirmPassword": "Bitte bestätigen Sie Ihr Passwort",
+    "passwordsDoNotMatch": "Passwörter stimmen nicht überein",
+    "titleRequired": "Bitte wählen Sie eine Anrede",
+    "firstNameRequired": "Vorname ist erforderlich",
+    "lastNameRequired": "Nachname ist erforderlich",
+    "phoneRequired": "Telefonnummer ist erforderlich",
+    "companyNameRequired": "Firmenname ist erforderlich",
+    "streetRequired": "Straße ist erforderlich",
+    "postcodeRequired": "Postleitzahl ist erforderlich",
+    "cityRequired": "Ort ist erforderlich",
+    "taxIdRequired": "Steuernummer ist erforderlich",
+    "postcodeFormat": "Postleitzahl muss 5 Ziffern haben",
+    "vatIdFormat": "USt-IdNr. muss im Format DE + 9 Ziffern sein",
+    "invalidLogoUrl": "Ungültige Logo-URL"
+  },
+  "pdf": {
+    "titles": {
+      "damageAssessment": "Kfz-Schadensgutachten",
+      "valuation": "Fahrzeugbewertung",
+      "oldtimerValuation": "Oldtimer-Wertgutachten"
+    },
+    "reportNo": "Gutachten Nr. {id}",
+    "date": "Datum: {date}",
+    "vehicleInformation": "Fahrzeuginformationen",
+    "manufacturer": "Hersteller",
+    "type": "Typ",
+    "subtype": "Untertyp",
+    "vin": "VIN",
+    "kbaNumber": "KBA-Nummer",
+    "firstRegistration": "Erstzulassung",
+    "power": "Leistung",
+    "engineDesign": "Motorbauart",
+    "displacement": "Hubraum",
+    "transmission": "Getriebe",
+    "vehicleType": "Fahrzeugart",
+    "doors": "Türen",
+    "seats": "Sitze",
+    "previousOwners": "Vorbesitzer",
+    "accidentInformation": "Unfallinformationen",
+    "claimant": "Geschädigter",
+    "name": "Name",
+    "address": "Adresse",
+    "email": "E-Mail",
+    "licensePlate": "Kennzeichen",
+    "vehicleCondition": "Fahrzeugzustand",
+    "generalCondition": "Allgemeinzustand",
+    "bodyCondition": "Karosseriezustand",
+    "interiorCondition": "Innenraumzustand",
+    "paintType": "Lackart",
+    "paintFinish": "Lackierung",
+    "paintCondition": "Lackzustand",
+    "drivingAbility": "Fahrfähigkeit",
+    "mileage": "Kilometerstand",
+    "estimatedMileage": "Geschätzter Kilometerstand",
+    "nextMot": "Nächste HU/AU",
+    "specialFeatures": "Sonderausstattung",
+    "fullServiceHistory": "Lückenlose Servicehistorie",
+    "notes": "Bemerkungen",
+    "previousDamage": "Vorschäden (gemeldet)",
+    "existingDamage": "Altschäden (nicht gemeldet)",
+    "subsequentDamage": "Nachfolgeschäden",
+    "valuationAndCalculation": "Bewertung & Kalkulation",
+    "replacementValue": "Wiederbeschaffungswert",
+    "residualValue": "Restwert",
+    "diminutionInValue": "Wertminderung",
+    "repairMethod": "Reparaturmethode",
+    "damageClass": "Schadensklasse",
+    "lossOfUse": "Nutzungsausfall",
+    "costPerDay": "Kosten pro Tag",
+    "repairTime": "Reparaturdauer",
+    "replacementTime": "Wiederbeschaffungsdauer",
+    "additionalCosts": "Zusatzkosten",
+    "invoice": "Rechnung",
+    "invoiceNumber": "Rechnungsnummer",
+    "invoiceDate": "Rechnungsdatum",
+    "netTotal": "Nettobetrag",
+    "vat": "MwSt. ({rate}%)",
+    "grossTotal": "Bruttobetrag",
+    "photoDocumentation": "Fotodokumentation",
+    "otherPhotos": "Weitere Fotos ({count})",
+    "pagination": "Seite {current} von {total}",
+    "valuation": "Bewertung",
+    "taxation": "Besteuerung",
+    "dataSource": "Datenquelle",
+    "maximumValue": "Höchstwert",
+    "averageValue": "Durchschnittswert",
+    "minimumValue": "Mindestwert",
+    "valuationDate": "Bewertungsdatum",
+    "oldtimerValuation": "Oldtimer-Bewertung",
+    "marketValue": "Marktwert",
+    "baseVehicleValue": "Basisfahrzeugwert",
+    "restorationValue": "Restaurierungswert"
+  },
+  "toast": {
+    "profileSaved": "Profil erfolgreich gespeichert",
+    "profileSaveError": "Profil konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+    "businessSaved": "Geschäftsdaten erfolgreich gespeichert",
+    "businessSaveError": "Geschäftsdaten konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+    "logoUploaded": "Logo erfolgreich hochgeladen",
+    "logoSaveError": "Logo konnte nicht gespeichert werden",
+    "logoUploadError": "Logo konnte nicht hochgeladen werden",
+    "datConnected": "DAT-Integration erfolgreich verbunden",
+    "datConnectError": "Verbindung mit DAT fehlgeschlagen. Bitte überprüfen Sie Ihre Zugangsdaten.",
+    "datDisconnected": "DAT-Integration getrennt",
+    "datDisconnectError": "DAT-Integration konnte nicht getrennt werden. Bitte versuchen Sie es erneut.",
+    "reportCreateError": "Gutachten konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+    "reportDeleted": "Gutachten erfolgreich gelöscht",
+    "reportDeleteError": "Gutachten konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+    "reportUpdated": "Gutachten aktualisiert",
+    "reportSent": "Gutachten erfolgreich gesendet!",
+    "reportsLoadError": "Gutachten konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "notificationsLoadError": "Benachrichtigungen konnten nicht geladen werden. Bitte versuchen Sie es erneut."
+  },
+  "language": {
+    "title": "Sprache",
+    "english": "English",
+    "deutsch": "Deutsch"
+  },
+  "landing": {
+    "aiPoweredBadge": "Jetzt mit KI-gestütztem Auto-Fill",
+    "heroTitle": "Professionelle Fahrzeugbegutachtung",
+    "heroSubtitle": "Einfach gemacht",
+    "heroDescription": "Erstellen Sie Schadensgutachten in Minuten statt Stunden. Laden Sie Bilder hoch, lassen Sie die KI arbeiten und konzentrieren Sie sich auf das Wesentliche — Ihre Expertise.",
+    "startFreeTrial": "Kostenlos testen",
+    "logIn": "Anmelden",
+    "stats": {
+      "reportTime": "Gutachtenzeit",
+      "reportTimeValue": "-35%",
+      "manualWork": "Manuelle Arbeit",
+      "manualWorkValue": "-60%",
+      "professionals": "Sachverständige",
+      "professionalsValue": "2000+"
+    },
+    "featuresTitle": "Gut8erPRO Funktionen",
+    "featuresSubtitle": "Von intelligenter Analyse bis hin zu nahtlosen Workflow-Tools — Gut8erPRO gibt Ihnen die Klarheit und Kontrolle, die Sie für schnellere, bessere Entscheidungen brauchen.",
+    "features": {
+      "datIntegration": {
+        "title": "DAT-Integration",
+        "description": "Echtzeit-Fahrzeugdaten und Bewertungen direkt in Ihrem Arbeitsablauf."
+      },
+      "realTimeAnalytics": {
+        "title": "Echtzeit-Auswertungen",
+        "description": "Umsatz, Zahlungen und Leistung in Echtzeit verfolgen."
+      },
+      "aiEvaluationTool": {
+        "title": "KI-Bewertungstool",
+        "description": "Analysiert Gutachten und Kennzahlen automatisch mittels KI."
+      },
+      "editingPhotos": {
+        "title": "Fotobearbeitung",
+        "description": "Bilder direkt in der Plattform zuschneiden, anpassen und vorbereiten."
+      }
+    },
+    "faqTitle": "Häufig gestellte Fragen",
+    "faqSubtitle": "Alles, was Sie über Gut8erPRO wissen müssen.",
+    "faq": {
+      "whatIsGut8erPro": {
+        "question": "Was ist Gut8erPRO?",
+        "answer": "Gut8erPRO ist eine professionelle Web-App zur Kfz-Schadensbegutachtung, entwickelt für Kfz-Sachverständige. Erstellen Sie detaillierte Gutachten, füllen Sie Daten automatisch per Bildanalyse aus und optimieren Sie Ihren gesamten Arbeitsablauf."
+      },
+      "howDoesAutoFillWork": {
+        "question": "Wie funktioniert das bildbasierte Auto-Fill?",
+        "answer": "Unsere KI analysiert hochgeladene Fahrzeugfotos, erkennt automatisch Schäden, liest VIN-Nummern und füllt Gutachtenfelder vor. Laden Sie einfach Ihre Bilder hoch und lassen Sie das System die relevanten Daten extrahieren."
+      },
+      "whatIntegrations": {
+        "question": "Welche Integrationen sind verfügbar?",
+        "answer": "Gut8erPRO ist mit DAT SilverDAT3 für Fahrzeugdaten, Bewertungen und Reparaturkostenkalkulation integriert. Unterstützung für Audatex und GT Motive folgt in Kürze. Die Plattform unterstützt außerdem Google- und Apple-Anmeldung, Stripe für Zahlungen und E-Mail-Versand für Gutachten."
+      },
+      "isThereFreeTrial": {
+        "question": "Gibt es eine kostenlose Testphase?",
+        "answer": "Ja! Bei der Registrierung erhalten Sie 7 Tage lang kostenlosen Vollzugriff auf alle Funktionen. Ihre Zahlungsdaten werden vorab erfasst, eine Belastung erfolgt jedoch erst nach Ablauf der Testphase. Sie können jederzeit während der Testphase kündigen."
+      },
+      "whatSupport": {
+        "question": "Welcher Support steht zur Verfügung?",
+        "answer": "Alle Nutzer erhalten priorisierten E-Mail-Support mit garantierten Antwortzeiten sowie Unterstützung beim Onboarding und persönliche Betreuung."
+      }
+    },
+    "copyright": "© {year} Gut8erPRO. Alle Rechte vorbehalten."
+  },
+  "notFound": {
+    "code": "404",
+    "title": "Seite nicht gefunden",
+    "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "goToDashboard": "Zur Übersicht",
+    "goHome": "Zur Startseite"
+  }
+}

@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { AccidentSection } from '@/components/report/accident-info/accident-section'
@@ -22,6 +23,8 @@ import { useToastStore } from '@/stores/toast-store'
 type SignatureType = 'LAWYER' | 'DATA_PERMISSION' | 'CANCELLATION'
 
 function AccidentInfoPage() {
+	const t = useTranslations('report')
+	const tc = useTranslations('common')
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useAccidentInfo(reportId)
@@ -226,23 +229,25 @@ function AccidentInfoPage() {
 			{/* Page heading with completion badge + auto-save status */}
 			<div className="flex items-center justify-between">
 				<h2 className="text-subsection font-medium text-black">
-					{report?.reportType === 'OT' ? 'Client Information' : 'Accident Overview'}
+					{report?.reportType === 'OT'
+						? t('accidentInfo.clientInformation')
+						: t('accidentInfo.title')}
 				</h2>
 				<div className="flex items-center gap-3">
 					{autoSaveState.status === 'saving' && (
 						<span className="flex items-center gap-1 text-caption text-grey-100">
 							<Loader2 className="h-3 w-3 animate-spin" />
-							Saving...
+							{tc('saving')}
 						</span>
 					)}
 					{autoSaveState.status === 'saved' && (
 						<span className="flex items-center gap-1 text-caption text-primary">
 							<CheckCircle2 className="h-3 w-3" />
-							Saved
+							{tc('saved')}
 						</span>
 					)}
 					{autoSaveState.status === 'error' && (
-						<span className="text-caption text-error">Failed to save</span>
+						<span className="text-caption text-error">{tc('failedToSave')}</span>
 					)}
 					<span className="text-body-sm text-grey-100">
 						{(() => {
@@ -253,7 +258,7 @@ function AccidentInfoPage() {
 								'claimantEmail',
 							] as const
 							const filled = fields.filter((f) => getValues(f as keyof AccidentInfoFormData)).length
-							return `${Math.round((filled / fields.length) * 100)}% Complete`
+							return `${Math.round((filled / fields.length) * 100)}% ${tc('complete')}`
 						})()}
 					</span>
 				</div>
@@ -308,7 +313,7 @@ function AccidentInfoPage() {
 
 			{/* Signature Modal */}
 			<Modal
-				title="Your Signature"
+				title={t('accidentInfo.signatures.yourSignature')}
 				open={signatureModalType !== null}
 				onClose={() => {
 					setSignatureModalType(null)
@@ -324,18 +329,17 @@ function AccidentInfoPage() {
 								setSignatureValue('')
 							}}
 						>
-							Cancel
+							{tc('cancel')}
 						</Button>
 						<Button variant="primary" onClick={handleSignatureSave} disabled={!signatureValue}>
-							Save
+							{tc('save')}
 						</Button>
 					</>
 				}
 			>
 				<SignaturePad value={signatureValue} onChange={setSignatureValue} />
 				<p className="mt-4 text-caption text-grey-100">
-					By signing this document with an electronic signature, I agree that such signature will be
-					extend allowed by local law.
+					{t('accidentInfo.signatures.signatureConsent')}
 				</p>
 			</Modal>
 
@@ -349,7 +353,7 @@ function AccidentInfoPage() {
 					}}
 					loading={autoSaveState.status === 'saving'}
 				>
-					Update Report
+					{t('accidentInfo.updateReport')}
 				</Button>
 			</div>
 		</div>

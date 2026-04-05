@@ -22,6 +22,7 @@ const sendReportSchema = z.object({
 	emailSubject: z.string().min(1, 'Subject is required').max(500),
 	emailBody: z.string().max(10000).optional(),
 	lockReport: z.boolean().optional(),
+	pdfLanguages: z.array(z.enum(['en', 'de'])).optional(),
 })
 
 type ExportConfigInput = z.infer<typeof exportConfigSchema>

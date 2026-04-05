@@ -4,10 +4,14 @@ import { Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
 import { updatePassword } from '@/lib/auth/actions'
 
 function ResetPasswordPage() {
+	const t = useTranslations('auth.resetPassword')
+	const tLogin = useTranslations('auth.login')
+	const tCommon = useTranslations('common')
 	const router = useRouter()
 	const [showPassword, setShowPassword] = useState(false)
 	const [showConfirm, setShowConfirm] = useState(false)
@@ -19,10 +23,10 @@ function ResetPasswordPage() {
 			const confirmPassword = formData.get('confirmPassword') as string
 
 			if (password !== confirmPassword) {
-				return 'Passwords do not match'
+				return t('passwordsDoNotMatch')
 			}
 			if (password.length < 8) {
-				return 'Password must be at least 8 characters'
+				return t('passwordMinLength')
 			}
 
 			const result = await updatePassword(formData)
@@ -46,9 +50,7 @@ function ResetPasswordPage() {
 						</Link>
 					</div>
 					<h1 className="z-10 mt-12 text-[36px] font-medium leading-[46px] text-black">
-						Professional Vehicle
-						<br />
-						Assessment Web App
+						{tLogin('tagline')}
 					</h1>
 					<div className="absolute bottom-0 left-0 right-0">
 						<Image
@@ -76,26 +78,20 @@ function ResetPasswordPage() {
 					{success ? (
 						<>
 							<h2 className="text-[36px] font-medium leading-[46px] text-black">
-								Password updated
+								{t('passwordUpdated')}
 							</h2>
-							<p className="mt-3.5 text-[16px] leading-6 text-grey-100">
-								Your password has been updated successfully. Redirecting to login...
-							</p>
+							<p className="mt-3.5 text-[16px] leading-6 text-grey-100">{t('successMessage')}</p>
 							<Link
 								href="/login"
 								className="mt-8 block text-center text-[16px] font-medium text-primary hover:text-primary-hover"
 							>
-								Go to login
+								{t('goToLogin')}
 							</Link>
 						</>
 					) : (
 						<>
-							<h2 className="text-[36px] font-medium leading-[46px] text-black">
-								Set new password
-							</h2>
-							<p className="mt-3.5 text-[16px] leading-6 text-grey-100">
-								Enter your new password below. Must be at least 8 characters.
-							</p>
+							<h2 className="text-[36px] font-medium leading-[46px] text-black">{t('title')}</h2>
+							<p className="mt-3.5 text-[16px] leading-6 text-grey-100">{t('subtitle')}</p>
 
 							{error && (
 								<div className="mt-4 rounded-[15px] bg-error-light px-4 py-2.5 text-[16px] text-error">
@@ -105,12 +101,12 @@ function ResetPasswordPage() {
 
 							<form action={formAction} className="mt-10 flex flex-col gap-6">
 								<div className="flex flex-col gap-3">
-									<label className="text-[18px] font-medium text-black">New password</label>
+									<label className="text-[18px] font-medium text-black">{t('newPassword')}</label>
 									<div className="relative">
 										<input
 											name="password"
 											type={showPassword ? 'text' : 'password'}
-											placeholder="Enter new password"
+											placeholder={t('newPasswordPlaceholder')}
 											required
 											minLength={8}
 											autoComplete="new-password"
@@ -121,7 +117,7 @@ function ResetPasswordPage() {
 											tabIndex={-1}
 											className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer text-grey-100 hover:text-black"
 											onClick={() => setShowPassword((p) => !p)}
-											aria-label={showPassword ? 'Hide password' : 'Show password'}
+											aria-label={showPassword ? tCommon('hidePassword') : tCommon('showPassword')}
 										>
 											{showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
 										</button>
@@ -129,12 +125,14 @@ function ResetPasswordPage() {
 								</div>
 
 								<div className="flex flex-col gap-3">
-									<label className="text-[18px] font-medium text-black">Confirm password</label>
+									<label className="text-[18px] font-medium text-black">
+										{t('confirmPassword')}
+									</label>
 									<div className="relative">
 										<input
 											name="confirmPassword"
 											type={showConfirm ? 'text' : 'password'}
-											placeholder="Confirm new password"
+											placeholder={t('confirmPasswordPlaceholder')}
 											required
 											minLength={8}
 											autoComplete="new-password"
@@ -145,7 +143,7 @@ function ResetPasswordPage() {
 											tabIndex={-1}
 											className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer text-grey-100 hover:text-black"
 											onClick={() => setShowConfirm((p) => !p)}
-											aria-label={showConfirm ? 'Hide password' : 'Show password'}
+											aria-label={showConfirm ? tCommon('hidePassword') : tCommon('showPassword')}
 										>
 											{showConfirm ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
 										</button>
@@ -157,7 +155,7 @@ function ResetPasswordPage() {
 									disabled={isPending}
 									className="flex h-[58px] w-full cursor-pointer items-center justify-center rounded-[15px] bg-primary text-[18px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
 								>
-									{isPending ? 'Updating...' : 'Update password'}
+									{isPending ? t('updating') : t('updatePassword')}
 								</button>
 							</form>
 						</>

@@ -1,4 +1,5 @@
 import { Edit, PenLine, Sparkles } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 
 type CorrectionMode = 'dat' | 'manual' | 'ai'
@@ -28,6 +29,8 @@ function CorrectionSection({
 	onEditWith,
 	className,
 }: CorrectionSectionProps) {
+	const t = useTranslations('report.calculation')
+
 	function handleTabClick(selected: CorrectionMode) {
 		onModeChange?.(selected)
 		if (selected === 'dat') onOpenDat?.()
@@ -38,7 +41,7 @@ function CorrectionSection({
 			{/* Label */}
 			<div className="flex items-center gap-1.5">
 				<Sparkles className="h-5 w-5 text-grey-100" />
-				<span className="text-body-sm font-medium text-black">Correction Calculation</span>
+				<span className="text-body-sm font-medium text-black">{t('correction.title')}</span>
 			</div>
 
 			{/* Tab row */}
@@ -56,7 +59,7 @@ function CorrectionSection({
 					<div className="flex h-[50px] w-[31px] items-center justify-center rounded bg-[#f5c800] text-[10px] font-bold leading-tight text-[#003087]">
 						DAT
 					</div>
-					<span className="text-body-sm font-medium text-black">Dat</span>
+					<span className="text-body-sm font-medium text-black">{t('correction.dat')}</span>
 				</button>
 
 				{/* Manual tab */}
@@ -69,7 +72,7 @@ function CorrectionSection({
 					)}
 				>
 					<PenLine className="h-8 w-8 text-black" />
-					<span className="text-body-sm font-medium text-black">Manual</span>
+					<span className="text-body-sm font-medium text-black">{t('correction.manual')}</span>
 				</button>
 
 				{/* AI Calculation tab */}
@@ -82,7 +85,9 @@ function CorrectionSection({
 					)}
 				>
 					<Sparkles className="h-8 w-8 text-black" />
-					<span className="text-body-sm font-medium text-black">AI Calculation</span>
+					<span className="text-body-sm font-medium text-black">
+						{t('correction.aiCalculation')}
+					</span>
 				</button>
 			</div>
 
@@ -104,6 +109,8 @@ function ResultCard({
 	value: string
 	onEdit?: () => void
 }) {
+	const tc = useTranslations('common')
+
 	return (
 		<div className="relative overflow-hidden rounded-card bg-primary p-6">
 			{/* Dark overlay tint for depth */}
@@ -120,7 +127,7 @@ function ResultCard({
 						className="flex items-center gap-1.5 rounded-btn bg-white/15 px-3.5 py-3 text-body-sm font-medium text-white transition-colors hover:bg-white/25"
 					>
 						<Edit className="h-4 w-4" />
-						Edit
+						{tc('edit')}
 					</button>
 				)}
 			</div>

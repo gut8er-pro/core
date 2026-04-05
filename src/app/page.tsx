@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { useAuth } from '@/hooks/use-auth'
@@ -89,38 +90,18 @@ const _FEATURES = [
 	},
 ] as const
 
-const FAQ_ITEMS = [
-	{
-		question: 'What is Gut8erPRO?',
-		answer:
-			'Gut8erPRO is a professional vehicle damage assessment web app designed for Kfz-Sachverst\u00e4ndige. Create detailed reports, auto-fill data from images, and streamline your entire workflow.',
-	},
-	{
-		question: 'How does image auto-fill work?',
-		answer:
-			'Our AI analyzes uploaded vehicle photos to automatically detect damage, read VIN numbers, and pre-populate report fields. Simply upload your images and let the system extract the relevant data for you.',
-	},
-	{
-		question: 'What integrations are available?',
-		answer:
-			'Gut8erPRO integrates with DAT SilverDAT3 for vehicle data, valuation, and repair cost calculation. Support for Audatex and GT Motive is coming soon. The platform also supports Google and Apple social login, Stripe for payments, and email delivery for sending reports.',
-	},
-	{
-		question: 'Is there a free trial?',
-		answer:
-			'Yes! When you sign up, you get full access to all features for 7 days at no charge. Your payment details are collected upfront but you will not be charged until the trial period ends. You can cancel anytime during the trial.',
-	},
-	{
-		question: 'What support is available?',
-		answer:
-			'All users receive priority email support with guaranteed response times, along with onboarding assistance and dedicated account management.',
-	},
+const FAQ_KEYS = [
+	'whatIsGut8erPro',
+	'howDoesAutoFillWork',
+	'whatIntegrations',
+	'isThereFreeTrial',
+	'whatSupport',
 ] as const
 
-const STATS = [
-	{ value: '-35%', label: 'Report time' },
-	{ value: '-60%', label: 'Manual work' },
-	{ value: '2,000+', label: 'Professionals' },
+const STAT_KEYS = [
+	{ valueKey: 'stats.reportTimeValue', labelKey: 'stats.reportTime' },
+	{ valueKey: 'stats.manualWorkValue', labelKey: 'stats.manualWork' },
+	{ valueKey: 'stats.professionalsValue', labelKey: 'stats.professionals' },
 ] as const
 
 function SparkleIcon({ className }: { className?: string }) {
@@ -142,6 +123,8 @@ function SparkleIcon({ className }: { className?: string }) {
 }
 
 function LandingPage() {
+	const t = useTranslations('landing')
+	const tNav = useTranslations('nav')
 	const { isAuthenticated, loading } = useAuth()
 	const router = useRouter()
 
@@ -154,14 +137,14 @@ function LandingPage() {
 						type="button"
 						className="cursor-pointer"
 						onClick={() => router.push(isAuthenticated ? '/dashboard' : '/')}
-						aria-label="Gut8erPRO home"
+						aria-label={tNav('gut8erproHome')}
 					>
 						<Image src="/images/logo.svg" alt="Gut8erPRO" width={131} height={31} priority />
 					</button>
 					<nav className="flex items-center gap-4">
 						{!loading && isAuthenticated ? (
 							<Button size="md" onClick={() => router.push('/dashboard')}>
-								Dashboard
+								{tNav('dashboard')}
 							</Button>
 						) : (
 							<>
@@ -169,10 +152,10 @@ function LandingPage() {
 									href="/login"
 									className="text-body-sm font-medium text-grey-100 transition-colors hover:text-black"
 								>
-									Log In
+									{t('logIn')}
 								</Link>
 								<Button asChild variant="outline" size="md">
-									<Link href="/signup/account">Start Free Trial</Link>
+									<Link href="/signup/account">{t('startFreeTrial')}</Link>
 								</Button>
 							</>
 						)}
@@ -187,22 +170,19 @@ function LandingPage() {
 					<div className="mb-6 flex justify-center">
 						<span className="inline-flex items-center gap-1.5 rounded-full border border-primary-light-border bg-primary-light px-4 py-1.5 text-body-sm font-medium text-primary">
 							<SparkleIcon className="h-4 w-4" />
-							Now with AI-powered auto-fill
+							{t('aiPoweredBadge')}
 						</span>
 					</div>
 
 					<h2 className="text-display font-bold leading-tight text-black">
-						Professional Vehicle Assessment
+						{t('heroTitle')}
 						<br />
-						Made Simple
+						{t('heroSubtitle')}
 					</h2>
-					<p className="mx-auto mt-6 max-w-2xl text-body text-grey-100">
-						Create damage reports in minutes, not hours. Upload images, let AI do the work, and
-						focus on what matters — your expertise.
-					</p>
+					<p className="mx-auto mt-6 max-w-2xl text-body text-grey-100">{t('heroDescription')}</p>
 					<div className="mt-8 flex justify-center">
 						<Button asChild size="lg">
-							<Link href="/signup/account">Start Free Trial</Link>
+							<Link href="/signup/account">{t('startFreeTrial')}</Link>
 						</Button>
 					</div>
 				</div>
@@ -223,15 +203,15 @@ function LandingPage() {
 
 						{/* Stats overlay — positioned on the right side of the image */}
 						<div className="absolute right-4 top-1/2 flex -translate-y-1/2 flex-col gap-3 md:right-8">
-							{STATS.map((stat) => (
+							{STAT_KEYS.map((stat) => (
 								<div
-									key={stat.label}
+									key={stat.labelKey}
 									className="flex items-center gap-3 rounded-lg bg-white/95 px-4 py-3 shadow-card backdrop-blur-sm"
 								>
 									<SparkleIcon className="h-5 w-5 shrink-0 text-primary" />
 									<div>
-										<p className="text-h4 font-bold text-black">{stat.value}</p>
-										<p className="text-caption text-grey-100">{stat.label}</p>
+										<p className="text-h4 font-bold text-black">{t(stat.valueKey)}</p>
+										<p className="text-caption text-grey-100">{t(stat.labelKey)}</p>
 									</div>
 								</div>
 							))}
@@ -244,12 +224,9 @@ function LandingPage() {
 			<section className="bg-surface-secondary px-6 py-20">
 				<div className="mx-auto max-w-6xl">
 					<div className="mb-12 text-center">
-						<h3 className="text-h2 font-bold text-black">
-							Gut8er<span className="text-primary">PRO</span> Features
-						</h3>
+						<h3 className="text-h2 font-bold text-black">{t('featuresTitle')}</h3>
 						<p className="mx-auto mt-3 max-w-2xl text-body text-grey-100">
-							From smart analysis to seamless workflow tools, Gut8erPro gives you the clarity and
-							control you need to make faster, better decisions.
+							{t('featuresSubtitle')}
 						</p>
 					</div>
 
@@ -264,9 +241,11 @@ function LandingPage() {
 								</div>
 							</div>
 							<div className="flex flex-col gap-2">
-								<h4 className="text-h4 font-semibold text-black">DAT Integration</h4>
+								<h4 className="text-h4 font-semibold text-black">
+									{t('features.datIntegration.title')}
+								</h4>
 								<p className="text-body-sm text-grey-100">
-									Real-time vehicle data and valuations directly within your workflow.
+									{t('features.datIntegration.description')}
 								</p>
 							</div>
 						</div>
@@ -313,10 +292,11 @@ function LandingPage() {
 								</div>
 							</div>
 							<div className="mt-4 flex flex-col gap-2">
-								<h4 className="text-h4 font-semibold text-black">Real-Time Analytics</h4>
+								<h4 className="text-h4 font-semibold text-black">
+									{t('features.realTimeAnalytics.title')}
+								</h4>
 								<p className="text-body-sm text-grey-100">
-									Track revenue, payments, and performance as they happen. Now the chart actually
-									makes sense.
+									{t('features.realTimeAnalytics.description')}
 								</p>
 							</div>
 						</div>
@@ -381,10 +361,11 @@ function LandingPage() {
 								))}
 							</div>
 							<div className="flex flex-col gap-2">
-								<h4 className="text-h4 font-semibold text-black">AI Evaluation Tool</h4>
+								<h4 className="text-h4 font-semibold text-black">
+									{t('features.aiEvaluationTool.title')}
+								</h4>
 								<p className="text-body-sm text-grey-100">
-									Automatically analyzes reports and key metrics using AI. Directly tied to the
-									cards and numbers shown.
+									{t('features.aiEvaluationTool.description')}
 								</p>
 							</div>
 						</div>
@@ -462,9 +443,11 @@ function LandingPage() {
 								))}
 							</div>
 							<div className="mt-4 flex flex-col gap-2">
-								<h4 className="text-h4 font-semibold text-black">Editing Photos</h4>
+								<h4 className="text-h4 font-semibold text-black">
+									{t('features.editingPhotos.title')}
+								</h4>
 								<p className="text-body-sm text-grey-100">
-									Crop, adjust, and prepare images directly within the platform.
+									{t('features.editingPhotos.description')}
 								</p>
 							</div>
 						</div>
@@ -476,15 +459,13 @@ function LandingPage() {
 			<section className="px-6 py-20">
 				<div className="mx-auto max-w-3xl">
 					<div className="mb-10 text-center">
-						<h3 className="text-h2 font-bold text-black">Frequently Asked Questions</h3>
-						<p className="mt-3 text-body text-grey-100">
-							Everything you need to know about Gut8erPro.
-						</p>
+						<h3 className="text-h2 font-bold text-black">{t('faqTitle')}</h3>
+						<p className="mt-3 text-body text-grey-100">{t('faqSubtitle')}</p>
 					</div>
 					<div className="flex flex-col">
-						{FAQ_ITEMS.map((item) => (
-							<CollapsibleSection key={item.question} title={item.question}>
-								<p className="text-body-sm text-grey-100">{item.answer}</p>
+						{FAQ_KEYS.map((key) => (
+							<CollapsibleSection key={key} title={t(`faq.${key}.question`)}>
+								<p className="text-body-sm text-grey-100">{t(`faq.${key}.answer`)}</p>
 							</CollapsibleSection>
 						))}
 					</div>
@@ -494,7 +475,9 @@ function LandingPage() {
 			{/* Footer */}
 			<footer className="border-t border-border px-6 py-8">
 				<div className="mx-auto max-w-7xl text-center">
-					<p className="text-body-sm text-grey-100">&copy; 2026 Gut8erPRO. All rights reserved.</p>
+					<p className="text-body-sm text-grey-100">
+						{t('copyright', { year: new Date().getFullYear() })}
+					</p>
 				</div>
 			</footer>
 		</div>

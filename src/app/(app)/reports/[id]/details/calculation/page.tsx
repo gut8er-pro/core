@@ -3,6 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, ChevronRight, Loader2, Sparkles } from 'lucide-react'
 import { useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import type { CorrectionMode } from '@/components/report/calculation/correction-section'
@@ -22,6 +23,8 @@ import { useCalculation } from '@/hooks/use-calculation'
 import { useReport } from '@/hooks/use-reports'
 
 function CalculationPage() {
+	const t = useTranslations('report.calculation')
+	const tc = useTranslations('common')
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useCalculation(reportId)
@@ -193,18 +196,18 @@ function CalculationPage() {
 			})
 			if (!response.ok) {
 				const resData = await response.json().catch(() => ({ error: 'Auto-fill failed' }))
-				setAutoFillMessage(resData.error || 'Auto-fill failed')
+				setAutoFillMessage(resData.error || t('autoFillFailed'))
 				return
 			}
 			const resData = (await response.json()) as { fieldsUpdated: string[] }
-			setAutoFillMessage(`Auto-filled ${resData.fieldsUpdated.length} fields`)
+			setAutoFillMessage(t('autoFilledFields', { count: resData.fieldsUpdated.length }))
 			queryClient.invalidateQueries({ queryKey: ['report', reportId, 'calculation'] })
 		} catch {
-			setAutoFillMessage('Auto-fill failed')
+			setAutoFillMessage(t('autoFillFailed'))
 		} finally {
 			setIsAutoFilling(false)
 		}
-	}, [reportId, queryClient])
+	}, [reportId, queryClient, t])
 
 	if (isLoading) {
 		return (
@@ -214,7 +217,7 @@ function CalculationPage() {
 		)
 	}
 
-	const sectionTitle = isOldtimerReport ? 'Vehicle Value' : 'Value and Repair Calculation'
+	const sectionTitle = isOldtimerReport ? t('vehicleValueOt') : t('title')
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -226,28 +229,30 @@ function CalculationPage() {
 						{autoSaveState.status === 'saving' && (
 							<>
 								<Loader2 className="h-3 w-3 animate-spin text-grey-100" />
-								<span className="text-grey-100">Saving...</span>
+								<span className="text-grey-100">{tc('saving')}</span>
 							</>
 						)}
 						{autoSaveState.status === 'saved' && (
 							<>
 								<CheckCircle2 className="h-3 w-3 text-primary" />
-								<span className="text-primary">Saved</span>
+								<span className="text-primary">{tc('saved')}</span>
 							</>
 						)}
-						{autoSaveState.status === 'error' && <span className="text-error">Failed to save</span>}
+						{autoSaveState.status === 'error' && (
+							<span className="text-error">{tc('failedToSave')}</span>
+						)}
 					</div>
 				</div>
 				<Button variant="primary" size="lg" onClick={handleAutoFill} disabled={isAutoFilling}>
 					{isAutoFilling ? (
 						<>
 							<Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-							Auto-filling...
+							{t('autoFilling')}
 						</>
 					) : (
 						<>
 							<Sparkles className="mr-1.5 h-4 w-4" />
-							Upload Image to Auto-fill
+							{t('uploadImageToAutoFill')}
 						</>
 					)}
 				</Button>
@@ -260,10 +265,8 @@ function CalculationPage() {
 				className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-border bg-white px-5 py-4 text-left transition-colors hover:bg-grey-25"
 			>
 				<div className="flex flex-col gap-0.5">
-					<span className="text-body-sm font-semibold text-black">
-						Repair and Valuation Providers
-					</span>
-					<span className="text-caption text-grey-100">Select and setup calculation provider</span>
+					<span className="text-body-sm font-semibold text-black">{t('providers.heading')}</span>
+					<span className="text-caption text-grey-100">{t('providers.subtitle')}</span>
 				</div>
 				<ChevronRight className="h-5 w-5 text-grey-100" />
 			</button>
@@ -342,10 +345,10 @@ function CalculationPage() {
 						onModeChange={setCorrectionMode}
 						onOpenDat={() => setDatModalOpen(true)}
 						resultWithoutLabel={
-							isValuationReport ? 'Valuation Results - Manual' : 'Results without repair'
+							isValuationReport ? t('valuationResultsManual') : t('resultsWithoutRepair')
 						}
 						resultWithLabel={
-							isValuationReport ? 'Valuation after Correction' : 'Results with repair'
+							isValuationReport ? t('valuationAfterCorrection') : t('resultsWithRepair')
 						}
 						resultWithoutValue="—"
 						resultWithValue="—"
