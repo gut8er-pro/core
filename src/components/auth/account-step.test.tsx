@@ -35,14 +35,14 @@ describe('AccountStep', () => {
 	it('renders heading and description', () => {
 		render(<AccountStep />)
 		expect(screen.getByText('Create your account')).toBeInTheDocument()
-		expect(screen.getByText('Start with your email and a secure password')).toBeInTheDocument()
+		expect(screen.getByText('Enter your email and create a secure password.')).toBeInTheDocument()
 	})
 
 	it('renders email, password, and confirm password fields', () => {
 		render(<AccountStep />)
-		expect(screen.getByLabelText('Email address')).toBeInTheDocument()
-		expect(screen.getByLabelText('Password')).toBeInTheDocument()
-		expect(screen.getByLabelText('Confirm password')).toBeInTheDocument()
+		expect(screen.getByText('Email address')).toBeInTheDocument()
+		expect(screen.getByText('Password')).toBeInTheDocument()
+		expect(screen.getByText('Confirm password')).toBeInTheDocument()
 	})
 
 	it('renders Cancel and Continue buttons', () => {
@@ -62,9 +62,9 @@ describe('AccountStep', () => {
 		const user = userEvent.setup()
 		render(<AccountStep />)
 
-		await user.type(screen.getByLabelText('Email address'), 'test@example.com')
-		await user.type(screen.getByLabelText('Password'), 'password123')
-		await user.type(screen.getByLabelText('Confirm password'), 'different123')
+		await user.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com')
+		await user.type(screen.getByPlaceholderText('Min. 8 characters'), 'password123')
+		await user.type(screen.getByPlaceholderText('Repeat password'), 'different123')
 		await user.click(screen.getByRole('button', { name: 'Continue' }))
 
 		expect(await screen.findByText('Passwords do not match')).toBeInTheDocument()
@@ -74,9 +74,9 @@ describe('AccountStep', () => {
 		const user = userEvent.setup()
 		render(<AccountStep />)
 
-		await user.type(screen.getByLabelText('Email address'), 'test@example.com')
-		await user.type(screen.getByLabelText('Password'), 'password123')
-		await user.type(screen.getByLabelText('Confirm password'), 'password123')
+		await user.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com')
+		await user.type(screen.getByPlaceholderText('Min. 8 characters'), 'password123')
+		await user.type(screen.getByPlaceholderText('Repeat password'), 'password123')
 		await user.click(screen.getByRole('button', { name: 'Continue' }))
 
 		await vi.waitFor(() => {

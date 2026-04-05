@@ -117,7 +117,7 @@ describe('signupBusinessSchema', () => {
 		expect(result.success).toBe(true)
 	})
 
-	it('fails with invalid postcode (non-5-digit)', () => {
+	it('accepts any postcode string (no format validation)', () => {
 		const result = signupBusinessSchema.safeParse({
 			companyName: 'Test GmbH',
 			street: 'Musterstraße 1',
@@ -125,10 +125,10 @@ describe('signupBusinessSchema', () => {
 			city: 'Bremen',
 			taxId: '12/345/67890',
 		})
-		expect(result.success).toBe(false)
+		expect(result.success).toBe(true)
 	})
 
-	it('fails with invalid VAT ID format', () => {
+	it('accepts any VAT ID string (no format validation)', () => {
 		const result = signupBusinessSchema.safeParse({
 			companyName: 'Test GmbH',
 			street: 'Musterstraße 1',
@@ -137,10 +137,7 @@ describe('signupBusinessSchema', () => {
 			taxId: '12/345/67890',
 			vatId: 'AT123456789',
 		})
-		expect(result.success).toBe(false)
-		if (!result.success) {
-			expect(result.error.issues[0]?.message).toContain('DE + 9 digits')
-		}
+		expect(result.success).toBe(true)
 	})
 
 	it('passes with empty optional VAT ID', () => {

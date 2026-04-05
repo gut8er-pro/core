@@ -28,10 +28,9 @@ describe('CompleteStep', () => {
 		expect(screen.getByText('Your account has been created successfully.')).toBeInTheDocument()
 	})
 
-	it('shows Pro plan badge and payment setup section', () => {
+	it('shows Pro plan badge', () => {
 		render(<CompleteStep />)
 		expect(screen.getByText(/Pro Plan/)).toBeInTheDocument()
-		expect(screen.getByText('Set up your payment')).toBeInTheDocument()
 	})
 
 	it('renders quick-start cards', () => {
@@ -41,10 +40,10 @@ describe('CompleteStep', () => {
 		expect(screen.getByText('Settings')).toBeInTheDocument()
 	})
 
-	it('renders payment setup and skip buttons', () => {
+	it('renders action buttons', () => {
 		render(<CompleteStep />)
-		expect(screen.getByRole('button', { name: /Set up payment/ })).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'Skip for now' })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Create your first report' })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Go to Dashboard' })).toBeInTheDocument()
 	})
 
 	it('shows confirmation email text', () => {
@@ -53,10 +52,10 @@ describe('CompleteStep', () => {
 		expect(screen.getByText('test@example.com')).toBeInTheDocument()
 	})
 
-	it('navigates to dashboard on skip', async () => {
+	it('navigates to dashboard on button click', async () => {
 		const user = userEvent.setup()
 		render(<CompleteStep />)
-		await user.click(screen.getByRole('button', { name: 'Skip for now' }))
+		await user.click(screen.getByRole('button', { name: 'Go to Dashboard' }))
 		expect(mockPush).toHaveBeenCalledWith('/dashboard')
 	})
 })

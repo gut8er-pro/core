@@ -25,7 +25,7 @@ describe('PhotoCard', () => {
 	it('renders thumbnail variant', () => {
 		render(<PhotoCard src="/test.jpg" variant="thumbnail" />)
 		const container = screen.getByAltText('Photo').parentElement
-		expect(container?.className).toContain('h-16')
+		expect(container?.className).toContain('h-14')
 	})
 
 	it('shows selected ring', () => {

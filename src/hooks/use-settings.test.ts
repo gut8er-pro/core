@@ -288,14 +288,22 @@ describe('saveSettings', () => {
 	})
 
 	it('throws on non-ok response', async () => {
-		mockFetch.mockResolvedValueOnce({ ok: false, status: 422 })
+		mockFetch.mockResolvedValueOnce({
+			ok: false,
+			status: 422,
+			json: () => Promise.resolve({ error: 'Failed to save settings' }),
+		})
 		await expect(saveSettings({ profile: { firstName: 'Test' } })).rejects.toThrow(
 			'Failed to save settings',
 		)
 	})
 
 	it('throws on server error', async () => {
-		mockFetch.mockResolvedValueOnce({ ok: false, status: 500 })
+		mockFetch.mockResolvedValueOnce({
+			ok: false,
+			status: 500,
+			json: () => Promise.resolve({}),
+		})
 		await expect(
 			saveSettings({
 				business: {

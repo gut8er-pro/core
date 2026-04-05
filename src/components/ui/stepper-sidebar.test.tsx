@@ -28,8 +28,7 @@ describe('StepperSidebar', () => {
 	it('marks current step with primary styling', () => {
 		render(<StepperSidebar steps={steps} currentStep={2} completedSteps={[1]} />)
 		const currentStepIndicator = screen.getByText('2')
-		expect(currentStepIndicator.className).toContain('bg-primary')
-		expect(currentStepIndicator.className).toContain('text-white')
+		expect(currentStepIndicator.className).toContain('border-primary')
 	})
 
 	it('shows checkmark for completed steps', () => {
@@ -43,9 +42,9 @@ describe('StepperSidebar', () => {
 		expect(screen.getByText('Log in')).toHaveAttribute('href', '/login')
 	})
 
-	it('renders logo', () => {
+	it('renders logo image', () => {
 		render(<StepperSidebar steps={steps} currentStep={1} completedSteps={[]} />)
-		expect(screen.getByText(/Gut8er/)).toBeInTheDocument()
+		expect(screen.getByAltText('Gut8erPRO')).toBeInTheDocument()
 	})
 
 	it('has navigation landmark', () => {
@@ -64,6 +63,6 @@ describe('StepperProgress', () => {
 	it('marks current step with primary styling', () => {
 		render(<StepperProgress steps={steps} currentStep={3} completedSteps={[1, 2]} />)
 		const current = screen.getByText('3')
-		expect(current.className).toContain('bg-primary')
+		expect(current.className).toContain('border-primary')
 	})
 })

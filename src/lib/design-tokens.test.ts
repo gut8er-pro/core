@@ -26,42 +26,42 @@ describe('design-tokens', () => {
 	describe('PAINT_THICKNESS_COLORS', () => {
 		it('has all 5 paint threshold levels', () => {
 			expect(Object.keys(PAINT_THICKNESS_COLORS)).toHaveLength(5)
-			expect(PAINT_THICKNESS_COLORS.blue.hex).toBe('#3B82F6')
-			expect(PAINT_THICKNESS_COLORS.green.hex).toBe('#22C55E')
-			expect(PAINT_THICKNESS_COLORS.yellow.hex).toBe('#EAB308')
-			expect(PAINT_THICKNESS_COLORS.orange.hex).toBe('#F97316')
-			expect(PAINT_THICKNESS_COLORS.red.hex).toBe('#EF4444')
+			expect(PAINT_THICKNESS_COLORS.blue.hex).toBe('#49DCF2')
+			expect(PAINT_THICKNESS_COLORS.green.hex).toBe('#52D57B')
+			expect(PAINT_THICKNESS_COLORS.yellow.hex).toBe('#F4CA14')
+			expect(PAINT_THICKNESS_COLORS.orange.hex).toBe('#F47514')
+			expect(PAINT_THICKNESS_COLORS.red.hex).toBe('#F41414')
 		})
 	})
 
 	describe('getPaintColor', () => {
 		it('returns blue for < 70 µm', () => {
-			expect(getPaintColor(0)).toBe('#3B82F6')
-			expect(getPaintColor(50)).toBe('#3B82F6')
-			expect(getPaintColor(69)).toBe('#3B82F6')
+			expect(getPaintColor(0)).toBe('#49DCF2')
+			expect(getPaintColor(50)).toBe('#49DCF2')
+			expect(getPaintColor(69)).toBe('#49DCF2')
 		})
 
 		it('returns green for 70-160 µm', () => {
-			expect(getPaintColor(70)).toBe('#22C55E')
-			expect(getPaintColor(100)).toBe('#22C55E')
-			expect(getPaintColor(160)).toBe('#22C55E')
+			expect(getPaintColor(70)).toBe('#52D57B')
+			expect(getPaintColor(100)).toBe('#52D57B')
+			expect(getPaintColor(160)).toBe('#52D57B')
 		})
 
 		it('returns yellow for 161-300 µm', () => {
-			expect(getPaintColor(161)).toBe('#EAB308')
-			expect(getPaintColor(200)).toBe('#EAB308')
-			expect(getPaintColor(300)).toBe('#EAB308')
+			expect(getPaintColor(161)).toBe('#F4CA14')
+			expect(getPaintColor(200)).toBe('#F4CA14')
+			expect(getPaintColor(300)).toBe('#F4CA14')
 		})
 
 		it('returns orange for 301-700 µm', () => {
-			expect(getPaintColor(301)).toBe('#F97316')
-			expect(getPaintColor(500)).toBe('#F97316')
-			expect(getPaintColor(700)).toBe('#F97316')
+			expect(getPaintColor(301)).toBe('#F47514')
+			expect(getPaintColor(500)).toBe('#F47514')
+			expect(getPaintColor(700)).toBe('#F47514')
 		})
 
 		it('returns red for > 700 µm', () => {
-			expect(getPaintColor(701)).toBe('#EF4444')
-			expect(getPaintColor(1000)).toBe('#EF4444')
+			expect(getPaintColor(701)).toBe('#F41414')
+			expect(getPaintColor(1000)).toBe('#F41414')
 		})
 	})
 })

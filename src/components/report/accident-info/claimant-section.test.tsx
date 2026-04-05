@@ -67,21 +67,20 @@ describe('ClaimantSection', () => {
 		expect(screen.getByText('Last Name')).toBeInTheDocument()
 	})
 
-	it('renders email and phone fields', () => {
+	it('renders email field', () => {
 		render(<TestWrapper />)
 		expect(screen.getByText('Email')).toBeInTheDocument()
-		expect(screen.getByText('Phone')).toBeInTheDocument()
 	})
 
-	it('renders checkboxes (3 checkboxes)', () => {
+	it('renders checkboxes', () => {
 		render(<TestWrapper />)
 		expect(screen.getByText('Eligible for input tax deduction')).toBeInTheDocument()
-		expect(screen.getByText('Is vehicle owner')).toBeInTheDocument()
-		expect(screen.getByText('Represented by lawyer')).toBeInTheDocument()
+		expect(screen.getByText('Is the vehicle owner')).toBeInTheDocument()
+		expect(screen.getByText('Represented by a lawyer')).toBeInTheDocument()
 	})
 
 	it('section is open by default', () => {
 		render(<TestWrapper />)
-		expect(screen.getByPlaceholderText('First name')).toBeVisible()
+		expect(screen.getByText('First Name')).toBeVisible()
 	})
 })

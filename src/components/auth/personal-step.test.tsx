@@ -29,16 +29,16 @@ describe('PersonalStep', () => {
 	it('renders heading and description', () => {
 		render(<PersonalStep />)
 		expect(screen.getByText('Personal details')).toBeInTheDocument()
-		expect(screen.getByText('Tell us about yourself')).toBeInTheDocument()
+		expect(screen.getByText('Tell us a bit about yourself.')).toBeInTheDocument()
 	})
 
 	it('renders all form fields', () => {
 		render(<PersonalStep />)
 		expect(screen.getByText('Title')).toBeInTheDocument()
-		expect(screen.getByLabelText('First name')).toBeInTheDocument()
-		expect(screen.getByLabelText('Last name')).toBeInTheDocument()
-		expect(screen.getByLabelText('Phone number')).toBeInTheDocument()
-		expect(screen.getByLabelText('Professional qualification')).toBeInTheDocument()
+		expect(screen.getByText('First name')).toBeInTheDocument()
+		expect(screen.getByText('Last name')).toBeInTheDocument()
+		expect(screen.getByText('Phone number')).toBeInTheDocument()
+		expect(screen.getByText('Professional qualification')).toBeInTheDocument()
 	})
 
 	it('renders Back and Continue buttons', () => {

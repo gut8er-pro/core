@@ -16,13 +16,21 @@ import { describe, expect, it } from 'vitest'
 
 function requireEnv(name: string): string {
 	const value = process.env[name]
-	if (!value) throw new Error(`Missing env var: ${name}. Skipping integration tests.`)
+	if (!value) {
+		throw new Error(`Missing env var: ${name}. Skipping integration tests.`)
+	}
 	return value
 }
 
+function hasEnv(name: string): boolean {
+	return !!process.env[name]
+}
+
+const describeWithEnv = (...envVars: string[]) => (envVars.every(hasEnv) ? describe : describe.skip)
+
 // ─── 1. Stripe — Create checkout session for Pro plan ───────────────────────
 
-describe('Stripe Integration', () => {
+describeWithEnv('STRIPE_SECRET_KEY', 'STRIPE_PRO_PRICE_ID')('Stripe Integration', () => {
 	it('retrieves the Pro price (49 EUR/month)', async () => {
 		const stripe = new Stripe(requireEnv('STRIPE_SECRET_KEY'))
 		const priceId = requireEnv('STRIPE_PRO_PRICE_ID')
@@ -63,7 +71,7 @@ describe('Stripe Integration', () => {
 
 // ─── 2. Anthropic — Analyze a sample image ──────────────────────────────────
 
-describe('Anthropic Integration', () => {
+describeWithEnv('ANTHROPIC_API_KEY')('Anthropic Integration', () => {
 	it('analyzes a vehicle damage description prompt', async () => {
 		const client = new Anthropic({ apiKey: requireEnv('ANTHROPIC_API_KEY') })
 
@@ -117,7 +125,7 @@ describe('Anthropic Integration', () => {
 
 // ─── 3. Resend — Send a test email ──────────────────────────────────────────
 
-describe('Resend Integration', () => {
+describeWithEnv('RESEND_API_KEY')('Resend Integration', () => {
 	it('sends a test email successfully', async () => {
 		const resend = new Resend(requireEnv('RESEND_API_KEY'))
 
@@ -137,7 +145,7 @@ describe('Resend Integration', () => {
 
 // ─── 4. Sentry — Verify DSN is valid ────────────────────────────────────────
 
-describe('Sentry Integration', () => {
+describeWithEnv('NEXT_PUBLIC_SENTRY_DSN')('Sentry Integration', () => {
 	it('has a valid DSN format', () => {
 		const dsn = requireEnv('NEXT_PUBLIC_SENTRY_DSN')
 
@@ -166,24 +174,27 @@ describe('Sentry Integration', () => {
 
 // ─── 5. Supabase — Connection check ─────────────────────────────────────────
 
-describe('Supabase Integration', () => {
-	it('connects to Supabase Auth', async () => {
-		const { createClient } = await import('@supabase/supabase-js')
+describeWithEnv('NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY')(
+	'Supabase Integration',
+	() => {
+		it('connects to Supabase Auth', async () => {
+			const { createClient } = await import('@supabase/supabase-js')
 
-		const supabase = createClient(
-			requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-			requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
-		)
+			const supabase = createClient(
+				requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
+				requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+			)
 
-		const { error } = await supabase.auth.getSession()
-		// No session is expected (not logged in), but no connection error
-		expect(error).toBeNull()
-	})
-})
+			const { error } = await supabase.auth.getSession()
+			// No session is expected (not logged in), but no connection error
+			expect(error).toBeNull()
+		})
+	},
+)
 
 // ─── 6. Database — Prisma connection ─────────────────────────────────────────
 
-describe('Database Integration', () => {
+describeWithEnv('DATABASE_URL')('Database Integration', () => {
 	it('connects to PostgreSQL and queries successfully', async () => {
 		const pg = await import('pg')
 		const pool = new pg.default.Pool({

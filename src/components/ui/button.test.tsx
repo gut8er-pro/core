@@ -33,7 +33,7 @@ describe('Button', () => {
 	it('renders danger variant', () => {
 		render(<Button variant="danger">Delete</Button>)
 		const button = screen.getByRole('button')
-		expect(button.className).toContain('border-black')
+		expect(button.className).toContain('border-error')
 	})
 
 	it('renders all sizes', () => {

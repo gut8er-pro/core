@@ -48,9 +48,9 @@ describe('IntegrationsStep', () => {
 		expect(screen.getByText(/Link your calculation provider/)).toBeInTheDocument()
 	})
 
-	it('renders three provider cards', () => {
+	it('renders provider cards including DAT and Coming Soon', () => {
 		render(<IntegrationsStep />)
-		expect(screen.getAllByText('DAT').length).toBeGreaterThanOrEqual(1)
+		expect(screen.getByAltText('DAT')).toBeInTheDocument()
 		expect(screen.getAllByText('Coming Soon')).toHaveLength(2)
 	})
 
@@ -65,20 +65,23 @@ describe('IntegrationsStep', () => {
 		const user = userEvent.setup()
 		render(<IntegrationsStep />)
 
-		const datCard = screen.getAllByText('DAT')[0]?.closest('[role="button"]') as HTMLElement
-		await user.click(datCard)
+		// Click the DAT button (it's a <button> containing the DAT image)
+		const datImg = screen.getByAltText('DAT')
+		const datButton = datImg.closest('button') as HTMLElement
+		await user.click(datButton)
 
 		expect(screen.getByText('DAT SilverDAT3 Credentials')).toBeInTheDocument()
-		expect(screen.getByLabelText('Username')).toBeInTheDocument()
-		expect(screen.getByLabelText('Password')).toBeInTheDocument()
+		expect(screen.getByText('Username')).toBeInTheDocument()
+		expect(screen.getByText('Password')).toBeInTheDocument()
 	})
 
 	it('shows "Register with DAT" link', async () => {
 		const user = userEvent.setup()
 		render(<IntegrationsStep />)
 
-		const datCard = screen.getAllByText('DAT')[0]?.closest('[role="button"]') as HTMLElement
-		await user.click(datCard)
+		const datImg = screen.getByAltText('DAT')
+		const datButton = datImg.closest('button') as HTMLElement
+		await user.click(datButton)
 
 		expect(screen.getByText('Register with DAT')).toHaveAttribute('href', 'https://www.dat.de')
 	})

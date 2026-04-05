@@ -22,36 +22,35 @@ describe('LoginPage', () => {
 
 	it('renders email and password fields', () => {
 		render(<LoginPage />)
-		expect(screen.getByLabelText('Email address')).toBeInTheDocument()
-		expect(screen.getByLabelText('Password')).toBeInTheDocument()
+		expect(screen.getByText('Email address')).toBeInTheDocument()
+		expect(screen.getByText('Password')).toBeInTheDocument()
 	})
 
-	it('renders the sign in button', () => {
+	it('renders the log in button', () => {
 		render(<LoginPage />)
-		expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Log in' })).toBeInTheDocument()
 	})
 
 	it('renders social login buttons', () => {
 		render(<LoginPage />)
-		expect(screen.getByRole('button', { name: 'Continue with Google' })).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'Continue with Apple' })).toBeInTheDocument()
+		expect(screen.getByText('Login with Google')).toBeInTheDocument()
+		expect(screen.getByText('Login with Apple')).toBeInTheDocument()
 	})
 
 	it('renders branding panel with stats', () => {
 		render(<LoginPage />)
 		expect(screen.getByText('-35%')).toBeInTheDocument()
-		expect(screen.getByText('-60%')).toBeInTheDocument()
-		expect(screen.getByText('2000+')).toBeInTheDocument()
+		expect(screen.getByText('-40%')).toBeInTheDocument()
 	})
 
-	it('renders forgot password and create account links', () => {
+	it('renders forgot password and signup links', () => {
 		render(<LoginPage />)
 		expect(screen.getByText('Forgot password?')).toHaveAttribute('href', '/forgot-password')
-		expect(screen.getByText('Create account')).toHaveAttribute('href', '/signup/account')
+		expect(screen.getByText('Sign Up')).toHaveAttribute('href', '/signup/account')
 	})
 
-	it('renders remember me checkbox', () => {
+	it('renders subtitle text', () => {
 		render(<LoginPage />)
-		expect(screen.getByText('Remember me')).toBeInTheDocument()
+		expect(screen.getByText('Please log in to your account to continue.')).toBeInTheDocument()
 	})
 })

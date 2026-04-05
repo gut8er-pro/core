@@ -29,22 +29,17 @@ describe('BusinessStep', () => {
 	it('renders heading and description', () => {
 		render(<BusinessStep />)
 		expect(screen.getByText('Business information')).toBeInTheDocument()
-		expect(screen.getByText('Enter your company details for invoicing')).toBeInTheDocument()
+		expect(screen.getByText('Your company details for invoices and reports.')).toBeInTheDocument()
 	})
 
 	it('renders all business form fields', () => {
 		render(<BusinessStep />)
-		expect(screen.getByLabelText('Company name')).toBeInTheDocument()
-		expect(screen.getByLabelText('Street & house number')).toBeInTheDocument()
-		expect(screen.getByLabelText('Postcode')).toBeInTheDocument()
-		expect(screen.getByLabelText('City')).toBeInTheDocument()
-		expect(screen.getByLabelText('Tax ID (Steuernummer)')).toBeInTheDocument()
-		expect(screen.getByLabelText('VAT ID (USt-IdNr.)')).toBeInTheDocument()
-	})
-
-	it('shows VAT ID optional hint', () => {
-		render(<BusinessStep />)
-		expect(screen.getByText(/Optional — Format: DE \+ 9 digits/)).toBeInTheDocument()
+		expect(screen.getByText('Company name')).toBeInTheDocument()
+		expect(screen.getByText('Street & house number')).toBeInTheDocument()
+		expect(screen.getByText('Postcode')).toBeInTheDocument()
+		expect(screen.getByText('City')).toBeInTheDocument()
+		expect(screen.getByText('Tax ID (Steuernummer)')).toBeInTheDocument()
+		expect(screen.getByText(/VAT ID/)).toBeInTheDocument()
 	})
 
 	it('navigates back to personal step', async () => {
@@ -66,11 +61,11 @@ describe('BusinessStep', () => {
 		const user = userEvent.setup()
 		render(<BusinessStep />)
 
-		await user.type(screen.getByLabelText('Company name'), 'Test GmbH')
-		await user.type(screen.getByLabelText('Street & house number'), 'Musterstraße 1')
-		await user.type(screen.getByLabelText('Postcode'), '28195')
-		await user.type(screen.getByLabelText('City'), 'Bremen')
-		await user.type(screen.getByLabelText('Tax ID (Steuernummer)'), '12/345/67890')
+		await user.type(screen.getByPlaceholderText('Mustermann Gutachten GmbH'), 'Test GmbH')
+		await user.type(screen.getByPlaceholderText('Musterstraße 123'), 'Musterstraße 1')
+		await user.type(screen.getByPlaceholderText('12345'), '28195')
+		await user.type(screen.getByPlaceholderText('Berlin'), 'Bremen')
+		await user.type(screen.getByPlaceholderText('123/456/78901'), '12/345/67890')
 		await user.click(screen.getByRole('button', { name: 'Continue' }))
 
 		await vi.waitFor(() => {

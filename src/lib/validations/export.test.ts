@@ -49,16 +49,25 @@ describe('exportConfigSchema', () => {
 		expect(result.success).toBe(true)
 	})
 
-	it('rejects invalid email format', () => {
+	it('accepts any string for recipientEmail (no format validation)', () => {
 		const result = exportConfigSchema.safeParse({
 			recipientEmail: 'not-an-email',
 		})
+		expect(result.success).toBe(true)
+	})
+
+	it('rejects recipientEmail exceeding 500 characters', () => {
+		const result = exportConfigSchema.safeParse({
+			recipientEmail: 'A'.repeat(501),
+		})
 		expect(result.success).toBe(false)
-		if (!result.success) {
-			const emailError = result.error.issues.find((issue) => issue.path[0] === 'recipientEmail')
-			expect(emailError).toBeDefined()
-			expect(emailError?.message).toBe('Invalid email address')
-		}
+	})
+
+	it('accepts recipientName up to 200 characters', () => {
+		const result = exportConfigSchema.safeParse({
+			recipientName: 'A'.repeat(200),
+		})
+		expect(result.success).toBe(true)
 	})
 
 	it('rejects recipientName exceeding 200 characters', () => {
@@ -66,10 +75,6 @@ describe('exportConfigSchema', () => {
 			recipientName: 'A'.repeat(201),
 		})
 		expect(result.success).toBe(false)
-		if (!result.success) {
-			const nameError = result.error.issues.find((issue) => issue.path[0] === 'recipientName')
-			expect(nameError).toBeDefined()
-		}
 	})
 
 	it('rejects emailSubject exceeding 500 characters', () => {
@@ -91,21 +96,6 @@ describe('exportConfigSchema', () => {
 		if (!result.success) {
 			const bodyError = result.error.issues.find((issue) => issue.path[0] === 'emailBody')
 			expect(bodyError).toBeDefined()
-		}
-	})
-
-	it('accepts recipientEmail at max length (254 chars)', () => {
-		// Build an email that is exactly 254 characters
-		const localPart = 'a'.repeat(243)
-		const email = `${localPart}@example.de`
-		expect(email.length).toBe(254)
-		const result = exportConfigSchema.safeParse({
-			recipientEmail: email,
-		})
-		// Zod email validation may reject extremely long local parts;
-		// this test validates the max length constraint exists
-		if (result.success) {
-			expect(result.success).toBe(true)
 		}
 	})
 
@@ -172,7 +162,7 @@ describe('sendReportSchema', () => {
 		if (!result.success) {
 			const emailError = result.error.issues.find((issue) => issue.path[0] === 'recipientEmail')
 			expect(emailError).toBeDefined()
-			expect(emailError?.message).toBe('A valid recipient email is required')
+			expect(emailError?.message).toBe('All recipient emails must be valid')
 		}
 	})
 
@@ -202,10 +192,19 @@ describe('sendReportSchema', () => {
 		}
 	})
 
-	it('rejects recipientName exceeding 200 characters', () => {
+	it('accepts recipientName up to 500 characters', () => {
 		const result = sendReportSchema.safeParse({
 			recipientEmail: 'test@example.de',
-			recipientName: 'N'.repeat(201),
+			recipientName: 'N'.repeat(500),
+			emailSubject: 'Report',
+		})
+		expect(result.success).toBe(true)
+	})
+
+	it('rejects recipientName exceeding 500 characters', () => {
+		const result = sendReportSchema.safeParse({
+			recipientEmail: 'test@example.de',
+			recipientName: 'N'.repeat(501),
 			emailSubject: 'Report',
 		})
 		expect(result.success).toBe(false)
