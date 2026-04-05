@@ -5,7 +5,7 @@ import { createReportSchema, reportListParamsSchema } from '@/lib/validations/re
 
 async function GET(request: NextRequest) {
 	const { user, error } = await getAuthenticatedUser()
-	if (error) return unauthorizedResponse()
+	if (error || !user) return unauthorizedResponse()
 
 	const { searchParams } = request.nextUrl
 	const params = reportListParamsSchema.safeParse({
@@ -27,7 +27,7 @@ async function GET(request: NextRequest) {
 	const skip = (page - 1) * limit
 
 	const where = {
-		userId: user?.id,
+		userId: user.id,
 		...(status ? { status } : {}),
 	}
 
@@ -83,7 +83,7 @@ async function GET(request: NextRequest) {
 
 async function POST(request: NextRequest) {
 	const { user, error } = await getAuthenticatedUser()
-	if (error) return unauthorizedResponse()
+	if (error || !user) return unauthorizedResponse()
 
 	const body = await request.json()
 	const parsed = createReportSchema.safeParse(body)
@@ -97,7 +97,7 @@ async function POST(request: NextRequest) {
 
 	const report = await prisma.report.create({
 		data: {
-			userId: user?.id,
+			userId: user.id,
 			title: parsed.data.title,
 			reportType: parsed.data.reportType,
 		},

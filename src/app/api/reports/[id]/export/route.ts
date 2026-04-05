@@ -10,7 +10,7 @@ type RouteContext = {
 
 async function GET(request: NextRequest, context: RouteContext) {
 	const { user, error } = await getAuthenticatedUser()
-	if (error) return unauthorizedResponse()
+	if (error || !user) return unauthorizedResponse()
 
 	const { id } = await context.params
 	const { searchParams } = new URL(request.url)
@@ -19,7 +19,7 @@ async function GET(request: NextRequest, context: RouteContext) {
 	// If ?format=pdf, generate and return the PDF
 	if (format === 'pdf') {
 		try {
-			const result = await generateReportPdfBuffer(id, user?.id)
+			const result = await generateReportPdfBuffer(id, user.id)
 			if ('error' in result) {
 				return NextResponse.json({ error: result.error }, { status: 404 })
 			}
@@ -38,7 +38,7 @@ async function GET(request: NextRequest, context: RouteContext) {
 
 	// Default: return export config JSON
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user?.id },
+		where: { id, userId: user.id },
 	})
 
 	if (!report) {
@@ -71,12 +71,12 @@ async function GET(request: NextRequest, context: RouteContext) {
 
 async function PATCH(request: NextRequest, context: RouteContext) {
 	const { user, error } = await getAuthenticatedUser()
-	if (error) return unauthorizedResponse()
+	if (error || !user) return unauthorizedResponse()
 
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user?.id },
+		where: { id, userId: user.id },
 	})
 
 	if (!report) {
