@@ -21,12 +21,12 @@ async function POST(request: NextRequest, context: RouteContext) {
 	}
 
 	const { user, error } = await getAuthenticatedUser()
-	if (error) return unauthorizedResponse()
+	if (error || !user) return unauthorizedResponse()
 
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user?.id },
+		where: { id, userId: user.id },
 	})
 
 	if (!report) {
@@ -75,7 +75,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	// Generate PDF attachment
 	let pdfAttachment: { filename: string; content: Buffer } | undefined
 	try {
-		const pdfResult = await generateReportPdfBuffer(id, user?.id)
+		const pdfResult = await generateReportPdfBuffer(id, user.id)
 		if ('buffer' in pdfResult) {
 			pdfAttachment = {
 				filename: pdfResult.filename,
@@ -91,7 +91,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 
 	// Fetch sender details from DB
 	const dbUser = await prisma.user.findUnique({
-		where: { id: user?.id },
+		where: { id: user.id },
 		select: {
 			firstName: true,
 			lastName: true,
@@ -149,7 +149,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	// Create notification for sent/locked report
 	const { createNotification } = await import('@/lib/notifications/create')
 	await createNotification({
-		userId: user?.id,
+		userId: user.id,
 		eventType: 'REPORT_SENT',
 		title: 'Report Sent',
 		description: `Report "${report.title}" was sent to ${data.recipientEmail}.`,

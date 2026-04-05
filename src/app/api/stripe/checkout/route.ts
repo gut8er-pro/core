@@ -16,10 +16,10 @@ async function POST() {
 	}
 
 	const { user, error } = await getAuthenticatedUser()
-	if (error) return unauthorizedResponse()
+	if (error || !user) return unauthorizedResponse()
 
 	const dbUser = await prisma.user.findUnique({
-		where: { id: user?.id },
+		where: { id: user.id },
 		select: { stripeCustomerId: true, email: true },
 	})
 
@@ -33,20 +33,20 @@ async function POST() {
 	if (!customerId) {
 		const stripe = getStripeClient()
 		const customer = await stripe.customers.create({
-			email: dbUser.email ?? user?.email ?? undefined,
-			metadata: { userId: user?.id },
+			email: dbUser.email ?? user.email ?? undefined,
+			metadata: { userId: user.id },
 		})
 		customerId = customer.id
 
 		await prisma.user.update({
-			where: { id: user?.id },
+			where: { id: user.id },
 			data: { stripeCustomerId: customerId },
 		})
 	}
 
 	const priceId = process.env.STRIPE_PRO_PRICE_ID ?? ''
 	const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-	const url = await createCheckoutSession(user?.id ?? '', priceId, customerId, {
+	const url = await createCheckoutSession(user.id ?? '', priceId, customerId, {
 		successUrl: `${appUrl}/dashboard?payment=success`,
 		cancelUrl: `${appUrl}/settings/billing`,
 	})

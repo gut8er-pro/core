@@ -9,12 +9,12 @@ type RouteContext = {
 
 async function GET(_request: NextRequest, context: RouteContext) {
 	const { user, error } = await getAuthenticatedUser()
-	if (error) return unauthorizedResponse()
+	if (error || !user) return unauthorizedResponse()
 
 	const { id } = await context.params
 
 	const report = await prisma.report.findFirst({
-		where: { id, userId: user?.id },
+		where: { id, userId: user.id },
 		include: {
 			_count: { select: { photos: true } },
 		},
@@ -29,12 +29,12 @@ async function GET(_request: NextRequest, context: RouteContext) {
 
 async function PATCH(request: NextRequest, context: RouteContext) {
 	const { user, error } = await getAuthenticatedUser()
-	if (error) return unauthorizedResponse()
+	if (error || !user) return unauthorizedResponse()
 
 	const { id } = await context.params
 
 	const existing = await prisma.report.findFirst({
-		where: { id, userId: user?.id },
+		where: { id, userId: user.id },
 	})
 
 	if (!existing) {
@@ -64,7 +64,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	if (parsed.data.status === 'COMPLETED' && existing.status !== 'COMPLETED') {
 		const { createNotification } = await import('@/lib/notifications/create')
 		await createNotification({
-			userId: user?.id,
+			userId: user.id,
 			eventType: 'REPORT_COMPLETED',
 			title: 'Report Completed',
 			description: `Report "${report.title}" has been marked as completed.`,
@@ -77,12 +77,12 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 
 async function DELETE(_request: NextRequest, context: RouteContext) {
 	const { user, error } = await getAuthenticatedUser()
-	if (error) return unauthorizedResponse()
+	if (error || !user) return unauthorizedResponse()
 
 	const { id } = await context.params
 
 	const existing = await prisma.report.findFirst({
-		where: { id, userId: user?.id },
+		where: { id, userId: user.id },
 	})
 
 	if (!existing) {
