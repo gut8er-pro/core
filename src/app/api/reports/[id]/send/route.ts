@@ -72,22 +72,26 @@ async function POST(request: NextRequest, context: RouteContext) {
 		},
 	})
 
-	// Generate PDF attachment
-	let pdfAttachment: { filename: string; content: Buffer } | undefined
-	try {
-		const pdfResult = await generateReportPdfBuffer(id, user.id)
-		if ('buffer' in pdfResult) {
-			pdfAttachment = {
-				filename: pdfResult.filename,
-				content: pdfResult.buffer,
+	// Generate PDF attachment(s) — one per selected language
+	const pdfLanguages: string[] = Array.isArray(data.pdfLanguages) ? data.pdfLanguages : ['de']
+	const pdfAttachments: { filename: string; content: Buffer }[] = []
+	for (const lang of pdfLanguages) {
+		try {
+			const pdfResult = await generateReportPdfBuffer(id, user.id, lang)
+			if ('buffer' in pdfResult) {
+				const suffix = pdfLanguages.length > 1 ? `_${lang.toUpperCase()}` : ''
+				pdfAttachments.push({
+					filename: pdfResult.filename.replace('.pdf', `${suffix}.pdf`),
+					content: pdfResult.buffer,
+				})
+			} else {
+				console.error(`PDF generation error (${lang}):`, pdfResult.error)
 			}
-		} else {
-			console.error('PDF generation error:', pdfResult.error)
+		} catch (err) {
+			console.error(`PDF generation failed (${lang}):`, err)
 		}
-	} catch (err) {
-		console.error('PDF generation failed:', err)
-		// Continue sending email without attachment
 	}
+	const pdfAttachment = pdfAttachments[0]
 
 	// Fetch sender details from DB
 	const dbUser = await prisma.user.findUnique({
@@ -104,7 +108,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 		[dbUser?.firstName, dbUser?.lastName].filter(Boolean).join(' ') || 'Gut8erPRO User'
 	const senderCompany = dbUser?.business?.companyName ?? undefined
 
-	// Send email via Resend with PDF attachment
+	// Send email via Resend with PDF attachment(s)
 	const emailResult = await sendReportEmail({
 		to: data.recipientEmail,
 		recipientName: data.recipientName,
@@ -114,6 +118,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 		senderName,
 		senderCompany,
 		pdfAttachment,
+		pdfAttachments: pdfAttachments.length > 1 ? pdfAttachments : undefined,
 	})
 
 	if (!emailResult.success) {

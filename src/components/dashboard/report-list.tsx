@@ -2,6 +2,7 @@
 
 import { ChevronDown, Eye, FileText, MoreVertical, Pencil, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -60,6 +61,7 @@ function generateReportNumber(id: string): string {
 
 function ReportTable({ reports, onDelete, isDeleting }: ReportTableProps) {
 	const router = useRouter()
+	const t = useTranslations('dashboard')
 
 	return (
 		<div className="overflow-x-auto rounded-lg border border-border bg-white">
@@ -68,31 +70,31 @@ function ReportTable({ reports, onDelete, isDeleting }: ReportTableProps) {
 					<tr className="border-b border-border">
 						<th className="px-6 py-3 text-left">
 							<span className="flex items-center gap-1 text-caption font-medium text-grey-100">
-								Report
+								{t('table.report')}
 								<ChevronDown className="h-3 w-3" />
 							</span>
 						</th>
 						<th className="hidden px-6 py-3 text-left md:table-cell">
 							<span className="flex items-center gap-1 text-caption font-medium text-grey-100">
-								Report Number
+								{t('table.reportNumber')}
 								<ChevronDown className="h-3 w-3" />
 							</span>
 						</th>
 						<th className="hidden px-6 py-3 text-left lg:table-cell">
 							<span className="flex items-center gap-1 text-caption font-medium text-grey-100">
-								Plate Number
+								{t('table.plateNumber')}
 								<ChevronDown className="h-3 w-3" />
 							</span>
 						</th>
 						<th className="hidden px-6 py-3 text-left md:table-cell">
 							<span className="flex items-center gap-1 text-caption font-medium text-grey-100">
-								Date Created
+								{t('table.dateCreated')}
 								<ChevronDown className="h-3 w-3" />
 							</span>
 						</th>
 						<th className="hidden px-6 py-3 text-left lg:table-cell">
 							<span className="flex items-center gap-1 text-caption font-medium text-grey-100">
-								Car Model
+								{t('table.carModel')}
 								<ChevronDown className="h-3 w-3" />
 							</span>
 						</th>
@@ -131,6 +133,8 @@ function ReportRow({
 }) {
 	const [showActions, setShowActions] = useState(false)
 	const menuRef = useRef<HTMLDivElement>(null)
+	const t = useTranslations('dashboard')
+	const tc = useTranslations('common')
 
 	const displayName = report.claimantName || report.title
 	const reportNumber = generateReportNumber(report.id)
@@ -207,7 +211,7 @@ function ReportRow({
 							setShowActions(!showActions)
 						}}
 						className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-grey-100 hover:bg-grey-25 hover:text-black"
-						aria-label="Report actions"
+						aria-label={t('actions.reportActions')}
 					>
 						<MoreVertical className="h-4 w-4" />
 					</button>
@@ -223,7 +227,7 @@ function ReportRow({
 								className="flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-body-sm text-black hover:bg-grey-25"
 							>
 								<Eye className="h-4 w-4 text-grey-100" />
-								Details
+								{t('actions.details')}
 							</button>
 							<button
 								type="button"
@@ -235,7 +239,7 @@ function ReportRow({
 								className="flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-body-sm text-black hover:bg-grey-25"
 							>
 								<Pencil className="h-4 w-4 text-grey-100" />
-								Edit Report
+								{t('actions.editReport')}
 							</button>
 							<button
 								type="button"
@@ -248,7 +252,7 @@ function ReportRow({
 								className="flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-body-sm text-error hover:bg-error-light"
 							>
 								<Trash2 className="h-4 w-4" />
-								Delete
+								{tc('delete')}
 							</button>
 						</div>
 					)}
@@ -259,15 +263,14 @@ function ReportRow({
 }
 
 function EmptyState() {
+	const t = useTranslations('dashboard')
 	return (
 		<div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-white px-6 py-12 text-center">
 			<div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-light">
 				<FileText className="h-8 w-8 text-primary" />
 			</div>
-			<h3 className="mb-1 text-h4 font-semibold text-black">No reports yet</h3>
-			<p className="mb-6 text-body-sm text-grey-100">
-				Create your first report to get started with vehicle assessments.
-			</p>
+			<h3 className="mb-1 text-h4 font-semibold text-black">{t('emptyState.title')}</h3>
+			<p className="mb-6 text-body-sm text-grey-100">{t('emptyState.subtitle')}</p>
 		</div>
 	)
 }
@@ -281,12 +284,14 @@ function Pagination({
 	totalPages: number
 	onPageChange: (page: number) => void
 }) {
+	const t = useTranslations('dashboard')
+	const tc = useTranslations('common')
 	if (totalPages <= 1) return null
 
 	return (
 		<div className="flex items-center justify-between px-6 py-4">
 			<p className="text-body-sm text-grey-100">
-				Page {page} of {totalPages}
+				{t('pagination', { current: page, total: totalPages })}
 			</p>
 			<div className="flex gap-2">
 				<Button
@@ -295,7 +300,7 @@ function Pagination({
 					disabled={page <= 1}
 					onClick={() => onPageChange(page - 1)}
 				>
-					Previous
+					{tc('previous')}
 				</Button>
 				<Button
 					variant="outline"
@@ -303,7 +308,7 @@ function Pagination({
 					disabled={page >= totalPages}
 					onClick={() => onPageChange(page + 1)}
 				>
-					Next
+					{tc('next')}
 				</Button>
 			</div>
 		</div>

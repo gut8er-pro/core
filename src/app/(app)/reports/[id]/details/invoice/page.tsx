@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { BvskRateTable } from '@/components/report/invoice/bvsk-rate-table'
@@ -14,6 +15,8 @@ import { useInvoice } from '@/hooks/use-invoice'
 import { useReport } from '@/hooks/use-reports'
 
 function InvoicePage() {
+	const t = useTranslations('report.invoice')
+	const tc = useTranslations('common')
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useInvoice(reportId)
@@ -170,16 +173,18 @@ function InvoicePage() {
 				{autoSaveState.status === 'saving' && (
 					<>
 						<Loader2 className="h-3 w-3 animate-spin text-grey-100" />
-						<span className="text-grey-100">Saving...</span>
+						<span className="text-grey-100">{tc('saving')}</span>
 					</>
 				)}
 				{autoSaveState.status === 'saved' && (
 					<>
 						<CheckCircle2 className="h-3 w-3 text-primary" />
-						<span className="text-primary">Saved</span>
+						<span className="text-primary">{tc('saved')}</span>
 					</>
 				)}
-				{autoSaveState.status === 'error' && <span className="text-error">Failed to save</span>}
+				{autoSaveState.status === 'error' && (
+					<span className="text-error">{tc('failedToSave')}</span>
+				)}
 			</div>
 
 			{/* Invoice totals banner */}
@@ -188,7 +193,7 @@ function InvoicePage() {
 			{/* White card wrapping invoice details */}
 			<div className="flex flex-col gap-6 rounded-[20px] bg-white p-5">
 				{/* Invoice Details heading */}
-				<h3 className="text-h3 font-semibold text-black">Invoice Details</h3>
+				<h3 className="text-h3 font-semibold text-black">{t('title')}</h3>
 
 				{/* Invoice settings */}
 				<InvoiceSettings

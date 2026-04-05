@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { type SignupAccountInput, signupAccountSchema } from '@/lib/validations/auth'
@@ -11,6 +12,9 @@ import { useSignupStore } from '@/stores/signup-store'
 
 function AccountStep() {
 	const router = useRouter()
+	const t = useTranslations('auth.signup.account')
+	const tSteps = useTranslations('auth.signup.steps.account')
+	const tCommon = useTranslations('common')
 	const { account, setAccount, completeStep, setCurrentStep } = useSignupStore()
 	const [showPassword, setShowPassword] = useState(false)
 	const [showConfirm, setShowConfirm] = useState(false)
@@ -39,9 +43,9 @@ function AccountStep() {
 		<div className="flex flex-col gap-8">
 			{/* Header */}
 			<div className="flex flex-col gap-3.5">
-				<h2 className="text-[44px] font-medium leading-none text-black">Create your account</h2>
+				<h2 className="text-[44px] font-medium leading-none text-black">{tSteps('title')}</h2>
 				<p className="text-[18px] leading-snug tracking-[0.18px] text-black/70">
-					Enter your email and create a secure password.
+					{tSteps('subtitle')}
 				</p>
 			</div>
 
@@ -49,11 +53,11 @@ function AccountStep() {
 				<div className="flex flex-col gap-6">
 					{/* Email */}
 					<div className="flex flex-col gap-3">
-						<label className="text-[16px] font-medium text-black">Email address</label>
+						<label className="text-[16px] font-medium text-black">{t('emailAddress')}</label>
 						<input
 							{...register('email')}
 							type="email"
-							placeholder="you@example.com"
+							placeholder={t('emailPlaceholder')}
 							autoComplete="email"
 							className="h-[54px] w-full rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-3.5 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
 						/>
@@ -62,12 +66,12 @@ function AccountStep() {
 
 					{/* Password */}
 					<div className="flex flex-col gap-3">
-						<label className="text-[16px] font-medium text-black">Password</label>
+						<label className="text-[16px] font-medium text-black">{t('password')}</label>
 						<div className="relative">
 							<input
 								{...register('password')}
 								type={showPassword ? 'text' : 'password'}
-								placeholder="Min. 8 characters"
+								placeholder={t('passwordHint')}
 								autoComplete="new-password"
 								className="h-[53px] w-full rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-3.5 pr-12 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
 							/>
@@ -76,7 +80,7 @@ function AccountStep() {
 								tabIndex={-1}
 								className="absolute right-3.5 top-1/2 -translate-y-1/2 text-grey-100 hover:text-black"
 								onClick={() => setShowPassword((p) => !p)}
-								aria-label={showPassword ? 'Hide password' : 'Show password'}
+								aria-label={showPassword ? tCommon('hidePassword') : tCommon('showPassword')}
 							>
 								{showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
 							</button>
@@ -86,12 +90,12 @@ function AccountStep() {
 
 					{/* Confirm password */}
 					<div className="flex flex-col gap-3">
-						<label className="text-[16px] font-medium text-black">Confirm password</label>
+						<label className="text-[16px] font-medium text-black">{t('confirmPassword')}</label>
 						<div className="relative">
 							<input
 								{...register('confirmPassword')}
 								type={showConfirm ? 'text' : 'password'}
-								placeholder="Repeat password"
+								placeholder={t('confirmPasswordPlaceholder')}
 								autoComplete="new-password"
 								className="h-[54px] w-full rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-3.5 pr-12 text-[18px] text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
 							/>
@@ -100,7 +104,7 @@ function AccountStep() {
 								tabIndex={-1}
 								className="absolute right-3.5 top-1/2 -translate-y-1/2 text-grey-100 hover:text-black"
 								onClick={() => setShowConfirm((p) => !p)}
-								aria-label={showConfirm ? 'Hide password' : 'Show password'}
+								aria-label={showConfirm ? tCommon('hidePassword') : tCommon('showPassword')}
 							>
 								{showConfirm ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
 							</button>
@@ -114,7 +118,7 @@ function AccountStep() {
 				{/* Generic fallback — catches any field error not shown above */}
 				{Object.keys(errors).length > 0 && (
 					<div className="rounded-[15px] bg-error-light px-4 py-2.5 text-[14px] text-error">
-						Please fill in all required fields above.
+						{t('fillRequiredFields')}
 					</div>
 				)}
 
@@ -125,7 +129,7 @@ function AccountStep() {
 							type="button"
 							className="flex h-[58px] w-full items-center justify-center rounded-[15px] border border-[#e5e7eb] bg-white px-[30px] text-[18px] font-medium text-black transition-colors hover:bg-grey-25"
 						>
-							Cancel
+							{tCommon('cancel')}
 						</button>
 					</Link>
 					<button
@@ -133,7 +137,7 @@ function AccountStep() {
 						disabled={isSubmitting}
 						className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] bg-primary px-[30px] text-[18px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
 					>
-						{isSubmitting ? 'Saving...' : 'Continue'}
+						{isSubmitting ? tCommon('saving') : tCommon('continue')}
 					</button>
 				</div>
 			</form>

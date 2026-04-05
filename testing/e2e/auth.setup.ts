@@ -3,6 +3,10 @@ import { test as setup, expect } from '@playwright/test'
 const AUTH_FILE = 'testing/e2e/.auth/user.json'
 
 setup('authenticate', async ({ page }) => {
+	// Ensure English locale for consistent test assertions
+	await page.context().addCookies([
+		{ name: 'NEXT_LOCALE', value: 'en', domain: 'localhost', path: '/' },
+	])
 	await page.goto('/login')
 	await page.getByRole('textbox', { name: 'Enter your email' }).fill('ivanvukasino+2@gmail.com')
 	await page.getByRole('textbox', { name: 'Enter your password' }).fill('Ivanivan1!')

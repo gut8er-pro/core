@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { completeSignup } from '@/lib/auth/actions'
@@ -19,6 +20,9 @@ const FIELD_CLS = 'flex flex-col gap-3'
 
 function IntegrationsStep() {
 	const router = useRouter()
+	const t = useTranslations('auth.signup.integrations')
+	const tSteps = useTranslations('auth.signup.steps.integrations')
+	const _tCommon = useTranslations('common')
 	const { account, personal, business, integrations, setIntegrations, setCurrentStep, reset } =
 		useSignupStore()
 	const [selectedProvider, setSelectedProvider] = useState<Provider | null>(
@@ -123,9 +127,9 @@ function IntegrationsStep() {
 		<div className="flex flex-col gap-10">
 			{/* Header */}
 			<div className="flex flex-col gap-3.5">
-				<h2 className="text-[44px] font-medium leading-none text-black">Connect your tools</h2>
+				<h2 className="text-[44px] font-medium leading-none text-black">{tSteps('title')}</h2>
 				<p className="text-[18px] leading-snug tracking-[0.18px] text-black/70">
-					Link your calculation provider. You can add more later in settings.
+					{tSteps('subtitle')}
 				</p>
 			</div>
 
@@ -138,7 +142,7 @@ function IntegrationsStep() {
 			<div className="flex flex-col gap-6">
 				{/* Provider cards */}
 				<div className="flex flex-col gap-3">
-					<label className="text-[18px] font-medium text-black">Calculation provider</label>
+					<label className="text-[18px] font-medium text-black">{t('calculationProvider')}</label>
 					<div className="flex gap-3.5">
 						{/* DAT */}
 						<button
@@ -154,7 +158,7 @@ function IntegrationsStep() {
 							<div className="relative h-[60px] w-[60px] overflow-hidden rounded-[14px]">
 								<Image src="/images/dat-logo.png" alt="DAT" fill className="object-contain" />
 							</div>
-							<span className="text-[18px] font-medium text-black">DAT</span>
+							<span className="text-[18px] font-medium text-black">{t('dat')}</span>
 						</button>
 
 						{/* Audatex - Coming Soon */}
@@ -162,7 +166,7 @@ function IntegrationsStep() {
 							<div className="flex h-[60px] w-[60px] items-center justify-center rounded-[14px] bg-[#f3f4f6] opacity-20">
 								<span className="text-[20px] font-bold italic text-[#6b7280]">A</span>
 							</div>
-							<span className="text-[18px] font-medium text-black">Coming Soon</span>
+							<span className="text-[18px] font-medium text-black">{t('comingSoon')}</span>
 						</div>
 
 						{/* GT Motive - Coming Soon */}
@@ -170,7 +174,7 @@ function IntegrationsStep() {
 							<div className="flex h-[60px] w-[60px] items-center justify-center rounded-[14px] bg-[#f3f4f6] opacity-20">
 								<span className="text-[16px] font-bold text-[#6b7280]">gt</span>
 							</div>
-							<span className="text-[18px] font-medium text-black">Coming Soon</span>
+							<span className="text-[18px] font-medium text-black">{t('comingSoon')}</span>
 						</div>
 					</div>
 				</div>
@@ -179,13 +183,13 @@ function IntegrationsStep() {
 				{selectedProvider === 'dat' ? (
 					<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
 						<div className="flex flex-col gap-6 rounded-[15px] bg-[#f3f4f6] p-6">
-							<h3 className="text-[23px] font-medium text-black">DAT SilverDAT3 Credentials</h3>
+							<h3 className="text-[23px] font-medium text-black">{t('datCredentialsTitle')}</h3>
 							<div className="grid grid-cols-2 gap-6">
 								<div className={FIELD_CLS}>
-									<label className={LABEL_CLS}>Username</label>
+									<label className={LABEL_CLS}>{t('username')}</label>
 									<input
 										type="text"
-										placeholder="Your username"
+										placeholder={t('usernamePlaceholder')}
 										autoComplete="username"
 										className={INPUT_CLS}
 										{...register('username')}

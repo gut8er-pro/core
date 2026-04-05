@@ -1,6 +1,7 @@
 'use client'
 
 import { Plus, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useFieldArray } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -12,18 +13,7 @@ import { TextField } from '@/components/ui/text-field'
 import { cn } from '@/lib/utils'
 import type { SectionProps } from './types'
 
-const VISIT_TYPE_OPTIONS = [
-	{ value: 'claimant_residence', label: 'Claimant Residence' },
-	{ value: 'claimant_office', label: 'Claimant Office' },
-	{ value: 'other', label: 'Other' },
-] as const
-
-const VEHICLE_CONDITION_OPTIONS = [
-	{ value: 'drivable', label: 'Drivable' },
-	{ value: 'conditionally_drivable', label: 'Conditionally Drivable' },
-	{ value: 'not_drivable', label: 'Not Drivable' },
-	{ value: 'total_loss', label: 'Total Loss' },
-]
+// Options are defined inside the component to access translations
 
 const DEFAULT_VISIT = {
 	type: '',
@@ -43,25 +33,45 @@ function VisitSection({
 	reportType,
 	className,
 }: SectionProps & { className?: string }) {
+	const t = useTranslations('report')
 	const isOT = reportType === 'OT'
+
+	const VISIT_TYPE_OPTIONS = [
+		{ value: 'claimant_residence', label: t('accidentInfo.visits.typeOptions.claimantResidence') },
+		{ value: 'claimant_office', label: t('accidentInfo.visits.typeOptions.claimantOffice') },
+		{ value: 'other', label: t('accidentInfo.visits.typeOptions.other') },
+	] as const
+
+	const VEHICLE_CONDITION_OPTIONS = [
+		{ value: 'drivable', label: t('accidentInfo.visits.conditionOptions.drivable') },
+		{
+			value: 'conditionally_drivable',
+			label: t('accidentInfo.visits.conditionOptions.conditionallyDrivable'),
+		},
+		{ value: 'not_drivable', label: t('accidentInfo.visits.conditionOptions.notDrivable') },
+		{ value: 'total_loss', label: t('accidentInfo.visits.conditionOptions.totalLoss') },
+	]
+
 	const { fields, append, remove } = useFieldArray({
 		control,
 		name: 'visits',
 	})
 
 	return (
-		<CollapsibleSection title="Visits" className={className}>
+		<CollapsibleSection title={t('accidentInfo.visits.title')} className={className}>
 			<div className="flex flex-col gap-6">
 				{fields.map((field, index) => (
 					<div key={field.id} className="relative rounded-lg border border-border bg-white p-4">
 						<div className="mb-4 flex items-center justify-between">
-							<span className="text-body-sm font-semibold text-black">Visit {index + 1}</span>
+							<span className="text-body-sm font-semibold text-black">
+								{t('accidentInfo.visits.visitIndex', { index: index + 1 })}
+							</span>
 							<Button
 								type="button"
 								variant="ghost"
 								size="icon"
 								onClick={() => remove(index)}
-								aria-label={`Remove visit ${index + 1}`}
+								aria-label={t('accidentInfo.visits.removeVisit')}
 							>
 								<Trash2 className="h-4 w-4 text-grey-100" />
 							</Button>
@@ -69,7 +79,7 @@ function VisitSection({
 
 						<div className="flex flex-col gap-4">
 							<div className="flex flex-col gap-1">
-								<Label>Type</Label>
+								<Label>{t('accidentInfo.visits.type')}</Label>
 								<RadioGroup
 									className="flex flex-wrap gap-2"
 									onValueChange={(value) => {
@@ -100,21 +110,21 @@ function VisitSection({
 							{/* Street | Postcode | Location — 3-column per Figma */}
 							<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 								<TextField
-									label="Street & house number or PO box"
+									label={t('accidentInfo.street')}
 									placeholder="Street address or po box"
 									error={errors.visits?.[index]?.street?.message}
 									{...register(`visits.${index}.street`)}
 									onBlur={() => onFieldBlur?.(`visits.${index}.street`)}
 								/>
 								<TextField
-									label="Postcode"
+									label={t('accidentInfo.postcode')}
 									placeholder="eg 006312"
 									error={errors.visits?.[index]?.postcode?.message}
 									{...register(`visits.${index}.postcode`)}
 									onBlur={() => onFieldBlur?.(`visits.${index}.postcode`)}
 								/>
 								<TextField
-									label="Location"
+									label={t('accidentInfo.location')}
 									placeholder="Berlin"
 									error={errors.visits?.[index]?.location?.message}
 									{...register(`visits.${index}.location`)}
@@ -125,23 +135,23 @@ function VisitSection({
 							{/* Data | Expert | Vehicle condition — 3-column per Figma */}
 							<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 								<TextField
-									label="Data"
+									label={t('accidentInfo.visits.data')}
 									type="date"
 									error={errors.visits?.[index]?.date?.message}
 									{...register(`visits.${index}.date`)}
 									onBlur={() => onFieldBlur?.(`visits.${index}.date`)}
 								/>
 								<TextField
-									label="Expert"
-									placeholder="Expert name"
+									label={t('accidentInfo.visits.expert')}
+									placeholder={t('accidentInfo.visits.expertName')}
 									error={errors.visits?.[index]?.expert?.message}
 									{...register(`visits.${index}.expert`)}
 									onBlur={() => onFieldBlur?.(`visits.${index}.expert`)}
 								/>
 								<SelectField
-									label="Vehicle condition"
+									label={t('accidentInfo.visits.vehicleCondition')}
 									options={VEHICLE_CONDITION_OPTIONS}
-									placeholder="Choose condition"
+									placeholder={t('accidentInfo.visits.chooseCondition')}
 									error={errors.visits?.[index]?.vehicleCondition?.message}
 									onValueChange={(value) => {
 										const event = { target: { name: `visits.${index}.vehicleCondition`, value } }
@@ -157,7 +167,7 @@ function VisitSection({
 				{/* Present subsection — OT only */}
 				{isOT && (
 					<div className="flex flex-col gap-3">
-						<Label className="text-body-sm font-semibold">Present</Label>
+						<Label className="text-body-sm font-semibold">{t('accidentInfo.visits.present')}</Label>
 						<div className="flex flex-wrap items-center gap-4">
 							<div className="flex items-center gap-2">
 								<Checkbox id="present-expert" />
@@ -168,13 +178,13 @@ function VisitSection({
 							<div className="flex items-center gap-2">
 								<Checkbox id="present-client" />
 								<Label htmlFor="present-client" className="cursor-pointer font-normal">
-									Client
+									{t('accidentInfo.visits.presentOptions.client')}
 								</Label>
 							</div>
 							<div className="flex items-center gap-2">
 								<Checkbox id="present-workshop" />
 								<Label htmlFor="present-workshop" className="cursor-pointer font-normal">
-									Workshop Employee
+									{t('accidentInfo.visits.presentOptions.workshopEmployee')}
 								</Label>
 							</div>
 						</div>
@@ -187,7 +197,7 @@ function VisitSection({
 					onClick={() => append(DEFAULT_VISIT)}
 					icon={<Plus className="h-4 w-4" />}
 				>
-					Add Visit
+					{t('accidentInfo.visits.addVisit')}
 				</Button>
 			</div>
 		</CollapsibleSection>

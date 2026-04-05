@@ -1,6 +1,7 @@
 'use client'
 
 import { Info, Plus, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Controller, useFieldArray } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { SelectField } from '@/components/ui/select'
@@ -30,6 +31,7 @@ function ValueSection({
 	onFieldBlur,
 	className,
 }: CalculationSectionProps) {
+	const t = useTranslations('report.calculation')
 	const { fields, append, remove } = useFieldArray({
 		control,
 		name: 'additionalCosts',
@@ -39,17 +41,17 @@ function ValueSection({
 		<div className={cn('flex flex-col gap-5', className)}>
 			{/* Section header */}
 			<div className="flex items-center gap-2">
-				<h4 className="text-body font-semibold text-black">Vehicle Value</h4>
+				<h4 className="text-body font-semibold text-black">{t('vehicleValue')}</h4>
 				<Info className="h-4 w-4 text-grey-100" />
 			</div>
 
 			{/* Replacement value + Tax rate on same row */}
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<TextField
-					label="Replacement value"
+					label={t('replacementValue')}
 					type="number"
 					prefix="€"
-					placeholder="Add value"
+					placeholder={t('addValue')}
 					step="0.01"
 					error={errors.replacementValue?.message}
 					{...register('replacementValue')}
@@ -61,7 +63,7 @@ function ValueSection({
 					control={control}
 					render={({ field }) => (
 						<SelectField
-							label="Choose tax rate"
+							label={t('chooseTaxRate')}
 							options={TAX_RATE_OPTIONS}
 							placeholder="Choose"
 							value={field.value}
@@ -77,8 +79,8 @@ function ValueSection({
 
 			{/* Residual value - full width */}
 			<TextField
-				label="Residual value"
-				placeholder="Add value"
+				label={t('residualValue')}
+				placeholder={t('addValue')}
 				error={errors.residualValue?.message}
 				{...register('residualValue')}
 				onBlur={() => onFieldBlur?.('residualValue')}
@@ -86,8 +88,8 @@ function ValueSection({
 
 			{/* Diminution in value - full width */}
 			<TextField
-				label="Diminution in value"
-				placeholder="Add value"
+				label={t('diminutionInValue')}
+				placeholder={t('addValue')}
 				error={errors.diminutionInValue?.message}
 				{...register('diminutionInValue')}
 				onBlur={() => onFieldBlur?.('diminutionInValue')}
@@ -98,8 +100,8 @@ function ValueSection({
 				<div key={field.id} className="flex items-end gap-3">
 					<div className="flex-1">
 						<TextField
-							label="Description"
-							placeholder="Cost description"
+							label={t('description')}
+							placeholder={t('costDescription')}
 							error={errors.additionalCosts?.[index]?.description?.message}
 							{...register(`additionalCosts.${index}.description`)}
 							onBlur={() => onFieldBlur?.(`additionalCosts.${index}.description`)}
@@ -107,7 +109,7 @@ function ValueSection({
 					</div>
 					<div className="w-36">
 						<TextField
-							label="Amount"
+							label={t('amount')}
 							type="number"
 							prefix="€"
 							placeholder="0.00"
@@ -122,7 +124,7 @@ function ValueSection({
 						variant="danger"
 						size="icon"
 						onClick={() => remove(index)}
-						aria-label="Remove cost"
+						aria-label={t('additionalCosts')}
 					>
 						<Trash2 className="h-4 w-4" />
 					</Button>
@@ -137,13 +139,13 @@ function ValueSection({
 				onClick={() => append({ description: '', amount: '' })}
 				className="self-center"
 			>
-				Additional Costs
+				{t('additionalCosts')}
 			</Button>
 
 			{/* Damage class */}
 			<TextField
-				label="Damage class"
-				placeholder="Add damage class"
+				label={t('damageClass')}
+				placeholder={t('addDamageClass')}
 				error={errors.damageClass?.message}
 				{...register('damageClass')}
 				onBlur={() => onFieldBlur?.('damageClass')}

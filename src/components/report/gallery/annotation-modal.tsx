@@ -2,6 +2,7 @@
 
 import type * as fabric from 'fabric'
 import { ChevronLeft, ChevronRight, Edit, Image as ImageIcon, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useCallback, useRef, useState } from 'react'
 import type { Photo } from '@/hooks/use-photos'
 import { AnnotationCanvas } from './annotation-canvas'
@@ -24,6 +25,8 @@ function AnnotationModal({
 	onSave,
 	onNavigate,
 }: AnnotationModalProps) {
+	const t = useTranslations('report')
+	const tc = useTranslations('common')
 	const [activeTool, setActiveTool] = useState<AnnotationTool>('pen')
 	const [activeColor, setActiveColor] = useState('#FF0000')
 	const [description, setDescription] = useState<string | null>(null)
@@ -126,7 +129,7 @@ function AnnotationModal({
 				}}
 				role="button"
 				tabIndex={-1}
-				aria-label="Close modal"
+				aria-label={t('gallery.closeModal')}
 			/>
 
 			{/* Modal container */}
@@ -146,7 +149,7 @@ function AnnotationModal({
 						type="button"
 						onClick={handleClose}
 						className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg bg-grey-50 text-grey-100 transition-colors hover:bg-grey-100 hover:text-white"
-						aria-label="Close"
+						aria-label={tc('close')}
 					>
 						<X className="h-5 w-5" />
 					</button>
@@ -162,7 +165,7 @@ function AnnotationModal({
 								type="button"
 								onClick={handlePrev}
 								className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-xl bg-black text-white shadow-md transition-colors hover:bg-black"
-								aria-label="Previous photo"
+								aria-label={t('gallery.previousPhoto')}
 							>
 								<ChevronLeft className="h-5 w-5" />
 							</button>
@@ -174,7 +177,7 @@ function AnnotationModal({
 								type="button"
 								onClick={handleNext}
 								className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-xl bg-black text-white shadow-md transition-colors hover:bg-black"
-								aria-label="Next photo"
+								aria-label={t('gallery.nextPhoto')}
 							>
 								<ChevronRight className="h-5 w-5" />
 							</button>
@@ -198,7 +201,7 @@ function AnnotationModal({
 					{/* Description panel */}
 					<div className="hidden w-90 shrink-0 flex-col gap-5 lg:flex">
 						<div className="flex items-center justify-between">
-							<h3 className="text-input font-medium text-black">Description</h3>
+							<h3 className="text-input font-medium text-black">{t('gallery.description')}</h3>
 						</div>
 
 						{isEditingDescription ? (
@@ -215,14 +218,14 @@ function AnnotationModal({
 										onClick={() => setIsEditingDescription(false)}
 										className="flex-1 cursor-pointer rounded-btn border border-border px-3 py-2 text-body-sm text-grey-100 hover:bg-grey-25"
 									>
-										Cancel
+										{tc('cancel')}
 									</button>
 									<button
 										type="button"
 										onClick={handleSaveDescription}
 										className="flex-1 cursor-pointer rounded-btn bg-primary px-3 py-2 text-body-sm text-white hover:bg-primary-hover"
 									>
-										Save
+										{tc('save')}
 									</button>
 								</div>
 							</div>
@@ -233,7 +236,7 @@ function AnnotationModal({
 									type="button"
 									onClick={handleStartEditDescription}
 									className="absolute -right-1 -top-1 z-10 flex h-12 w-12 cursor-pointer items-center justify-center rounded-md bg-primary text-white backdrop-blur-sm transition-colors hover:bg-primary-hover"
-									aria-label="Edit description"
+									aria-label={t('gallery.editDescription')}
 								>
 									<Edit className="h-6 w-6" />
 								</button>
@@ -250,10 +253,7 @@ function AnnotationModal({
 									{photoDescription ? (
 										<p className="whitespace-pre-wrap">{photoDescription}</p>
 									) : (
-										<p className="italic text-grey-100">
-											No description available. Run &quot;Generate Report&quot; to analyze this
-											photo, or click to add one.
-										</p>
+										<p className="italic text-grey-100">{t('gallery.noDescription')}</p>
 									)}
 								</div>
 							</div>

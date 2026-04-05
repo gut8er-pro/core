@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Loader2, Send } from 'lucide-react'
 import { useParams } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { EmailComposer } from '@/components/report/export/email-composer'
@@ -14,6 +15,8 @@ import { useReport } from '@/hooks/use-reports'
 import { useToast } from '@/hooks/use-toast'
 
 function ExportPage() {
+	const t = useTranslations('report.export')
+	const locale = useLocale()
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useExportConfig(reportId)
@@ -41,6 +44,7 @@ function ExportPage() {
 			includeCommission: true,
 			includeInvoice: true,
 			lockReport: false,
+			pdfLanguages: [locale as 'en' | 'de'],
 			recipientEmail: '',
 			recipientName: '',
 			emailSubject: '',
@@ -82,18 +86,19 @@ function ExportPage() {
 				emailSubject: values.emailSubject,
 				emailBody: values.emailBody,
 				lockReport: values.lockReport,
+				pdfLanguages: values.pdfLanguages ?? [locale as 'en' | 'de'],
 			},
 			{
 				onSuccess: () => {
 					setSendSuccess(true)
-					toast.success('Report sent successfully')
+					toast.success(t('reportSentToast'))
 				},
 				onError: (error: Error) => {
-					toast.error(error.message || 'Failed to send report. Please try again.')
+					toast.error(error.message || t('sendFailed'))
 				},
 			},
 		)
-	}, [getValues, sendMutation, toast])
+	}, [getValues, sendMutation, toast, locale, t])
 
 	if (isLoading) {
 		return (
@@ -107,23 +112,25 @@ function ExportPage() {
 		<div className="flex flex-col gap-6">
 			{/* Page header with Send Report button */}
 			<div className="flex items-center justify-between">
-				<h2 className="text-h2 font-bold text-black">Export and Send</h2>
+				<h2 className="text-h2 font-bold text-black">{t('title')}</h2>
 				<div className="flex items-center gap-3">
 					{/* Auto-save status indicator */}
 					<div className="flex items-center gap-1 text-caption">
 						{autoSaveState.status === 'saving' && (
 							<>
 								<Loader2 className="h-3 w-3 animate-spin text-grey-100" />
-								<span className="text-grey-100">Saving...</span>
+								<span className="text-grey-100">{t('saving')}</span>
 							</>
 						)}
 						{autoSaveState.status === 'saved' && (
 							<>
 								<CheckCircle2 className="h-3 w-3 text-primary" />
-								<span className="text-primary">Saved</span>
+								<span className="text-primary">{t('saved')}</span>
 							</>
 						)}
-						{autoSaveState.status === 'error' && <span className="text-error">Failed to save</span>}
+						{autoSaveState.status === 'error' && (
+							<span className="text-error">{t('failedToSave')}</span>
+						)}
 					</div>
 
 					<Button
@@ -134,7 +141,7 @@ function ExportPage() {
 						loading={sendMutation.isPending}
 						onClick={handleSend}
 					>
-						Send Report
+						{t('sendReport')}
 					</Button>
 				</div>
 			</div>
@@ -143,7 +150,7 @@ function ExportPage() {
 			{sendSuccess && (
 				<div className="flex items-center gap-2 rounded-md border border-success bg-success-light p-4">
 					<CheckCircle2 className="h-5 w-5 text-success" />
-					<span className="text-body-sm text-success">Report sent successfully!</span>
+					<span className="text-body-sm text-success">{t('reportSent')}</span>
 				</div>
 			)}
 
@@ -154,15 +161,15 @@ function ExportPage() {
 				</div>
 			)}
 
-			{/* Two-column layout: Toggles (left ~1/4) + Email composer (right ~3/4) */}
-			<div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+			{/* Two-column layout: Toggles (left) + Email composer (right) */}
+			<div className="flex flex-col gap-6 lg:flex-row">
 				{/* Left panel: toggles */}
-				<div className="lg:col-span-1">
+				<div className="w-full shrink-0 lg:w-64">
 					<ExportToggles control={control} onToggleChange={handleToggleChange} />
 				</div>
 
 				{/* Right panel: email composer */}
-				<div className="lg:col-span-3">
+				<div className="min-w-0 flex-1">
 					<EmailComposer
 						register={register}
 						setValue={setValue}

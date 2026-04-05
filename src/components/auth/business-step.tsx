@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { type SignupBusinessInput, signupBusinessSchema } from '@/lib/validations/auth'
 import { useSignupStore } from '@/stores/signup-store'
@@ -13,6 +14,10 @@ const FIELD_CLS = 'flex flex-col gap-3'
 
 function BusinessStep() {
 	const router = useRouter()
+	const t = useTranslations('auth.signup.business')
+	const tSteps = useTranslations('auth.signup.steps.business')
+	const tAccount = useTranslations('auth.signup.account')
+	const tCommon = useTranslations('common')
 	const { business, setBusiness, completeStep, setCurrentStep } = useSignupStore()
 
 	const {
@@ -47,9 +52,9 @@ function BusinessStep() {
 		<div className="flex flex-col gap-8">
 			{/* Header */}
 			<div className="flex flex-col gap-3.5">
-				<h2 className="text-[44px] font-medium leading-none text-black">Business information</h2>
+				<h2 className="text-[44px] font-medium leading-none text-black">{tSteps('title')}</h2>
 				<p className="text-[18px] leading-snug tracking-[0.18px] text-black/70">
-					Your company details for invoices and reports.
+					{tSteps('subtitle')}
 				</p>
 			</div>
 
@@ -57,10 +62,10 @@ function BusinessStep() {
 				<div className="flex flex-col gap-6">
 					{/* Company name */}
 					<div className={FIELD_CLS}>
-						<label className={LABEL_CLS}>Company name</label>
+						<label className={LABEL_CLS}>{t('companyName')}</label>
 						<input
 							{...register('companyName')}
-							placeholder="Mustermann Gutachten GmbH"
+							placeholder={t('companyPlaceholder')}
 							className={INPUT_CLS}
 						/>
 						{errors.companyName && (
@@ -70,23 +75,35 @@ function BusinessStep() {
 
 					{/* Street */}
 					<div className={FIELD_CLS}>
-						<label className={LABEL_CLS}>Street & house number</label>
-						<input {...register('street')} placeholder="Musterstraße 123" className={INPUT_CLS} />
+						<label className={LABEL_CLS}>{t('street')}</label>
+						<input
+							{...register('street')}
+							placeholder={t('streetPlaceholder')}
+							className={INPUT_CLS}
+						/>
 						{errors.street && <p className="text-[14px] text-error">{errors.street.message}</p>}
 					</div>
 
 					{/* Postcode + City */}
 					<div className="flex gap-3.5">
 						<div className={`${FIELD_CLS} w-[220px] shrink-0`}>
-							<label className={LABEL_CLS}>Postcode</label>
-							<input {...register('postcode')} placeholder="12345" className={INPUT_CLS} />
+							<label className={LABEL_CLS}>{t('postcode')}</label>
+							<input
+								{...register('postcode')}
+								placeholder={t('postcodePlaceholder')}
+								className={INPUT_CLS}
+							/>
 							{errors.postcode && (
 								<p className="text-[14px] text-error">{errors.postcode.message}</p>
 							)}
 						</div>
 						<div className={`${FIELD_CLS} flex-1`}>
-							<label className={LABEL_CLS}>City</label>
-							<input {...register('city')} placeholder="Berlin" className={INPUT_CLS} />
+							<label className={LABEL_CLS}>{t('city')}</label>
+							<input
+								{...register('city')}
+								placeholder={t('cityPlaceholder')}
+								className={INPUT_CLS}
+							/>
 							{errors.city && <p className="text-[14px] text-error">{errors.city.message}</p>}
 						</div>
 					</div>
@@ -94,13 +111,21 @@ function BusinessStep() {
 					{/* Tax ID + VAT ID */}
 					<div className="grid grid-cols-2 gap-3.5">
 						<div className={FIELD_CLS}>
-							<label className={LABEL_CLS}>Tax ID (Steuernummer)</label>
-							<input {...register('taxId')} placeholder="123/456/78901" className={INPUT_CLS} />
+							<label className={LABEL_CLS}>{t('taxId')}</label>
+							<input
+								{...register('taxId')}
+								placeholder={t('taxIdPlaceholder')}
+								className={INPUT_CLS}
+							/>
 							{errors.taxId && <p className="text-[14px] text-error">{errors.taxId.message}</p>}
 						</div>
 						<div className={FIELD_CLS}>
-							<label className={LABEL_CLS}>VAT ID (USt-IdNr.) Optional</label>
-							<input {...register('vatId')} placeholder="DE123456789" className={INPUT_CLS} />
+							<label className={LABEL_CLS}>{t('vatId')}</label>
+							<input
+								{...register('vatId')}
+								placeholder={t('vatIdPlaceholder')}
+								className={INPUT_CLS}
+							/>
 							{errors.vatId && <p className="text-[14px] text-error">{errors.vatId.message}</p>}
 						</div>
 					</div>
@@ -109,7 +134,7 @@ function BusinessStep() {
 				{/* Generic fallback — catches any field error not shown above */}
 				{Object.keys(errors).length > 0 && (
 					<div className="rounded-[15px] bg-error-light px-4 py-2.5 text-[14px] text-error">
-						Please fill in all required fields above.
+						{tAccount('fillRequiredFields')}
 					</div>
 				)}
 
@@ -120,14 +145,14 @@ function BusinessStep() {
 						onClick={handleBack}
 						className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] border border-[#e5e7eb] bg-white px-[30px] text-[18px] font-medium text-black transition-colors hover:bg-grey-25"
 					>
-						Back
+						{tCommon('back')}
 					</button>
 					<button
 						type="submit"
 						disabled={isSubmitting}
 						className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] bg-primary px-[30px] text-[18px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
 					>
-						{isSubmitting ? 'Saving...' : 'Continue'}
+						{isSubmitting ? tCommon('saving') : tCommon('continue')}
 					</button>
 				</div>
 			</form>

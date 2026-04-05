@@ -1,4 +1,5 @@
 import { Calendar, ChevronDown, Info } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
 import { cn } from '@/lib/utils'
 import type { CalculationSectionProps } from './types'
@@ -29,6 +30,8 @@ function ValuationSection({
 	onFieldBlur,
 	className,
 }: CalculationSectionProps) {
+	const t = useTranslations('report.calculation')
+
 	return (
 		<div className={cn('grid grid-cols-1 gap-5 lg:grid-cols-2', className)}>
 			{/* Left — DAT Valuation */}
@@ -36,7 +39,7 @@ function ValuationSection({
 				<div className="flex flex-col gap-4">
 					{/* Header */}
 					<div className="flex items-center gap-2">
-						<span className="text-h4 font-semibold text-black">DAT Valuation</span>
+						<span className="text-h4 font-semibold text-black">{t('valuation.datValuation')}</span>
 						<Info className="h-4 w-4 text-grey-100" />
 					</div>
 
@@ -49,7 +52,9 @@ function ValuationSection({
 
 					{/* General condition */}
 					<div className="flex flex-col gap-3">
-						<label className="text-body-sm font-medium text-black">General condition</label>
+						<label className="text-body-sm font-medium text-black">
+							{t('valuation.generalCondition')}
+						</label>
 						<div className="relative">
 							<Controller
 								name="generalCondition"
@@ -63,7 +68,7 @@ function ValuationSection({
 										}}
 										className="h-[53px] w-full appearance-none rounded-2xl border-[1.5px] border-border-card bg-white px-3.5 pr-10 text-body text-black focus:border-primary focus:outline-none"
 									>
-										<option value="">Select condition</option>
+										<option value="">{t('valuation.selectCondition')}</option>
 										{CONDITION_OPTIONS.map((o) => (
 											<option key={o.value} value={o.value}>
 												{o.label}
@@ -78,7 +83,7 @@ function ValuationSection({
 
 					{/* Taxation chips */}
 					<div className="flex flex-col gap-3">
-						<label className="text-body-sm font-medium text-black">Taxation</label>
+						<label className="text-body-sm font-medium text-black">{t('valuation.taxation')}</label>
 						<Controller
 							name="taxation"
 							control={control}
@@ -115,13 +120,13 @@ function ValuationSection({
 						type="button"
 						className="flex items-center justify-center rounded-btn border border-black p-3.5 text-body-sm font-medium text-black transition-colors hover:bg-grey-25"
 					>
-						Quick Valuation
+						{t('valuation.quickValuation')}
 					</button>
 					<button
 						type="button"
 						className="flex items-center justify-center rounded-btn bg-primary p-3.5 text-body-sm font-medium text-white transition-colors hover:bg-primary-hover"
 					>
-						Detail Valuation
+						{t('valuation.detailValuation')}
 					</button>
 				</div>
 			</div>
@@ -130,13 +135,13 @@ function ValuationSection({
 			<div className="flex flex-col gap-4 rounded-3xl border-2 border-border-subtle p-5">
 				{/* Header */}
 				<div className="flex items-center gap-2">
-					<span className="text-h4 font-semibold text-black">Manual Valuation</span>
+					<span className="text-h4 font-semibold text-black">{t('valuation.manualValuation')}</span>
 					<Info className="h-4 w-4 text-grey-100" />
 				</div>
 
 				{/* Data source */}
 				<div className="flex flex-col gap-3">
-					<label className="text-body-sm font-medium text-black">Data source</label>
+					<label className="text-body-sm font-medium text-black">{t('valuation.dataSource')}</label>
 					<div className="relative">
 						<Controller
 							name="dataSource"
@@ -150,7 +155,7 @@ function ValuationSection({
 									}}
 									className="h-[53px] w-full appearance-none rounded-2xl border-[1.5px] border-border-card bg-white px-3.5 pr-10 text-body text-black focus:border-primary focus:outline-none"
 								>
-									<option value="">Select source</option>
+									<option value="">{t('valuation.selectSource')}</option>
 									{DATA_SOURCE_OPTIONS.map((o) => (
 										<option key={o.value} value={o.value}>
 											{o.label}
@@ -165,7 +170,7 @@ function ValuationSection({
 
 				{/* Results header */}
 				<div className="flex items-center gap-2">
-					<span className="text-body-sm font-medium text-black">Results</span>
+					<span className="text-body-sm font-medium text-black">{t('valuation.results')}</span>
 					<Info className="h-4 w-4 text-grey-100" />
 				</div>
 
@@ -173,9 +178,9 @@ function ValuationSection({
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					{(
 						[
-							{ name: 'valuationMax', label: 'Maximum' },
-							{ name: 'valuationAvg', label: 'Average' },
-							{ name: 'valuationMin', label: 'Minimum' },
+							{ name: 'valuationMax', label: t('valuation.maximum') },
+							{ name: 'valuationAvg', label: t('valuation.average') },
+							{ name: 'valuationMin', label: t('valuation.minimum') },
 						] as const
 					).map(({ name, label }) => (
 						<div key={name} className="flex flex-col gap-3">
@@ -192,12 +197,12 @@ function ValuationSection({
 
 				{/* Date */}
 				<div className="flex flex-col gap-3">
-					<label className="text-body-sm font-medium text-black">Date</label>
+					<label className="text-body-sm font-medium text-black">{t('valuation.date')}</label>
 					<div className="relative">
 						<input
 							{...register('valuationDate')}
 							onBlur={() => onFieldBlur?.('valuationDate')}
-							placeholder="MM/YYYY"
+							placeholder={t('valuation.datePlaceholder')}
 							className="h-[53px] w-full rounded-2xl border-[1.5px] border-border-card px-3.5 pr-10 text-body text-black placeholder:text-placeholder focus:border-primary focus:outline-none"
 						/>
 						<Calendar className="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-grey-100" />
@@ -209,7 +214,7 @@ function ValuationSection({
 					type="button"
 					className="mt-auto flex items-center justify-center rounded-btn border border-black p-3.5 text-body-sm font-medium text-black transition-colors hover:bg-grey-25"
 				>
-					Remove Calculation
+					{t('valuation.removeCalculation')}
 				</button>
 			</div>
 		</div>

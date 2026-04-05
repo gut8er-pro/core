@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -14,6 +15,7 @@ function formatEUR(value: number): string {
 }
 
 function InvoiceBanner({ control, className }: Pick<InvoiceSectionProps, 'control' | 'className'>) {
+	const t = useTranslations('report.invoice')
 	const lineItems = useWatch({ control, name: 'lineItems' })
 
 	const parsedItems = (lineItems ?? []).map((item) => ({
@@ -27,9 +29,11 @@ function InvoiceBanner({ control, className }: Pick<InvoiceSectionProps, 'contro
 		<div className={cn('rounded-xl bg-linear-to-r from-primary to-primary-hover p-6', className)}>
 			<div className="flex items-center justify-between">
 				<div className="flex flex-col gap-1">
-					<span className="text-body-sm font-medium text-white/80">Invoice Amount</span>
+					<span className="text-body-sm font-medium text-white/80">{t('invoiceAmount')}</span>
 					<span className="text-3xl font-bold text-white">{formatEUR(grossTotal)}</span>
-					<span className="text-body-sm text-white/70">Before tax {formatEUR(netTotal)}</span>
+					<span className="text-body-sm text-white/70">
+						{t('beforeTax', { amount: formatEUR(netTotal) })}
+					</span>
 				</div>
 
 				<Button
@@ -38,7 +42,7 @@ function InvoiceBanner({ control, className }: Pick<InvoiceSectionProps, 'contro
 					size="md"
 					className="border-white bg-white/10 text-white hover:bg-white/20 hover:text-white"
 				>
-					Preview Invoice
+					{t('previewInvoice')}
 				</Button>
 			</div>
 		</div>

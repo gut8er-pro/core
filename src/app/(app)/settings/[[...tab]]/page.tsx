@@ -17,6 +17,7 @@ import {
 	X,
 } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
@@ -35,12 +36,12 @@ import {
 
 type SettingsTab = 'profile' | 'business' | 'integrations' | 'billing' | 'templates'
 
-const SETTINGS_TABS: Array<{ key: SettingsTab; label: string; icon: typeof User }> = [
-	{ key: 'profile', label: 'Profile', icon: User },
-	{ key: 'business', label: 'Business', icon: Building2 },
-	{ key: 'integrations', label: 'Integrations', icon: LinkIcon },
-	{ key: 'billing', label: 'Billing', icon: DollarSign },
-	{ key: 'templates', label: 'Templates', icon: Bookmark },
+const SETTINGS_TABS: Array<{ key: SettingsTab; labelKey: string; icon: typeof User }> = [
+	{ key: 'profile', labelKey: 'tabs.profile', icon: User },
+	{ key: 'business', labelKey: 'tabs.business', icon: Building2 },
+	{ key: 'integrations', labelKey: 'tabs.integrations', icon: LinkIcon },
+	{ key: 'billing', labelKey: 'tabs.billing', icon: DollarSign },
+	{ key: 'templates', labelKey: 'tabs.templates', icon: Bookmark },
 ]
 
 function SettingsSidebar({
@@ -50,6 +51,7 @@ function SettingsSidebar({
 	activeTab: SettingsTab
 	onTabChange: (tab: SettingsTab) => void
 }) {
+	const t = useTranslations('settings')
 	return (
 		<div className="flex w-full shrink-0 gap-2 overflow-x-auto rounded-2xl bg-white p-3 md:w-[302px] md:flex-col md:gap-4 md:p-6">
 			{SETTINGS_TABS.map((tab) => {
@@ -72,7 +74,7 @@ function SettingsSidebar({
 								isActive ? 'font-medium text-primary' : 'text-black',
 							)}
 						>
-							{tab.label}
+							{t(tab.labelKey)}
 						</span>
 					</button>
 				)
@@ -82,6 +84,9 @@ function SettingsSidebar({
 }
 
 function ProfileSection() {
+	const t = useTranslations('settings')
+	const tt = useTranslations('toast')
+	const tc = useTranslations('common')
 	const { data: settings, isLoading } = useUserSettings()
 	const saveMutation = useSaveSettings()
 	const toast = useToast()
@@ -114,10 +119,10 @@ function ProfileSection() {
 			{ profile: data },
 			{
 				onSuccess: () => {
-					toast.success('Profile saved successfully')
+					toast.success(tt('profileSaved'))
 				},
 				onError: () => {
-					toast.error('Failed to save profile. Please try again.')
+					toast.error(tt('profileSaveError'))
 				},
 			},
 		)
@@ -132,7 +137,7 @@ function ProfileSection() {
 			{/* White card */}
 			<div className="flex w-full flex-col gap-6 rounded-section bg-white p-8">
 				<h2 className="text-section-title font-medium leading-none text-black">
-					Personal Information
+					{t('profile.heading')}
 				</h2>
 
 				{/* Avatar */}
@@ -148,20 +153,20 @@ function ProfileSection() {
 						type="button"
 						className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-danger text-body font-medium text-danger"
 					>
-						Remove
+						{t('profile.remove')}
 					</button>
 				</div>
 
 				{/* First Name / Last Name */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField
-						label="First name"
+						label={t('profile.firstName')}
 						placeholder="Ketn"
 						{...register('firstName')}
 						error={errors.firstName?.message}
 					/>
 					<TextField
-						label="Last name"
+						label={t('profile.lastName')}
 						placeholder="Torres"
 						{...register('lastName')}
 						error={errors.lastName?.message}
@@ -170,8 +175,8 @@ function ProfileSection() {
 
 				{/* Title */}
 				<TextField
-					label="Title"
-					placeholder="Kfz-Sachverständiger"
+					label={t('profile.title')}
+					placeholder="Kfz-Sachverst\u00e4ndiger"
 					{...register('title')}
 					error={errors.title?.message}
 				/>
@@ -179,13 +184,13 @@ function ProfileSection() {
 				{/* Email / Phone */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField
-						label="Email"
+						label={t('profile.email')}
 						value={settings?.email ?? ''}
 						disabled
 						placeholder="ketn.torres@example.com"
 					/>
 					<TextField
-						label="Phone number"
+						label={t('profile.phoneNumber')}
 						placeholder="+49 151 23456789"
 						{...register('phone')}
 						error={errors.phone?.message}
@@ -195,20 +200,20 @@ function ProfileSection() {
 				{/* Social links */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
 					<TextField
-						label="Instagram"
-						placeholder="@username"
+						label={t('profile.instagram')}
+						placeholder={t('profile.instagramPlaceholder')}
 						icon={<Instagram className="h-6 w-6" />}
 						{...register('instagram')}
 					/>
 					<TextField
-						label="Facebook"
-						placeholder="facebook.com/username"
+						label={t('profile.facebook')}
+						placeholder={t('profile.facebookPlaceholder')}
 						icon={<Facebook className="h-6 w-6" />}
 						{...register('facebook')}
 					/>
 					<TextField
-						label="Linkedin"
-						placeholder="linkedin.com/username"
+						label={t('profile.linkedin')}
+						placeholder={t('profile.linkedinPlaceholder')}
 						icon={<Linkedin className="h-6 w-6" />}
 						{...register('linkedin')}
 					/>
@@ -222,14 +227,14 @@ function ProfileSection() {
 					onClick={() => reset()}
 					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-white text-input font-medium tracking-[0.18px] text-black"
 				>
-					Cancel
+					{tc('cancel')}
 				</button>
 				<button
 					type="submit"
 					disabled={saveMutation.isPending}
 					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 				>
-					{saveMutation.isPending ? 'Saving…' : 'Update'}
+					{saveMutation.isPending ? tc('saving') : tc('update')}
 				</button>
 			</div>
 		</form>
@@ -237,6 +242,9 @@ function ProfileSection() {
 }
 
 function BusinessSection() {
+	const t = useTranslations('settings')
+	const tt = useTranslations('toast')
+	const tc = useTranslations('common')
 	const { data: settings, isLoading } = useUserSettings()
 	const saveMutation = useSaveSettings()
 	const toast = useToast()
@@ -270,12 +278,12 @@ function BusinessSection() {
 		if (!file) return
 
 		if (!file.type.startsWith('image/')) {
-			toast.error('Please select an image file')
+			toast.error(tt('logoUploadError'))
 			return
 		}
 
 		if (file.size > 5 * 1024 * 1024) {
-			toast.error('Logo must be under 5MB')
+			toast.error(t('business.logoTooLarge'))
 			return
 		}
 
@@ -297,12 +305,12 @@ function BusinessSection() {
 			saveMutation.mutate(
 				{ logoUrl: urlData.publicUrl },
 				{
-					onSuccess: () => toast.success('Logo uploaded successfully'),
-					onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to save logo'),
+					onSuccess: () => toast.success(tt('logoUploaded')),
+					onError: (err) => toast.error(err instanceof Error ? err.message : tt('logoSaveError')),
 				},
 			)
 		} catch {
-			toast.error('Failed to upload logo')
+			toast.error(tt('logoUploadError'))
 		} finally {
 			setLogoUploading(false)
 			if (logoInputRef.current) logoInputRef.current.value = ''
@@ -314,10 +322,10 @@ function BusinessSection() {
 			{ business: data },
 			{
 				onSuccess: () => {
-					toast.success('Business details saved successfully')
+					toast.success(tt('businessSaved'))
 				},
 				onError: () => {
-					toast.error('Failed to save business details. Please try again.')
+					toast.error(tt('businessSaveError'))
 				},
 			},
 		)
@@ -332,7 +340,7 @@ function BusinessSection() {
 			{/* White card */}
 			<div className="flex w-full flex-col gap-8 rounded-section bg-white p-8">
 				<h2 className="text-section-title font-medium leading-none text-black">
-					Business Information
+					{t('business.heading')}
 				</h2>
 
 				{/* Logo upload */}
@@ -345,7 +353,9 @@ function BusinessSection() {
 								className="h-full w-full rounded-xl object-contain"
 							/>
 						) : (
-							<span className="text-body-sm font-medium tracking-[0.14px] text-grey-50">Empty</span>
+							<span className="text-body-sm font-medium tracking-[0.14px] text-grey-50">
+								{t('business.empty')}
+							</span>
 						)}
 					</div>
 					<input
@@ -361,31 +371,31 @@ function BusinessSection() {
 						disabled={logoUploading}
 						className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-border-subtle bg-white px-[13px] text-body font-medium tracking-[0.16px] text-black opacity-45 hover:opacity-70 disabled:cursor-not-allowed"
 					>
-						{logoUploading ? 'Uploading…' : 'Upload Logo'}
+						{logoUploading ? t('business.uploading') : t('business.uploadLogo')}
 					</button>
 				</div>
 
 				{/* Company Name / Website */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField
-						label="Company Name"
-						placeholder="Kfz-Sachverständiger"
+						label={t('business.companyName')}
+						placeholder="Kfz-Sachverst\u00e4ndiger"
 						{...register('companyName')}
 						error={errors.companyName?.message}
 					/>
-					<TextField label="Website" placeholder="www.kfz.de" disabled />
+					<TextField label={t('business.website')} placeholder="www.kfz.de" disabled />
 				</div>
 
 				{/* Email / Phone number */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-					<TextField label="Email" placeholder="sales.contact@kfz.com" disabled />
-					<TextField label="Phone number" placeholder="+3513331253" disabled />
+					<TextField label={t('profile.email')} placeholder="sales.contact@kfz.com" disabled />
+					<TextField label={t('profile.phoneNumber')} placeholder="+3513331253" disabled />
 				</div>
 
 				{/* Street & Number */}
 				<TextField
-					label="Street & Number"
-					placeholder="Musterstraße 123"
+					label={t('business.street')}
+					placeholder="Musterstra\u00dfe 123"
 					{...register('street')}
 					error={errors.street?.message}
 				/>
@@ -393,13 +403,13 @@ function BusinessSection() {
 				{/* Postcode / City */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField
-						label="Postcode"
+						label={t('business.postcode')}
 						placeholder="10115"
 						{...register('postcode')}
 						error={errors.postcode?.message}
 					/>
 					<TextField
-						label="City"
+						label={t('business.city')}
 						placeholder="Berlin"
 						{...register('city')}
 						error={errors.city?.message}
@@ -409,13 +419,13 @@ function BusinessSection() {
 				{/* Tax ID / VAT ID */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField
-						label="Tax ID (Steuernummer)"
+						label={t('business.taxId')}
 						placeholder="123/456/78901"
 						{...register('taxId')}
 						error={errors.taxId?.message}
 					/>
 					<TextField
-						label="VAT ID (USt-IdNr.)"
+						label={t('business.vatId')}
 						placeholder="DE123456789"
 						{...register('vatId')}
 						error={errors.vatId?.message}
@@ -430,14 +440,14 @@ function BusinessSection() {
 					onClick={() => reset()}
 					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-white text-input font-medium tracking-[0.18px] text-black"
 				>
-					Cancel
+					{tc('cancel')}
 				</button>
 				<button
 					type="submit"
 					disabled={saveMutation.isPending}
 					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 				>
-					{saveMutation.isPending ? 'Saving…' : 'Update'}
+					{saveMutation.isPending ? tc('saving') : tc('update')}
 				</button>
 			</div>
 		</form>
@@ -445,6 +455,9 @@ function BusinessSection() {
 }
 
 function IntegrationsSection() {
+	const t = useTranslations('settings')
+	const tt = useTranslations('toast')
+	const tc = useTranslations('common')
 	const { data: settings, isLoading } = useUserSettings()
 	const saveMutation = useSaveSettings()
 	const toast = useToast()
@@ -473,10 +486,10 @@ function IntegrationsSection() {
 			{
 				onSuccess: () => {
 					setShowDatForm(false)
-					toast.success('DAT integration connected successfully')
+					toast.success(tt('datConnected'))
 				},
 				onError: () => {
-					toast.error('Failed to connect DAT integration. Please check your credentials.')
+					toast.error(tt('datConnectError'))
 				},
 			},
 		)
@@ -494,10 +507,10 @@ function IntegrationsSection() {
 			},
 			{
 				onSuccess: () => {
-					toast.success('DAT integration disconnected')
+					toast.success(tt('datDisconnected'))
 				},
 				onError: () => {
-					toast.error('Failed to disconnect DAT integration. Please try again.')
+					toast.error(tt('datDisconnectError'))
 				},
 			},
 		)
@@ -509,10 +522,10 @@ function IntegrationsSection() {
 			<div className="flex w-full flex-col gap-8 rounded-section bg-white p-8">
 				<div className="flex flex-col gap-3">
 					<h2 className="text-section-title font-medium leading-none text-black">
-						Connected Services
+						{t('integrations.heading')}
 					</h2>
 					<p className="text-body tracking-[0.16px] text-black opacity-70">
-						Connect third-party services to streamline your workflow
+						{t('integrations.subtitle')}
 					</p>
 				</div>
 
@@ -524,13 +537,15 @@ function IntegrationsSection() {
 						className="h-[88px] w-[55px] object-contain shrink-0"
 					/>
 					<div className="flex flex-col gap-[7px]">
-						<p className="text-body-sm font-medium leading-[18px] text-text-secondary">DAT</p>
+						<p className="text-body-sm font-medium leading-[18px] text-text-secondary">
+							{t('integrations.dat')}
+						</p>
 						<p className="text-body-sm leading-5 text-black opacity-70">
-							Automatically backup reports from DAT
+							{t('integrations.datDescription')}
 						</p>
 						{datIntegration?.isActive && (
 							<p className="text-caption font-medium leading-none text-primary">
-								Last sync: 2 hours ago
+								{t('integrations.lastSync')}
 							</p>
 						)}
 					</div>
@@ -541,7 +556,7 @@ function IntegrationsSection() {
 									type="button"
 									className="flex h-[50px] flex-1 cursor-pointer items-center justify-center rounded-btn border-2 border-border-subtle bg-white px-[13px] text-input font-medium tracking-[0.18px] text-black opacity-45 hover:opacity-70"
 								>
-									Configure
+									{t('integrations.configure')}
 								</button>
 								<button
 									type="button"
@@ -549,7 +564,7 @@ function IntegrationsSection() {
 									disabled={saveMutation.isPending}
 									className="flex h-[50px] flex-1 cursor-pointer items-center justify-center rounded-btn border-2 border-danger px-[13px] text-input font-medium tracking-[0.18px] text-danger disabled:opacity-60"
 								>
-									{saveMutation.isPending ? '…' : 'Disconnect'}
+									{saveMutation.isPending ? '\u2026' : t('integrations.disconnect')}
 								</button>
 							</>
 						) : (
@@ -558,7 +573,7 @@ function IntegrationsSection() {
 								onClick={() => setShowDatForm(!showDatForm)}
 								className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn bg-primary px-6 text-input font-medium tracking-[0.18px] text-white"
 							>
-								Connect
+								{t('integrations.connect')}
 							</button>
 						)}
 					</div>
@@ -571,14 +586,14 @@ function IntegrationsSection() {
 					>
 						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 							<TextField
-								label="Username"
-								placeholder="DAT username"
+								label={t('integrations.username')}
+								placeholder={t('integrations.usernamePlaceholder')}
 								{...datForm.register('username', { required: 'Required' })}
 							/>
 							<TextField
-								label="Password"
+								label={t('integrations.password')}
 								type="password"
-								placeholder="DAT password"
+								placeholder={t('integrations.passwordPlaceholder')}
 								{...datForm.register('password', { required: 'Required' })}
 							/>
 						</div>
@@ -588,14 +603,14 @@ function IntegrationsSection() {
 								onClick={() => setShowDatForm(false)}
 								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-white text-input font-medium tracking-[0.18px] text-black"
 							>
-								Cancel
+								{tc('cancel')}
 							</button>
 							<button
 								type="submit"
 								disabled={saveMutation.isPending}
 								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 							>
-								{saveMutation.isPending ? 'Saving…' : 'Save'}
+								{saveMutation.isPending ? tc('saving') : tc('save')}
 							</button>
 						</div>
 					</form>
@@ -608,13 +623,13 @@ function IntegrationsSection() {
 					type="button"
 					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-white text-input font-medium tracking-[0.18px] text-black"
 				>
-					Cancel
+					{tc('cancel')}
 				</button>
 				<button
 					type="button"
 					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-input font-medium tracking-[0.18px] text-white"
 				>
-					Update
+					{tc('update')}
 				</button>
 			</div>
 		</div>
@@ -622,29 +637,14 @@ function IntegrationsSection() {
 }
 
 function formatDate(dateStr: string | null): string {
-	if (!dateStr) return '—'
+	if (!dateStr) return '\u2014'
 	const d = new Date(dateStr)
 	return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-function getStatusLabel(status: string | null): {
-	label: string
-	color: 'green' | 'yellow' | 'red'
-} {
-	switch (status) {
-		case 'paid':
-			return { label: 'Paid', color: 'green' }
-		case 'open':
-			return { label: 'Open', color: 'yellow' }
-		case 'void':
-		case 'uncollectible':
-			return { label: 'Failed', color: 'red' }
-		default:
-			return { label: status ?? 'Unknown', color: 'yellow' }
-	}
-}
-
 function BillingSection() {
+	const t = useTranslations('settings')
+	const tc = useTranslations('common')
 	const { data: billing, isLoading } = useBilling()
 	const checkoutMutation = useCreateCheckout()
 	const portalMutation = useCreatePortal()
@@ -669,19 +669,36 @@ function BillingSection() {
 
 	function getPlanStatusText(): string {
 		if (isCancelling && billing?.subscription?.cancelAt) {
-			return `Cancels on ${formatDate(billing.subscription.cancelAt)}`
+			return t('billing.cancelsOn', { date: formatDate(billing.subscription.cancelAt) })
 		}
 		if (isTrialing && trialEndsAt) {
 			const daysLeft = Math.max(
 				0,
 				Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
 			)
-			return `Trial active \u2022 ${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining`
+			return t('billing.trialActive', { days: daysLeft })
 		}
 		if (nextBillingDate) {
-			return `\u20ac69.00 / month \u2022 Renews on ${formatDate(nextBillingDate)}`
+			return t('billing.renewsOn', { date: formatDate(nextBillingDate) })
 		}
-		return 'No active subscription'
+		return t('billing.noActiveSubscription')
+	}
+
+	function getStatusLabel(status: string | null): {
+		label: string
+		color: 'green' | 'yellow' | 'red'
+	} {
+		switch (status) {
+			case 'paid':
+				return { label: t('billing.paid'), color: 'green' }
+			case 'open':
+				return { label: t('billing.open'), color: 'yellow' }
+			case 'void':
+			case 'uncollectible':
+				return { label: t('billing.failed'), color: 'red' }
+			default:
+				return { label: status ?? t('billing.unknown'), color: 'yellow' }
+		}
 	}
 
 	return (
@@ -691,9 +708,11 @@ function BillingSection() {
 				<div className="flex items-start justify-between">
 					<div className="flex flex-col gap-6">
 						<div>
-							<p className="text-plan-label font-medium text-white/50">Current Plan</p>
+							<p className="text-plan-label font-medium text-white/50">
+								{t('billing.currentPlan')}
+							</p>
 							<p className="mt-6 text-hero font-medium capitalize leading-none tracking-[-0.44px]">
-								Pro Plan
+								{t('billing.proPlan')}
 							</p>
 						</div>
 						<p className="text-body tracking-[0.16px] text-white">{getPlanStatusText()}</p>
@@ -706,7 +725,7 @@ function BillingSection() {
 								disabled={portalMutation.isPending}
 								className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-white/25 text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 							>
-								{portalMutation.isPending ? '\u2026' : 'Manage Plan'}
+								{portalMutation.isPending ? '\u2026' : t('billing.managePlan')}
 							</button>
 						) : (
 							<button
@@ -715,7 +734,7 @@ function BillingSection() {
 								disabled={checkoutMutation.isPending}
 								className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-white/25 text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 							>
-								{checkoutMutation.isPending ? '\u2026' : 'Set up payment'}
+								{checkoutMutation.isPending ? '\u2026' : t('billing.setupPayment')}
 							</button>
 						)}
 					</div>
@@ -725,23 +744,33 @@ function BillingSection() {
 				{/* Usage stats */}
 				<div className="flex gap-3">
 					<div className="flex flex-1 flex-col gap-[6px]">
-						<p className="text-body-sm tracking-[0.14px] text-white">Reports this month</p>
-						<p className="text-h2 font-medium tracking-[0.24px] text-white">Unlimited</p>
+						<p className="text-body-sm tracking-[0.14px] text-white">
+							{t('billing.reportsThisMonth')}
+						</p>
+						<p className="text-h2 font-medium tracking-[0.24px] text-white">
+							{t('billing.unlimited')}
+						</p>
 					</div>
 					<div className="flex flex-1 flex-col gap-[6px]">
-						<p className="text-body-sm tracking-[0.14px] text-white">AI Auto-fills</p>
-						<p className="text-h2 font-medium tracking-[0.24px] text-white">Unlimited</p>
+						<p className="text-body-sm tracking-[0.14px] text-white">{t('billing.aiAutoFills')}</p>
+						<p className="text-h2 font-medium tracking-[0.24px] text-white">
+							{t('billing.unlimited')}
+						</p>
 					</div>
 					<div className="flex flex-1 flex-col gap-[6px]">
-						<p className="text-body-sm tracking-[0.14px] text-white">Cloud Storage</p>
-						<p className="text-h2 font-medium tracking-[0.24px] text-white">50 GB</p>
+						<p className="text-body-sm tracking-[0.14px] text-white">{t('billing.cloudStorage')}</p>
+						<p className="text-h2 font-medium tracking-[0.24px] text-white">
+							{t('billing.cloudStorageAmount')}
+						</p>
 					</div>
 				</div>
 			</div>
 
 			{/* Payment Method */}
 			<div className="flex flex-col gap-4 rounded-section bg-white p-8">
-				<h3 className="text-section-title font-medium leading-none text-black">Payment Method</h3>
+				<h3 className="text-section-title font-medium leading-none text-black">
+					{t('billing.paymentMethod')}
+				</h3>
 				{billing?.paymentMethod ? (
 					<div className="flex items-center justify-between rounded-card border-2 border-border-card px-[14px] py-3">
 						<div className="flex items-center gap-6">
@@ -750,13 +779,18 @@ function BillingSection() {
 							</div>
 							<div className="flex flex-col gap-1">
 								<p className="text-body-sm font-medium leading-[18px] text-text-secondary">
-									{billing.paymentMethod.brand.charAt(0).toUpperCase() +
-										billing.paymentMethod.brand.slice(1)}{' '}
-									ending in {billing.paymentMethod.last4}
+									{t('billing.cardInfo', {
+										brand:
+											billing.paymentMethod.brand.charAt(0).toUpperCase() +
+											billing.paymentMethod.brand.slice(1),
+										last4: billing.paymentMethod.last4,
+									})}
 								</p>
 								<p className="text-caption leading-5 text-black opacity-70">
-									Expires {String(billing.paymentMethod.expMonth).padStart(2, '0')}/
-									{billing.paymentMethod.expYear}
+									{t('billing.cardExpiry', {
+										month: String(billing.paymentMethod.expMonth).padStart(2, '0'),
+										year: billing.paymentMethod.expYear,
+									})}
 								</p>
 							</div>
 						</div>
@@ -765,19 +799,19 @@ function BillingSection() {
 							onClick={() => portalMutation.mutate()}
 							className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-border-card px-6 text-input font-medium tracking-[0.18px] text-grey-100 hover:text-black"
 						>
-							Update
+							{tc('update')}
 						</button>
 					</div>
 				) : (
 					<div className="flex items-center justify-between rounded-card border-2 border-dashed border-border-card px-[14px] py-6">
-						<p className="text-body-sm text-grey-100">No payment method on file</p>
+						<p className="text-body-sm text-grey-100">{t('billing.noPaymentMethod')}</p>
 						<button
 							type="button"
 							onClick={() => checkoutMutation.mutate()}
 							disabled={checkoutMutation.isPending}
 							className="flex h-[42px] cursor-pointer items-center justify-center rounded-btn bg-primary px-6 text-body-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
 						>
-							{checkoutMutation.isPending ? 'Loading...' : 'Add payment method'}
+							{checkoutMutation.isPending ? t('billing.loading') : t('billing.addPaymentMethod')}
 						</button>
 					</div>
 				)}
@@ -785,7 +819,9 @@ function BillingSection() {
 
 			{/* Billing History */}
 			<div className="flex flex-col gap-6 rounded-section bg-white p-8">
-				<h3 className="text-section-title font-medium leading-none text-black">Billing History</h3>
+				<h3 className="text-section-title font-medium leading-none text-black">
+					{t('billing.billingHistory')}
+				</h3>
 				{billing?.invoices && billing.invoices.length > 0 ? (
 					<div className="overflow-hidden rounded-xl border-2 border-border-card">
 						<table className="w-full">
@@ -837,7 +873,7 @@ function BillingSection() {
 					</div>
 				) : (
 					<div className="rounded-xl border-2 border-dashed border-border-card px-6 py-8 text-center">
-						<p className="text-body-sm text-grey-100">No billing history yet</p>
+						<p className="text-body-sm text-grey-100">{t('billing.noBillingHistory')}</p>
 					</div>
 				)}
 			</div>
@@ -861,6 +897,8 @@ const MOCK_TEMPLATES: Template[] = [
 ]
 
 function TemplatesSection() {
+	const t = useTranslations('settings')
+	const tc = useTranslations('common')
 	const [templates, setTemplates] = useState<Template[]>(MOCK_TEMPLATES)
 	const [editingTemplate, setEditingTemplate] = useState<Template | null>(null)
 	const [isNewTemplate, setIsNewTemplate] = useState(false)
@@ -891,7 +929,7 @@ function TemplatesSection() {
 	function handleAdd() {
 		const newTemplate: Template = {
 			id: String(Date.now()),
-			title: 'New Template',
+			title: t('templates.newTemplate'),
 			date: new Date().toLocaleDateString('en-GB', {
 				day: '2-digit',
 				month: '2-digit',
@@ -936,7 +974,7 @@ function TemplatesSection() {
 								handleRemove(template.id)
 							}}
 						>
-							Remove
+							{tc('remove')}
 						</button>
 					</div>
 				))}
@@ -948,7 +986,7 @@ function TemplatesSection() {
 				className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-input font-medium text-white hover:bg-primary-hover"
 				onClick={handleAdd}
 			>
-				Add Template
+				{t('templates.addTemplate')}
 			</button>
 
 			{/* Edit Template Panel */}
@@ -958,7 +996,7 @@ function TemplatesSection() {
 						{/* Header */}
 						<div className="flex items-center gap-2">
 							<h3 className="text-input font-medium text-black">
-								{isNewTemplate ? 'New Template' : 'Edit Template'}
+								{isNewTemplate ? t('templates.newTemplate') : t('templates.editTemplate')}
 							</h3>
 							<Info className="h-4 w-4 text-grey-100" />
 							<button
@@ -973,20 +1011,20 @@ function TemplatesSection() {
 						{/* Body */}
 						<div className="flex flex-1 flex-col gap-6 overflow-y-auto">
 							<div className="flex flex-col gap-3">
-								<label className="text-body font-medium text-black">Subject</label>
+								<label className="text-body font-medium text-black">{t('templates.subject')}</label>
 								<input
 									type="text"
 									className="flex h-[53px] w-full rounded-xl border-[1.5px] border-border-card bg-white px-[14px] text-input text-black placeholder:text-grey-100 focus:border-primary focus:outline-none"
-									placeholder="Title"
+									placeholder={t('templates.title')}
 									value={editSubject}
 									onChange={(e) => setEditSubject(e.target.value)}
 								/>
 							</div>
 							<div className="flex flex-1 flex-col gap-3">
-								<label className="text-body font-medium text-black">Body</label>
+								<label className="text-body font-medium text-black">{t('templates.body')}</label>
 								<textarea
 									className="flex-1 rounded-xl border-[1.5px] border-border-card bg-white px-[14px] py-[14px] text-input text-black placeholder:text-grey-100 focus:border-primary focus:outline-none"
-									placeholder="Write Something"
+									placeholder={t('templates.placeholder')}
 									value={editBody}
 									onChange={(e) => setEditBody(e.target.value)}
 								/>
@@ -1000,14 +1038,14 @@ function TemplatesSection() {
 								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn border-2 border-border text-body font-medium text-black hover:bg-grey-25"
 								onClick={() => setEditingTemplate(null)}
 							>
-								Cancel
+								{tc('cancel')}
 							</button>
 							<button
 								type="button"
 								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-body font-medium text-white hover:bg-primary-hover"
 								onClick={handleSave}
 							>
-								{isNewTemplate ? 'Create' : 'Save'}
+								{isNewTemplate ? t('templates.create') : tc('save')}
 							</button>
 						</div>
 					</div>
@@ -1020,6 +1058,7 @@ function TemplatesSection() {
 const VALID_TABS: SettingsTab[] = ['profile', 'business', 'integrations', 'billing', 'templates']
 
 function SettingsPage() {
+	const t = useTranslations('settings')
 	const router = useRouter()
 	const params = useParams<{ tab?: string[] }>()
 	const tabParam = params.tab?.[0] as SettingsTab | undefined
@@ -1032,7 +1071,7 @@ function SettingsPage() {
 	return (
 		<ErrorBoundary>
 			<div className="flex flex-col gap-6">
-				<h1 className="text-page-title font-medium leading-none text-black">Account Settings</h1>
+				<h1 className="text-page-title font-medium leading-none text-black">{t('title')}</h1>
 
 				<div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
 					{/* Sidebar Navigation */}

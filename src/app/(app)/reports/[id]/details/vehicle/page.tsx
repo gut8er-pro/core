@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { DetailsSection } from '@/components/report/vehicle/details-section'
@@ -16,6 +17,8 @@ import { useVehicleInfo } from '@/hooks/use-vehicle-info'
 import { useToastStore } from '@/stores/toast-store'
 
 function VehiclePage() {
+	const t = useTranslations('report')
+	const tc = useTranslations('common')
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useVehicleInfo(reportId)
@@ -200,7 +203,7 @@ function VehiclePage() {
 		<div className="flex flex-col gap-6">
 			{/* Page heading with completion */}
 			<div className="flex items-center justify-between">
-				<h2 className="text-h2 font-bold text-black">Vehicle</h2>
+				<h2 className="text-h2 font-bold text-black">{t('vehicle.title')}</h2>
 				<CompletionBadge percentage={completionPercentage} />
 			</div>
 
@@ -210,16 +213,18 @@ function VehiclePage() {
 					{autoSaveState.status === 'saving' && (
 						<>
 							<Loader2 className="h-3 w-3 animate-spin text-grey-100" />
-							<span className="text-grey-100">Saving...</span>
+							<span className="text-grey-100">{tc('saving')}</span>
 						</>
 					)}
 					{autoSaveState.status === 'saved' && (
 						<>
 							<CheckCircle2 className="h-3 w-3 text-primary" />
-							<span className="text-primary">Saved</span>
+							<span className="text-primary">{tc('saved')}</span>
 						</>
 					)}
-					{autoSaveState.status === 'error' && <span className="text-error">Failed to save</span>}
+					{autoSaveState.status === 'error' && (
+						<span className="text-error">{tc('failedToSave')}</span>
+					)}
 				</div>
 			)}
 
@@ -259,7 +264,7 @@ function VehiclePage() {
 					}}
 					loading={autoSaveState.status === 'saving'}
 				>
-					Update Report
+					{t('accidentInfo.updateReport')}
 				</Button>
 			</div>
 		</div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { Palette, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useCallback } from 'react'
 import type { Photo } from '@/hooks/use-photos'
 import { cn } from '@/lib/utils'
@@ -15,6 +16,7 @@ type PhotoGridProps = {
 }
 
 function PhotoGrid({ photos, onEdit, onDelete, onSelect, className }: PhotoGridProps) {
+	const t = useTranslations('report')
 	const handleSelect = useCallback(
 		(photoId: string) => {
 			onSelect?.(photoId)
@@ -30,7 +32,7 @@ function PhotoGrid({ photos, onEdit, onDelete, onSelect, className }: PhotoGridP
 					className,
 				)}
 			>
-				<p className="text-body-sm text-grey-100">No photos uploaded yet</p>
+				<p className="text-body-sm text-grey-100">{t('gallery.noPhotosYet')}</p>
 			</div>
 		)
 	}
@@ -70,7 +72,7 @@ function PhotoGrid({ photos, onEdit, onDelete, onSelect, className }: PhotoGridP
 									onEdit(photo.id)
 								}}
 								className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-md bg-black/90 backdrop-blur-sm transition-colors hover:bg-black"
-								aria-label="Annotate photo"
+								aria-label={t('gallery.annotatePhoto')}
 							>
 								<Palette className="h-6 w-6 text-white" />
 							</button>
@@ -83,7 +85,7 @@ function PhotoGrid({ photos, onEdit, onDelete, onSelect, className }: PhotoGridP
 									onDelete(photo.id)
 								}}
 								className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-md bg-black/90 backdrop-blur-sm transition-colors hover:bg-black"
-								aria-label="Delete photo"
+								aria-label={t('gallery.deletePhoto')}
 							>
 								<Trash2 className="h-6 w-6 text-white" />
 							</button>

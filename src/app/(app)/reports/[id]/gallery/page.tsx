@@ -3,6 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { AlertCircle, Check, X } from 'lucide-react'
 import { useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnnotationModal } from '@/components/report/gallery/annotation-modal.dynamic'
 import { Filmstrip } from '@/components/report/gallery/filmstrip'
@@ -22,6 +23,7 @@ import { getStoragePath, uploadToStorage } from '@/lib/storage/photos'
 import { MAX_PHOTOS_PER_REPORT } from '@/lib/validations/photos'
 
 function GalleryPage() {
+	const t = useTranslations('report')
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = usePhotos(reportId)
@@ -198,9 +200,9 @@ function GalleryPage() {
 					<div className="flex items-center gap-2 rounded-lg border border-primary bg-primary-light px-4 py-3">
 						<Check className="h-4 w-4 shrink-0 text-primary" />
 						<p className="flex-1 text-body-sm text-primary">
-							Report generated — {effectiveSummary.totalFieldsFilled} fields auto-filled
+							{t('gallery.reportGenerated', { count: effectiveSummary.totalFieldsFilled })}
 							{effectiveSummary.damageMarkersPlaced > 0 &&
-								`, ${effectiveSummary.damageMarkersPlaced} damage markers placed`}
+								`, ${t('gallery.damageMarkersPlaced', { count: effectiveSummary.damageMarkersPlaced })}`}
 						</p>
 						<button
 							type="button"
@@ -220,7 +222,7 @@ function GalleryPage() {
 				{uploadState.isUploading && (
 					<div className="flex flex-col gap-1">
 						<div className="flex items-center justify-between text-body-sm">
-							<span className="text-grey-100">Uploading photos...</span>
+							<span className="text-grey-100">{t('gallery.uploadPhotos')}...</span>
 							<span className="font-semibold text-primary">{uploadState.progress}%</span>
 						</div>
 						<div className="h-2 overflow-hidden rounded-full bg-grey-25">
@@ -297,7 +299,7 @@ function GalleryPage() {
 						onClick={() => setSelectedPhotoId(null)}
 						className="self-start text-body-sm font-medium text-primary hover:underline"
 					>
-						Back to gallery
+						{t('gallery.backToGallery')}
 					</button>
 				)}
 			</div>

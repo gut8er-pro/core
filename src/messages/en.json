@@ -1,0 +1,1409 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "loading": "Loading...",
+    "search": "Search",
+    "yes": "Yes",
+    "no": "No",
+    "or": "Or",
+    "required": "Required",
+    "optional": "Optional",
+    "confirm": "Confirm",
+    "update": "Update",
+    "remove": "Remove",
+    "add": "Add",
+    "create": "Create",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "failedToSave": "Failed to save",
+    "complete": "Complete",
+    "previous": "Previous"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "statistics": "Statistics",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "helpAndSupport": "Help & Support",
+    "profile": "Profile",
+    "analytics": "Analytics",
+    "logOut": "Log Out",
+    "markAllAsRead": "Mark all as read",
+    "noNotificationsYet": "No notifications yet",
+    "viewAllNotifications": "View all notifications",
+    "gut8erproHome": "Gut8erPRO home",
+    "user": "User"
+  },
+  "auth": {
+    "login": {
+      "welcomeBack": "Welcome back",
+      "subtitle": "Please log in to your account to continue.",
+      "emailAddress": "Email address",
+      "enterYourEmail": "Enter your email",
+      "password": "Password",
+      "enterYourPassword": "Enter your password",
+      "forgotPassword": "Forgot password?",
+      "logIn": "Log in",
+      "loggingIn": "Logging in...",
+      "dontHaveAccount": "Don't have an account?",
+      "signUp": "Sign Up",
+      "loginWithGoogle": "Login with Google",
+      "loginWithApple": "Login with Apple",
+      "invalidCredentials": "Email or password is incorrect",
+      "tagline": "Professional Vehicle Assessment Web App",
+      "reportTime": "Report time",
+      "reportTimeValue": "-35%",
+      "lessManualWork": "Less manual work",
+      "lessManualWorkValue": "-40%"
+    },
+    "signup": {
+      "steps": {
+        "account": {
+          "title": "Create your account",
+          "subtitle": "Enter your email and create a secure password."
+        },
+        "personal": {
+          "title": "Personal details",
+          "subtitle": "Tell us a bit about yourself."
+        },
+        "business": {
+          "title": "Business information",
+          "subtitle": "Your company details for invoices and reports."
+        },
+        "plan": {
+          "title": "Your plan",
+          "subtitle": "All features included with a 7-day free trial."
+        },
+        "integrations": {
+          "title": "Connect your tools",
+          "subtitle": "Link your calculation provider. You can add more later in settings."
+        },
+        "complete": {
+          "title": "Welcome aboard!",
+          "subtitle": "Your account has been created successfully."
+        }
+      },
+      "account": {
+        "emailAddress": "Email address",
+        "emailPlaceholder": "you@example.com",
+        "password": "Password",
+        "passwordHint": "Min. 8 characters",
+        "confirmPassword": "Confirm password",
+        "confirmPasswordPlaceholder": "Repeat password",
+        "fillRequiredFields": "Please fill in all required fields above."
+      },
+      "personal": {
+        "title": "Title",
+        "titlePlaceholder": "Select",
+        "titleOptions": {
+          "mr": "Mr",
+          "mrs": "Mrs",
+          "dr": "Dr",
+          "prof": "Prof",
+          "profDr": "Prof. Dr."
+        },
+        "firstName": "First name",
+        "firstNamePlaceholder": "Name",
+        "lastName": "Last name",
+        "phoneNumber": "Phone number",
+        "phonePlaceholder": "+49 123 456789",
+        "professionalQualification": "Professional qualification",
+        "qualificationPlaceholder": "e.g. Kfz-Sachverständiger Dipl.-Ing."
+      },
+      "business": {
+        "companyName": "Company name",
+        "companyPlaceholder": "Mustermann Gutachten GmbH",
+        "street": "Street & house number",
+        "streetPlaceholder": "Musterstraße 123",
+        "postcode": "Postcode",
+        "postcodePlaceholder": "12345",
+        "city": "City",
+        "cityPlaceholder": "Berlin",
+        "taxId": "Tax ID (Steuernummer)",
+        "taxIdPlaceholder": "123/456/78901",
+        "vatId": "VAT ID (USt-IdNr.) Optional",
+        "vatIdPlaceholder": "DE123456789"
+      },
+      "plan": {
+        "pro": "Pro",
+        "forProfessionals": "For professionals",
+        "price": "€69",
+        "perMonth": "/month",
+        "trialDays": "7 days free",
+        "features": {
+          "unlimitedReports": "Unlimited reports",
+          "aiAutoFill": "AI-powered auto-fill",
+          "imageDamageAnalysis": "Image damage analysis",
+          "vinAutoDetection": "VIN auto-detection",
+          "prioritySupport": "Priority support",
+          "customBranding": "Custom branding",
+          "pdfExport": "PDF export",
+          "emailSupport": "Email support"
+        },
+        "paymentDetails": "Payment details",
+        "paymentNote": "You'll enter your card on the secure Stripe checkout page after creating your account.",
+        "trialNote": "You won't be charged until your 7-day trial ends. Cancel anytime."
+      },
+      "integrations": {
+        "calculationProvider": "Calculation provider",
+        "dat": "DAT",
+        "comingSoon": "Coming Soon",
+        "datCredentialsTitle": "DAT SilverDAT3 Credentials",
+        "username": "Username",
+        "usernamePlaceholder": "Your username",
+        "password": "Password",
+        "passwordPlaceholder": "••••••••",
+        "dontHaveAccount": "Don't have an account?",
+        "registerWithDat": "Register with DAT",
+        "skipNote": "You can skip this step and configure integrations later in Settings.",
+        "createAccount": "Create an Account",
+        "creating": "Creating...",
+        "selectProvider": "Select a provider above to enter your credentials"
+      },
+      "complete": {
+        "proPlan": "Pro Plan",
+        "paymentNotCompleted": "Payment not completed",
+        "trialStarted": "7-day free trial started",
+        "createReport": "Create Report",
+        "startFirstAssessment": "Start your first assessment",
+        "enjoyAi": "Enjoy AI",
+        "learnFromTooltips": "Learn from tooltips",
+        "settings": "Settings",
+        "customizeWorkspace": "Customize your workspace",
+        "createFirstReport": "Create your first report",
+        "goToDashboard": "Go to Dashboard",
+        "paymentSetupNote": "You can set up your payment method anytime in",
+        "settingsBilling": "Settings → Billing",
+        "toStartTrial": "to start your 7-day free trial.",
+        "confirmationEmailSent": "We've sent a confirmation email to",
+        "yourEmail": "your email"
+      }
+    },
+    "forgotPassword": {
+      "title": "Reset password",
+      "subtitle": "Enter your email address and we'll send you a link to reset your password.",
+      "sendResetLink": "Send reset link",
+      "sending": "Sending...",
+      "checkYourEmail": "Check your email",
+      "emailSentMessage": "We sent a password reset link to your email address. Click the link to set a new password.",
+      "didntReceiveEmail": "Didn't receive the email? Check your spam folder or try again.",
+      "tryAgain": "Try again",
+      "backToLogin": "Back to login"
+    },
+    "resetPassword": {
+      "title": "Set new password",
+      "subtitle": "Enter your new password below. Must be at least 8 characters.",
+      "newPassword": "New password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "updatePassword": "Update password",
+      "updating": "Updating...",
+      "passwordUpdated": "Password updated",
+      "successMessage": "Your password has been updated successfully. Redirecting to login...",
+      "goToLogin": "Go to login",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "passwordMinLength": "Password must be at least 8 characters"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "newReport": "New Report",
+    "createReport": "Create Report",
+    "reportTypes": {
+      "liability": "Liability",
+      "shortReport": "Short Report",
+      "evaluation": "Evaluation",
+      "oldtimerValuation": "Oldtimer Valuation"
+    },
+    "totalRevenue": "Total Revenue",
+    "yearly": "Yearly",
+    "monthly": "Monthly",
+    "weekly": "Weekly",
+    "completedPayments": "Completed Payments:",
+    "pendingPayments": "Pending Payments:",
+    "delayedPayments": "Delayed Payments:",
+    "recentReports": "Recent Reports",
+    "searchPlaceholder": "Search...",
+    "filterReports": "Filter reports",
+    "pagination": "Page {current} of {total}",
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    },
+    "untitledReport": "Untitled Report",
+    "failedToLoad": "Failed to load reports. Please try again.",
+    "table": {
+      "report": "Report",
+      "reportNumber": "Report Number",
+      "plateNumber": "Plate Number",
+      "dateCreated": "Date Created",
+      "carModel": "Car Model"
+    },
+    "actions": {
+      "reportActions": "Report actions",
+      "details": "Details",
+      "editReport": "Edit Report"
+    },
+    "emptyState": {
+      "title": "No reports yet",
+      "subtitle": "Create your first report to get started with vehicle assessments."
+    }
+  },
+  "settings": {
+    "title": "Account Settings",
+    "tabs": {
+      "profile": "Profile",
+      "business": "Business",
+      "integrations": "Integrations",
+      "billing": "Billing",
+      "templates": "Templates"
+    },
+    "profile": {
+      "heading": "Personal Information",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "title": "Title",
+      "email": "Email",
+      "phoneNumber": "Phone number",
+      "remove": "Remove",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "linkedin": "Linkedin",
+      "instagramPlaceholder": "@username",
+      "facebookPlaceholder": "facebook.com/username",
+      "linkedinPlaceholder": "linkedin.com/username",
+      "saveSuccess": "Profile saved successfully",
+      "saveError": "Failed to save profile. Please try again."
+    },
+    "business": {
+      "heading": "Business Information",
+      "empty": "Empty",
+      "uploadLogo": "Upload Logo",
+      "uploading": "Uploading…",
+      "companyName": "Company Name",
+      "website": "Website",
+      "street": "Street & Number",
+      "postcode": "Postcode",
+      "city": "City",
+      "taxId": "Tax ID (Steuernummer)",
+      "vatId": "VAT ID (USt-IdNr.)",
+      "saveSuccess": "Business details saved successfully",
+      "saveError": "Failed to save business details. Please try again.",
+      "invalidFileType": "Please select an image file",
+      "logoTooLarge": "Logo must be under 5MB",
+      "logoUploadSuccess": "Logo uploaded successfully",
+      "logoSaveError": "Failed to save logo",
+      "logoUploadError": "Failed to upload logo"
+    },
+    "integrations": {
+      "heading": "Connected Services",
+      "subtitle": "Connect third-party services to streamline your workflow",
+      "dat": "DAT",
+      "datDescription": "Automatically backup reports from DAT",
+      "lastSync": "Last sync: 2 hours ago",
+      "configure": "Configure",
+      "disconnect": "Disconnect",
+      "connect": "Connect",
+      "username": "Username",
+      "usernamePlaceholder": "DAT username",
+      "password": "Password",
+      "passwordPlaceholder": "DAT password",
+      "connectSuccess": "DAT integration connected successfully",
+      "connectError": "Failed to connect DAT integration. Please check your credentials.",
+      "disconnectSuccess": "DAT integration disconnected",
+      "disconnectError": "Failed to disconnect DAT integration. Please try again."
+    },
+    "billing": {
+      "currentPlan": "Current Plan",
+      "proPlan": "Pro Plan",
+      "trialActive": "Trial active · {days} day(s) remaining",
+      "renewsOn": "€69.00 / month · Renews on {date}",
+      "cancelsOn": "Cancels on {date}",
+      "noActiveSubscription": "No active subscription",
+      "managePlan": "Manage Plan",
+      "setupPayment": "Set up payment",
+      "reportsThisMonth": "Reports this month",
+      "unlimited": "Unlimited",
+      "aiAutoFills": "AI Auto-fills",
+      "cloudStorage": "Cloud Storage",
+      "cloudStorageAmount": "50 GB",
+      "paymentMethod": "Payment Method",
+      "cardInfo": "{brand} ending in {last4}",
+      "cardExpiry": "Expires {month}/{year}",
+      "noPaymentMethod": "No payment method on file",
+      "addPaymentMethod": "Add payment method",
+      "billingHistory": "Billing History",
+      "noBillingHistory": "No billing history yet",
+      "paid": "Paid",
+      "open": "Open",
+      "failed": "Failed",
+      "unknown": "Unknown",
+      "loading": "Loading..."
+    },
+    "templates": {
+      "newTemplate": "New Template",
+      "editTemplate": "Edit Template",
+      "subject": "Subject",
+      "title": "Title",
+      "body": "Body",
+      "placeholder": "Write Something",
+      "addTemplate": "Add Template",
+      "create": "Create"
+    }
+  },
+  "report": {
+    "gallery": {
+      "dropzoneText": "Drag and drop here or click to upload",
+      "fileTypes": "PDF PNG or JPG",
+      "maxPhotosReached": "Maximum photos reached",
+      "uploadPhotos": "Upload photos",
+      "noPhotosYet": "No photos uploaded yet",
+      "annotatePhoto": "Annotate photo",
+      "deletePhoto": "Delete photo",
+      "selectPhotoToView": "Select a photo to view",
+      "instruction": "Instruction",
+      "suggestedPhotos": "Suggested Photos",
+      "goodLighting": "Good lighting or use of flash",
+      "fileFormat": "JPG or PNG format",
+      "maxImages": "Maximum 20 images",
+      "vehicleDiagonals": "Vehicle Diagonals",
+      "vehicleDiagonalsDesc": "Front and rear diagonal photos of the vehicle",
+      "damageOverview": "Damage Overview",
+      "damageOverviewDesc": "Detailed close-ups of all damaged areas",
+      "documentShot": "Document Shot",
+      "documentShotDesc": "Photos of all relevant vehicle documents",
+      "generateReport": "Generate Report",
+      "photosProcessed": "Photos processed",
+      "fieldsAutoFilled": "Fields auto-filled",
+      "damageMarkers": "Damage markers",
+      "aiAnalysis": "AI Analysis",
+      "classifyingPhotos": "Classifying photos",
+      "analyzingPhotos": "Analyzing photos",
+      "lookingUpVehicleData": "Looking up vehicle data",
+      "autoFillingReport": "Auto-filling report",
+      "cancelGeneration": "Cancel generation",
+      "reportGenerated": "Report generated — {count} fields auto-filled",
+      "damageMarkersPlaced": "{count} damage markers placed",
+      "backToGallery": "Back to gallery",
+      "closeModal": "Close modal",
+      "description": "Description",
+      "damageComment": "Damage comment",
+      "addComment": "Add comment...",
+      "deleteMarker": "Delete marker",
+      "editDescription": "Edit description",
+      "noDescription": "No description available. Run Generate Report to analyze this photo or click to add one.",
+      "photoFilmstrip": "Photo filmstrip",
+      "addMorePhotos": "Add more photos",
+      "previousPhoto": "Previous photo",
+      "nextPhoto": "Next photo"
+    },
+    "accidentInfo": {
+      "title": "Accident Overview",
+      "clientInformation": "Client Information",
+      "accidentInformation": "Accident Information",
+      "accidentDay": "Accident Day",
+      "accidentScene": "Accident Scene",
+      "accidentScenePlaceholder": "Enter accident location",
+      "claimantInformation": "Claimant Information",
+      "client": "Client",
+      "company": "Company",
+      "companyPlaceholder": "Company name",
+      "salutation": "Salutation",
+      "salutationPlaceholder": "Select salutation",
+      "salutationOptions": {
+        "mr": "Mr",
+        "mrs": "Mrs",
+        "dr": "Dr",
+        "prof": "Prof"
+      },
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "street": "Street & house number or PO box",
+      "postcode": "Postcode",
+      "location": "Location",
+      "email": "Email",
+      "iban": "IBAN",
+      "firstNumber": "First number (Claimant)",
+      "licensePlate": "License Plate",
+      "inputTaxDeduction": "Eligible for input tax deduction",
+      "isVehicleOwner": "Is the vehicle owner",
+      "representedByLawyer": "Represented by a lawyer",
+      "vatId": "VAT ID",
+      "involvedLawyer": "Involved Lawyer",
+      "opponent": {
+        "title": "Opponent in Accident",
+        "insuranceCompany": "Insurance company",
+        "insuranceNumber": "Insurance number",
+        "claimNumber": "Claim number",
+        "phoneNumber": "Phone Number"
+      },
+      "visits": {
+        "title": "Visits",
+        "visitIndex": "Visit {index}",
+        "removeVisit": "Remove visit",
+        "type": "Type",
+        "typeOptions": {
+          "claimantResidence": "Claimant Residence",
+          "claimantOffice": "Claimant Office",
+          "other": "Other"
+        },
+        "data": "Data",
+        "expert": "Expert",
+        "expertName": "Expert name",
+        "vehicleCondition": "Vehicle condition",
+        "chooseCondition": "Choose condition",
+        "conditionOptions": {
+          "drivable": "Drivable",
+          "conditionallyDrivable": "Conditionally Drivable",
+          "notDrivable": "Not Drivable",
+          "totalLoss": "Total Loss"
+        },
+        "present": "Present",
+        "presentOptions": {
+          "client": "Client",
+          "workshopEmployee": "Workshop Employee"
+        },
+        "addVisit": "Add Visit"
+      },
+      "expertOpinion": {
+        "title": "Expert Opinion Characteristics",
+        "fileNumber": "File number",
+        "caseDate": "Case date",
+        "orderPlacement": "Order was placement",
+        "orderOptions": {
+          "personal": "Personal",
+          "direct": "Direct",
+          "viaLawyer": "Via Lawyer",
+          "viaInsurance": "Via Insurance"
+        },
+        "issuedDate": "Issued date",
+        "orderByClaimant": "Order by claimant",
+        "mediator": "Mediator"
+      },
+      "signatures": {
+        "title": "Signatures",
+        "types": {
+          "permissionUse": "Permission Use",
+          "lawyer": "Lawyer",
+          "dataPermission": "Data Permission",
+          "cancellation": "Cancellation"
+        },
+        "remove": "Remove",
+        "updateSignature": "Update Signature",
+        "yourSignature": "Your Signature",
+        "signatureConsent": "By signing this document with an electronic signature I agree that such signature will be extend allowed by local law."
+      },
+      "updateReport": "Update Report"
+    },
+    "vehicle": {
+      "title": "Vehicle",
+      "identification": {
+        "heading": "Vehicle Informations",
+        "vin": "Vehicle identification number (VIN)",
+        "datsCode": "DATSCode",
+        "addCode": "Add Code",
+        "marketIndex": "Market index",
+        "findMarketIndex": "Find Market Index",
+        "manufacturer": "Manufacturer",
+        "mainType": "Main Type",
+        "subtype": "Subtype",
+        "kbaNumber": "Key number (KBA)",
+        "specification": "Specification",
+        "powerKw": "Power (kW)",
+        "powerHp": "Power (HP)",
+        "engineDesign": "Engine Design",
+        "engineDesignOptions": {
+          "inline": "Inline",
+          "vType": "V-Type",
+          "boxer": "Boxer",
+          "rotary": "Rotary"
+        },
+        "cylinder": "Cylinder",
+        "transmission": "Transmission",
+        "transmissionOptions": {
+          "manual5": "Manual (5-speed)",
+          "manual6": "Manual (6-speed)",
+          "automatic": "Automatic",
+          "cvt": "CVT",
+          "dct": "DCT"
+        },
+        "displacement": "Engine displacement (ccm)",
+        "firstRegistration": "First registration",
+        "lastRegistration": "Last registration",
+        "technicalDataSource": "Source of technical data",
+        "kba": "KBA (Kraftfahrt-Bundesamt)"
+      },
+      "details": {
+        "heading": "Vehicle Details",
+        "vehicleType": "Vehicle Type",
+        "addVehicleType": "Add vehicle type",
+        "motorType": "Motor Type",
+        "addMotorType": "Add motor type",
+        "vehicleTypeOptions": {
+          "sedan": "Sedan",
+          "compactCar": "Compact Car",
+          "suv": "SUV",
+          "wagon": "Wagon",
+          "coupe": "Coupe",
+          "convertible": "Convertible",
+          "van": "Van"
+        },
+        "motorTypeOptions": {
+          "petrol": "Petrol",
+          "diesel": "Diesel",
+          "electric": "Electric",
+          "hybrid": "Hybrid",
+          "gas": "Gas"
+        },
+        "axles": "Axles",
+        "addAxleOption": "Add axle option",
+        "drivenBy": "Driven by this",
+        "addDrivenOption": "Add driven option",
+        "doors": "Doors",
+        "addDoorOption": "Add door option",
+        "seats": "Seats",
+        "addSeatOption": "Add seat option",
+        "previousOwners": "Previous Owners",
+        "new": "New",
+        "addPreviousOwnerOption": "Add previous owner option"
+      }
+    },
+    "condition": {
+      "title": "Condition",
+      "vehicleCondition": "Vehicle Condition",
+      "paintType": "Paint type",
+      "paintTypeOptions": {
+        "uni": "Uni (2 Schicht)",
+        "metallic": "Metallic",
+        "pearl": "Pearl",
+        "matte": "Matte"
+      },
+      "paint": "Paint",
+      "paintOptions": {
+        "original": "Original manufacturer paint",
+        "repainted": "Repainted",
+        "mixed": "Mixed"
+      },
+      "paintCondition": "Paint condition",
+      "paintConditionOptions": {
+        "good": "Good",
+        "fair": "Fair",
+        "poor": "Poor"
+      },
+      "generalCondition": "General condition",
+      "generalConditionOptions": {
+        "wellMaintained": "Well maintained",
+        "average": "Average"
+      },
+      "bodyCondition": "Body condition",
+      "bodyConditionOptions": {
+        "minorCosmetic": "Minor cosmetic",
+        "noDamage": "No damage",
+        "structuralDamage": "Structural damage"
+      },
+      "interiorCondition": "Interior condition",
+      "interiorConditionOptions": {
+        "clean": "Clean no structural damage.",
+        "minorWear": "Minor wear",
+        "significantWear": "Significant wear"
+      },
+      "drivingAbility": "Driving ability",
+      "drivingAbilityOptions": {
+        "roadworthy": "Roadworthy",
+        "limited": "Limited",
+        "notRoadworthy": "Not roadworthy"
+      },
+      "specialFeatures": "Special features",
+      "parkingSensors": "Parking sensors",
+      "mileageRead": "Mileage Read",
+      "estimationMileage": "Estimation mileage",
+      "unitInKm": "Unit in km",
+      "unitOptions": {
+        "km": "km",
+        "mkr": "MKR",
+        "miles": "miles"
+      },
+      "nextMot": "Next MOT",
+      "fullServiceHistory": "Full serviced history",
+      "testDrivePerformed": "Test drive performed",
+      "errorMemoryRead": "Error memory read",
+      "airbagsDeployed": "Airbags deployed",
+      "multiHitGroups": "Multi-hit Groups",
+      "notes": "Notes",
+      "addNotes": "Add notes",
+      "visualAccidentDetails": "Visual Accident Details",
+      "damage": "Damage",
+      "paintTab": "Paint",
+      "damageManualSetup": "Damage Manual Setup",
+      "paintManualSetup": "Paint Manual Setup",
+      "addMarker": "Add Marker",
+      "standardView": "Standard View",
+      "tires": {
+        "title": "Tires",
+        "firstSet": "First Set of Tires",
+        "secondSet": "Second Set of Tires",
+        "positions": {
+          "vl": "VL",
+          "vr": "VR",
+          "hl": "HL",
+          "hr": "HR"
+        },
+        "tireSize": "Tire size",
+        "tireSizePlaceholder": "add size in inches",
+        "profileMm": "Profile (mm)",
+        "manufacturer": "Manufacturer",
+        "manufacturerPlaceholder": "Add manufacturer",
+        "tiresUsability": "Tires Usability",
+        "tireType": "Tire Type",
+        "tireTypeOptions": {
+          "summer": "Summer",
+          "winter": "Winter/Snow",
+          "allSeason": "All-Season"
+        },
+        "matchAndAlign": "Match and Align",
+        "alignAxes": "Align Axes",
+        "matchTheSet": "Match The Set"
+      },
+      "priorDamage": {
+        "title": "Prior and Existing Damage",
+        "damageNotes": "Damage Notes",
+        "damageDescription": "Damage Description",
+        "previousDamage": "Previous damage (repaired)",
+        "existingDamage": "Existing damage (not repaired)",
+        "subsequentDamage": "Subsequent damage (occurred between accident and inspection)",
+        "addRepairedDamage": "Add repaired damage",
+        "currentCarAge": "Current car age",
+        "subsequentDamagePlaceholder": "Subsequent damage",
+        "describeDamage": "Describe damage in detail..."
+      },
+      "vehicleGrading": {
+        "title": "Vehicle Grading",
+        "grading": "Grading",
+        "paint": "Paint",
+        "overallCondition": "Overall Condition",
+        "bodywork": "Bodywork / Sheet Metal",
+        "tires": "Tires",
+        "paintLabel": "Paint",
+        "interior": "Passenger compartment / Interior",
+        "chrome": "Chrome / trim parts",
+        "engineBay": "Engine bay",
+        "seals": "Seals / rubber parts",
+        "engine": "Engine",
+        "glass": "Glass",
+        "trunk": "Trunk",
+        "autoCalculateGrade": "Automatically calculate grade",
+        "scorePopupHint": "Click + for above standard, number for standard, or - for below",
+        "overallConditionTitle": "Overall condition",
+        "paintGradingNote": "Paint grading will use the same paint thickness data from the Condition tab."
+      },
+      "valueIncreasingFeatures": {
+        "title": "Value Increasing Features",
+        "originality": "Originality",
+        "originalityOptions": {
+          "original": "Original",
+          "partiallyOriginal": "Partially Original",
+          "restored": "Restored",
+          "modified": "Modified"
+        },
+        "rareEquipment": "Rare equipment",
+        "addRareEquipment": "Add rare equipment",
+        "condition": "Condition",
+        "addConditionNote": "Add condition note",
+        "technicalFeatures": "Technical features",
+        "addTechnicalFeature": "Add technical feature",
+        "mileage": "Mileage",
+        "addMileageNote": "Add mileage note",
+        "historyDocumentation": "History & documentation",
+        "addHistoryItem": "Add history item",
+        "rarityMarketDemand": "Rarity & market demand",
+        "addRarityNote": "Add rarity note",
+        "particularsNotes": "Particulars/notes",
+        "additionalNotes": "Additional notes",
+        "marketReputation": "Market Reputation",
+        "marketReputationOptions": {
+          "excellent": "Excellent",
+          "good": "Good",
+          "average": "Average",
+          "belowAverage": "Below Average"
+        },
+        "typeAndPressEnter": "Type and press Enter"
+      }
+    },
+    "calculation": {
+      "title": "Value and Repair Calculation",
+      "vehicleValueOt": "Vehicle Value",
+      "providers": {
+        "heading": "Repair and Valuation Providers",
+        "subtitle": "Select and setup calculation provider"
+      },
+      "vehicleValue": "Vehicle Value",
+      "replacementValue": "Replacement value",
+      "addValue": "Add value",
+      "chooseTaxRate": "Choose tax rate",
+      "residualValue": "Residual value",
+      "diminutionInValue": "Diminution in value",
+      "description": "Description",
+      "costDescription": "Cost description",
+      "amount": "Amount",
+      "additionalCosts": "Additional Costs",
+      "damageClass": "Damage class",
+      "addDamageClass": "Add damage class",
+      "repair": {
+        "title": "Repair",
+        "wheelAlignment": "Wheel alignment",
+        "wheelAlignmentOptions": {
+          "notRequired": "Not required",
+          "required": "Required",
+          "completed": "Completed"
+        },
+        "bodyMeasurements": "Body measurements",
+        "bodyPaint": "Body paint (optional)",
+        "bodyPaintOptions": {
+          "partial": "Partial",
+          "full": "Full"
+        },
+        "plasticRepair": "Plastic Repair",
+        "repairMethod": "Repair Method",
+        "addMethod": "Add method",
+        "risks": "Risks",
+        "addRisks": "Add risks"
+      },
+      "lossOfUse": {
+        "title": "Loss of Use",
+        "dropoutGroup": "Dropout group",
+        "groupOptions": "Group A-N",
+        "costPerDay": "Cost per Day (€)",
+        "rentalCarClass": "Rental Car Class",
+        "classOptions": "Class 1-7",
+        "repairTimeDays": "Repair time (days)",
+        "addDays": "Add days",
+        "replacementTimeDays": "Replacement time (days)"
+      },
+      "resultsWithoutRepair": "Results without repair",
+      "resultsWithRepair": "Results with repair",
+      "valuationResultsManual": "Valuation Results - Manual",
+      "valuationAfterCorrection": "Valuation after Correction",
+      "autoFillFailed": "Auto-fill failed",
+      "autoFilledFields": "Auto-filled {count} fields",
+      "uploadImageToAutoFill": "Upload Image to Auto-fill",
+      "autoFilling": "Auto-filling...",
+      "correction": {
+        "title": "Correction Calculation",
+        "dat": "Dat",
+        "manual": "Manual",
+        "aiCalculation": "AI Calculation"
+      },
+      "valuation": {
+        "datValuation": "DAT Valuation",
+        "manualValuation": "Manual Valuation",
+        "generalCondition": "General condition",
+        "selectCondition": "Select condition",
+        "taxation": "Taxation",
+        "natural": "Natural",
+        "difference": "Difference",
+        "standardRate": "Standard rate",
+        "quickValuation": "Quick Valuation",
+        "detailValuation": "Detail Valuation",
+        "dataSource": "Data source",
+        "selectSource": "Select source",
+        "results": "Results",
+        "maximum": "Maximum",
+        "average": "Average",
+        "minimum": "Minimum",
+        "date": "Date",
+        "datePlaceholder": "MM/YYYY",
+        "removeCalculation": "Remove Calculation"
+      },
+      "oldtimer": {
+        "value": "Value",
+        "marketValue": "Market value",
+        "replacementValue": "Replacement value",
+        "restorationValue": "Restoration Value",
+        "removeAdditionalValue": "Remove Additional Value",
+        "additionalValue": "Additional value",
+        "baseVehicleValue": "Base vehicle value",
+        "totalCost": "Total Cost"
+      },
+      "datModal": {
+        "repairCostCalculator": "Repair Cost Calculator",
+        "workshop": "Workshop",
+        "dekraUsed": "DEKRA set are used",
+        "location": "Location",
+        "mechanics": "Mechanics",
+        "mechanicsPlaceholder": "Mechanics name",
+        "body": "Body",
+        "bodyPlaceholder": "Vehicle body",
+        "paintwork": "Paintwork",
+        "paintworkPlaceholder": "Vehicle paintwork",
+        "marketValue": "Market Value",
+        "datSilverdat3": "DAT SilverDAT3"
+      },
+      "valuationTab": "Valuation"
+    },
+    "invoice": {
+      "title": "Invoice Details",
+      "settings": "Settings",
+      "recipient": "Recipient",
+      "recipientTypes": {
+        "individual": "Individual recipient",
+        "group": "Group recipient",
+        "document": "Document recipient"
+      },
+      "invoiceNumber": "Invoice number",
+      "date": "Date",
+      "datePlaceholder": "DD/MM/YYYY",
+      "payoutDelay": "Payout delay (optional)",
+      "eInvoice": "E-Invoice",
+      "itemDetails": "Item Details",
+      "description": "Description",
+      "specialFeature": "Special Feature",
+      "rate": "Rate",
+      "amount": "Amount",
+      "serviceDescription": "Service description",
+      "lumpSum": "Lump sum",
+      "addRow": "Add Row",
+      "invoiceAmount": "Invoice Amount",
+      "beforeTax": "Before tax {amount}",
+      "previewInvoice": "Preview Invoice",
+      "amountOfDamage": "Amount of damage",
+      "applyBvskRate": "Apply BVSK Rate",
+      "bvskAppraisalFee": "BVSK Appraisal Fee"
+    },
+    "export": {
+      "title": "Export and Send",
+      "vehicleValuation": "Vehicle valuation",
+      "commission": "Commission",
+      "theInvoice": "The Invoice",
+      "lockReport": "Lock Report",
+      "email": "Email",
+      "recipient": "Recipient",
+      "recipientPlaceholder": "Type an email address and press Enter to add a recipient",
+      "removeEmail": "Remove {email}",
+      "subject": "Subject",
+      "messagePlaceholder": "Write your email message...",
+      "addRecipientPlaceholder": "Add recipient email...",
+      "sendReport": "Send Report",
+      "reportSent": "Report sent successfully!",
+      "saving": "Saving...",
+      "saved": "Saved",
+      "failedToSave": "Failed to save",
+      "individualRecipient": "Individual recipient",
+      "groupRecipient": "Group recipient",
+      "documentRecipient": "Document recipient",
+      "reportSentToast": "Report sent successfully",
+      "sendFailed": "Failed to send report. Please try again.",
+      "pdfLanguage": "PDF Language",
+      "bothLanguagesNote": "Both German and English PDFs will be generated and attached."
+    },
+    "annotation": {
+      "draw": "Draw",
+      "crop": "Crop",
+      "circle": "Circle",
+      "rectangle": "Rectangle",
+      "arrow": "Arrow",
+      "deleteAnnotations": "Delete annotations",
+      "saveAnnotations": "Save annotations",
+      "enterDescription": "Enter a description for this photo...",
+      "noAiDescription": "No AI description available. Run \"Generate Report\" to analyze this photo.",
+      "saveDescription": "Save description"
+    },
+    "sidebar": {
+      "gallery": "Gallery",
+      "reportDetails": "Report Details",
+      "exportAndSend": "Export & Send",
+      "lockedMessage": "This report has been locked and is read-only. Unlock it from Export & Send to make changes."
+    },
+    "details": {
+      "showMissing": "Show missing information",
+      "highlightingEmpty": "Highlighting empty fields",
+      "sectionsNeedAttention": "{count} sections need attention",
+      "allCompleted": "All sections completed"
+    }
+  },
+  "help": {
+    "title": "Help & Support",
+    "subtitle": "Find answers to your questions or reach out to our support team.",
+    "searchPlaceholder": "Search help articles...",
+    "searchResults": "{count} result(s) for \"{query}\"",
+    "noResults": "No results found for \"{query}\"",
+    "backToHelp": "Back to Help",
+    "relatedArticles": "Related articles",
+    "stillNeedHelp": "Still need help?",
+    "stillNeedHelpSubtitle": "Our support team is here to help you get the most out of Gut8erPRO.",
+    "emailSupport": "Email Support",
+    "faqTitle": "Frequently Asked Questions",
+    "categories": {
+      "gettingStarted": {
+        "title": "Getting Started",
+        "description": "Learn the basics of Gut8erPRO",
+        "articles": {
+          "firstReport": {
+            "title": "Creating your first report",
+            "description": "Step-by-step guide to your first vehicle assessment",
+            "content": [
+              "From the Dashboard, click the \"+ New Report\" button in the top right corner.",
+              "Select the report type that matches your assessment: HS (Liability), BE (Evaluation), KG (Short Report), or OT (Oldtimer Valuation).",
+              "You will be taken to the Gallery tab where you can upload vehicle photos. Drag and drop or click to upload up to 20 images.",
+              "Once photos are uploaded, click \"Generate Report\" to let AI analyze the images and pre-fill report fields.",
+              "Navigate through the tabs — Accident Info, Vehicle, Condition, Calculation, and Invoice — to review and complete all sections.",
+              "When finished, go to the Export & Send tab to generate a PDF and email it to the recipient."
+            ]
+          },
+          "uploadingPhotos": {
+            "title": "Uploading photos",
+            "description": "Best practices for vehicle damage photography",
+            "content": [
+              "Gut8erPRO supports JPG and PNG image formats. Each report can contain up to 20 photos.",
+              "For best results, photograph the vehicle in good natural lighting. Avoid using flash as it can create reflections that obscure damage.",
+              "Take photos from multiple angles: front, rear, both sides, and close-ups of each damaged area.",
+              "Include at least one photo of the VIN plate or registration document for automatic vehicle identification.",
+              "Photos can be reordered by dragging them in the gallery grid view.",
+              "To annotate a photo, click on it to open the single view, then click the draw/annotate button to mark up damage areas."
+            ]
+          },
+          "aiAutoFill": {
+            "title": "Using AI auto-fill",
+            "description": "Let AI analyze your photos and pre-fill report data",
+            "content": [
+              "After uploading your vehicle photos, click the \"Generate Report\" button in the gallery.",
+              "The AI will analyze each photo to detect damage, read VIN numbers, and identify vehicle details.",
+              "Once processing is complete, report fields across all tabs will be pre-filled with detected data.",
+              "Always review the AI-generated data carefully. While accurate in most cases, some fields may need manual correction.",
+              "AI auto-fill is available for all Pro plan users. It works best with clear, well-lit photos taken from standard angles."
+            ]
+          },
+          "reportTypes": {
+            "title": "Understanding report types",
+            "description": "HS, BE, KG, OT — which report type to use",
+            "content": [
+              "HS (Haftpflichtschaden / Liability): The standard report for third-party liability claims. Includes full accident details, opponent information, vehicle data, damage assessment, repair calculation, and loss of use.",
+              "BE (Bewertung / Evaluation): Used for vehicle valuation without an accident context. Includes DAT valuation, manual valuation, and correction calculation. No accident or opponent sections.",
+              "KG (Kurzgutachten / Short Report): A simplified version of the HS report. Includes the same sections but without the correction calculation and result cards. Ideal for minor damage claims.",
+              "OT (Oldtimer / Classic Car Valuation): Specialized report for classic and vintage vehicles. Includes market value, replacement value, restoration value, and vehicle grading. Uses \"Client\" instead of \"Claimant\" terminology.",
+              "Choose the report type when creating a new report from the Dashboard. The type determines which sections and fields are available."
+            ]
+          }
+        }
+      },
+      "reportsAndDocuments": {
+        "title": "Reports & Documents",
+        "description": "Creating, editing, and exporting reports",
+        "articles": {
+          "reportSections": {
+            "title": "Report sections explained",
+            "description": "Accident Info, Vehicle, Condition, Calculation, Invoice",
+            "content": [
+              "Accident Info: Contains accident details (date, location), claimant information, opponent data, site visits, expert opinion, and digital signatures. For OT reports, this tab is called \"Customer\" and has a simplified layout.",
+              "Vehicle: Enter vehicle identification (VIN, manufacturer, model), technical specifications (power, engine, transmission), and details (type, motor, axles, doors, seats).",
+              "Condition: Document the vehicle condition including paint type, body/interior condition, mileage, and MOT date. Use the interactive damage diagram to mark impact points and the paint tab to record thickness measurements.",
+              "Calculation: Enter vehicle value, repair costs, and loss of use data. For BE reports, this tab shows DAT and manual valuation sections. For OT reports, it shows market value and restoration costs.",
+              "Invoice: Generate an invoice with BVSK standard rates. Add custom line items, set tax rates, and configure e-invoice settings."
+            ]
+          },
+          "damageDiagram": {
+            "title": "Damage diagram & paint thickness",
+            "description": "How to mark damage and measure paint",
+            "content": [
+              "In the Condition tab, switch to the \"Damage\" sub-tab to access the interactive damage diagram.",
+              "Click on any area of the car silhouette to place a damage marker. Each marker can have a description added.",
+              "Switch to the \"Paint\" sub-tab to record paint thickness measurements. Enter values in micrometers (µm) for each body panel.",
+              "Paint thickness is color-coded automatically: Blue (<70µm), Green (70-160µm), Yellow (160-300µm), Orange (300-700µm), Red (>700µm).",
+              "All damage markers and paint readings are saved automatically and included in the PDF export."
+            ]
+          },
+          "exportSend": {
+            "title": "Exporting & sending reports",
+            "description": "PDF export, email delivery, and report locking",
+            "content": [
+              "Go to the Export & Send tab to finalize your report.",
+              "Configure document toggles: include/exclude vehicle valuation, commission, and invoice sections in the PDF.",
+              "Enter the recipient email address and customize the email subject and body using the rich text editor.",
+              "Click \"Send Report\" to generate the PDF and email it directly to the recipient.",
+              "Toggle \"Lock Report\" to make the report read-only after sending. This prevents accidental edits.",
+              "Locked reports can be unlocked at any time by returning to the Export & Send tab and toggling the lock off."
+            ]
+          },
+          "invoiceBvsk": {
+            "title": "Invoice & BVSK rates",
+            "description": "Setting up invoices with standard fee schedules",
+            "content": [
+              "The Invoice tab auto-generates an invoice number for each report.",
+              "Click \"Apply Rate\" to load BVSK (Bundesverband der freiberuflichen und unabhängigen Sachverständigen) standard fee rates.",
+              "BVSK rates are calculated based on the repair cost amount and standard fee schedules.",
+              "Add custom line items using the \"Add Item\" button. Each item has a description, quantity, unit price, and tax rate.",
+              "The invoice total, including VAT, is calculated automatically and displayed at the bottom.",
+              "Toggle \"E-Invoice\" to generate an electronic invoice in ZUGFeRD format for German market compliance."
+            ]
+          }
+        }
+      },
+      "integrations": {
+        "title": "Integrations",
+        "description": "DAT, Audatex, and other tools",
+        "articles": {
+          "datSetup": {
+            "title": "Setting up DAT SilverDAT3",
+            "description": "Connect your DAT account for vehicle data & valuation",
+            "content": [
+              "Go to Settings → Integrations to configure your DAT SilverDAT3 connection.",
+              "Enter your DAT username and password. These credentials are encrypted and stored securely.",
+              "Once connected, DAT vehicle data and valuation services will be available in your reports.",
+              "If you do not have a DAT account, visit dat.de to register for SilverDAT3 access.",
+              "You can also configure DAT credentials during the signup process in the Integrations step.",
+              "Support for Audatex and GT Motive integrations is coming soon."
+            ]
+          },
+          "vinLookup": {
+            "title": "VIN lookup & vehicle identification",
+            "description": "Automatic vehicle data retrieval via VIN",
+            "content": [
+              "Enter the 17-character Vehicle Identification Number (VIN) in the Vehicle tab under Identification.",
+              "With DAT integration active, the system can automatically retrieve vehicle data including manufacturer, model, engine specs, and more.",
+              "AI photo analysis can also detect VIN numbers from photos of the VIN plate or registration document.",
+              "The VIN field validates for exactly 17 characters and accepted alphanumeric format.",
+              "Retrieved data populates the Vehicle tab fields automatically, saving manual data entry time."
+            ]
+          },
+          "repairCalculation": {
+            "title": "Repair cost calculation",
+            "description": "Using DAT for repair cost estimates",
+            "content": [
+              "In the Calculation tab, you can use DAT integration to get professional repair cost estimates.",
+              "Enter the vehicle details and damage description to generate a calculation via DAT.",
+              "The calculation includes parts costs, labor hours, paint materials, and supplementary costs.",
+              "Results are automatically populated in the Calculation tab fields.",
+              "You can manually adjust any calculated values if needed for your specific assessment."
+            ]
+          }
+        }
+      },
+      "accountAndBilling": {
+        "title": "Account & Billing",
+        "description": "Subscription, payments, and settings",
+        "articles": {
+          "subscription": {
+            "title": "Managing your subscription",
+            "description": "View billing, update payment method, cancel plan",
+            "content": [
+              "Go to Settings → Billing to view your current subscription status, payment method, and billing history.",
+              "Your Pro Plan subscription is €69/month with a 7-day free trial period.",
+              "Click \"Manage Plan\" to open the Stripe billing portal where you can update your payment method, view invoices, or cancel your subscription.",
+              "If you cancel, your access continues until the end of the current billing period.",
+              "Download past invoices directly from the Billing History section using the download button."
+            ]
+          },
+          "freeTrial": {
+            "title": "Free trial information",
+            "description": "7-day trial — what happens when it ends",
+            "content": [
+              "Every new account starts with a 7-day free trial with full access to all Pro features.",
+              "Your payment card is validated during signup but you will not be charged until the trial ends.",
+              "You can cancel anytime during the trial period without being charged.",
+              "After the trial, your subscription automatically converts to the paid Pro plan at €69/month.",
+              "If you cancel during or after the trial, your account remains accessible but features may be limited.",
+              "You can reactivate your subscription at any time from Settings → Billing."
+            ]
+          },
+          "profileSettings": {
+            "title": "Profile & business settings",
+            "description": "Update your personal and company information",
+            "content": [
+              "Go to Settings → Profile to update your name, phone number, and social media links.",
+              "Go to Settings → Business to update your company name, address, tax ID (Steuernummer), and VAT ID (USt-IdNr).",
+              "Upload a company logo in the Business section. This logo appears on your generated PDF reports.",
+              "Your professional qualification (e.g., Sachverständiger) is displayed in the app header and on reports.",
+              "Changes to profile and business settings are saved automatically when you click the Save button."
+            ]
+          }
+        }
+      }
+    },
+    "faq": {
+      "resetPassword": {
+        "question": "How do I reset my password?",
+        "answer": "Go to the login page and click \"Forgot password?\" to receive a reset link via email."
+      },
+      "exportPdf": {
+        "question": "Can I export reports as PDF?",
+        "answer": "Yes. Go to the Export & Send tab in any report to generate and download a PDF. You can also email it directly to recipients."
+      },
+      "trialWork": {
+        "question": "How does the 7-day trial work?",
+        "answer": "When you sign up, you get full access to all features for 7 days. Your card is validated but not charged until the trial ends. Cancel anytime before that."
+      },
+      "imageFormats": {
+        "question": "What image formats are supported?",
+        "answer": "JPG and PNG formats are supported. For best results, use good lighting and avoid flash. Maximum 20 photos per report."
+      },
+      "unlockReport": {
+        "question": "Can I unlock a locked report?",
+        "answer": "Yes. Go to the Export & Send tab and toggle off the \"Lock Report\" switch to make it editable again."
+      },
+      "connectDat": {
+        "question": "How do I connect my DAT account?",
+        "answer": "Go to Settings → Integrations and enter your DAT SilverDAT3 credentials. You can also set this up during the signup process."
+      }
+    }
+  },
+  "statistics": {
+    "title": "Financial Analytics",
+    "subtitle": "Overview of your revenue and report activity",
+    "revenue": "Revenue",
+    "revenueOverview": "Revenue Overview",
+    "revenueOverviewSubtitle": "Revenue overview for past weeks, months and year",
+    "invoiceHistory": "Invoice History",
+    "totalRevenue": "Total Revenue",
+    "totalReports": "Total Reports",
+    "avgReportValue": "Avg. Report Value",
+    "completionRate": "Completion Rate",
+    "last6Months": "Last 6 months",
+    "downloadReport": "Download Report",
+    "searchPlaceholder": "Search...",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    },
+    "table": {
+      "clients": "Clients",
+      "invoiceId": "Invoice ID",
+      "dateCreated": "Date Created",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllAsRead": "Mark all as read",
+    "noNotifications": "No notifications yet",
+    "noNotificationsSubtitle": "Notifications will appear here when there is activity on your reports.",
+    "viewAll": "View all notifications",
+    "failedToLoad": "Failed to load notifications. Please try again."
+  },
+  "validation": {
+    "invalidEmail": "Please enter a valid email address",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "confirmPassword": "Please confirm your password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "titleRequired": "Please select a title",
+    "firstNameRequired": "First name is required",
+    "lastNameRequired": "Last name is required",
+    "phoneRequired": "Phone number is required",
+    "companyNameRequired": "Company name is required",
+    "streetRequired": "Street is required",
+    "postcodeRequired": "Postcode is required",
+    "cityRequired": "City is required",
+    "taxIdRequired": "Tax ID (Steuernummer) is required",
+    "postcodeFormat": "Postcode must be 5 digits",
+    "vatIdFormat": "VAT ID must be in format DE + 9 digits",
+    "invalidLogoUrl": "Invalid logo URL"
+  },
+  "pdf": {
+    "titles": {
+      "damageAssessment": "Vehicle Damage Assessment Report",
+      "valuation": "Vehicle Valuation Report",
+      "oldtimerValuation": "Oldtimer Valuation Report"
+    },
+    "reportNo": "Report No. {id}",
+    "date": "Date: {date}",
+    "vehicleInformation": "Vehicle Information",
+    "manufacturer": "Manufacturer",
+    "type": "Type",
+    "subtype": "Subtype",
+    "vin": "VIN",
+    "kbaNumber": "KBA Number",
+    "firstRegistration": "First Registration",
+    "power": "Power",
+    "engineDesign": "Engine Design",
+    "displacement": "Displacement",
+    "transmission": "Transmission",
+    "vehicleType": "Vehicle Type",
+    "doors": "Doors",
+    "seats": "Seats",
+    "previousOwners": "Previous Owners",
+    "accidentInformation": "Accident Information",
+    "claimant": "Claimant",
+    "name": "Name",
+    "address": "Address",
+    "email": "Email",
+    "licensePlate": "License Plate",
+    "vehicleCondition": "Vehicle Condition",
+    "generalCondition": "General Condition",
+    "bodyCondition": "Body Condition",
+    "interiorCondition": "Interior Condition",
+    "paintType": "Paint Type",
+    "paintFinish": "Paint Finish",
+    "paintCondition": "Paint Condition",
+    "drivingAbility": "Driving Ability",
+    "mileage": "Mileage",
+    "estimatedMileage": "Estimated Mileage",
+    "nextMot": "Next MOT",
+    "specialFeatures": "Special Features",
+    "fullServiceHistory": "Full Service History",
+    "notes": "Notes",
+    "previousDamage": "Previous Damage Reported",
+    "existingDamage": "Existing Damage (Not Reported)",
+    "subsequentDamage": "Subsequent Damage",
+    "valuationAndCalculation": "Valuation & Calculation",
+    "replacementValue": "Replacement Value",
+    "residualValue": "Residual Value",
+    "diminutionInValue": "Diminution in Value",
+    "repairMethod": "Repair Method",
+    "damageClass": "Damage Class",
+    "lossOfUse": "Loss of Use",
+    "costPerDay": "Cost per Day",
+    "repairTime": "Repair Time",
+    "replacementTime": "Replacement Time",
+    "additionalCosts": "Additional Costs",
+    "invoice": "Invoice",
+    "invoiceNumber": "Invoice Number",
+    "invoiceDate": "Invoice Date",
+    "netTotal": "Net Total",
+    "vat": "VAT ({rate}%)",
+    "grossTotal": "Gross Total",
+    "photoDocumentation": "Photo Documentation",
+    "otherPhotos": "Other Photos ({count})",
+    "pagination": "Page {current} of {total}",
+    "valuation": "Valuation",
+    "taxation": "Taxation",
+    "dataSource": "Data Source",
+    "maximumValue": "Maximum Value",
+    "averageValue": "Average Value",
+    "minimumValue": "Minimum Value",
+    "valuationDate": "Valuation Date",
+    "oldtimerValuation": "Oldtimer Valuation",
+    "marketValue": "Market Value",
+    "baseVehicleValue": "Base Vehicle Value",
+    "restorationValue": "Restoration Value"
+  },
+  "toast": {
+    "profileSaved": "Profile saved successfully",
+    "profileSaveError": "Failed to save profile. Please try again.",
+    "businessSaved": "Business details saved successfully",
+    "businessSaveError": "Failed to save business details. Please try again.",
+    "logoUploaded": "Logo uploaded successfully",
+    "logoSaveError": "Failed to save logo",
+    "logoUploadError": "Failed to upload logo",
+    "datConnected": "DAT integration connected successfully",
+    "datConnectError": "Failed to connect DAT integration. Please check your credentials.",
+    "datDisconnected": "DAT integration disconnected",
+    "datDisconnectError": "Failed to disconnect DAT integration. Please try again.",
+    "reportCreateError": "Failed to create report. Please try again.",
+    "reportDeleted": "Report deleted successfully",
+    "reportDeleteError": "Failed to delete report. Please try again.",
+    "reportUpdated": "Report updated",
+    "reportSent": "Report sent successfully!",
+    "reportsLoadError": "Failed to load reports. Please try again.",
+    "notificationsLoadError": "Failed to load notifications. Please try again."
+  },
+  "language": {
+    "title": "Language",
+    "english": "English",
+    "deutsch": "Deutsch"
+  },
+  "landing": {
+    "aiPoweredBadge": "Now with AI-powered auto-fill",
+    "heroTitle": "Professional Vehicle Assessment",
+    "heroSubtitle": "Made Simple",
+    "heroDescription": "Create damage reports in minutes not hours. Upload images let AI do the work and focus on what matters — your expertise.",
+    "startFreeTrial": "Start Free Trial",
+    "logIn": "Log In",
+    "stats": {
+      "reportTime": "Report time",
+      "reportTimeValue": "-35%",
+      "manualWork": "Manual work",
+      "manualWorkValue": "-60%",
+      "professionals": "Professionals",
+      "professionalsValue": "2000+"
+    },
+    "featuresTitle": "Gut8erPRO Features",
+    "featuresSubtitle": "From smart analysis to seamless workflow tools Gut8erPro gives you the clarity and control you need to make faster better decisions.",
+    "features": {
+      "datIntegration": {
+        "title": "DAT Integration",
+        "description": "Real-time vehicle data and valuations directly within your workflow."
+      },
+      "realTimeAnalytics": {
+        "title": "Real-Time Analytics",
+        "description": "Track revenue payments and performance as they happen."
+      },
+      "aiEvaluationTool": {
+        "title": "AI Evaluation Tool",
+        "description": "Automatically analyzes reports and key metrics using AI."
+      },
+      "editingPhotos": {
+        "title": "Editing Photos",
+        "description": "Crop adjust and prepare images directly within the platform."
+      }
+    },
+    "faqTitle": "Frequently Asked Questions",
+    "faqSubtitle": "Everything you need to know about Gut8erPro.",
+    "faq": {
+      "whatIsGut8erPro": {
+        "question": "What is Gut8erPRO?",
+        "answer": "Gut8erPRO is a professional vehicle damage assessment web app designed for Kfz-Sachverständige. Create detailed reports, auto-fill data from images, and streamline your entire workflow."
+      },
+      "howDoesAutoFillWork": {
+        "question": "How does image auto-fill work?",
+        "answer": "Our AI analyzes uploaded vehicle photos to automatically detect damage, read VIN numbers, and pre-populate report fields. Simply upload your images and let the system extract the relevant data for you."
+      },
+      "whatIntegrations": {
+        "question": "What integrations are available?",
+        "answer": "Gut8erPRO integrates with DAT SilverDAT3 for vehicle data, valuation, and repair cost calculation. Support for Audatex and GT Motive is coming soon. The platform also supports Google and Apple social login, Stripe for payments, and email delivery for sending reports."
+      },
+      "isThereFreeTrial": {
+        "question": "Is there a free trial?",
+        "answer": "Yes! When you sign up, you get full access to all features for 7 days at no charge. Your payment details are collected upfront but you will not be charged until the trial period ends. You can cancel anytime during the trial."
+      },
+      "whatSupport": {
+        "question": "What support is available?",
+        "answer": "All users receive priority email support with guaranteed response times, along with onboarding assistance and dedicated account management."
+      }
+    },
+    "copyright": "© {year} Gut8erPRO. All rights reserved."
+  },
+  "notFound": {
+    "code": "404",
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "goToDashboard": "Go to Dashboard",
+    "goHome": "Go Home"
+  }
+}
