@@ -6,7 +6,7 @@ import { TopNavBar } from './top-nav-bar'
 describe('TopNavBar', () => {
 	it('renders logo', () => {
 		render(<TopNavBar />)
-		expect(screen.getByText(/Gut8er/)).toBeInTheDocument()
+		expect(screen.getByAltText('Gut8erPRO')).toBeInTheDocument()
 	})
 
 	it('renders navigation buttons', () => {

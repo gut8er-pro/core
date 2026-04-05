@@ -42,14 +42,14 @@ function TestWrapper({ onFieldBlur }: { onFieldBlur?: (f: string) => void }) {
 }
 
 describe('IdentificationSection', () => {
-	it('renders "Vehicle Information" section title', () => {
+	it('renders "Vehicle Informations" section title', () => {
 		render(<TestWrapper />)
-		expect(screen.getByText('Vehicle Information')).toBeInTheDocument()
+		expect(screen.getByText('Vehicle Informations')).toBeInTheDocument()
 	})
 
 	it('renders VIN field', () => {
 		render(<TestWrapper />)
-		expect(screen.getByText('VIN')).toBeInTheDocument()
+		expect(screen.getByText('Vehicle identification number (VIN)')).toBeInTheDocument()
 	})
 
 	it('renders Manufacturer field', () => {

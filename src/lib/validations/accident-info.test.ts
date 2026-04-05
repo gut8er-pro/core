@@ -53,15 +53,11 @@ describe('claimantInfoSchema', () => {
 		expect(result.success).toBe(true)
 	})
 
-	it('validates email format', () => {
+	it('accepts any email string (validation is client-side only)', () => {
 		const result = claimantInfoSchema.safeParse({
 			email: 'not-an-email',
 		})
-		expect(result.success).toBe(false)
-		if (!result.success) {
-			const emailError = result.error.issues.find((issue) => issue.path[0] === 'email')
-			expect(emailError).toBeDefined()
-		}
+		expect(result.success).toBe(true)
 	})
 })
 

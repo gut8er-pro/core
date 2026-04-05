@@ -1,17 +1,17 @@
 import '@testing-library/jest-dom/vitest'
 
 // Polyfill pointer capture methods for Radix UI in jsdom
-if (typeof Element.prototype.hasPointerCapture !== 'function') {
+if (typeof Element !== 'undefined' && typeof Element.prototype.hasPointerCapture !== 'function') {
   Element.prototype.hasPointerCapture = () => false
 }
-if (typeof Element.prototype.setPointerCapture !== 'function') {
+if (typeof Element !== 'undefined' && typeof Element.prototype.setPointerCapture !== 'function') {
   Element.prototype.setPointerCapture = () => {}
 }
-if (typeof Element.prototype.releasePointerCapture !== 'function') {
+if (typeof Element !== 'undefined' && typeof Element.prototype.releasePointerCapture !== 'function') {
   Element.prototype.releasePointerCapture = () => {}
 }
 
 // Polyfill scrollIntoView for Radix UI
-if (typeof Element.prototype.scrollIntoView !== 'function') {
+if (typeof Element !== 'undefined' && typeof Element.prototype.scrollIntoView !== 'function') {
   Element.prototype.scrollIntoView = () => {}
 }

@@ -61,22 +61,22 @@ describe('paintMarkerSchema', () => {
 
 describe('getPaintColor', () => {
 	it('returns blue for thickness < 70', () => {
-		expect(getPaintColor(50)).toBe('#3B82F6')
+		expect(getPaintColor(50)).toBe('#49DCF2')
 	})
 
 	it('returns green for thickness 70', () => {
-		expect(getPaintColor(70)).toBe('#22C55E')
+		expect(getPaintColor(70)).toBe('#52D57B')
 	})
 
 	it('returns yellow for thickness 161', () => {
-		expect(getPaintColor(161)).toBe('#EAB308')
+		expect(getPaintColor(161)).toBe('#F4CA14')
 	})
 
 	it('returns orange for thickness 301', () => {
-		expect(getPaintColor(301)).toBe('#F97316')
+		expect(getPaintColor(301)).toBe('#F47514')
 	})
 
 	it('returns red for thickness 700', () => {
-		expect(getPaintColor(700)).toBe('#EF4444')
+		expect(getPaintColor(700)).toBe('#F41414')
 	})
 })

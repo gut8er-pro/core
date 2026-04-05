@@ -24,7 +24,7 @@ describe('TabBar', () => {
 	it('applies active styling to current tab', () => {
 		render(<TabBar tabs={tabs} activeTab="accident" onTabChange={() => {}} />)
 		const activeTab = screen.getByRole('tab', { name: /Accident Info/i })
-		expect(activeTab.className).toContain('bg-black')
+		expect(activeTab.className).toContain('bg-primary')
 		expect(activeTab.className).toContain('text-white')
 	})
 

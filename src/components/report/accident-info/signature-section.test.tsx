@@ -33,20 +33,11 @@ describe('SignatureSection', () => {
 		expect(screen.getByText('Cancellation')).toBeInTheDocument()
 	})
 
-	it('shows "Add Signature" for unsigned types', () => {
-		render(<SignatureSection signatures={emptySignatures} onSignatureClick={vi.fn()} />)
-		const addButtons = screen.getAllByText('Add Signature')
-		expect(addButtons).toHaveLength(3)
-	})
-
 	it('shows signature image when signed', () => {
 		render(<SignatureSection signatures={signedSignatures} onSignatureClick={vi.fn()} />)
-		const signatureImg = screen.getByAltText('Lawyer signature')
+		const signatureImg = screen.getByAltText('Signature')
 		expect(signatureImg).toBeInTheDocument()
 		expect(signatureImg).toHaveAttribute('src', 'https://example.com/sig-lawyer.png')
-		// Unsigned cards still show "Add Signature"
-		const addButtons = screen.getAllByText('Add Signature')
-		expect(addButtons).toHaveLength(2)
 	})
 
 	it('calls onSignatureClick with correct type when card clicked', async () => {

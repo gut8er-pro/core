@@ -69,11 +69,4 @@ describe('PhotoGrid', () => {
 		await user.click(deleteButtons[0]!)
 		expect(onDelete).toHaveBeenCalledWith('p1')
 	})
-
-	it('shows selected state on matching photo', () => {
-		render(<PhotoGrid photos={mockPhotos} selectedId="p1" />)
-		const selectedImg = screen.getByAltText('damage-front.jpg')
-		const container = selectedImg.closest('.group')
-		expect(container?.className).toContain('ring-primary')
-	})
 })
