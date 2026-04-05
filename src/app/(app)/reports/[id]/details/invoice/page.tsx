@@ -22,7 +22,6 @@ function InvoicePage() {
 	const {
 		saveField,
 		saveFields,
-		flushNow,
 		state: autoSaveState,
 	} = useAutoSave({
 		reportId,

@@ -36,7 +36,7 @@ type TireSectionProps = {
 	className?: string
 }
 
-function TireSection({ tireSets, onSaveTireSet, onDeleteTireSet, className }: TireSectionProps) {
+function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 	const [activeSetIndex, setActiveSetIndex] = useState(0)
 	const [activePosition, setActivePosition] = useState<string>('VL')
 	const autoCreated = useRef(false)

@@ -10,7 +10,7 @@ import type { CalculationSectionProps } from './types'
 
 function OldtimerValuationSection({
 	register,
-	errors,
+	errors: _errors,
 	onFieldBlur,
 	className,
 }: CalculationSectionProps & { className?: string }) {

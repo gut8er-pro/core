@@ -9,7 +9,7 @@ describe('Progress', () => {
 	})
 
 	it('renders indicator with correct transform style', () => {
-		const { container } = render(<Progress value={75} />)
+		render(<Progress value={75} />)
 		const bar = screen.getByRole('progressbar')
 		expect(bar).toBeInTheDocument()
 		// Check the indicator child has the transform style
@@ -18,7 +18,7 @@ describe('Progress', () => {
 	})
 
 	it('renders 0% as full offset', () => {
-		const { container } = render(<Progress value={0} />)
+		render(<Progress value={0} />)
 		const bar = screen.getByRole('progressbar')
 		const indicator = bar.firstElementChild
 		expect(indicator).toHaveStyle({ transform: 'translateX(-100%)' })

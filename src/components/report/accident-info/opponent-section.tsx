@@ -15,7 +15,6 @@ const salutationOptions = [
 
 function OpponentSection({
 	register,
-	control,
 	errors,
 	onFieldBlur,
 	className,

@@ -33,7 +33,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	const photoIds = body.photoIds
 
 	// If no photo IDs provided, use all damage-type photos
-	let photos
+	let photos: Awaited<ReturnType<typeof prisma.photo.findMany>>
 	if (photoIds && photoIds.length > 0) {
 		photos = await prisma.photo.findMany({
 			where: { id: { in: photoIds }, reportId },

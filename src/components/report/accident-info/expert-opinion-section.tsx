@@ -15,7 +15,6 @@ const ORDER_PLACEMENT_OPTIONS = [
 
 function ExpertOpinionSection({
 	register,
-	control,
 	errors,
 	onFieldBlur,
 	className,
