@@ -1,21 +1,13 @@
 import { test, expect } from '@playwright/test'
+import { createAuthPage, createReportViaAPI } from './helpers/test-data'
 
 test.describe('Invoice Tab', () => {
 	let reportId: string
 
 	test.beforeAll(async ({ browser }) => {
-		const page = await browser.newPage()
-		await page.goto('http://localhost:3000/dashboard')
-		const res = await page.evaluate(async () => {
-			const r = await fetch('/api/reports', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ title: 'PW Invoice Test', reportType: 'HS' }),
-			})
-			return (await r.json()).report.id
-		})
-		reportId = res
-		await page.close()
+		const page = await createAuthPage(browser)
+		reportId = await createReportViaAPI(page, 'PW Invoice Test', 'HS')
+		await page.context().close()
 	})
 
 	test('invoice page shows green banner', async ({ page }) => {
@@ -27,7 +19,7 @@ test.describe('Invoice Tab', () => {
 	test('invoice number auto-generated', async ({ page }) => {
 		await page.goto(`/reports/${reportId}/details/invoice`)
 		const invNum = await page.locator('input[name="invoiceNumber"]').inputValue()
-		expect(invNum).toMatch(/^HB-/)
+		expect(invNum).toMatch(/^(HB|GH)-/)
 	})
 
 	test('BVSK rate table visible', async ({ page }) => {

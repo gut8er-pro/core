@@ -1,21 +1,13 @@
 import { test, expect } from '@playwright/test'
+import { createAuthPage, createReportViaAPI } from './helpers/test-data'
 
 test.describe('Export & Send', () => {
 	let reportId: string
 
 	test.beforeAll(async ({ browser }) => {
-		const page = await browser.newPage()
-		await page.goto('http://localhost:3000/dashboard')
-		const res = await page.evaluate(async () => {
-			const r = await fetch('/api/reports', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ title: 'PW Export Test', reportType: 'HS' }),
-			})
-			return (await r.json()).report.id
-		})
-		reportId = res
-		await page.close()
+		const page = await createAuthPage(browser)
+		reportId = await createReportViaAPI(page, 'PW Export Test', 'HS')
+		await page.context().close()
 	})
 
 	test('export page renders with toggles and email section', async ({ page }) => {
@@ -25,8 +17,8 @@ test.describe('Export & Send', () => {
 		await expect(page.getByText('Commission')).toBeVisible()
 		await expect(page.getByText('The Invoice')).toBeVisible()
 		await expect(page.getByText('Lock Report')).toBeVisible()
-		await expect(page.getByText('Email')).toBeVisible()
-		await expect(page.getByText('Recipient')).toBeVisible()
+		await expect(page.getByRole('heading', { name: 'Email' })).toBeVisible()
+		await expect(page.getByText('Recipient', { exact: true })).toBeVisible()
 		await expect(page.getByText('Subject')).toBeVisible()
 		await expect(page.getByText('Send Report')).toBeVisible()
 	})

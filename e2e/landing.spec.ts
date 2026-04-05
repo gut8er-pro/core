@@ -53,7 +53,7 @@ test.describe('Landing Page', () => {
 
 		const faqQuestions = [
 			'What is Gut8erPRO?',
-			'How does the 14-day free trial work?',
+			'Is there a free trial?',
 			'What integrations are available?',
 			'Can I export reports as PDF?',
 			'How secure is my data?',

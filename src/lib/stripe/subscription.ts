@@ -13,6 +13,7 @@ async function createCheckoutSession(
 	userId: string,
 	priceId: string,
 	customerId?: string,
+	options?: { successUrl?: string; cancelUrl?: string },
 ): Promise<string> {
 	const stripe = getStripeClient()
 
@@ -27,12 +28,12 @@ async function createCheckoutSession(
 			},
 		],
 		subscription_data: {
-			trial_period_days: 14,
+			trial_period_days: 7,
 			metadata: { userId },
 		},
 		metadata: { userId },
-		success_url: `${APP_URL}/dashboard?payment=success`,
-		cancel_url: `${APP_URL}/dashboard`,
+		success_url: options?.successUrl ?? `${APP_URL}/signup/complete?payment=success`,
+		cancel_url: options?.cancelUrl ?? `${APP_URL}/signup/complete?payment=cancelled`,
 	})
 
 	if (!session.url) {
@@ -47,7 +48,7 @@ async function createCustomerPortalSession(customerId: string): Promise<string> 
 
 	const session = await stripe.billingPortal.sessions.create({
 		customer: customerId,
-		return_url: `${APP_URL}/settings`,
+		return_url: `${APP_URL}/settings/billing`,
 	})
 
 	return session.url

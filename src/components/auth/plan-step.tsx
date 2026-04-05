@@ -1,50 +1,24 @@
 'use client'
 
-import { Check, CreditCard, X } from 'lucide-react'
+import { Check, CreditCard, Shield } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useSignupStore } from '@/stores/signup-store'
 
-const FREE_FEATURES = [
-	{ text: 'Unlimited reports', included: true },
-	{ text: 'Manual data entry', included: true },
-	{ text: 'PDF export', included: true },
-	{ text: 'Email support', included: true },
-	{ text: 'No AI auto-fill', included: false },
-	{ text: 'No image analysis', included: false },
-]
-
 const PRO_FEATURES = [
-	{ text: 'Everything in Free', included: true },
-	{ text: 'AI-powered auto-fill', included: true },
-	{ text: 'Image damage analysis', included: true },
-	{ text: 'VIN auto-detection', included: true },
-	{ text: 'Priority support', included: true },
-	{ text: 'Custom branding', included: true },
+	{ text: 'Unlimited reports' },
+	{ text: 'AI-powered auto-fill' },
+	{ text: 'Image damage analysis' },
+	{ text: 'VIN auto-detection' },
+	{ text: 'Priority support' },
+	{ text: 'Custom branding' },
+	{ text: 'PDF export' },
+	{ text: 'Email support' },
 ]
-
-type PlanType = 'free' | 'pro'
-
-function formatCardNumber(value: string) {
-	const digits = value.replace(/\D/g, '').slice(0, 16)
-	return digits.replace(/(.{4})/g, '$1 ').trim()
-}
-
-function formatExpiry(value: string) {
-	const digits = value.replace(/\D/g, '').slice(0, 4)
-	if (digits.length >= 3) return `${digits.slice(0, 2)}/${digits.slice(2)}`
-	return digits
-}
 
 function PlanStep() {
 	const router = useRouter()
 	const { setPlan, completeStep, setCurrentStep } = useSignupStore()
-	const [selectedPlan, setSelectedPlan] = useState<PlanType>('pro')
-	const [cardNumber, setCardNumber] = useState('')
-	const [expiry, setExpiry] = useState('')
-	const [cvc, setCvc] = useState('')
-	const [cardholderName, setCardholderName] = useState('')
 
 	function handleContinue() {
 		setPlan({ plan: 'pro' })
@@ -62,186 +36,71 @@ function PlanStep() {
 		<div className="flex flex-col gap-8">
 			{/* Header */}
 			<div className="flex flex-col gap-3.5">
-				<h2 className="text-[44px] font-medium leading-none text-black">Choose your plan</h2>
+				<h2 className="text-[44px] font-medium leading-none text-black">Your plan</h2>
 				<p className="text-[18px] leading-snug tracking-[0.18px] text-black/70">
-					Select the plan that works best for you.
+					All features included with a 7-day free trial.
 				</p>
 			</div>
 
-			{/* Plan cards */}
-			<div className="grid grid-cols-2 gap-3">
-				{/* Free plan */}
-				<button
-					type="button"
-					onClick={() => setSelectedPlan('free')}
+			{/* Pro plan card */}
+			<div className="relative">
+				<div
 					className={cn(
-						'relative flex flex-col gap-4 rounded-[24px] border-2 p-6 text-left transition-colors',
-						selectedPlan === 'free' ? 'border-primary' : 'border-[#e5e7eb]',
+						'relative flex w-full flex-col gap-5 rounded-[24px] border-2 border-primary p-6',
 					)}
 				>
-					{/* Radio */}
-					<div className="absolute right-5 top-5">
-						<div
-							className={cn(
-								'flex h-6 w-6 items-center justify-center rounded-full border-2',
-								selectedPlan === 'free' ? 'border-primary bg-primary' : 'border-[#e5e7eb] bg-white',
-							)}
-						>
-							{selectedPlan === 'free' && <Check className="h-3.5 w-3.5 text-white" />}
-						</div>
-					</div>
-
-					<div className="flex flex-col gap-1">
-						<h3 className="text-[23px] font-medium text-black">Free</h3>
-						<p className="text-[16px] text-black/70">For getting started</p>
-					</div>
-
-					<div className="flex flex-col gap-0.5">
-						<div className="flex items-baseline gap-1.5">
-							<span className="text-[35px] font-medium leading-none text-black">€0</span>
-							<span className="text-[16px] text-black/70">forever</span>
-						</div>
-					</div>
-
-					<ul className="flex flex-col gap-[7px]">
-						{FREE_FEATURES.map((f) => (
-							<li key={f.text} className="flex items-center gap-2">
-								{f.included ? (
-									<Check className="h-3.5 w-3.5 shrink-0 text-primary" />
-								) : (
-									<X className="h-3.5 w-3.5 shrink-0 text-black/30" />
-								)}
-								<span className={cn('text-[16px]', f.included ? 'text-black' : 'text-black/45')}>
-									{f.text}
-								</span>
-							</li>
-						))}
-					</ul>
-				</button>
-
-				{/* Pro plan */}
-				<div className="relative">
-					{/* Most Popular badge — centered on top border */}
-					<div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-1000">
-						<span className="rounded-[15px] bg-primary px-3.5 py-1.5 text-[14px] font-medium uppercase text-white">
-							Most Popular
-						</span>
-					</div>
-
-					<button
-						type="button"
-						onClick={() => setSelectedPlan('pro')}
-						className={cn(
-							'relative flex w-full flex-col gap-4 rounded-[24px] border-2 p-6 text-left transition-colors',
-							selectedPlan === 'pro' ? 'border-primary' : 'border-[#e5e7eb]',
-						)}
-					>
-						{/* Radio */}
-						<div className="absolute right-5 top-5">
-							<div
-								className={cn(
-									'flex h-6 w-6 items-center justify-center rounded-full border-2',
-									selectedPlan === 'pro'
-										? 'border-primary bg-primary'
-										: 'border-[#e5e7eb] bg-white',
-								)}
-							>
-								{selectedPlan === 'pro' && <Check className="h-3.5 w-3.5 text-white" />}
-							</div>
-						</div>
-
+					{/* Header row */}
+					<div className="flex items-start justify-between">
 						<div className="flex flex-col gap-1">
 							<h3 className="text-[23px] font-medium text-black">Pro</h3>
 							<p className="text-[16px] text-black/70">For professionals</p>
 						</div>
-
-						<div className="flex flex-col gap-0.5">
-							<div className="flex items-baseline gap-1.5">
-								<span className="text-[35px] font-medium leading-none text-black">€49</span>
-								<span className="text-[16px] text-black/70">/month</span>
-							</div>
-							<p className="text-[14px] font-medium text-primary/70">14 days free</p>
+						{/* Active indicator */}
+						<div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-primary bg-primary">
+							<Check className="h-3.5 w-3.5 text-white" />
 						</div>
+					</div>
 
-						<ul className="flex flex-col gap-[7px]">
-							{PRO_FEATURES.map((f) => (
-								<li key={f.text} className="flex items-center gap-2">
-									<Check className="h-3.5 w-3.5 shrink-0 text-primary" />
-									<span className="text-[16px] text-black">{f.text}</span>
-								</li>
-							))}
-						</ul>
-					</button>
+					{/* Price */}
+					<div className="flex flex-col gap-0.5">
+						<div className="flex items-baseline gap-1.5">
+							<span className="text-[35px] font-medium leading-none text-black">&euro;69</span>
+							<span className="text-[16px] text-black/70">/month</span>
+						</div>
+						<p className="text-[14px] font-medium text-primary/70">7 days free</p>
+					</div>
+
+					{/* Features */}
+					<ul className="grid grid-cols-2 gap-x-6 gap-y-[7px]">
+						{PRO_FEATURES.map((f) => (
+							<li key={f.text} className="flex items-center gap-2">
+								<Check className="h-3.5 w-3.5 shrink-0 text-primary" />
+								<span className="text-[16px] text-black">{f.text}</span>
+							</li>
+						))}
+					</ul>
 				</div>
 			</div>
 
-			{/* Payment details */}
-			<div className="flex flex-col gap-5 rounded-[15px] bg-[#f3f4f6] p-6">
-				{/* Header */}
-				<div className="flex items-center justify-between">
-					<h3 className="text-[23px] font-medium text-black">Payment details</h3>
-					<p className="text-[16px] text-black/70">
-						Secured by <span className="font-medium text-black">Stripe</span>
-					</p>
-				</div>
-
-				{/* Card number */}
-				<div className="flex flex-col gap-3">
-					<label className="text-[16px] font-medium text-black">Card number</label>
-					<div className="relative">
-						<input
-							type="text"
-							inputMode="numeric"
-							placeholder="1234 5678 9012 3456"
-							value={cardNumber}
-							onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-							className="h-[58px] w-full rounded-[15px] border-2 border-[#f3f4f6] bg-white px-3.5 pr-12 text-[18px] font-light text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
-						/>
-						<CreditCard className="pointer-events-none absolute right-3.5 top-1/2 h-6 w-6 -translate-y-1/2 text-black/30" />
+			{/* Payment info note */}
+			<div className="flex flex-col gap-4 rounded-[15px] bg-[#f3f4f6] p-6">
+				<div className="flex items-center gap-3">
+					<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+						<CreditCard className="h-5 w-5 text-primary" />
+					</div>
+					<div>
+						<h3 className="text-[18px] font-medium text-black">Payment details</h3>
+						<p className="text-[14px] text-black/70">
+							You&apos;ll enter your card on the secure Stripe checkout page after creating your
+							account.
+						</p>
 					</div>
 				</div>
 
-				{/* Expiry + CVC */}
-				<div className="grid grid-cols-2 gap-3">
-					<div className="flex flex-col gap-3">
-						<label className="text-[16px] font-medium text-black">Expiry date</label>
-						<input
-							type="text"
-							inputMode="numeric"
-							placeholder="MM/YY"
-							value={expiry}
-							onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-							className="h-[58px] w-full rounded-[15px] border-2 border-[#f3f4f6] bg-white px-3.5 text-[18px] font-light text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
-						/>
-					</div>
-					<div className="flex flex-col gap-3">
-						<label className="text-[16px] font-medium text-black">CVC</label>
-						<input
-							type="text"
-							inputMode="numeric"
-							placeholder="123"
-							value={cvc}
-							onChange={(e) => setCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
-							className="h-[58px] w-full rounded-[15px] border-2 border-[#f3f4f6] bg-white px-3.5 text-[18px] font-light text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
-						/>
-					</div>
+				<div className="flex items-center gap-2 text-[14px] text-grey-100">
+					<Shield className="h-4 w-4" />
+					<span>You won&apos;t be charged until your 7-day trial ends. Cancel anytime.</span>
 				</div>
-
-				{/* Cardholder name */}
-				<div className="flex flex-col gap-3">
-					<label className="text-[16px] font-medium text-black">Cardholder name</label>
-					<input
-						type="text"
-						placeholder="Name on card"
-						value={cardholderName}
-						onChange={(e) => setCardholderName(e.target.value)}
-						className="h-[58px] w-full rounded-[15px] border-2 border-[#f3f4f6] bg-white px-3.5 text-[18px] font-light text-black placeholder:text-black/45 focus:border-primary focus:outline-none"
-					/>
-				</div>
-
-				<p className="text-center text-[16px] text-grey-100">
-					You won't be charged until your 14-day trial ends. Cancel anytime.
-				</p>
 			</div>
 
 			{/* Navigation buttons */}

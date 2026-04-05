@@ -392,7 +392,7 @@ storybook @storybook/react-vite
 
 **No monthly fee.** You only pay per transaction.
 
-**For Gut8erPRO:** Pro plan is €49/mo. Per subscriber: Stripe takes ~€1.49 (1.5% + €0.25) + €0.245 (0.5% billing) = **~€1.74 per month per subscriber**. Net revenue: ~€47.26/subscriber/month.
+**For Gut8erPRO:** Pro plan is €69/mo. Per subscriber: Stripe takes ~€1.29 (1.5% + €0.25) + €0.345 (0.5% billing) = **~€1.63 per month per subscriber**. Net revenue: ~€67.37/subscriber/month.
 
 At 100 subscribers: ~€174/mo in Stripe fees. At 1,000 subscribers: ~€1,740/mo.
 

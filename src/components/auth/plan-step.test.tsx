@@ -29,24 +29,18 @@ describe('PlanStep', () => {
 	it('renders heading and description', () => {
 		render(<PlanStep />)
 		expect(screen.getByText('Your plan')).toBeInTheDocument()
-		expect(screen.getByText('All features included with a 14-day free trial.')).toBeInTheDocument()
+		expect(screen.getByText('All features included with a 7-day free trial.')).toBeInTheDocument()
 	})
 
 	it('renders Pro plan card with pricing', () => {
 		render(<PlanStep />)
 		expect(screen.getByText('Pro')).toBeInTheDocument()
-		expect(screen.getByText('€49')).toBeInTheDocument()
+		expect(screen.getByText('€69')).toBeInTheDocument()
 	})
 
-	it('shows "14 Days Free" badge', () => {
+	it('shows "7 days free" badge', () => {
 		render(<PlanStep />)
-		expect(screen.getByText('14 Days Free')).toBeInTheDocument()
-	})
-
-	it('shows trial info section', () => {
-		render(<PlanStep />)
-		expect(screen.getByText('14-day free trial')).toBeInTheDocument()
-		expect(screen.getByText('Payments secured by Stripe')).toBeInTheDocument()
+		expect(screen.getByText('7 days free')).toBeInTheDocument()
 	})
 
 	it('shows Pro plan features', () => {
@@ -54,7 +48,13 @@ describe('PlanStep', () => {
 		expect(screen.getByText('AI-powered auto-fill')).toBeInTheDocument()
 		expect(screen.getByText('Image damage analysis')).toBeInTheDocument()
 		expect(screen.getByText('VIN auto-detection')).toBeInTheDocument()
-		expect(screen.getByText('14 days free trial')).toBeInTheDocument()
+		expect(screen.getByText('PDF export')).toBeInTheDocument()
+	})
+
+	it('does not show Free plan card', () => {
+		render(<PlanStep />)
+		expect(screen.queryByText('€0')).not.toBeInTheDocument()
+		expect(screen.queryByText('forever')).not.toBeInTheDocument()
 	})
 
 	it('navigates back to business step', async () => {
@@ -77,8 +77,6 @@ describe('PlanStep', () => {
 
 	it('shows trial notice text', () => {
 		render(<PlanStep />)
-		expect(
-			screen.getByText(/You won't be charged until your 14-day trial ends/),
-		).toBeInTheDocument()
+		expect(screen.getByText(/You won't be charged until your 7-day trial ends/)).toBeInTheDocument()
 	})
 })

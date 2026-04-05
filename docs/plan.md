@@ -313,7 +313,7 @@ Each component gets a `.tsx` + `.test.tsx` file. Validated against specific desi
 **Goal**: Subscriptions, 14-day trial, webhook handling, billing settings.
 
 - Replace signup Step 4 placeholder with real Stripe CardElement
-- Create Stripe customer + subscription with `trial_period_days: 14`
+- Create Stripe customer + subscription with `trial_period_days: 7`
 - Webhook handler: `customer.subscription.created/updated/deleted`, `invoice.payment_succeeded/failed`
 - Settings billing page: plan display, trial remaining, manage subscription (Customer Portal)
 - Server-side plan enforcement on AI routes

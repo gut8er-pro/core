@@ -67,9 +67,11 @@ function CompleteStep() {
 					<div className="flex items-center gap-2.5 overflow-hidden rounded-[100px] border-2 border-primary bg-primary/5 px-[25px] py-3">
 						<Image src="/images/pro-plan-icon.svg" alt="" width={24} height={24} />
 						<span className="text-[18px] font-medium tracking-[0.18px] text-primary">Pro Plan</span>
-						<span className="text-[18px] text-black">•</span>
+						<span className="text-[18px] text-black">&bull;</span>
 						<span className="text-[18px] tracking-[0.18px] text-black">
-							14-day free trial started
+							{searchParams.get('payment') === 'cancelled'
+								? 'Payment not completed'
+								: '7-day free trial started'}
 						</span>
 					</div>
 				</div>
@@ -117,6 +119,15 @@ function CompleteStep() {
 						Go to Dashboard
 					</button>
 				</div>
+
+				{/* Payment cancelled nudge */}
+				{searchParams.get('payment') === 'cancelled' && (
+					<p className="mt-4 text-center text-[16px] text-black/70">
+						You can set up your payment method anytime in{' '}
+						<span className="font-medium text-primary">Settings &rarr; Billing</span> to start your
+						7-day free trial.
+					</p>
+				)}
 
 				{/* Confirmation email */}
 				<p className="mt-8 text-center text-[16px] text-black">

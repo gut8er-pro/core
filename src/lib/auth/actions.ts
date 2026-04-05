@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getStripeClient } from '@/lib/stripe/client'
+import { createCheckoutSession } from '@/lib/stripe/subscription'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { loginSchema, signupAccountSchema } from '@/lib/validations/auth'
 
@@ -82,7 +83,9 @@ type CompleteSignupInput = {
 	}
 }
 
-async function completeSignup(input: CompleteSignupInput): Promise<{ error?: string }> {
+async function completeSignup(
+	input: CompleteSignupInput,
+): Promise<{ error?: string; checkoutUrl?: string }> {
 	const { account, personal, business, plan, integrations } = input
 
 	console.log('[completeSignup] START', {
@@ -123,9 +126,10 @@ async function completeSignup(input: CompleteSignupInput): Promise<{ error?: str
 	const authUserId = authData.user.id
 
 	// 2. Create User record in our database
+	let checkoutUrl: string | undefined
 	try {
 		const planValue = 'PRO' as const
-		const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+		const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
 		// Filter out "$undefined" strings from Next.js server action serialization
 		const cleanStr = (val: string | undefined) => (val && val !== '$undefined' ? val : null)
@@ -187,8 +191,7 @@ async function completeSignup(input: CompleteSignupInput): Promise<{ error?: str
 		})
 		console.log('[completeSignup] DB user created successfully')
 
-		// 2b. Create Stripe customer (non-blocking — checkout route
-		// will create one if this fails)
+		// 2b. Create Stripe customer + Checkout Session for subscription with trial
 		if (process.env.STRIPE_SECRET_KEY) {
 			try {
 				const stripe = getStripeClient()
@@ -201,9 +204,13 @@ async function completeSignup(input: CompleteSignupInput): Promise<{ error?: str
 					data: { stripeCustomerId: customer.id },
 				})
 				console.log('[completeSignup] Stripe customer created:', customer.id)
+
+				// Create Checkout Session with 7-day trial
+				checkoutUrl = await createCheckoutSession(authUserId, '', customer.id)
+				console.log('[completeSignup] Stripe Checkout Session created')
 			} catch (stripeError) {
-				// Non-fatal — the checkout route will create the customer if needed
-				console.warn('[completeSignup] Stripe customer creation failed (non-fatal):', stripeError)
+				// Non-fatal — user can set up payment later in Settings
+				console.warn('[completeSignup] Stripe setup failed (non-fatal):', stripeError)
 			}
 		}
 	} catch (dbError) {
@@ -234,7 +241,7 @@ async function completeSignup(input: CompleteSignupInput): Promise<{ error?: str
 		console.log('[completeSignup] SUCCESS — user signed in:', account.email)
 	}
 
-	return {}
+	return { checkoutUrl }
 }
 
 async function signInWithGoogle() {

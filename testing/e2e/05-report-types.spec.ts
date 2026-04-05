@@ -1,26 +1,15 @@
 import { test, expect } from '@playwright/test'
-import { REPORT_TYPE_TABS } from './helpers/test-data'
+import { REPORT_TYPE_TABS, createAuthPage, createReportViaAPI } from './helpers/test-data'
 
 test.describe('Report Type Differences', () => {
 	let reportIds: Record<string, string> = {}
 
 	test.beforeAll(async ({ browser }) => {
-		const page = await browser.newPage()
-		await page.goto('http://localhost:3000/dashboard')
-
+		const page = await createAuthPage(browser)
 		for (const type of ['HS', 'BE', 'KG', 'OT']) {
-			const response = await page.evaluate(async (t) => {
-				const r = await fetch('/api/reports', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ title: `PW Test ${t}`, reportType: t }),
-				})
-				const json = await r.json()
-				return json.report.id
-			}, type)
-			reportIds[type] = response
+			reportIds[type] = await createReportViaAPI(page, `PW Test ${type}`, type)
 		}
-		await page.close()
+		await page.context().close()
 	})
 
 	test('HS: Accident Info has all sections', async ({ page }) => {
@@ -51,7 +40,7 @@ test.describe('Report Type Differences', () => {
 
 	test('BE: Valuation tab with DAT + Manual', async ({ page }) => {
 		await page.goto(`/reports/${reportIds.BE}/details/calculation`)
-		await expect(page.getByText('Valuation')).toBeVisible()
+		await expect(page.getByRole('tab', { name: /Valuation/ })).toBeVisible()
 		await expect(page.getByText('DAT Valuation')).toBeVisible()
 		await expect(page.getByText('Manual Valuation')).toBeVisible()
 		await expect(page.getByText('Correction Calculation')).toBeVisible()

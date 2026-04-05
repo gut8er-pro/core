@@ -1,21 +1,13 @@
 import { test, expect } from '@playwright/test'
+import { createAuthPage, createReportViaAPI } from './helpers/test-data'
 
 test.describe('Condition Tab', () => {
 	let reportId: string
 
 	test.beforeAll(async ({ browser }) => {
-		const page = await browser.newPage()
-		await page.goto('http://localhost:3000/dashboard')
-		const res = await page.evaluate(async () => {
-			const r = await fetch('/api/reports', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ title: 'PW Condition Test', reportType: 'HS' }),
-			})
-			return (await r.json()).report.id
-		})
-		reportId = res
-		await page.close()
+		const page = await createAuthPage(browser)
+		reportId = await createReportViaAPI(page, 'PW Condition Test', 'HS')
+		await page.context().close()
 	})
 
 	test('condition form has all dropdowns', async ({ page }) => {
