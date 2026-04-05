@@ -28,7 +28,7 @@ jobs:
         run: pnpm tsc --noEmit
 
       - name: Lint
-        run: pnpm biome check src/ prisma/
+        run: pnpm biome check --diagnostic-level=error
 
       - name: Unit tests
         run: pnpm vitest run

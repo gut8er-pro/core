@@ -44,6 +44,6 @@
 		}
 	},
 	"files": {
-		"includes": ["src/**/*.ts", "src/**/*.tsx", "prisma/**"]
+		"includes": ["src/**/*.ts", "src/**/*.tsx", "prisma/**", "!src/generated/**"]
 	}
 }
