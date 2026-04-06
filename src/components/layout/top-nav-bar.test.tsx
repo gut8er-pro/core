@@ -3,6 +3,13 @@ import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@/test/test-utils'
 import { TopNavBar } from './top-nav-bar'
 
+vi.mock('next/navigation', () => ({
+	useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+	usePathname: () => '/dashboard',
+	useParams: () => ({}),
+	useSearchParams: () => new URLSearchParams(),
+}))
+
 describe('TopNavBar', () => {
 	it('renders logo', () => {
 		render(<TopNavBar />)
