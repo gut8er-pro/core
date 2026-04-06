@@ -2,6 +2,13 @@ import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@/test/test-utils'
 import LoginPage from './page'
 
+vi.mock('next/navigation', () => ({
+	useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+	usePathname: () => '/login',
+	useParams: () => ({}),
+	useSearchParams: () => new URLSearchParams(),
+}))
+
 vi.mock('next/link', () => ({
 	default: ({ children, href }: { children: React.ReactNode; href: string }) => (
 		<a href={href}>{children}</a>
