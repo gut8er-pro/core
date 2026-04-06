@@ -134,8 +134,11 @@ function TopNavBar({
 				})}
 			</nav>
 
-			{/* Right: Bell + User */}
+			{/* Right: Language + Bell + User */}
 			<div className="flex items-center gap-1.5 sm:gap-2.5">
+				{/* Language switcher */}
+				<LanguageSwitcher />
+
 				{/* Notifications dropdown */}
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
@@ -277,11 +280,6 @@ function TopNavBar({
 							label={t('helpAndSupport')}
 							onClick={() => onNavigate?.('/help')}
 						/>
-
-						{/* Language Switcher */}
-						<div className="border-t border-border px-3.5 py-3">
-							<LanguageSwitcher />
-						</div>
 
 						{/* Log Out */}
 						<button
