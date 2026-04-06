@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
+import { LanguageSwitcher } from '@/components/ui/language-switcher'
 import { login, signInWithApple, signInWithGoogle } from '@/lib/auth/actions'
 
 function LoginPage() {
@@ -58,7 +59,12 @@ function LoginPage() {
 			</div>
 
 			{/* Right login form */}
-			<div className="flex w-full flex-col items-center justify-center px-6 lg:w-1/2">
+			<div className="relative flex w-full flex-col items-center justify-center px-6 lg:w-1/2">
+				{/* Language switcher — top right */}
+				<div className="absolute right-4 top-4">
+					<LanguageSwitcher />
+				</div>
+
 				<div className="w-full max-w-[519px]">
 					{/* Mobile logo */}
 					<div className="mb-8 lg:hidden">

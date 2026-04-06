@@ -7,6 +7,7 @@ import { CompleteStep } from '@/components/auth/complete-step'
 import { IntegrationsStep } from '@/components/auth/integrations-step'
 import { PersonalStep } from '@/components/auth/personal-step'
 import { PlanStep } from '@/components/auth/plan-step'
+import { LanguageSwitcher } from '@/components/ui/language-switcher'
 import { StepperSidebar } from '@/components/ui/stepper-sidebar'
 import { useSignupStore } from '@/stores/signup-store'
 
@@ -44,8 +45,13 @@ function SignupStepPage() {
 	const progressPercent = Math.min((stepNumber / 5) * 100, 100)
 
 	return (
-		<div className="flex h-screen">
+		<div className="relative flex h-screen">
 			<StepperSidebar steps={STEPS} currentStep={stepNumber} completedSteps={completedSteps} />
+
+			{/* Language switcher — top right */}
+			<div className="absolute right-4 top-4 z-10">
+				<LanguageSwitcher />
+			</div>
 
 			{/* Right panel: progress bar pinned at top, content scrolls below */}
 			<div className="flex flex-1 flex-col">

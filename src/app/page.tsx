@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { LanguageSwitcher } from '@/components/ui/language-switcher'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
 
@@ -141,7 +142,8 @@ function LandingPage() {
 					>
 						<Image src="/images/logo.svg" alt="Gut8erPRO" width={131} height={31} priority />
 					</button>
-					<nav className="flex items-center gap-4">
+					<nav className="flex items-center gap-3">
+						<LanguageSwitcher />
 						{!loading && isAuthenticated ? (
 							<Button size="md" onClick={() => router.push('/dashboard')}>
 								{tNav('dashboard')}
