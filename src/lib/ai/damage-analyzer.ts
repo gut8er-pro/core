@@ -84,6 +84,12 @@ async function analyzeDamage(
 							media_type: imageData.mediaType,
 							data: imageData.base64,
 						},
+						// 5-min ephemeral cache: covers the "click Generate twice in
+						// a row after fixing a photo" path where Talas A's DB cache
+						// is invalidated (e.g., bumped promptVersion) but the same
+						// image bytes go back. Image alone (~2459 tokens at 1568px)
+						// exceeds Sonnet's 1024-token cache minimum.
+						cache_control: { type: 'ephemeral' },
 					},
 					{ type: 'text', text: buildDamagePrompt(position, damageLocation, locale) },
 				],
@@ -177,4 +183,4 @@ function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value))
 }
 
-export { analyzeDamage }
+export { analyzeDamage, parseDamageResponse }

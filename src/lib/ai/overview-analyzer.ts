@@ -134,4 +134,4 @@ function parseOverviewResponse(photoId: string, rawResponse: string): OverviewAn
 	}
 }
 
-export { analyzeOverview }
+export { analyzeOverview, parseOverviewResponse }

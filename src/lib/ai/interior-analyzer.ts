@@ -114,4 +114,4 @@ function parseInteriorResponse(photoId: string, rawResponse: string): InteriorAn
 	}
 }
 
-export { analyzeInterior }
+export { analyzeInterior, parseInteriorResponse }
