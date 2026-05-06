@@ -5,11 +5,50 @@ import type { OcrExtractionResult, VehicleLookupResult } from './types'
 
 const NHTSA_API_URL = 'https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues'
 
+// Authoritative WMI prefix → manufacturer mapping. The first 3 chars of a VIN
+// uniquely identify the manufacturer; we use this as a hard override after
+// any AI/NHTSA decode to prevent confusions like Audi (WAU) being labelled as
+// Volkswagen (WVW) when NHTSA has low confidence.
+const WMI_MANUFACTURER_MAP: Record<string, string> = {
+	WAU: 'Audi',
+	WUA: 'Audi',
+	TRU: 'Audi',
+	WBA: 'BMW',
+	WBS: 'BMW',
+	WBY: 'BMW',
+	WDD: 'Mercedes-Benz',
+	WDC: 'Mercedes-Benz',
+	WDB: 'Mercedes-Benz',
+	WMX: 'Mercedes-Benz',
+	WVW: 'Volkswagen',
+	WV1: 'Volkswagen',
+	WV2: 'Volkswagen',
+	WVG: 'Volkswagen',
+	W0L: 'Opel',
+	W0V: 'Opel',
+	VSS: 'SEAT',
+	TMB: 'Skoda',
+	YV1: 'Volvo',
+	SAJ: 'Jaguar',
+	SAL: 'Land Rover',
+	WF0: 'Ford',
+	ZAR: 'Alfa Romeo',
+	ZFA: 'Fiat',
+	ZFF: 'Ferrari',
+	ZLA: 'Lancia',
+}
+
+function wmiManufacturer(vin: string): string | null {
+	if (!vin || vin.length < 3) return null
+	const wmi = vin.slice(0, 3).toUpperCase()
+	return WMI_MANUFACTURER_MAP[wmi] ?? null
+}
+
 const AI_VIN_PROMPT = `Decode this Vehicle Identification Number (VIN): {VIN}
 
 Use your knowledge of VIN structure to extract vehicle information:
-- Positions 1-3 (WMI): World Manufacturer Identifier
-  Common European WMIs: WBA/WBS=BMW, WDD/WDC=Mercedes-Benz, WVW/WV1=Volkswagen, WAU/WUA=Audi, ZAR=Alfa Romeo, ZFF=Ferrari, W0L=Opel, VSS=SEAT, TMB=Skoda, YV1=Volvo, SAJ=Jaguar, SAL=Land Rover, WF0=Ford Europe, WDB=Mercedes
+- Positions 1-3 (WMI): World Manufacturer Identifier — AUTHORITATIVE for manufacturer.
+  Common European WMIs: WAU/WUA/TRU=Audi, WVW/WV1/WV2/WVG=Volkswagen (these are DIFFERENT manufacturers — WAU is NEVER Volkswagen), WBA/WBS=BMW, WDD/WDC/WDB=Mercedes-Benz, ZAR=Alfa Romeo, ZFF=Ferrari, W0L=Opel, VSS=SEAT, TMB=Skoda, YV1=Volvo, SAJ=Jaguar, SAL=Land Rover, WF0=Ford Europe
 - Positions 4-8: Vehicle attributes (model, body, engine)
 - Position 9: Check digit
 - Position 10: Model year (A=2010..J=2018, K=2019, L=2020, M=2021, N=2022, P=2023, R=2024, S=2025)
@@ -17,7 +56,7 @@ Use your knowledge of VIN structure to extract vehicle information:
 - Positions 12-17: Sequential number
 
 Return JSON with:
-1. "manufacturer": Full manufacturer name (e.g., "Volkswagen", "BMW", "Mercedes-Benz")
+1. "manufacturer": Full manufacturer name (e.g., "Audi", "Volkswagen", "BMW", "Mercedes-Benz") — must match the WMI prefix
 2. "make": Parent company if different from manufacturer
 3. "model": Model name if determinable from VIN structure
 4. "modelYear": Model year as number
@@ -32,27 +71,49 @@ async function lookupVehicleByVin(vin: string): Promise<VehicleLookupResult> {
 	// Try NHTSA first (free, works well for US/Asian vehicles)
 	const nhtsaResult = await lookupViaNhtsa(vin)
 
-	// If NHTSA returned good results, use them
+	let chosen: VehicleLookupResult
 	if (nhtsaResult.confidence >= 0.3) {
-		return nhtsaResult
-	}
-
-	// Fall back to AI VIN decoding for European vehicles
-	const aiResult = await lookupViaAiDecode(vin)
-
-	// If AI was more confident, prefer it but merge any NHTSA data
-	if (aiResult.confidence > nhtsaResult.confidence) {
-		return {
-			...aiResult,
-			warnings: [
-				...nhtsaResult.warnings,
-				...aiResult.warnings,
-				'Used AI VIN decode (NHTSA had low confidence)',
-			],
+		chosen = nhtsaResult
+	} else {
+		// Fall back to AI VIN decoding for European vehicles
+		const aiResult = await lookupViaAiDecode(vin)
+		if (aiResult.confidence > nhtsaResult.confidence) {
+			chosen = {
+				...aiResult,
+				warnings: [
+					...nhtsaResult.warnings,
+					...aiResult.warnings,
+					'Used AI VIN decode (NHTSA had low confidence)',
+				],
+			}
+		} else {
+			chosen = nhtsaResult
 		}
 	}
 
-	return nhtsaResult
+	return applyWmiOverride(vin, chosen)
+}
+
+/**
+ * The WMI (first 3 chars of VIN) is the authoritative manufacturer identifier.
+ * Override the chosen result whenever the WMI mapping disagrees with the
+ * decoded manufacturer (e.g. NHTSA returns Volkswagen for an Audi WAU* VIN).
+ */
+function applyWmiOverride(vin: string, result: VehicleLookupResult): VehicleLookupResult {
+	const wmi = wmiManufacturer(vin)
+	if (!wmi) return result
+
+	const current = result.manufacturer?.toLowerCase() ?? ''
+	if (current === wmi.toLowerCase()) return result
+
+	const message = result.manufacturer
+		? `Overriding decoded manufacturer "${result.manufacturer}" with WMI mapping "${wmi}"`
+		: `Filled manufacturer "${wmi}" from WMI prefix`
+	return {
+		...result,
+		manufacturer: wmi,
+		warnings: [...result.warnings, message],
+	}
 }
 
 async function lookupViaNhtsa(vin: string): Promise<VehicleLookupResult> {
@@ -329,4 +390,10 @@ function mergeVehicleData(
 	return merged
 }
 
-export { lookupVehicleByVin, mergeVehicleData, normalizeMotorType, normalizeVehicleType }
+export {
+	lookupVehicleByVin,
+	mergeVehicleData,
+	normalizeMotorType,
+	normalizeVehicleType,
+	wmiManufacturer,
+}

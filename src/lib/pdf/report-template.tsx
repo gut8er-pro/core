@@ -529,7 +529,7 @@ function VehicleInfoSection({
 			)}
 			<DataRow label={t.firstRegistration} value={formatDate(vehicleInfo.firstRegistration)} />
 			{vehicleInfo.lastRegistration && (
-				<DataRow label="Last Registration" value={formatDate(vehicleInfo.lastRegistration)} />
+				<DataRow label={t.lastRegistration} value={formatDate(vehicleInfo.lastRegistration)} />
 			)}
 			{vehicleInfo.powerKw && (
 				<DataRow
@@ -667,7 +667,9 @@ function ConditionSection({
 	return (
 		<View style={styles.section}>
 			<Text style={styles.sectionTitle}>{t.vehicleCondition}</Text>
-			<DataRow label={t.generalCondition} value={tv(condition.generalCondition)} />
+			{condition.generalCondition && (
+				<DataRow label={t.generalCondition} value={tv(condition.generalCondition)} />
+			)}
 			{condition.bodyCondition && (
 				<DataRow label={t.bodyCondition} value={tv(condition.bodyCondition)} />
 			)}
@@ -730,7 +732,11 @@ function ConditionSection({
 						{condition.damageMarkers
 							.filter((m) => m.comment)
 							.map((m, i) => (
-								<View key={`dm-${i}`} style={{ flexDirection: 'row' }}>
+								// wrap={false} keeps the "#N:" label and its body on the same page,
+								// avoiding orphaned labels at page breaks. Applied to each row only —
+								// the outer column container still wraps so long marker lists flow
+								// across pages cleanly.
+								<View key={`dm-${i}`} style={{ flexDirection: 'row' }} wrap={false}>
 									<Text style={[styles.dataLabel, { fontSize: 9, width: 30 }]}>#{i + 1}:</Text>
 									<Text style={[styles.dataValue, { fontSize: 9, flex: 1 }]}>{m.comment}</Text>
 								</View>
@@ -1136,12 +1142,24 @@ function InvoiceSection({ invoice, t }: { invoice: ReportData['invoice']; t: Pdf
 	)
 }
 
-const PHOTO_CATEGORIES: { key: string; label: string; matchTypes: string[] }[] = [
-	{ key: 'vehicle', label: 'Vehicle Overview', matchTypes: ['overview'] },
-	{ key: 'damage', label: 'Damage Photos', matchTypes: ['damage'] },
-	{ key: 'tire', label: 'Tire Photos', matchTypes: ['tire'] },
-	{ key: 'interior', label: 'Interior Photos', matchTypes: ['interior'] },
-	{ key: 'document', label: 'Documents', matchTypes: ['document', 'vin', 'plate'] },
+// Photo category section labels resolve via t[labelKey] so the PDF locale
+// drives translation. The "identification" category was split from "document"
+// so VIN/plate close-ups don't inflate the document count.
+const PHOTO_CATEGORIES: {
+	key: string
+	labelKey: keyof PdfTranslations
+	matchTypes: string[]
+}[] = [
+	{ key: 'vehicle', labelKey: 'photoCategoryVehicle', matchTypes: ['overview'] },
+	{ key: 'damage', labelKey: 'photoCategoryDamage', matchTypes: ['damage'] },
+	{ key: 'tire', labelKey: 'photoCategoryTire', matchTypes: ['tire'] },
+	{ key: 'interior', labelKey: 'photoCategoryInterior', matchTypes: ['interior'] },
+	{
+		key: 'identification',
+		labelKey: 'photoCategoryIdentification',
+		matchTypes: ['vin', 'plate'],
+	},
+	{ key: 'document', labelKey: 'photoCategoryDocuments', matchTypes: ['document'] },
 ]
 
 function PhotoGallerySection({ photos, t }: { photos: ReportData['photos']; t: PdfTranslations }) {
@@ -1178,7 +1196,7 @@ function PhotoGallerySection({ photos, t }: { photos: ReportData['photos']; t: P
 				return (
 					<View key={cat.key} wrap={false}>
 						<Text style={styles.photoCategoryTitle}>
-							{cat.label} ({catPhotos.length})
+							{t[cat.labelKey]} ({catPhotos.length})
 						</Text>
 						<View style={styles.photoGrid}>
 							{catPhotos.map((photo) => (

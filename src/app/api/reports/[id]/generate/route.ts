@@ -1,7 +1,9 @@
 // POST /api/reports/:id/generate — SSE endpoint that runs the AI pipeline.
 // Streams progress events to the client as Server-Sent Events.
 
+import { cookies } from 'next/headers'
 import type { NextRequest } from 'next/server'
+import { defaultLocale, LOCALE_COOKIE, type Locale, locales } from '@/i18n/config'
 import type { CalculationAutoFillResult } from '@/lib/ai/calculation-extractor'
 import { runPipeline } from '@/lib/ai/pipeline'
 import type {
@@ -33,6 +35,15 @@ async function POST(request: NextRequest, context: RouteContext) {
 	} catch {
 		// No body or invalid JSON — default to non-incremental
 	}
+
+	// Read user locale from cookie (defaults to 'en'). Threaded into the
+	// pipeline so AI-generated free-text (damage descriptions, etc.) is in
+	// the user's preferred language.
+	const cookieStore = await cookies()
+	const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value
+	const locale: Locale = locales.includes(cookieLocale as Locale)
+		? (cookieLocale as Locale)
+		: defaultLocale
 
 	// Validate report exists and belongs to user
 	const report = await prisma.report.findFirst({
@@ -95,10 +106,14 @@ async function POST(request: NextRequest, context: RouteContext) {
 					aiProcessedHash: p.aiProcessedHash,
 				}))
 
-				// Run the pipeline with incremental option
-				const summary = await runPipeline(reportId, photoInputs, emit, {
-					incrementalOnly: incremental,
-				})
+				// Run the pipeline with incremental option and user locale
+				const summary = await runPipeline(
+					reportId,
+					photoInputs,
+					emit,
+					{ incrementalOnly: incremental },
+					locale,
+				)
 
 				// Persist auto-fill results to database
 				await persistResults(reportId, summary)
@@ -153,6 +168,13 @@ type PipelinePayloads = {
 		overviewResults: OverviewAnalysisResult[]
 		interiorResults: InteriorAnalysisResult[]
 	}
+	ownerData: {
+		firstName: string | null
+		lastName: string | null
+		street: string | null
+		postcode: string | null
+		location: string | null
+	} | null
 	calculationData: CalculationAutoFillResult | null
 	photoUpdates: Array<{
 		photoId: string
@@ -268,19 +290,56 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 		}
 	}
 
-	// 2. Update accident info (license plate)
-	if (payloads.accidentData.claimantLicensePlate) {
-		try {
-			await prisma.claimantInfo.upsert({
-				where: { reportId },
-				create: {
-					reportId,
-					licensePlate: payloads.accidentData.claimantLicensePlate,
-				},
-				update: { licensePlate: payloads.accidentData.claimantLicensePlate },
-			})
-		} catch (err) {
-			console.error('Failed to update claimant info:', err)
+	// 2. Update claimant (license plate + owner from registration document).
+	// Only fill fields that are currently empty — never overwrite user input.
+	{
+		const owner = payloads.ownerData
+		const plate = payloads.accidentData.claimantLicensePlate
+		const hasOwnerSomething =
+			owner &&
+			(owner.firstName || owner.lastName || owner.street || owner.postcode || owner.location)
+		if (plate || hasOwnerSomething) {
+			try {
+				const existing = await prisma.claimantInfo.findUnique({ where: { reportId } })
+
+				const createData: Record<string, unknown> = { reportId }
+				const updateData: Record<string, unknown> = {}
+
+				if (plate) {
+					createData.licensePlate = plate
+					updateData.licensePlate = plate // license plate may be re-detected; OK to overwrite
+				}
+				if (owner) {
+					if (owner.firstName) {
+						createData.firstName = owner.firstName
+						if (!existing?.firstName) updateData.firstName = owner.firstName
+					}
+					if (owner.lastName) {
+						createData.lastName = owner.lastName
+						if (!existing?.lastName) updateData.lastName = owner.lastName
+					}
+					if (owner.street) {
+						createData.street = owner.street
+						if (!existing?.street) updateData.street = owner.street
+					}
+					if (owner.postcode) {
+						createData.postcode = owner.postcode
+						if (!existing?.postcode) updateData.postcode = owner.postcode
+					}
+					if (owner.location) {
+						createData.location = owner.location
+						if (!existing?.location) updateData.location = owner.location
+					}
+				}
+
+				await prisma.claimantInfo.upsert({
+					where: { reportId },
+					create: createData as Parameters<typeof prisma.claimantInfo.create>[0]['data'],
+					update: updateData,
+				})
+			} catch (err) {
+				console.error('Failed to update claimant info:', err)
+			}
 		}
 	}
 
@@ -294,12 +353,16 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 		try {
 			const conditionUpdateData: Record<string, unknown> = {}
 
-			// Extract data from overview results
+			// Extract data from overview results. Values were already normalized
+			// to canonical title-case keys in pipeline.ts:collectOverviewResults.
 			for (const overview of payloads.conditionData.overviewResults) {
 				if (overview.color) conditionUpdateData.vehicleColor = overview.color
 				if (overview.generalCondition)
 					conditionUpdateData.generalCondition = overview.generalCondition
 				if (overview.bodyCondition) conditionUpdateData.bodyCondition = overview.bodyCondition
+				if (overview.paintType) conditionUpdateData.paintType = overview.paintType
+				if (overview.paintCondition) conditionUpdateData.paintCondition = overview.paintCondition
+				if (overview.drivingAbility) conditionUpdateData.drivingAbility = overview.drivingAbility
 			}
 
 			// Extract data from interior results

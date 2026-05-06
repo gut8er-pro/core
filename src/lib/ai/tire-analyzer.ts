@@ -5,7 +5,13 @@ import { getCachedResult, getCacheKey, setCachedResult } from './cache'
 import type { ImageData } from './fetch-image'
 import type { TireAnalysisResult, VehiclePosition } from './types'
 
-const TIRE_PROMPT = `Analyze this tire photo from a vehicle assessment. Extract as much information as visible.
+function buildTirePrompt(locale: 'en' | 'de' = 'en'): string {
+	const localeSuffix =
+		locale === 'de'
+			? '\n\nThe "condition" free-text field MUST be in German. Keep all other enum values (profileLevel, tireType, position) in English exactly as listed.'
+			: ''
+
+	return `Analyze this tire photo from a vehicle assessment. Extract as much information as visible.
 
 Extract:
 1. "manufacturer": Tire brand name (e.g., "Continental", "Michelin", "Goodyear", "Pirelli", "Bridgestone", "Hankook", "Dunlop"). Use null if unreadable.
@@ -19,7 +25,8 @@ Extract:
 9. "position": Best guess of wheel position: "VL" (front-left), "VR" (front-right), "HL" (rear-left), "HR" (rear-right). Use null if unsure.
 10. "confidence": 0.0-1.0 how much information you could reliably extract
 
-Return ONLY valid JSON.`
+Return ONLY valid JSON.${localeSuffix}`
+}
 
 function mapWheelPosition(position: VehiclePosition): 'VL' | 'VR' | 'HL' | 'HR' | null {
 	switch (position) {
@@ -57,8 +64,9 @@ async function analyzeTire(
 	photoId: string,
 	imageData: ImageData,
 	vehiclePosition: VehiclePosition,
+	locale: 'en' | 'de' = 'en',
 ): Promise<TireAnalysisResult> {
-	const cacheKey = getCacheKey(photoId, 'tire-analysis')
+	const cacheKey = getCacheKey(photoId, `tire-analysis:${locale}`)
 	const cached = getCachedResult<TireAnalysisResult>(cacheKey)
 	if (cached) return cached
 
@@ -79,7 +87,7 @@ async function analyzeTire(
 							data: imageData.base64,
 						},
 					},
-					{ type: 'text', text: TIRE_PROMPT },
+					{ type: 'text', text: buildTirePrompt(locale) },
 				],
 			},
 		],

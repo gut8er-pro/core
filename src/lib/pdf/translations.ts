@@ -96,6 +96,13 @@ type PdfTranslations = {
 	tiresTitle: string
 	tireSet: string
 	tireProfile: string
+	lastRegistration: string
+	photoCategoryVehicle: string
+	photoCategoryDamage: string
+	photoCategoryTire: string
+	photoCategoryInterior: string
+	photoCategoryDocuments: string
+	photoCategoryIdentification: string
 }
 
 const translations: Record<Locale, PdfTranslations> = {
@@ -195,6 +202,13 @@ const translations: Record<Locale, PdfTranslations> = {
 		tiresTitle: 'Tires',
 		tireSet: 'Set',
 		tireProfile: 'profile',
+		lastRegistration: 'Last Registration',
+		photoCategoryVehicle: 'Vehicle Overview',
+		photoCategoryDamage: 'Damage Photos',
+		photoCategoryTire: 'Tire Photos',
+		photoCategoryInterior: 'Interior Photos',
+		photoCategoryDocuments: 'Documents',
+		photoCategoryIdentification: 'Identification',
 	},
 	de: {
 		vehicleDamageAssessment: 'Kfz-Schadensgutachten',
@@ -292,6 +306,13 @@ const translations: Record<Locale, PdfTranslations> = {
 		tiresTitle: 'Bereifung',
 		tireSet: 'Satz',
 		tireProfile: 'Profil',
+		lastRegistration: 'Letzte Zulassung',
+		photoCategoryVehicle: 'Fahrzeugübersicht',
+		photoCategoryDamage: 'Schadensfotos',
+		photoCategoryTire: 'Reifenfotos',
+		photoCategoryInterior: 'Innenraumfotos',
+		photoCategoryDocuments: 'Dokumente',
+		photoCategoryIdentification: 'Identifikation (FIN/Kennzeichen)',
 	},
 }
 
@@ -347,10 +368,16 @@ const valueTranslations: Record<string, string> = {
 	// Paint Condition
 	Good: 'Gut',
 	Fair: 'Befriedigend',
+	Excellent: 'Sehr gut',
 	// Driving Ability
 	Roadworthy: 'Fahrbereit',
 	Limited: 'Eingeschränkt',
 	'Not roadworthy': 'Nicht fahrbereit',
+	// Backstops for legacy/lowercase entries that may already exist in DB rows
+	excellent: 'Sehr gut',
+	good: 'Gut',
+	fair: 'Befriedigend',
+	poor: 'Schlecht',
 }
 
 function translateValue(value: string | null | undefined, locale: string): string {
@@ -359,5 +386,46 @@ function translateValue(value: string | null | undefined, locale: string): strin
 	return valueTranslations[value] ?? value
 }
 
+/**
+ * Normalize an AI-emitted condition value to the canonical title-case key
+ * present in `valueTranslations`. If the input doesn't match any known
+ * synonym, returns the input unchanged so we never lose data.
+ *
+ * Used at write time (in the generate route + pipeline collectors) so that
+ * `condition.interiorCondition === 'good'` becomes `'Good'` before persistence.
+ */
+const conditionAliasMap: Record<string, string> = {
+	// generic condition adjectives
+	excellent: 'Excellent',
+	good: 'Good',
+	fair: 'Fair',
+	poor: 'Poor',
+	average: 'Average',
+	// general/body condition
+	'well maintained': 'Well maintained',
+	'well-maintained': 'Well maintained',
+	'no damage': 'No damage',
+	'minor cosmetic': 'Minor cosmetic',
+	'structural damage': 'Structural damage',
+	// paint type
+	metallic: 'Metallic',
+	uni: 'Uni (2 Schicht)',
+	'uni (2 schicht)': 'Uni (2 Schicht)',
+	pearl: 'Pearl',
+	matte: 'Matte',
+	// driving ability
+	roadworthy: 'Roadworthy',
+	limited: 'Limited',
+	'not roadworthy': 'Not roadworthy',
+}
+
+function normalizeConditionValue(raw: string | null | undefined): string | null {
+	if (!raw) return null
+	const trimmed = raw.trim()
+	if (!trimmed) return null
+	const canonical = conditionAliasMap[trimmed.toLowerCase()]
+	return canonical ?? trimmed
+}
+
 export type { PdfTranslations }
-export { getPdfTranslations, translateValue }
+export { getPdfTranslations, normalizeConditionValue, translateValue }

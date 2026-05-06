@@ -1,5 +1,6 @@
 // Pipeline orchestrator — coordinates classification, processing, and auto-fill.
 
+import { normalizeConditionValue } from '@/lib/pdf/translations'
 import { getAnthropicClient } from './anthropic'
 import { getCachedResult, getCacheKey, setCachedResult } from './cache'
 import type { CalculationAutoFillResult } from './calculation-extractor'
@@ -99,6 +100,7 @@ async function runPipeline(
 	photos: PhotoInput[],
 	emit: EmitFn,
 	options: PipelineOptions = {},
+	locale: 'en' | 'de' = 'en',
 ): Promise<GenerationSummary> {
 	const summary: GenerationSummary = {
 		photosProcessed: 0,
@@ -227,6 +229,7 @@ async function runPipeline(
 					imageData,
 					classification.position,
 					classification.damageLocation,
+					locale,
 				)
 				return { type: 'damage', result }
 			}
@@ -243,15 +246,20 @@ async function runPipeline(
 				return { type: 'document', result }
 			}
 			case 'overview': {
-				const result = await analyzeOverview(classification.photoId, imageData)
+				const result = await analyzeOverview(classification.photoId, imageData, locale)
 				return { type: 'overview', result }
 			}
 			case 'tire': {
-				const result = await analyzeTire(classification.photoId, imageData, classification.position)
+				const result = await analyzeTire(
+					classification.photoId,
+					imageData,
+					classification.position,
+					locale,
+				)
 				return { type: 'tire', result }
 			}
 			case 'interior': {
-				const result = await analyzeInterior(classification.photoId, imageData)
+				const result = await analyzeInterior(classification.photoId, imageData, locale)
 				return { type: 'interior', result }
 			}
 			default:
@@ -364,10 +372,19 @@ async function runPipeline(
 	}
 	emit({ type: 'progress', step: 'autofill', current: 1, total: 5, message: 'Vehicle data filled' })
 
-	// 4b: Accident info (license plate)
-	if (extractedPlate || extractedOcr?.licensePlate) {
-		summary.autoFilledFields.accident = ['claimantLicensePlate']
-		emit({ type: 'auto_fill', section: 'accident', fields: ['claimantLicensePlate'] })
+	// 4b: Accident info (license plate + owner from registration document)
+	const accidentFields: string[] = []
+	if (extractedPlate || extractedOcr?.licensePlate) accidentFields.push('claimantLicensePlate')
+	if (extractedOcr) {
+		if (extractedOcr.ownerFirstName) accidentFields.push('claimantFirstName')
+		if (extractedOcr.ownerLastName) accidentFields.push('claimantLastName')
+		if (extractedOcr.ownerStreet) accidentFields.push('claimantStreet')
+		if (extractedOcr.ownerPostcode) accidentFields.push('claimantPostcode')
+		if (extractedOcr.ownerCity) accidentFields.push('claimantLocation')
+	}
+	if (accidentFields.length > 0) {
+		summary.autoFilledFields.accident = accidentFields
+		emit({ type: 'auto_fill', section: 'accident', fields: accidentFields })
 	}
 	emit({
 		type: 'progress',
@@ -391,7 +408,14 @@ async function runPipeline(
 		summary.autoFilledFields.condition.push('tireData')
 	}
 	if (overviewResults.length > 0) {
-		summary.autoFilledFields.condition.push('vehicleColor', 'generalCondition', 'bodyCondition')
+		summary.autoFilledFields.condition.push(
+			'vehicleColor',
+			'generalCondition',
+			'bodyCondition',
+			'paintType',
+			'paintCondition',
+			'drivingAbility',
+		)
 	}
 	if (interiorResults.length > 0) {
 		summary.autoFilledFields.condition.push('interiorCondition', 'specialFeatures')
@@ -446,6 +470,19 @@ async function runPipeline(
 		summary.autoFilledFields.condition.length +
 		calculationFields.length
 
+	// Owner data extracted from the registration certificate (Halter). The
+	// route handler will only fill claimant fields that are currently empty —
+	// it must never overwrite user-entered values.
+	const ownerData = extractedOcr
+		? {
+				firstName: extractedOcr.ownerFirstName?.trim() || null,
+				lastName: extractedOcr.ownerLastName?.trim() || null,
+				street: extractedOcr.ownerStreet?.trim() || null,
+				postcode: extractedOcr.ownerPostcode?.trim() || null,
+				location: extractedOcr.ownerCity?.trim() || null,
+			}
+		: null
+
 	// Build the auto-fill payloads for the caller to persist
 	const autoFillPayloads = {
 		vehicleData,
@@ -458,6 +495,7 @@ async function runPipeline(
 			overviewResults,
 			interiorResults,
 		},
+		ownerData,
 		calculationData,
 		photoUpdates: buildPhotoUpdates(classifications, processedResults),
 		photoOrder,
@@ -507,21 +545,26 @@ function findExtractedOcr(results: PhotoProcessingResult[]): OcrExtractionResult
 function collectDamageMarkers(results: PhotoProcessingResult[]): DiagramPosition[] {
 	const markers: DiagramPosition[] = []
 	for (const r of results) {
-		if (r.type === 'damage' && r.result?.diagramPosition) {
-			// Enrich marker comment with severity and repair approach
-			const enrichedComment = [
-				r.result.diagramPosition.comment,
-				r.result.severity ? `Severity: ${r.result.severity}` : null,
-				r.result.repairApproach ? `Repair: ${r.result.repairApproach}` : null,
-			]
-				.filter(Boolean)
-				.join(' | ')
+		// Skip when the analyzer explicitly reported no visible damage, or
+		// failed to localize damage on the diagram. This prevents hallucinated
+		// fallback markers (e.g. centre marker for clean overview shots).
+		if (r.type !== 'damage' || !r.result) continue
+		if (r.result.noDamageVisible) continue
+		if (!r.result.diagramPosition) continue
 
-			markers.push({
-				...r.result.diagramPosition,
-				comment: enrichedComment || r.result.diagramPosition.comment,
-			})
-		}
+		// Enrich marker comment with severity and repair approach
+		const enrichedComment = [
+			r.result.diagramPosition.comment,
+			r.result.severity ? `Severity: ${r.result.severity}` : null,
+			r.result.repairApproach ? `Repair: ${r.result.repairApproach}` : null,
+		]
+			.filter(Boolean)
+			.join(' | ')
+
+		markers.push({
+			...r.result.diagramPosition,
+			comment: enrichedComment || r.result.diagramPosition.comment,
+		})
 	}
 	return markers
 }
@@ -540,7 +583,18 @@ function collectOverviewResults(results: PhotoProcessingResult[]): OverviewAnaly
 	const overviews: OverviewAnalysisResult[] = []
 	for (const r of results) {
 		if (r.type === 'overview' && r.result) {
-			overviews.push(r.result)
+			// Normalize string-enum values to canonical title-case keys that match
+			// `valueTranslations` in src/lib/pdf/translations.ts. The analyzer's
+			// parser already validates against an allowed list, so this is mostly
+			// a defensive pass for any pre-existing/cached entries.
+			overviews.push({
+				...r.result,
+				generalCondition: normalizeConditionValue(r.result.generalCondition),
+				bodyCondition: normalizeConditionValue(r.result.bodyCondition),
+				paintType: normalizeConditionValue(r.result.paintType),
+				paintCondition: normalizeConditionValue(r.result.paintCondition),
+				drivingAbility: normalizeConditionValue(r.result.drivingAbility),
+			})
 		}
 	}
 	return overviews
@@ -550,7 +604,11 @@ function collectInteriorResults(results: PhotoProcessingResult[]): InteriorAnaly
 	const interiors: InteriorAnalysisResult[] = []
 	for (const r of results) {
 		if (r.type === 'interior' && r.result) {
-			interiors.push(r.result)
+			// Normalize "good" → "Good" so PDF translateValue() finds the key.
+			interiors.push({
+				...r.result,
+				condition: normalizeConditionValue(r.result.condition),
+			})
 		}
 	}
 	return interiors
@@ -695,15 +753,26 @@ async function detectVinFromImage(
 	return result
 }
 
-async function detectPlateFromImage(
-	photoId: string,
-	imageData: ImageData,
-): Promise<{ photoId: string; plate: string | null }> {
-	const cacheKey = getCacheKey(photoId, 'detect-plate')
-	const cached = getCachedResult<{ photoId: string; plate: string | null }>(cacheKey)
-	if (cached) return cached
+// German license plates: 1-3 city-code letters (allowing umlauts), 1-2 letters,
+// 1-4 digits, optional E (electric) or H (historic) suffix.
+// Examples: "FÜ BP 147", "B AB 1234", "M-XX-9999E", "HH-WK 1H".
+const GERMAN_PLATE_RE = /^[A-ZÄÖÜ]{1,3}[ -][A-Z]{1,2}[ -]\d{1,4}[EH]?$/
 
-	const client = getAnthropicClient()
+const PLATE_PROMPT_BASIC =
+	'Extract the COMPLETE license plate from this vehicle photo. German plate format: 1-3 city letters (umlauts ok like Ü, Ä, Ö), space or dash, 1-2 letters, space or dash, 1-4 digits, optional E or H suffix. Examples: "FÜ BP 147", "B AB 1234", "M-XX-9999E". Read the ENTIRE plate including all letters and digits — do not abbreviate. Return ONLY the plate as written, or "null" if not visible.'
+
+const PLATE_PROMPT_RETRY =
+	"The plate must match exactly this regex: ^[A-ZÄÖÜ]{1,3}[ -][A-Z]{1,2}[ -]\\d{1,4}[EH]?$. Re-read the plate carefully. Return ONLY the full plate string (e.g., 'FÜ BP 147') or 'null' if not visible. Do NOT truncate or abbreviate."
+
+function cleanPlate(raw: string): string {
+	return raw.replace(/['"`]/g, '').trim().toUpperCase()
+}
+
+async function callPlateModel(
+	client: ReturnType<typeof getAnthropicClient>,
+	imageData: ImageData,
+	prompt: string,
+) {
 	const message = await client.messages.create({
 		model: 'claude-haiku-4-5-20251001',
 		max_tokens: 256,
@@ -715,33 +784,56 @@ async function detectPlateFromImage(
 						type: 'image',
 						source: { type: 'base64', media_type: imageData.mediaType, data: imageData.base64 },
 					},
-					{
-						type: 'text',
-						text: 'Extract the license plate number from this vehicle image. Return ONLY the plate string if found (e.g., \'HB AB 1234\'), or "null" if not visible.',
-					},
+					{ type: 'text', text: prompt },
 				],
 			},
 		],
 	})
-
 	const textBlock = message.content.find((b) => b.type === 'text')
-	const raw = textBlock ? textBlock.text.trim() : ''
+	return textBlock ? textBlock.text.trim() : ''
+}
 
+async function detectPlateFromImage(
+	photoId: string,
+	imageData: ImageData,
+): Promise<{ photoId: string; plate: string | null }> {
+	const cacheKey = getCacheKey(photoId, 'detect-plate-v2')
+	const cached = getCachedResult<{ photoId: string; plate: string | null }>(cacheKey)
+	if (cached) return cached
+
+	const client = getAnthropicClient()
+
+	// First attempt — generic prompt with format hints.
+	const firstRaw = await callPlateModel(client, imageData, PLATE_PROMPT_BASIC)
 	let plate: string | null = null
-	if (raw && raw.toLowerCase() !== 'null') {
-		const cleaned = raw.replace(/['"]/g, '').trim()
-		if (cleaned.length > 0 && cleaned.toLowerCase() !== 'null') {
+	if (firstRaw && firstRaw.toLowerCase() !== 'null') {
+		const cleaned = cleanPlate(firstRaw)
+		if (cleaned && GERMAN_PLATE_RE.test(cleaned)) {
 			plate = cleaned
 		}
 	}
 
+	// Retry once with stricter prompt if first attempt failed validation.
+	if (!plate && firstRaw && firstRaw.toLowerCase() !== 'null') {
+		const retryRaw = await callPlateModel(client, imageData, PLATE_PROMPT_RETRY)
+		if (retryRaw && retryRaw.toLowerCase() !== 'null') {
+			const cleaned = cleanPlate(retryRaw)
+			if (cleaned && GERMAN_PLATE_RE.test(cleaned)) {
+				plate = cleaned
+			}
+		}
+	}
+
+	// If still invalid, return null rather than a malformed plate. No plate
+	// is better than a wrong one — the user can fill it manually.
 	const result = { photoId, plate }
 	setCachedResult(cacheKey, result)
 	return result
 }
 
 async function ocrDocument(photoId: string, imageData: ImageData): Promise<OcrExtractionResult> {
-	const cacheKey = getCacheKey(photoId, 'ocr-document')
+	// v2 cache key — schema gained owner fields, old cache entries lack them.
+	const cacheKey = getCacheKey(photoId, 'ocr-document-v2')
 	const cached = getCachedResult<OcrExtractionResult>(cacheKey)
 	if (cached) return cached
 
@@ -759,7 +851,7 @@ async function ocrDocument(photoId: string, imageData: ImageData): Promise<OcrEx
 					},
 					{
 						type: 'text',
-						text: 'Extract vehicle registration information from this German Zulassungsbescheinigung (vehicle registration certificate). Return JSON with: {"manufacturer":"","model":"","vin":"","licensePlate":"","firstRegistration":"YYYY-MM-DD","engineDisplacement":"ccm","power":"kW","fuel":"","mileage":"","kbaNumber":"","previousOwners":"","lastRegistration":"YYYY-MM-DD","vehicleType":"","color":"","seats":"","transmission":""}. Use empty string for fields not found.',
+						text: 'Extract data from this German Zulassungsbescheinigung (vehicle registration certificate). Return JSON with: {"manufacturer":"","model":"","vin":"","licensePlate":"","firstRegistration":"YYYY-MM-DD","engineDisplacement":"ccm","power":"kW","fuel":"","mileage":"","kbaNumber":"","previousOwners":"","lastRegistration":"YYYY-MM-DD","vehicleType":"","color":"","seats":"","transmission":"","ownerFirstName":"","ownerLastName":"","ownerStreet":"","ownerPostcode":"","ownerCity":""}. The owner fields refer to the registered Halter (vehicle holder) printed on the document — Vorname (firstName), Nachname or Firma (lastName), Straße + Hausnummer (street), PLZ (postcode, 5 digits), Ort (city). Use empty string for fields not found.',
 					},
 				],
 			},
@@ -787,6 +879,11 @@ async function ocrDocument(photoId: string, imageData: ImageData): Promise<OcrEx
 		color: '',
 		seats: '',
 		transmission: '',
+		ownerFirstName: '',
+		ownerLastName: '',
+		ownerStreet: '',
+		ownerPostcode: '',
+		ownerCity: '',
 	}
 
 	try {

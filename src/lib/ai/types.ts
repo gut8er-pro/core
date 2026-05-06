@@ -74,7 +74,8 @@ type DamageAnalysisResult = {
 	repairApproach: string
 	estimatedRepairHours: number | null
 	boundingBoxes: BoundingBox[]
-	diagramPosition: DiagramPosition
+	diagramPosition: DiagramPosition | null
+	noDamageVisible: boolean
 }
 
 type OverviewAnalysisResult = {
@@ -86,6 +87,9 @@ type OverviewAnalysisResult = {
 	bodyType: string | null
 	generalCondition: string | null
 	bodyCondition: string | null
+	paintType: string | null
+	paintCondition: string | null
+	drivingAbility: string | null
 }
 
 type TireAnalysisResult = {
@@ -140,6 +144,11 @@ type OcrExtractionResult = {
 	color: string
 	seats: string
 	transmission: string
+	ownerFirstName: string
+	ownerLastName: string
+	ownerStreet: string
+	ownerPostcode: string
+	ownerCity: string
 }
 
 type VehicleLookupResult = {
