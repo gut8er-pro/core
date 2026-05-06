@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { type NextRequest, NextResponse } from 'next/server'
 import sharp from 'sharp'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
@@ -71,6 +72,10 @@ async function POST(request: NextRequest, context: RouteContext) {
 		return NextResponse.json({ error: message }, { status: 502 })
 	}
 
+	// SHA-256 of the original bytes — used as the persistent AI cache key.
+	// Identical images uploaded to different reports share AI analysis results.
+	const contentHash = createHash('sha256').update(originalBuffer).digest('hex')
+
 	const urls: Record<string, string> = {}
 
 	try {
@@ -102,6 +107,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 			thumbnailUrl: urls.thumbnail,
 			previewUrl: urls.preview,
 			aiUrl: urls.ai,
+			contentHash,
 		},
 	})
 
@@ -110,6 +116,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 		thumbnailUrl: urls.thumbnail,
 		previewUrl: urls.preview,
 		aiUrl: urls.ai,
+		contentHash,
 	})
 }
 

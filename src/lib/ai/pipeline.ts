@@ -2,7 +2,13 @@
 
 import { normalizeConditionValue } from '@/lib/pdf/translations'
 import { getAnthropicClient } from './anthropic'
-import { getCachedResult, getCacheKey, setCachedResult } from './cache'
+import {
+	getCachedResult,
+	getCacheKey,
+	persistResultsToDb,
+	prewarmFromDb,
+	setCachedResult,
+} from './cache'
 import type { CalculationAutoFillResult } from './calculation-extractor'
 import { extractCalculationData } from './calculation-extractor'
 import { classifyPhoto } from './classifier'
@@ -30,9 +36,35 @@ type PhotoInput = {
 	id: string
 	url: string
 	aiUrl: string | null
+	previewUrl: string | null
+	contentHash: string | null
 	aiProcessedAt: Date | null
 	aiProcessedHash: string | null
 }
+
+/**
+ * Prompt versions per analyzer. Bump when the prompt body or JSON schema
+ * changes — invalidates persisted cache rows for that operation. Increment
+ * is local to each analyzer; mismatches are independent.
+ */
+const PROMPT_VERSIONS = {
+	classify: 1,
+	'damage-analysis': 1,
+	'overview-analysis': 1,
+	'interior-analysis': 1,
+	'tire-analysis': 1,
+	'detect-vin': 1,
+	'detect-plate': 2, // bumped when plate retry+regex was added
+	'ocr-document': 2, // bumped when owner fields were added
+} as const
+
+type LocaleAwareOp = 'damage-analysis' | 'overview-analysis' | 'interior-analysis' | 'tire-analysis'
+const LOCALE_AWARE_OPS: ReadonlySet<string> = new Set<LocaleAwareOp>([
+	'damage-analysis',
+	'overview-analysis',
+	'interior-analysis',
+	'tire-analysis',
+])
 
 type PipelineOptions = {
 	incrementalOnly?: boolean
@@ -145,32 +177,100 @@ async function runPipeline(
 		message: 'Classifying photos...',
 	})
 
-	const imageDataMap = new Map<string, Awaited<ReturnType<typeof fetchImageAsBase64>>>()
+	// Two image-data caches — one per variant. Most analyzers will pick the
+	// preview variant (smaller, ~70% cheaper in tokens) where detail isn't
+	// critical; OCR-style analyzers stick with the AI variant.
+	const imageDataAi = new Map<string, Awaited<ReturnType<typeof fetchImageAsBase64>>>()
+	const imageDataPreview = new Map<string, Awaited<ReturnType<typeof fetchImageAsBase64>>>()
 	const classifications: ClassificationResult[] = []
 
-	// Fetch all images as base64 in parallel
+	function pickImage(
+		photo: PhotoInput,
+		task: 'classify' | 'overview' | 'calculation' | 'highdetail',
+	) {
+		if (task === 'highdetail') {
+			return imageDataAi.get(photo.id)
+		}
+		// preview-friendly tasks — fall through to AI variant if preview missing
+		return imageDataPreview.get(photo.id) ?? imageDataAi.get(photo.id)
+	}
+
+	// Fetch each photo's preferred variant in parallel. Pre-loading both lets
+	// downstream analyzers route per-task without re-fetching.
 	const fetchResults = await Promise.allSettled(
-		toProcess.map(async (photo) => {
-			const url = photo.aiUrl || photo.url
-			const data = await fetchImageAsBase64(url)
-			imageDataMap.set(photo.id, data)
-			return data
+		toProcess.flatMap((photo) => {
+			const aiUrl = photo.aiUrl || photo.url
+			const previewUrl = photo.previewUrl
+			const tasks: Array<Promise<unknown>> = [
+				fetchImageAsBase64(aiUrl).then((data) => imageDataAi.set(photo.id, data)),
+			]
+			if (previewUrl && previewUrl !== aiUrl) {
+				tasks.push(
+					fetchImageAsBase64(previewUrl).then((data) => imageDataPreview.set(photo.id, data)),
+				)
+			}
+			return tasks
 		}),
 	)
 
-	for (let i = 0; i < fetchResults.length; i++) {
-		const fetchResult = fetchResults[i]
-		const photo = toProcess[i]
-		if (fetchResult && fetchResult.status === 'rejected' && photo) {
-			console.error(`Failed to fetch image for photo ${photo.id}:`, fetchResult.reason)
+	// Photos that ended up without an AI variant (the high-detail one) are
+	// problematic — they can't run any analyzer. Preview-only failures are
+	// recoverable (we fall back to AI variant in pickImage).
+	for (const photo of toProcess) {
+		if (!imageDataAi.has(photo.id)) {
+			console.error(`Failed to fetch AI variant for photo ${photo.id}`)
 			summary.warnings.push(`Could not fetch photo ${photo.id}`)
 		}
 	}
+	// Surface preview-fetch failures as a warning only (analyzer falls back).
+	for (const r of fetchResults) {
+		if (r.status === 'rejected') {
+			console.warn('[pipeline] image variant fetch rejected (will fall back):', r.reason)
+		}
+	}
 
-	// Classify all photos in parallel
+	// Pre-warm the in-memory AI cache from the persistent DB layer so
+	// analyzers transparently skip API calls for photos whose content hash
+	// matches a previously-analyzed image (any report, any session).
+	{
+		const prewarmEntries: Parameters<typeof prewarmFromDb>[0] = []
+		for (const photo of toProcess) {
+			if (!photo.contentHash) continue
+			for (const [op, version] of Object.entries(PROMPT_VERSIONS)) {
+				if (LOCALE_AWARE_OPS.has(op)) {
+					prewarmEntries.push({
+						photoId: photo.id,
+						contentHash: photo.contentHash,
+						operation: op,
+						locale,
+						promptVersion: version,
+					})
+				} else {
+					prewarmEntries.push({
+						photoId: photo.id,
+						contentHash: photo.contentHash,
+						operation: op,
+						locale: '',
+						promptVersion: version,
+					})
+				}
+			}
+		}
+		try {
+			const loaded = await prewarmFromDb(prewarmEntries)
+			if (loaded > 0) {
+				console.log(`[pipeline] AI cache pre-warmed: ${loaded} entries from DB`)
+			}
+		} catch (err) {
+			console.warn('[pipeline] AI cache pre-warm failed:', err)
+		}
+	}
+
+	// Classify all photos in parallel — uses the preview variant since
+	// classification is a coarse routing decision (8 buckets).
 	const classifyResults = await Promise.allSettled(
 		toProcess.map(async (photo, index) => {
-			const imageData = imageDataMap.get(photo.id)
+			const imageData = pickImage(photo, 'classify')
 			if (!imageData) return null
 
 			const result = await classifyPhoto(photo.id, imageData)
@@ -216,14 +316,20 @@ async function runPipeline(
 	const processedResults: PhotoProcessingResult[] = []
 	let processedCount = 0
 
+	// Lookup so processPhoto can resolve per-task image variants from the
+	// classification (which only carries photoId, not the full PhotoInput).
+	const photoById = new Map(toProcess.map((p) => [p.id, p]))
+
 	const processPhoto = async (
 		classification: ClassificationResult,
 	): Promise<PhotoProcessingResult> => {
-		const imageData = imageDataMap.get(classification.photoId)
-		if (!imageData) return { type: 'other', result: null }
+		const photo = photoById.get(classification.photoId)
+		if (!photo) return { type: 'other', result: null }
 
 		switch (classification.type) {
 			case 'damage': {
+				const imageData = pickImage(photo, 'highdetail')
+				if (!imageData) return { type: 'other', result: null }
 				const result = await analyzeDamage(
 					classification.photoId,
 					imageData,
@@ -234,22 +340,34 @@ async function runPipeline(
 				return { type: 'damage', result }
 			}
 			case 'vin': {
+				const imageData = pickImage(photo, 'highdetail')
+				if (!imageData) return { type: 'other', result: null }
 				const result = await detectVinFromImage(classification.photoId, imageData)
 				return { type: 'vin', result }
 			}
 			case 'plate': {
+				const imageData = pickImage(photo, 'highdetail')
+				if (!imageData) return { type: 'other', result: null }
 				const result = await detectPlateFromImage(classification.photoId, imageData)
 				return { type: 'plate', result }
 			}
 			case 'document': {
+				const imageData = pickImage(photo, 'highdetail')
+				if (!imageData) return { type: 'other', result: null }
 				const result = await ocrDocument(classification.photoId, imageData)
 				return { type: 'document', result }
 			}
 			case 'overview': {
+				// Overview is a coarse describe-the-vehicle pass — preview is enough.
+				const imageData = pickImage(photo, 'overview')
+				if (!imageData) return { type: 'other', result: null }
 				const result = await analyzeOverview(classification.photoId, imageData, locale)
 				return { type: 'overview', result }
 			}
 			case 'tire': {
+				// Sidewall markings (size, manufacturer, DOT) need fine detail.
+				const imageData = pickImage(photo, 'highdetail')
+				if (!imageData) return { type: 'other', result: null }
 				const result = await analyzeTire(
 					classification.photoId,
 					imageData,
@@ -259,6 +377,9 @@ async function runPipeline(
 				return { type: 'tire', result }
 			}
 			case 'interior': {
+				// Odometer reading needs the AI variant.
+				const imageData = pickImage(photo, 'highdetail')
+				if (!imageData) return { type: 'other', result: null }
 				const result = await analyzeInterior(classification.photoId, imageData, locale)
 				return { type: 'interior', result }
 			}
@@ -331,7 +452,12 @@ async function runPipeline(
 
 	// --- Step 3b: Calculation extraction from damage photos ---
 	let calculationData: CalculationAutoFillResult | null = null
-	const damageImages = collectDamageImages(classifications, imageDataMap)
+	// Use the preview variant for calculation extraction — coarse parts list
+	// doesn't need 1568 px detail; saves ~70% on image tokens for 5 images.
+	const damageImages = collectDamageImages(
+		classifications,
+		(photoId) => imageDataPreview.get(photoId) ?? imageDataAi.get(photoId),
+	)
 	if (damageImages.length > 0) {
 		emit({
 			type: 'progress',
@@ -509,6 +635,85 @@ async function runPipeline(
 	;(summary as GenerationSummary & { _payloads: typeof autoFillPayloads })._payloads =
 		autoFillPayloads
 
+	// Persist fresh AI results to the DB so future runs (different reports,
+	// same image) skip the API call entirely. Best-effort — failures don't
+	// affect the user-visible result. Cache hits are upserted as no-ops.
+	{
+		const persistEntries: Parameters<typeof persistResultsToDb>[0] = []
+
+		for (const c of classifications) {
+			const photo = photoById.get(c.photoId)
+			if (!photo?.contentHash) continue
+			persistEntries.push({
+				contentHash: photo.contentHash,
+				operation: 'classify',
+				locale: '',
+				promptVersion: PROMPT_VERSIONS.classify,
+				result: c,
+			})
+		}
+
+		for (const r of processedResults) {
+			if (!r.result) continue
+			// Most analyzer results carry their photoId; OCR/VIN/plate too.
+			const photoId =
+				'photoId' in r.result && typeof r.result.photoId === 'string' ? r.result.photoId : null
+			if (!photoId) continue
+			const photo = photoById.get(photoId)
+			if (!photo?.contentHash) continue
+
+			let op: keyof typeof PROMPT_VERSIONS | null = null
+			let isLocaleAware = false
+			switch (r.type) {
+				case 'damage':
+					op = 'damage-analysis'
+					isLocaleAware = true
+					break
+				case 'overview':
+					op = 'overview-analysis'
+					isLocaleAware = true
+					break
+				case 'interior':
+					op = 'interior-analysis'
+					isLocaleAware = true
+					break
+				case 'tire':
+					op = 'tire-analysis'
+					isLocaleAware = true
+					break
+				case 'vin':
+					op = 'detect-vin'
+					break
+				case 'plate':
+					op = 'detect-plate'
+					break
+				case 'document':
+					op = 'ocr-document'
+					break
+				default:
+					op = null
+			}
+			if (!op) continue
+
+			persistEntries.push({
+				contentHash: photo.contentHash,
+				operation: op,
+				locale: isLocaleAware ? locale : '',
+				promptVersion: PROMPT_VERSIONS[op],
+				result: r.result,
+			})
+		}
+
+		try {
+			const saved = await persistResultsToDb(persistEntries)
+			if (saved > 0) {
+				console.log(`[pipeline] AI cache persisted: ${saved} entries to DB`)
+			}
+		} catch (err) {
+			console.warn('[pipeline] AI cache persist failed:', err)
+		}
+	}
+
 	emit({ type: 'complete', summary })
 	return summary
 }
@@ -616,12 +821,12 @@ function collectInteriorResults(results: PhotoProcessingResult[]): InteriorAnaly
 
 function collectDamageImages(
 	classifications: ClassificationResult[],
-	imageDataMap: Map<string, ImageData>,
+	resolve: (photoId: string) => ImageData | undefined,
 ): ImageData[] {
 	const images: ImageData[] = []
 	for (const c of classifications) {
 		if (c.type === 'damage') {
-			const img = imageDataMap.get(c.photoId)
+			const img = resolve(c.photoId)
 			if (img) images.push(img)
 		}
 	}
@@ -797,7 +1002,7 @@ async function detectPlateFromImage(
 	photoId: string,
 	imageData: ImageData,
 ): Promise<{ photoId: string; plate: string | null }> {
-	const cacheKey = getCacheKey(photoId, 'detect-plate-v2')
+	const cacheKey = getCacheKey(photoId, 'detect-plate')
 	const cached = getCachedResult<{ photoId: string; plate: string | null }>(cacheKey)
 	if (cached) return cached
 
@@ -832,8 +1037,7 @@ async function detectPlateFromImage(
 }
 
 async function ocrDocument(photoId: string, imageData: ImageData): Promise<OcrExtractionResult> {
-	// v2 cache key — schema gained owner fields, old cache entries lack them.
-	const cacheKey = getCacheKey(photoId, 'ocr-document-v2')
+	const cacheKey = getCacheKey(photoId, 'ocr-document')
 	const cached = getCachedResult<OcrExtractionResult>(cacheKey)
 	if (cached) return cached
 

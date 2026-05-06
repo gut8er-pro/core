@@ -117,12 +117,33 @@ model Photo {
   annotatedUrl    String?
   aiProcessedAt   DateTime?
   aiProcessedHash String?
+  // SHA-256 of the original image bytes. Computed during /photos/process.
+  // Used as the persistent AI cache key (see AiResult) and for cross-report
+  // deduplication of AI analysis on identical images.
+  contentHash     String?
 
   report      Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)
   annotations Annotation[]
 
   @@index([reportId])
   @@index([reportId, order])
+  @@index([contentHash])
+}
+
+// Persistent cache for AI analysis results, keyed by image content (not by
+// photoId), so the same image uploaded to two reports is only analyzed once.
+// Survives server restarts. Combine with `Photo.aiProcessedHash` for the
+// single-photo skip-already-processed path.
+model AiResult {
+  contentHash   String
+  operation     String   // 'classify' | 'damage-analysis' | 'overview-analysis' | 'interior-analysis' | 'tire-analysis' | 'detect-vin' | 'detect-plate' | 'ocr-document'
+  locale        String   // 'en' | 'de' (use empty string for locale-agnostic ops)
+  promptVersion Int      // bump in code when prompt changes — invalidates all rows
+  result        Json
+  createdAt     DateTime @default(now())
+
+  @@id([contentHash, operation, locale, promptVersion])
+  @@index([contentHash])
 }
 
 model Annotation {

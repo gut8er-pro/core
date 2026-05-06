@@ -102,6 +102,8 @@ async function POST(request: NextRequest, context: RouteContext) {
 					id: p.id,
 					url: p.url,
 					aiUrl: p.aiUrl,
+					previewUrl: p.previewUrl,
+					contentHash: p.contentHash,
 					aiProcessedAt: p.aiProcessedAt,
 					aiProcessedHash: p.aiProcessedHash,
 				}))
