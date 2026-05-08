@@ -255,8 +255,11 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 		if (!dbData.vehicleType) {
 			for (const overview of payloads.conditionData.overviewResults) {
 				if (overview.bodyType) {
-					dbData.vehicleType = normalizeVehicleType(overview.bodyType)
-					break
+					const normalized = normalizeVehicleType(overview.bodyType)
+					if (normalized) {
+						dbData.vehicleType = normalized
+						break
+					}
 				}
 			}
 		}

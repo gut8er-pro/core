@@ -11,10 +11,13 @@ function buildDamagePrompt(
 	damageLocation: string | null,
 	locale: 'en' | 'de' = 'en',
 ): string {
+	// Explicit per-locale instruction. Without the EN suffix the model often
+	// defaults to German because the prompt is framed as "German Kfz-
+	// Sachverständiger" — observed in real-photo QA across multiple sessions.
 	const localeSuffix =
 		locale === 'de'
 			? '\n\nAntworte ausschließlich auf Deutsch (Beschreibungen, Reparaturhinweis und Marker-Kommentar). Enums (severity, damageTypes) bleiben Englisch.'
-			: ''
+			: '\n\nRespond strictly in English (description, repair approach, marker comment). Do not switch to German even if the vehicle context is German.'
 
 	return `You are a professional German vehicle damage assessor (Kfz-Sachverständiger). Analyze this vehicle damage photo in detail.
 

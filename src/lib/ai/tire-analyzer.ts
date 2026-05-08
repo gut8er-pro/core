@@ -9,7 +9,7 @@ function buildTirePrompt(locale: 'en' | 'de' = 'en'): string {
 	const localeSuffix =
 		locale === 'de'
 			? '\n\nThe "condition" free-text field MUST be in German. Keep all other enum values (profileLevel, tireType, position) in English exactly as listed.'
-			: ''
+			: '\n\nThe "condition" free-text field MUST be strictly in English. Keep all other enum values (profileLevel, tireType, position) in English exactly as listed.'
 
 	return `Analyze this tire photo from a vehicle assessment. Extract as much information as visible.
 

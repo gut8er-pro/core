@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { wmiManufacturer } from './vehicle-lookup'
+import { normalizeVehicleType, wmiManufacturer } from './vehicle-lookup'
 
 describe('wmiManufacturer', () => {
 	it('maps Audi WMI prefixes', () => {
@@ -33,5 +33,41 @@ describe('wmiManufacturer', () => {
 	it('returns null for malformed input', () => {
 		expect(wmiManufacturer('')).toBeNull()
 		expect(wmiManufacturer('AB')).toBeNull()
+	})
+})
+
+describe('normalizeVehicleType', () => {
+	it('maps canonical body types to UI option keys', () => {
+		expect(normalizeVehicleType('Sedan')).toBe('sedan')
+		expect(normalizeVehicleType('SUV')).toBe('suv')
+		expect(normalizeVehicleType('Hatchback')).toBe('compact')
+		expect(normalizeVehicleType('Estate')).toBe('wagon')
+		expect(normalizeVehicleType('Coupe')).toBe('coupe')
+		expect(normalizeVehicleType('Cabriolet')).toBe('convertible')
+		expect(normalizeVehicleType('Minivan')).toBe('van')
+	})
+
+	it('maps NHTSA body classes that arrive verbose', () => {
+		expect(normalizeVehicleType('Sport Utility Vehicle')).toBe('suv')
+		expect(normalizeVehicleType('Station Wagon')).toBe('wagon')
+		expect(normalizeVehicleType('Compact Car')).toBe('compact')
+	})
+
+	it('uses substring fallback for compound descriptions', () => {
+		// Real-photo QA: AI sometimes returns adjectives like "luxury sedan".
+		// Substring fallback recovers the canonical type instead of dropping
+		// the value entirely.
+		expect(normalizeVehicleType('luxury sedan')).toBe('sedan')
+		expect(normalizeVehicleType('full-size van')).toBe('van')
+		expect(normalizeVehicleType('mid-size coupe')).toBe('coupe')
+	})
+
+	it('returns null for off-list types instead of raw text', () => {
+		// Bug: AI returned "motorcycle - cruiser" on the Honda VT750 photo set;
+		// without this, the literal value got persisted and the UI dropdown
+		// stayed empty (no matching option).
+		expect(normalizeVehicleType('motorcycle - cruiser')).toBeNull()
+		expect(normalizeVehicleType('truck')).toBeNull()
+		expect(normalizeVehicleType('unknown')).toBeNull()
 	})
 })

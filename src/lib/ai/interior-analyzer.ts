@@ -9,7 +9,7 @@ function buildInteriorPrompt(locale: 'en' | 'de' = 'en'): string {
 	const localeSuffix =
 		locale === 'de'
 			? '\n\nDescription/free-text in German. Keep "condition" enum and "features" array items in English exactly as listed.'
-			: ''
+			: '\n\nDescription/free-text strictly in English. Keep "condition" enum and "features" array items in English exactly as listed.'
 
 	return `Analyze this vehicle interior photo for a professional assessment report.
 

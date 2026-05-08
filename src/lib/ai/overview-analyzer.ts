@@ -17,7 +17,7 @@ function buildOverviewPrompt(locale: 'en' | 'de' = 'en'): string {
 	const localeSuffix =
 		locale === 'de'
 			? '\n\nDescription/free-text in German. Keep all enum values in English exactly as listed.'
-			: ''
+			: '\n\nDescription/free-text strictly in English. Keep all enum values in English exactly as listed.'
 
 	return `Analyze this vehicle photo for a professional assessment report. Extract any visible information about the vehicle.
 

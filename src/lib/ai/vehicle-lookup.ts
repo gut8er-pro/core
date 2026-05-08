@@ -258,9 +258,14 @@ async function lookupViaAiDecode(vin: string): Promise<VehicleLookupResult> {
 }
 
 /**
- * Normalize body type from VIN/OCR to UI option values.
+ * Normalize body type from VIN/OCR to one of the canonical UI option values
+ * defined in details-section.tsx (sedan / compact / suv / wagon / coupe /
+ * convertible / van). Returns null for anything off-list — the dropdown then
+ * stays empty rather than showing raw AI text it can't render. We saw the
+ * model emit "motorcycle - cruiser" and "luxury van" in real-photo testing;
+ * those used to leak through as the literal stored value.
  */
-function normalizeVehicleType(raw: string): string {
+function normalizeVehicleType(raw: string): string | null {
 	const lower = raw.toLowerCase().trim()
 	const map: Record<string, string> = {
 		sedan: 'sedan',
@@ -288,7 +293,12 @@ function normalizeVehicleType(raw: string): string {
 		bus: 'van',
 		transporter: 'van',
 	}
-	return map[lower] ?? lower
+	if (map[lower]) return map[lower]
+	// Substring fallback: catches "luxury sedan" → sedan, "compact suv" → suv.
+	for (const key of Object.keys(map)) {
+		if (lower.includes(key)) return map[key] ?? null
+	}
+	return null
 }
 
 /**
@@ -371,8 +381,15 @@ function mergeVehicleData(
 	if (lookup?.fuelType) merged.motorType = normalizeMotorType(lookup.fuelType)
 	else if (ocr?.fuel) merged.motorType = normalizeMotorType(ocr.fuel)
 
-	if (lookup?.bodyType) merged.vehicleType = normalizeVehicleType(lookup.bodyType)
-	else if (ocr?.vehicleType) merged.vehicleType = normalizeVehicleType(ocr.vehicleType)
+	{
+		// Try lookup first, then OCR fallback. Skip the assignment entirely if
+		// neither produces a canonical match — leaving merged.vehicleType
+		// undefined so we never persist an off-list value.
+		const fromLookup = lookup?.bodyType ? normalizeVehicleType(lookup.bodyType) : null
+		const fromOcr = ocr?.vehicleType ? normalizeVehicleType(ocr.vehicleType) : null
+		const normalized = fromLookup ?? fromOcr
+		if (normalized) merged.vehicleType = normalized
+	}
 
 	// Registration dates: only from OCR
 	if (ocr?.firstRegistration) merged.firstRegistration = ocr.firstRegistration

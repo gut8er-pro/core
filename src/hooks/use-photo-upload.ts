@@ -21,6 +21,32 @@ const INITIAL_STATE: UploadState = {
 	error: null,
 }
 
+async function processPhotoWithRetry(
+	reportId: string,
+	body: { photoUrl: string; photoId: string },
+): Promise<void> {
+	const url = `/api/reports/${reportId}/photos/process`
+	const init: RequestInit = {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(body),
+	}
+	for (let attempt = 0; attempt < 2; attempt++) {
+		try {
+			const res = await fetch(url, init)
+			if (res.ok) return
+			// 502/503/504 → retry; other statuses are likely permanent (4xx auth, etc.)
+			if (![502, 503, 504].includes(res.status)) {
+				throw new Error(`process failed: ${res.status}`)
+			}
+		} catch (err) {
+			if (attempt === 1) throw err
+		}
+		// Backoff before retry
+		await new Promise((r) => setTimeout(r, 2000))
+	}
+}
+
 function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
 	const [uploadState, setUploadState] = useState<UploadState>(INITIAL_STATE)
 	const uploadPhotoMutation = useUploadPhoto(reportId)
@@ -79,13 +105,18 @@ function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
 						type: undefined,
 					})
 
-					// Trigger server-side image processing (thumbnail, preview, ai variants)
-					// Fire and forget — variant generation happens in the background
-					fetch(`/api/reports/${targetReportId}/photos/process`, {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ photoUrl: url, photoId: response.photo.id }),
-					}).catch(() => {})
+					// Trigger server-side image processing (thumbnail, preview, ai variants).
+					// Fire and forget — variants generate in the background. Retry once on
+					// transient Supabase blips (we saw a 60s 502 in real-photo testing);
+					// without a retry the photo would have no variants, forcing the AI
+					// pipeline to fall back to the 1920px `original` (more tokens, no
+					// preview-variant cost saving).
+					processPhotoWithRetry(targetReportId, {
+						photoUrl: url,
+						photoId: response.photo.id,
+					}).catch((err) => {
+						console.warn('[upload] photo variant generation failed:', err)
+					})
 				} catch (err) {
 					const message = err instanceof Error ? err.message : 'Unknown error'
 					errors.push(`${file.name}: ${message}`)
