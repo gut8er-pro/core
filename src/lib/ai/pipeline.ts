@@ -49,10 +49,15 @@ type PhotoInput = {
  */
 const PROMPT_VERSIONS = {
 	classify: 1,
-	'damage-analysis': 1,
-	'overview-analysis': 1,
-	'interior-analysis': 1,
-	'tire-analysis': 1,
+	// v2 — bumped when locale-strict instruction was added to the prompt's EN
+	// branch. Old v1 cache entries had no "respond strictly in English" line
+	// and the model was leaking German into EN runs (visible in the post-
+	// Talas-A real-photo PDFs). Bumping invalidates those entries so today's
+	// stricter prompt actually runs.
+	'damage-analysis': 2,
+	'overview-analysis': 2,
+	'interior-analysis': 2,
+	'tire-analysis': 2,
 	'detect-vin': 1,
 	'detect-plate': 2, // bumped when plate retry+regex was added
 	'ocr-document': 2, // bumped when owner fields were added

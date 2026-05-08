@@ -71,4 +71,24 @@ describe('translateValue', () => {
 	it('passes through unknown values unchanged', () => {
 		expect(translateValue('Some custom note', 'de')).toBe('Some custom note')
 	})
+
+	it('title-cases lowercase vehicleType keys for English PDFs', () => {
+		// Bug from real-photo PDF: vehicleType stored as canonical lowercase
+		// ('sedan', 'suv') was printed verbatim in the EN PDF instead of
+		// 'Sedan'/'SUV'. Lowercase stays the canonical UI/DB key; the
+		// translation layer maps it to a display label per locale.
+		expect(translateValue('sedan', 'en')).toBe('Sedan')
+		expect(translateValue('suv', 'en')).toBe('SUV')
+		expect(translateValue('wagon', 'en')).toBe('Wagon')
+		expect(translateValue('coupe', 'en')).toBe('Coupe')
+		expect(translateValue('convertible', 'en')).toBe('Convertible')
+		expect(translateValue('van', 'en')).toBe('Van')
+		expect(translateValue('compact', 'en')).toBe('Compact')
+	})
+
+	it('translates lowercase vehicleType keys to German', () => {
+		expect(translateValue('sedan', 'de')).toBe('Limousine')
+		expect(translateValue('suv', 'de')).toBe('SUV')
+		expect(translateValue('wagon', 'de')).toBe('Kombi')
+	})
 })

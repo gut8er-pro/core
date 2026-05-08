@@ -380,9 +380,27 @@ const valueTranslations: Record<string, string> = {
 	poor: 'Schlecht',
 }
 
+/**
+ * Display labels for stored canonical values when the PDF locale is English.
+ * The DB keeps lowercase keys (sedan / suv / wagon …) so they line up with
+ * the UI dropdown options, but the rendered PDF should show title-case
+ * ("Sedan", "SUV"). Add only the entries where the canonical value differs
+ * from the desired English label.
+ */
+const valueLabelsEn: Record<string, string> = {
+	// Vehicle Type (lowercase canonical → title-case EN label)
+	sedan: 'Sedan',
+	compact: 'Compact',
+	suv: 'SUV',
+	wagon: 'Wagon',
+	coupe: 'Coupe',
+	convertible: 'Convertible',
+	van: 'Van',
+}
+
 function translateValue(value: string | null | undefined, locale: string): string {
 	if (!value) return ''
-	if (locale === 'en') return value
+	if (locale === 'en') return valueLabelsEn[value] ?? value
 	return valueTranslations[value] ?? value
 }
 
