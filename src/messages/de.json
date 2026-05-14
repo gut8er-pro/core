@@ -633,6 +633,8 @@
         "limited": "Eingeschränkt",
         "notRoadworthy": "Nicht verkehrssicher"
       },
+      "vehicleColor": "Fahrzeugfarbe",
+      "vehicleColorPlaceholder": "z. B. Silber, Schwarz, Dunkelblau",
       "specialFeatures": "Sonderausstattung",
       "parkingSensors": "Einparkhilfe",
       "mileageRead": "Kilometerstand abgelesen",

@@ -51,6 +51,7 @@ function AccidentInfoPage() {
 		formState: { errors },
 		reset,
 		getValues,
+		watch,
 	} = useForm<AccidentInfoFormData>({
 		defaultValues: {
 			accidentDay: '',
@@ -154,6 +155,7 @@ function AccidentInfoPage() {
 
 		if (data.visits && data.visits.length > 0) {
 			formData.visits = data.visits.map((v) => ({
+				id: v.id,
 				type: v.type,
 				street: v.street ?? '',
 				postcode: v.postcode ?? '',
@@ -203,6 +205,25 @@ function AccidentInfoPage() {
 		},
 		[saveField, getValues],
 	)
+
+	// Reflect every input change into the auto-save debounce queue, not just
+	// blur events. Without this, a user (or a test) that fills a field and
+	// immediately navigates / clicks Generate before the input loses focus
+	// loses that field — observed on claimantEmail where no blur ever fired
+	// on the last-typed field.
+	//
+	// Field-array entries (visits.0.street etc.) are intentionally excluded:
+	// the form doesn't currently round-trip the created row id back from the
+	// API, so per-keystroke saves of an unsaved row would produce duplicate
+	// DB rows. Visits keep the existing blur-only save path until that round-
+	// trip is wired up.
+	useEffect(() => {
+		const sub = watch((_values, { name }) => {
+			if (!name || name.includes('.')) return
+			handleFieldBlur(name)
+		})
+		return () => sub.unsubscribe()
+	}, [watch, handleFieldBlur])
 
 	const handleSignatureSave = useCallback(() => {
 		if (!signatureModalType || !signatureValue) return

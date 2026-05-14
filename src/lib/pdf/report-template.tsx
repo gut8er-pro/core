@@ -581,7 +581,7 @@ function AccidentInfoSection({
 			{accidentInfo && (
 				<View style={{ marginBottom: 8 }}>
 					<DataRow label={t.date} value={formatDate(accidentInfo.accidentDay)} />
-					<DataRow label="Accident Scene" value={displayValue(accidentInfo.accidentScene)} />
+					<DataRow label={t.accidentScene} value={displayValue(accidentInfo.accidentScene)} />
 				</View>
 			)}
 
@@ -624,7 +624,7 @@ function AccidentInfoSection({
 			{opponentInfo && (
 				<View style={{ marginBottom: 8 }}>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 6, fontSize: 10 }]}>
-						Opponent
+						{t.opponent}
 					</Text>
 					<DataRow
 						label={t.name}
@@ -639,12 +639,12 @@ function AccidentInfoSection({
 					)}
 					{opponentInfo.insuranceCompany && (
 						<DataRow
-							label="Insurance Company"
+							label={t.insuranceCompany}
 							value={displayValue(opponentInfo.insuranceCompany)}
 						/>
 					)}
 					{opponentInfo.insuranceNumber && (
-						<DataRow label="Insurance Number" value={displayValue(opponentInfo.insuranceNumber)} />
+						<DataRow label={t.insuranceNumber} value={displayValue(opponentInfo.insuranceNumber)} />
 					)}
 				</View>
 			)}
@@ -682,7 +682,7 @@ function ConditionSection({
 				<DataRow label={t.paintCondition} value={tv(condition.paintCondition)} />
 			)}
 			{condition.vehicleColor && (
-				<DataRow label="Vehicle Color" value={displayValue(condition.vehicleColor)} />
+				<DataRow label={t.vehicleColor} value={displayValue(condition.vehicleColor)} />
 			)}
 			{condition.drivingAbility && (
 				<DataRow label={t.drivingAbility} value={tv(condition.drivingAbility)} />
@@ -704,7 +704,7 @@ function ConditionSection({
 			{condition.fullServiceHistory && <DataRow label={t.fullServiceHistory} value={t.yes} />}
 			{condition.testDrivePerformed && <DataRow label={t.testDrivePerformed} value={t.yes} />}
 			{condition.errorMemoryRead && <DataRow label={t.errorMemoryRead} value={t.yes} />}
-			{condition.airbagsDeployed && <DataRow label="Airbags Deployed" value={t.yes} />}
+			{condition.airbagsDeployed && <DataRow label={t.airbagsDeployed} value={t.yes} />}
 			{condition.notes && <DataRow label={t.notes} value={displayValue(condition.notes)} />}
 			{condition.previousDamageReported && (
 				<DataRow
@@ -854,7 +854,7 @@ function CalculationSection({
 						/>
 					)}
 					{calculation.taxRate && (
-						<DataRow label="Tax Rate" value={displayValue(calculation.taxRate)} />
+						<DataRow label={t.taxRate} value={displayValue(calculation.taxRate)} />
 					)}
 				</View>
 			)}
@@ -867,25 +867,27 @@ function CalculationSection({
 							{t.repair}
 						</Text>
 						{calculation.wheelAlignment && (
-							<DataRow label="Wheel Alignment" value={displayValue(calculation.wheelAlignment)} />
+							<DataRow label={t.wheelAlignment} value={displayValue(calculation.wheelAlignment)} />
 						)}
 						{calculation.bodyMeasurements && (
 							<DataRow
-								label="Body Measurements"
+								label={t.bodyMeasurements}
 								value={displayValue(calculation.bodyMeasurements)}
 							/>
 						)}
 						{calculation.bodyPaint && (
-							<DataRow label="Body Paint" value={displayValue(calculation.bodyPaint)} />
+							<DataRow label={t.bodyPaint} value={displayValue(calculation.bodyPaint)} />
 						)}
-						{calculation.plasticRepair && <DataRow label="Plastic Repair" value={t.yes} />}
+						{calculation.plasticRepair && <DataRow label={t.plasticRepair} value={t.yes} />}
 						{calculation.repairMethod && (
 							<DataRow label={t.repairMethod} value={displayValue(calculation.repairMethod)} />
 						)}
 						{calculation.damageClass && (
 							<DataRow label={t.damageClass} value={displayValue(calculation.damageClass)} />
 						)}
-						{calculation.risks && <DataRow label="Risks" value={displayValue(calculation.risks)} />}
+						{calculation.risks && (
+							<DataRow label={t.risks} value={displayValue(calculation.risks)} />
+						)}
 					</View>
 				)}
 
@@ -897,13 +899,13 @@ function CalculationSection({
 							{t.lossOfUse}
 						</Text>
 						{calculation.dropoutGroup && (
-							<DataRow label="Dropout Group" value={displayValue(calculation.dropoutGroup)} />
+							<DataRow label={t.dropoutGroup} value={displayValue(calculation.dropoutGroup)} />
 						)}
 						{calculation.costPerDay !== null && calculation.costPerDay !== undefined && (
 							<DataRow label={t.costPerDay} value={formatCurrency(calculation.costPerDay)} />
 						)}
 						{calculation.rentalCarClass && (
-							<DataRow label="Rental Car Class" value={displayValue(calculation.rentalCarClass)} />
+							<DataRow label={t.rentalCarClass} value={displayValue(calculation.rentalCarClass)} />
 						)}
 						{calculation.repairTimeDays !== null && calculation.repairTimeDays !== undefined && (
 							<DataRow
@@ -1002,30 +1004,35 @@ function CalculationSection({
 function VisitsSection({
 	visits,
 	expertOpinion,
+	t,
+	locale = 'en',
 }: {
 	visits: ReportData['visits']
 	expertOpinion: ReportData['expertOpinion']
+	t: PdfTranslations
+	locale?: string
 }) {
 	if (visits.length === 0 && !expertOpinion) return null
+	const tv = (v: string | null | undefined) => translateValue(v, locale)
 
 	return (
 		<View style={styles.section}>
 			{visits.length > 0 && (
 				<View>
-					<Text style={styles.sectionTitle}>Visits</Text>
+					<Text style={styles.sectionTitle}>{t.visits}</Text>
 					{visits.map((v, i) => (
 						<View key={`visit-${i}`} style={{ marginBottom: 6 }}>
-							<DataRow label="Type" value={displayValue(v.type)} />
+							<DataRow label={t.type} value={tv(v.type)} />
 							{(v.street || v.postcode || v.location) && (
 								<DataRow
-									label="Address"
+									label={t.address}
 									value={[v.street, v.postcode, v.location].filter(Boolean).join(', ')}
 								/>
 							)}
-							{v.date && <DataRow label="Date" value={formatDate(v.date)} />}
-							{v.expert && <DataRow label="Expert" value={displayValue(v.expert)} />}
+							{v.date && <DataRow label={t.date} value={formatDate(v.date)} />}
+							{v.expert && <DataRow label={t.expert} value={displayValue(v.expert)} />}
 							{v.vehicleCondition && (
-								<DataRow label="Vehicle Condition" value={displayValue(v.vehicleCondition)} />
+								<DataRow label={t.vehicleCondition} value={tv(v.vehicleCondition)} />
 							)}
 						</View>
 					))}
@@ -1034,28 +1041,28 @@ function VisitsSection({
 
 			{expertOpinion && (
 				<View style={{ marginTop: visits.length > 0 ? 8 : 0 }}>
-					<Text style={styles.sectionTitle}>Expert Opinion</Text>
+					<Text style={styles.sectionTitle}>{t.expertOpinion}</Text>
 					{expertOpinion.expertName && (
-						<DataRow label="Expert Name" value={displayValue(expertOpinion.expertName)} />
+						<DataRow label={t.expertName} value={displayValue(expertOpinion.expertName)} />
 					)}
 					{expertOpinion.fileNumber && (
-						<DataRow label="File Number" value={displayValue(expertOpinion.fileNumber)} />
+						<DataRow label={t.fileNumber} value={displayValue(expertOpinion.fileNumber)} />
 					)}
 					{expertOpinion.caseDate && (
-						<DataRow label="Case Date" value={formatDate(expertOpinion.caseDate)} />
+						<DataRow label={t.caseDate} value={formatDate(expertOpinion.caseDate)} />
 					)}
 					{expertOpinion.orderWasPlacement && (
 						<DataRow
-							label="Order Placement"
+							label={t.orderPlacement}
 							value={displayValue(expertOpinion.orderWasPlacement)}
 						/>
 					)}
 					{expertOpinion.issuedDate && (
-						<DataRow label="Issued Date" value={formatDate(expertOpinion.issuedDate)} />
+						<DataRow label={t.issuedDate} value={formatDate(expertOpinion.issuedDate)} />
 					)}
-					{expertOpinion.orderByClaimant && <DataRow label="Ordered by Claimant" value="Yes" />}
+					{expertOpinion.orderByClaimant && <DataRow label={t.orderedByClaimant} value={t.yes} />}
 					{expertOpinion.mediator && (
-						<DataRow label="Mediator" value={displayValue(expertOpinion.mediator)} />
+						<DataRow label={t.mediator} value={displayValue(expertOpinion.mediator)} />
 					)}
 				</View>
 			)}
@@ -1288,7 +1295,12 @@ function ReportPdfDocument({
 					opponentInfo={data.opponentInfo}
 					t={t}
 				/>
-				<VisitsSection visits={data.visits} expertOpinion={data.expertOpinion} />
+				<VisitsSection
+					visits={data.visits}
+					expertOpinion={data.expertOpinion}
+					t={t}
+					locale={locale}
+				/>
 				<ConditionSection condition={data.condition} t={t} locale={locale} />
 				{includeValuation && (
 					<CalculationSection

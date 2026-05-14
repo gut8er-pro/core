@@ -457,12 +457,13 @@ async function runPipeline(
 
 	// --- Step 3b: Calculation extraction from damage photos ---
 	let calculationData: CalculationAutoFillResult | null = null
-	// Use the preview variant for calculation extraction — coarse parts list
-	// doesn't need 1568 px detail; saves ~70% on image tokens for 5 images.
-	const damageImages = collectDamageImages(
-		classifications,
-		(photoId) => imageDataPreview.get(photoId) ?? imageDataAi.get(photoId),
-	)
+	// Use the AI (1568 px) variant for calculation extraction. Parts /
+	// repair-method identification from damage photos benefits from the full
+	// detail — small surface cues (cracks, fasteners, panel edges) matter for
+	// repair-method decisions. Costs ~$0.028 more per report vs the preview
+	// variant we used during the Talas A cost-optimization pass; the quality
+	// trade-off was not worth it.
+	const damageImages = collectDamageImages(classifications, (photoId) => imageDataAi.get(photoId))
 	if (damageImages.length > 0) {
 		emit({
 			type: 'progress',

@@ -60,6 +60,7 @@ function ConditionPage() {
 		formState: { errors },
 		reset,
 		getValues,
+		watch,
 	} = useForm<ConditionFormData>({
 		defaultValues: {
 			paintType: '',
@@ -69,6 +70,7 @@ function ConditionPage() {
 			bodyCondition: '',
 			interiorCondition: '',
 			drivingAbility: '',
+			vehicleColor: '',
 			specialFeatures: '',
 			parkingSensors: false,
 			mileageRead: '',
@@ -102,6 +104,7 @@ function ConditionPage() {
 			bodyCondition: c.bodyCondition ?? '',
 			interiorCondition: c.interiorCondition ?? '',
 			drivingAbility: c.drivingAbility ?? '',
+			vehicleColor: c.vehicleColor ?? '',
 			specialFeatures: c.specialFeatures ?? '',
 			parkingSensors: c.parkingSensors,
 			mileageRead: c.mileageRead?.toString() ?? '',
@@ -136,6 +139,17 @@ function ConditionPage() {
 		},
 		[saveField, getValues],
 	)
+
+	// Auto-save also fires on input change (debounced) so the last-typed
+	// field doesn't get lost if the user navigates away before blur. Skip
+	// dotted (array) names; see accident-info/page.tsx for rationale.
+	useEffect(() => {
+		const sub = watch((_v, { name }) => {
+			if (!name || name.includes('.')) return
+			handleFieldBlur(name)
+		})
+		return () => sub.unsubscribe()
+	}, [watch, handleFieldBlur])
 
 	// Damage markers
 	const handleAddDamageMarker = useCallback(

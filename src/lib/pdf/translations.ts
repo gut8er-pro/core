@@ -103,6 +103,31 @@ type PdfTranslations = {
 	photoCategoryInterior: string
 	photoCategoryDocuments: string
 	photoCategoryIdentification: string
+	// Accident / opponent / visits / expert opinion labels (previously hardcoded EN)
+	accidentScene: string
+	opponent: string
+	insuranceCompany: string
+	insuranceNumber: string
+	vehicleColor: string
+	airbagsDeployed: string
+	taxRate: string
+	wheelAlignment: string
+	bodyMeasurements: string
+	bodyPaint: string
+	plasticRepair: string
+	risks: string
+	dropoutGroup: string
+	rentalCarClass: string
+	visits: string
+	expert: string
+	expertOpinion: string
+	expertName: string
+	fileNumber: string
+	caseDate: string
+	orderPlacement: string
+	issuedDate: string
+	orderedByClaimant: string
+	mediator: string
 }
 
 const translations: Record<Locale, PdfTranslations> = {
@@ -209,6 +234,30 @@ const translations: Record<Locale, PdfTranslations> = {
 		photoCategoryInterior: 'Interior Photos',
 		photoCategoryDocuments: 'Documents',
 		photoCategoryIdentification: 'Identification',
+		accidentScene: 'Accident Scene',
+		opponent: 'Opponent',
+		insuranceCompany: 'Insurance Company',
+		insuranceNumber: 'Insurance Number',
+		vehicleColor: 'Vehicle Color',
+		airbagsDeployed: 'Airbags Deployed',
+		taxRate: 'Tax Rate',
+		wheelAlignment: 'Wheel Alignment',
+		bodyMeasurements: 'Body Measurements',
+		bodyPaint: 'Body Paint',
+		plasticRepair: 'Plastic Repair',
+		risks: 'Risks',
+		dropoutGroup: 'Dropout Group',
+		rentalCarClass: 'Rental Car Class',
+		visits: 'Visits',
+		expert: 'Expert',
+		expertOpinion: 'Expert Opinion',
+		expertName: 'Expert Name',
+		fileNumber: 'File Number',
+		caseDate: 'Case Date',
+		orderPlacement: 'Order Placement',
+		issuedDate: 'Issued Date',
+		orderedByClaimant: 'Ordered by Claimant',
+		mediator: 'Mediator',
 	},
 	de: {
 		vehicleDamageAssessment: 'Kfz-Schadensgutachten',
@@ -313,6 +362,30 @@ const translations: Record<Locale, PdfTranslations> = {
 		photoCategoryInterior: 'Innenraumfotos',
 		photoCategoryDocuments: 'Dokumente',
 		photoCategoryIdentification: 'Identifikation (FIN/Kennzeichen)',
+		accidentScene: 'Unfallort',
+		opponent: 'Unfallgegner',
+		insuranceCompany: 'Versicherung',
+		insuranceNumber: 'Versicherungsschein-Nr.',
+		vehicleColor: 'Fahrzeugfarbe',
+		airbagsDeployed: 'Airbags ausgelöst',
+		taxRate: 'Steuersatz',
+		wheelAlignment: 'Achsvermessung',
+		bodyMeasurements: 'Karosserievermessung',
+		bodyPaint: 'Karosserielackierung',
+		plasticRepair: 'Kunststoffreparatur',
+		risks: 'Risiken',
+		dropoutGroup: 'Ausfallgruppe',
+		rentalCarClass: 'Mietwagenklasse',
+		visits: 'Besichtigungen',
+		expert: 'Sachverständiger',
+		expertOpinion: 'Gutachten',
+		expertName: 'Name des Sachverständigen',
+		fileNumber: 'Aktenzeichen',
+		caseDate: 'Falldatum',
+		orderPlacement: 'Auftragserteilung',
+		issuedDate: 'Ausstellungsdatum',
+		orderedByClaimant: 'Vom Anspruchsteller beauftragt',
+		mediator: 'Vermittler',
 	},
 }
 
@@ -344,6 +417,15 @@ const valueTranslations: Record<string, string> = {
 	coupe: 'Coupé',
 	convertible: 'Cabriolet',
 	van: 'Transporter',
+	// Visit type
+	claimant_residence: 'Wohnort Anspruchsteller',
+	claimant_office: 'Firmensitz Anspruchsteller',
+	other: 'Sonstiges',
+	// Visit vehicle condition
+	drivable: 'Fahrbereit',
+	conditionally_drivable: 'Bedingt fahrbereit',
+	not_drivable: 'Nicht fahrbereit',
+	total_loss: 'Totalschaden',
 	// General Condition
 	'Well maintained': 'Gepflegt',
 	Average: 'Durchschnittlich',
@@ -396,6 +478,15 @@ const valueLabelsEn: Record<string, string> = {
 	coupe: 'Coupe',
 	convertible: 'Convertible',
 	van: 'Van',
+	// Visit type
+	claimant_residence: 'Claimant Residence',
+	claimant_office: 'Claimant Office',
+	other: 'Other',
+	// Visit vehicle condition
+	drivable: 'Drivable',
+	conditionally_drivable: 'Conditionally drivable',
+	not_drivable: 'Not drivable',
+	total_loss: 'Total loss',
 }
 
 function translateValue(value: string | null | undefined, locale: string): string {

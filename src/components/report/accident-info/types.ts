@@ -42,8 +42,11 @@ type AccidentInfoFormData = {
 	issuedDate: string
 	orderByClaimant: boolean
 	mediator: string
-	// Visits (array)
+	// Visits (array). `id` is undefined for unsaved rows added in the UI;
+	// once the server creates the row, the form re-loads with the id so
+	// subsequent saves UPDATE rather than CREATE a duplicate.
 	visits: Array<{
+		id?: string
 		type: string
 		street: string
 		postcode: string

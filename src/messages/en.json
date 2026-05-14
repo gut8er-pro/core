@@ -633,6 +633,8 @@
         "limited": "Limited",
         "notRoadworthy": "Not roadworthy"
       },
+      "vehicleColor": "Vehicle color",
+      "vehicleColorPlaceholder": "e.g. Silver, Black, Dark Blue",
       "specialFeatures": "Special features",
       "parkingSensors": "Parking sensors",
       "mileageRead": "Mileage Read",

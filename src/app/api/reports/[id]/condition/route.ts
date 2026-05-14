@@ -130,6 +130,8 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 			updateData.interiorCondition = data.condition.interiorCondition
 		if (data.condition.drivingAbility !== undefined)
 			updateData.drivingAbility = data.condition.drivingAbility
+		if (data.condition.vehicleColor !== undefined)
+			updateData.vehicleColor = data.condition.vehicleColor
 		if (data.condition.specialFeatures !== undefined)
 			updateData.specialFeatures = data.condition.specialFeatures
 		if (data.condition.parkingSensors !== undefined)

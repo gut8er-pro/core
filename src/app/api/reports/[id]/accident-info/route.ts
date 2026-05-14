@@ -116,36 +116,51 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	}
 
 	if (data.visits) {
-		const visitResults = []
-		for (const visit of data.visits) {
-			const { id: visitId, ...visitData } = visit
-			if (visitId) {
-				// Update existing visit — verify it belongs to this report
-				const existing = await prisma.visit.findFirst({
-					where: { id: visitId, reportId: id },
-				})
-				if (existing) {
-					const updated = await prisma.visit.update({
-						where: { id: visitId },
-						data: {
-							...visitData,
-							date: visitData.date ? new Date(visitData.date) : visitData.date,
-						},
-					})
-					visitResults.push(updated)
-				}
-			} else {
-				// Create new visit
-				const created = await prisma.visit.create({
-					data: {
-						reportId: id,
-						...visitData,
-						date: visitData.date ? new Date(visitData.date) : null,
-					},
-				})
-				visitResults.push(created)
+		// Replace semantics: the form treats `visits` as a single source of
+		// truth and re-sends the whole array on every auto-save. We do this
+		// in a transaction so a partial failure can't leave duplicate rows.
+		//
+		// Without replace semantics each save with `id: null` produced a brand
+		// new row, so a user typing 5 fields into one visit ended up with 5
+		// duplicates in the DB.
+		const visitResults = await prisma.$transaction(async (tx) => {
+			const incoming = data.visits ?? []
+			const existing = await tx.visit.findMany({
+				where: { reportId: id },
+				select: { id: true },
+			})
+
+			// Delete rows that aren't in the incoming payload anymore.
+			const incomingIds = new Set(incoming.map((v) => v.id).filter((x): x is string => !!x))
+			const toDelete = existing.filter((e) => !incomingIds.has(e.id)).map((e) => e.id)
+			if (toDelete.length > 0) {
+				await tx.visit.deleteMany({ where: { id: { in: toDelete }, reportId: id } })
 			}
-		}
+
+			const results = []
+			for (const visit of incoming) {
+				const { id: visitId, ...visitData } = visit
+				const data = {
+					...visitData,
+					date: visitData.date ? new Date(visitData.date) : null,
+				}
+				if (visitId) {
+					// Verify the row still belongs to this report (defence in depth).
+					const owned = await tx.visit.findFirst({
+						where: { id: visitId, reportId: id },
+						select: { id: true },
+					})
+					if (owned) {
+						const updated = await tx.visit.update({ where: { id: visitId }, data })
+						results.push(updated)
+					}
+				} else {
+					const created = await tx.visit.create({ data: { reportId: id, ...data } })
+					results.push(created)
+				}
+			}
+			return results
+		})
 		results.visits = visitResults
 	}
 

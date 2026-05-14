@@ -180,6 +180,7 @@ test.describe('HS Complete Flow', () => {
 			await page.waitForTimeout(200)
 		}
 
+		await page.locator('input[name="vehicleColor"]').fill('Silver Metallic')
 		await page.locator('input[name="specialFeatures"]').fill('Klimaanlage, Navi')
 		await page.locator('input[name="mileageRead"]').fill('85420')
 		await page.locator('input[name="estimateMileage"]').fill('86000')

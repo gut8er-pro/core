@@ -9,6 +9,7 @@ type ConditionFormData = {
 	bodyCondition: string
 	interiorCondition: string
 	drivingAbility: string
+	vehicleColor: string
 	specialFeatures: string
 	parkingSensors: boolean
 	mileageRead: string
@@ -80,6 +81,7 @@ type ConditionResponse = {
 		bodyCondition: string | null
 		interiorCondition: string | null
 		drivingAbility: string | null
+		vehicleColor: string | null
 		specialFeatures: string | null
 		parkingSensors: boolean
 		mileageRead: number | null

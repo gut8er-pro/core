@@ -53,6 +53,7 @@ function CalculationPage() {
 		formState: { errors },
 		reset,
 		getValues,
+		watch,
 	} = useForm<CalculationFormData>({
 		defaultValues: {
 			replacementValue: '',
@@ -164,6 +165,17 @@ function CalculationPage() {
 		},
 		[saveField, getValues],
 	)
+
+	// Auto-save fires on input change too (debounced) — without this the
+	// last-typed field is lost if the user navigates before blur. Skip
+	// dotted (array) names; see accident-info/page.tsx for rationale.
+	useEffect(() => {
+		const sub = watch((_v, { name }) => {
+			if (!name || name.includes('.')) return
+			handleFieldBlur(name)
+		})
+		return () => sub.unsubscribe()
+	}, [watch, handleFieldBlur])
 
 	const handleDatSave = useCallback(
 		async (datData: DatFormData) => {

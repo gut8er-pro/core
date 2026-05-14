@@ -43,6 +43,7 @@ function VehiclePage() {
 		reset,
 		setValue,
 		getValues,
+		watch,
 	} = useForm<VehicleFormData>({
 		defaultValues: {
 			vin: '',
@@ -132,6 +133,17 @@ function VehiclePage() {
 		},
 		[saveField, getValues],
 	)
+
+	// Auto-save fires on input change too (debounced) — without this the
+	// last-typed field is lost if the user navigates before blur. Skip
+	// dotted (array) names; see accident-info/page.tsx for the rationale.
+	useEffect(() => {
+		const sub = watch((_v, { name }) => {
+			if (!name || name.includes('.')) return
+			handleFieldBlur(name)
+		})
+		return () => sub.unsubscribe()
+	}, [watch, handleFieldBlur])
 
 	// Count missing fields for the banner
 	const _missingFieldCount = (() => {

@@ -251,6 +251,14 @@ function ConditionSection({
 					/>
 
 					<TextField
+						label={t('condition.vehicleColor')}
+						placeholder={t('condition.vehicleColorPlaceholder')}
+						error={errors.vehicleColor?.message}
+						{...register('vehicleColor')}
+						onBlur={() => onFieldBlur?.('vehicleColor')}
+					/>
+
+					<TextField
 						label={t('condition.specialFeatures')}
 						placeholder={t('condition.parkingSensors')}
 						error={errors.specialFeatures?.message}
