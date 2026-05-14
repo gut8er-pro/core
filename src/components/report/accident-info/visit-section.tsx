@@ -16,7 +16,7 @@ import type { SectionProps } from './types'
 // Options are defined inside the component to access translations
 
 const DEFAULT_VISIT = {
-	type: '',
+	type: 'other',
 	street: '',
 	postcode: '',
 	location: '',
