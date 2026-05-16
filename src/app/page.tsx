@@ -476,7 +476,21 @@ function LandingPage() {
 
 			{/* Footer */}
 			<footer className="border-t border-border px-6 py-8">
-				<div className="mx-auto max-w-7xl text-center">
+				<div className="mx-auto flex max-w-7xl flex-col items-center gap-3">
+					<nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-body-sm">
+						<a href="/legal/impressum" className="text-grey-100 hover:text-primary">
+							Impressum
+						</a>
+						<a href="/legal/datenschutz" className="text-grey-100 hover:text-primary">
+							Datenschutz
+						</a>
+						<a href="/legal/agb" className="text-grey-100 hover:text-primary">
+							AGB
+						</a>
+						<a href="/legal/widerruf" className="text-grey-100 hover:text-primary">
+							Widerruf
+						</a>
+					</nav>
 					<p className="text-body-sm text-grey-100">
 						{t('copyright', { year: new Date().getFullYear() })}
 					</p>
