@@ -160,22 +160,6 @@ function IntegrationsStep() {
 							</div>
 							<span className="text-[18px] font-medium text-black">{t('dat')}</span>
 						</button>
-
-						{/* Audatex - Coming Soon */}
-						<div className="flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-2.5 rounded-[15px] border border-[#e5e7eb] bg-white py-[18px] px-3.5">
-							<div className="flex h-[60px] w-[60px] items-center justify-center rounded-[14px] bg-[#f3f4f6] opacity-20">
-								<span className="text-[20px] font-bold italic text-[#6b7280]">A</span>
-							</div>
-							<span className="text-[18px] font-medium text-black">{t('comingSoon')}</span>
-						</div>
-
-						{/* GT Motive - Coming Soon */}
-						<div className="flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-2.5 rounded-[15px] border border-[#e5e7eb] bg-white py-[18px] px-3.5">
-							<div className="flex h-[60px] w-[60px] items-center justify-center rounded-[14px] bg-[#f3f4f6] opacity-20">
-								<span className="text-[16px] font-bold text-[#6b7280]">gt</span>
-							</div>
-							<span className="text-[18px] font-medium text-black">{t('comingSoon')}</span>
-						</div>
 					</div>
 				</div>
 

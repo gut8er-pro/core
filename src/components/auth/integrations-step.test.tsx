@@ -48,10 +48,10 @@ describe('IntegrationsStep', () => {
 		expect(screen.getByText(/Link your calculation provider/)).toBeInTheDocument()
 	})
 
-	it('renders provider cards including DAT and Coming Soon', () => {
+	it('renders DAT as the only provider for v1', () => {
 		render(<IntegrationsStep />)
 		expect(screen.getByAltText('DAT')).toBeInTheDocument()
-		expect(screen.getAllByText('Coming Soon')).toHaveLength(2)
+		expect(screen.queryByText('Coming Soon')).not.toBeInTheDocument()
 	})
 
 	it('shows placeholder text when no provider selected', () => {
