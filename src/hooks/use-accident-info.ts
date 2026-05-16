@@ -190,10 +190,32 @@ function useSaveSignature(reportId: string) {
 	})
 }
 
+function useDeleteSignature(reportId: string) {
+	const queryClient = useQueryClient()
+	return useMutation({
+		mutationFn: async (signatureId: string) => {
+			const res = await fetch(`/api/reports/${reportId}/signatures/${signatureId}`, {
+				method: 'DELETE',
+			})
+			if (!res.ok) {
+				const body = await res.json().catch(() => ({}))
+				throw new Error(body.error ?? 'Failed to delete signature')
+			}
+			return res.json()
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['report', reportId, 'accident-info'],
+			})
+		},
+	})
+}
+
 export type { AccidentInfoResponse }
 export {
 	fetchAccidentInfo,
 	useAccidentInfo,
+	useDeleteSignature,
 	useSaveAccidentInfo,
 	useSaveClaimantInfo,
 	useSaveExpertOpinion,

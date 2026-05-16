@@ -312,7 +312,8 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 
 				if (plate) {
 					createData.licensePlate = plate
-					updateData.licensePlate = plate // license plate may be re-detected; OK to overwrite
+					// Only fill on create; never overwrite a value the user has typed.
+					if (!existing?.licensePlate) updateData.licensePlate = plate
 				}
 				if (owner) {
 					if (owner.firstName) {

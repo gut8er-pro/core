@@ -39,7 +39,7 @@ function VehiclePage() {
 	const {
 		register,
 		control,
-		formState: { errors },
+		formState: { errors, dirtyFields },
 		reset,
 		setValue,
 		getValues,
@@ -138,12 +138,15 @@ function VehiclePage() {
 	// last-typed field is lost if the user navigates before blur. Skip
 	// dotted (array) names; see accident-info/page.tsx for the rationale.
 	useEffect(() => {
-		const sub = watch((_v, { name }) => {
+		const sub = watch((_v, { name, type }) => {
 			if (!name || name.includes('.')) return
+			// Only save user-initiated changes — reset() also fires watch.
+			if (type !== 'change') return
+			if (!dirtyFields[name as keyof VehicleFormData]) return
 			handleFieldBlur(name)
 		})
 		return () => sub.unsubscribe()
-	}, [watch, handleFieldBlur])
+	}, [watch, handleFieldBlur, dirtyFields])
 
 	// Count missing fields for the banner
 	const _missingFieldCount = (() => {

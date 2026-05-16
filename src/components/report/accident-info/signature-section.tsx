@@ -7,7 +7,12 @@ import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { cn } from '@/lib/utils'
 import type { SignatureSectionProps } from './types'
 
-function SignatureSection({ signatures, onSignatureClick, className }: SignatureSectionProps) {
+function SignatureSection({
+	signatures,
+	onSignatureClick,
+	onSignatureRemove,
+	className,
+}: SignatureSectionProps) {
 	const t = useTranslations('report')
 	const _tc = useTranslations('common')
 
@@ -88,9 +93,8 @@ function SignatureSection({ signatures, onSignatureClick, className }: Signature
 								<Button
 									variant="outline"
 									size="sm"
-									onClick={() => {
-										// TODO: implement remove signature
-									}}
+									onClick={() => onSignatureRemove?.(sig.id)}
+									disabled={!onSignatureRemove}
 								>
 									{t('accidentInfo.signatures.remove')}
 								</Button>

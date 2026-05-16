@@ -50,7 +50,7 @@ function CalculationPage() {
 	const {
 		register,
 		control,
-		formState: { errors },
+		formState: { errors, dirtyFields },
 		reset,
 		getValues,
 		watch,
@@ -169,13 +169,18 @@ function CalculationPage() {
 	// Auto-save fires on input change too (debounced) — without this the
 	// last-typed field is lost if the user navigates before blur. Skip
 	// dotted (array) names; see accident-info/page.tsx for rationale.
+	// Only save user-initiated changes (dirtyFields) — reset() on data load
+	// also fires watch and would otherwise overwrite the DB with empty
+	// strings parsed to null.
 	useEffect(() => {
-		const sub = watch((_v, { name }) => {
+		const sub = watch((_v, { name, type }) => {
 			if (!name || name.includes('.')) return
+			if (type !== 'change') return
+			if (!dirtyFields[name as keyof CalculationFormData]) return
 			handleFieldBlur(name)
 		})
 		return () => sub.unsubscribe()
-	}, [watch, handleFieldBlur])
+	}, [watch, handleFieldBlur, dirtyFields])
 
 	const handleDatSave = useCallback(
 		async (datData: DatFormData) => {

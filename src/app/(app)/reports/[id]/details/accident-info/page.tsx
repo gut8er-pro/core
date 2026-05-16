@@ -15,7 +15,7 @@ import { VisitSection } from '@/components/report/accident-info/visit-section'
 import { SignaturePad } from '@/components/signature/signature-pad.dynamic'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
-import { useAccidentInfo, useSaveSignature } from '@/hooks/use-accident-info'
+import { useAccidentInfo, useDeleteSignature, useSaveSignature } from '@/hooks/use-accident-info'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useReport } from '@/hooks/use-reports'
 import { useToastStore } from '@/stores/toast-store'
@@ -30,6 +30,7 @@ function AccidentInfoPage() {
 	const { data, isLoading } = useAccidentInfo(reportId)
 	const { data: report } = useReport(reportId)
 	const saveSignature = useSaveSignature(reportId)
+	const deleteSignature = useDeleteSignature(reportId)
 
 	const {
 		saveField,
@@ -48,7 +49,7 @@ function AccidentInfoPage() {
 	const {
 		register,
 		control,
-		formState: { errors },
+		formState: { errors, dirtyFields },
 		reset,
 		getValues,
 		watch,
@@ -218,12 +219,16 @@ function AccidentInfoPage() {
 	// DB rows. Visits keep the existing blur-only save path until that round-
 	// trip is wired up.
 	useEffect(() => {
-		const sub = watch((_values, { name }) => {
+		const sub = watch((_values, { name, type }) => {
 			if (!name || name.includes('.')) return
+			// Only save user-initiated changes — reset() also fires watch and
+			// would otherwise overwrite the DB with the form's empty defaults.
+			if (type !== 'change') return
+			if (!dirtyFields[name as keyof AccidentInfoFormData]) return
 			handleFieldBlur(name)
 		})
 		return () => sub.unsubscribe()
-	}, [watch, handleFieldBlur])
+	}, [watch, handleFieldBlur, dirtyFields])
 
 	const handleSignatureSave = useCallback(() => {
 		if (!signatureModalType || !signatureValue) return
@@ -330,6 +335,7 @@ function AccidentInfoPage() {
 			<SignatureSection
 				signatures={data?.signatures ?? []}
 				onSignatureClick={setSignatureModalType}
+				onSignatureRemove={(sigId) => deleteSignature.mutate(sigId)}
 			/>
 
 			{/* Signature Modal */}

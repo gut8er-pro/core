@@ -75,6 +75,7 @@ type SignatureData = {
 type SignatureSectionProps = {
 	signatures: SignatureData[]
 	onSignatureClick: (type: 'LAWYER' | 'DATA_PERMISSION' | 'CANCELLATION') => void
+	onSignatureRemove?: (signatureId: string) => void
 	className?: string
 }
 

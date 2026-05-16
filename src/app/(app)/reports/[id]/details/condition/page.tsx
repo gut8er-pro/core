@@ -57,7 +57,7 @@ function ConditionPage() {
 	const {
 		register,
 		control,
-		formState: { errors },
+		formState: { errors, dirtyFields },
 		reset,
 		getValues,
 		watch,
@@ -144,12 +144,15 @@ function ConditionPage() {
 	// field doesn't get lost if the user navigates away before blur. Skip
 	// dotted (array) names; see accident-info/page.tsx for rationale.
 	useEffect(() => {
-		const sub = watch((_v, { name }) => {
+		const sub = watch((_v, { name, type }) => {
 			if (!name || name.includes('.')) return
+			// Only save user-initiated changes — reset() also fires watch.
+			if (type !== 'change') return
+			if (!dirtyFields[name as keyof ConditionFormData]) return
 			handleFieldBlur(name)
 		})
 		return () => sub.unsubscribe()
-	}, [watch, handleFieldBlur])
+	}, [watch, handleFieldBlur, dirtyFields])
 
 	// Damage markers
 	const handleAddDamageMarker = useCallback(
