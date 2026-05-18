@@ -2,6 +2,8 @@
 
 Professional vehicle damage assessment web application for German automotive experts (Kfz-Sachverständige). Streamlines the creation of insurance damage reports by combining photo upload, AI-powered analysis, vehicle data integration, interactive damage diagrams, calculation, invoicing, and digital signatures into one workflow.
 
+> 🚧 **Pre-launch:** see [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md) for the current list of must-do items (legal-page placeholders, Sentry DSN, DAT decision, trial-expiry smoke test). Update that file in the same commit when you finish or discover work.
+
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router) + TypeScript (strict)
