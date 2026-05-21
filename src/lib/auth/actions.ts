@@ -29,7 +29,6 @@ async function login(formData: FormData): Promise<{ error?: string }> {
 		return { error: 'Email or password is incorrect' }
 	}
 
-	console.log('[login] Successful login:', parsed.data.email)
 	redirect('/dashboard')
 }
 
@@ -88,16 +87,7 @@ async function completeSignup(
 ): Promise<{ error?: string; checkoutUrl?: string }> {
 	const { account, personal, business, integrations } = input
 
-	console.log('[completeSignup] START', {
-		email: account.email,
-		hasPersonal: !!(personal.firstName || personal.lastName),
-		hasBusinessName: !!business.companyName,
-		hasIntegration: !!integrations.provider,
-		timestamp: new Date().toISOString(),
-	})
-
 	if (!account.email || !account.password) {
-		console.error('[completeSignup] BLOCKED — missing email or password')
 		return { error: 'Email and password are required' }
 	}
 
@@ -110,18 +100,12 @@ async function completeSignup(
 	})
 
 	if (authError) {
-		console.error('[completeSignup] Supabase auth error:', {
-			code: authError.code,
-			message: authError.message,
-			email: account.email,
-		})
 		if (authError.message.includes('already been registered')) {
 			return { error: 'An account with this email already exists' }
 		}
+		console.error('[completeSignup] Supabase auth error:', authError.code, authError.message)
 		return { error: authError.message }
 	}
-
-	console.log('[completeSignup] Supabase auth user created:', authData.user.id)
 
 	const authUserId = authData.user.id
 
@@ -137,14 +121,6 @@ async function completeSignup(
 		const validProviders = ['DAT', 'AUDATEX', 'GT_MOTIVE']
 		const providerStr = cleanStr(integrations.provider)?.toUpperCase()
 		const hasIntegration = providerStr && validProviders.includes(providerStr)
-
-		console.log('[completeSignup] Creating DB user:', {
-			authUserId,
-			email: account.email,
-			plan: planValue,
-			hasBusinessData,
-			hasIntegration,
-		})
 
 		await prisma.user.create({
 			data: {
@@ -189,7 +165,6 @@ async function completeSignup(
 					: {}),
 			},
 		})
-		console.log('[completeSignup] DB user created successfully')
 
 		// 2b. Create Stripe customer + Checkout Session for subscription with trial
 		if (process.env.STRIPE_SECRET_KEY) {
@@ -203,11 +178,9 @@ async function completeSignup(
 					where: { id: authUserId },
 					data: { stripeCustomerId: customer.id },
 				})
-				console.log('[completeSignup] Stripe customer created:', customer.id)
 
 				// Create Checkout Session with 7-day trial
 				checkoutUrl = await createCheckoutSession(authUserId, '', customer.id)
-				console.log('[completeSignup] Stripe Checkout Session created')
 			} catch (stripeError) {
 				// Non-fatal — user can set up payment later in Settings
 				console.warn('[completeSignup] Stripe setup failed (non-fatal):', stripeError)
@@ -229,16 +202,8 @@ async function completeSignup(
 	})
 
 	if (signInError) {
-		console.error(
-			'[completeSignup] Auto sign-in failed (account created but session not started):',
-			{
-				message: signInError.message,
-				email: account.email,
-			},
-		)
+		console.error('[completeSignup] Auto sign-in failed:', signInError.message)
 		// Non-fatal — user can log in manually
-	} else {
-		console.log('[completeSignup] SUCCESS — user signed in:', account.email)
 	}
 
 	return { checkoutUrl }

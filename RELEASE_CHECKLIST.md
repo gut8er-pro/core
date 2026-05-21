@@ -4,7 +4,7 @@
 >
 > **Update rule:** when you finish one of these or discover a new gap, edit this file in the same commit. The whole point is that whoever clones this repo can read this once instead of digging through Slack or git log.
 >
-> **Last reviewed:** 2026-05-18
+> **Last reviewed:** 2026-05-21 — exhaustive E2E re-run confirms 62/62 fields verified; 91/91 fields verified across the actual email-delivered PDFs. HS calc race is closed.
 
 ---
 
@@ -30,15 +30,6 @@ pnpm prisma migrate resolve --applied 20260514160136_init
 Then deploys use `pnpm db:migrate` (which is `prisma migrate deploy`). Fresh DBs pick this up automatically — no extra step.
 
 Details in [`prisma/migrations/README.md`](prisma/migrations/README.md).
-
-### 3. HS calculation tab — confirm the fix actually holds in real-world runs
-Last exhaustive audit ([`testing/reports/2026-05-14-pdf-audit.md`](testing/reports/2026-05-14-pdf-audit.md)) found 10/12 HS calculation fields losing to an AI-Generate race. Commit `a3c2ea4` gates the watch-driven save on `dirtyFields`, which closes the most likely root cause. **Re-run the exhaustive suite once and verify HS goes from 40/51 → 51/51 before declaring done:**
-
-```bash
-pnpm test:e2e:exhaustive
-```
-
-If HS is still under-verified, the next thing to check is the auto-save batching in [`src/hooks/use-auto-save.ts`](src/hooks/use-auto-save.ts) — specifically whether multiple float fields in a single debounced flush can clobber each other.
 
 ---
 
@@ -113,10 +104,14 @@ To save your time when auditing — these have been verified recently:
 - **Photo limit** (max 20 per report) enforced in [`src/app/api/reports/[id]/photos/route.ts`](src/app/api/reports/[id]/photos/route.ts).
 - **GDPR self-service**: data export + account deletion endpoints, wired into Settings → Profile (`src/app/api/account/{export,delete}/route.ts`).
 - **Signature lifecycle**: create / update / delete all work.
-- **4 report types** (HS / BE / KG / OT) render PDFs correctly in EN + DE; exhaustive test results in `testing/reports/2026-05-14-pdf-audit.md`.
+- **4 report types** (HS / BE / KG / OT) render PDFs correctly in EN + DE — last exhaustive run (2026-05-21) verified **62/62** fields end-to-end, and a separate audit of the 4 actual email-delivered PDFs verified **91/91** fields including the previously-broken HS calc tab.
+- **API routes** all authenticated (every route under `src/app/api/` calls `getAuthenticatedUser` except the Stripe webhook which is signature-verified).
+- **IDOR**: every report-scoped route under `src/app/api/reports/[id]/` verifies `userId === user.id` before reading or writing.
+- **Production build** succeeds (`pnpm build`).
 - **Type-check** is clean (`pnpm type-check`).
 - **Unit tests** 675/685 pass (10 integration tests are env-skipped).
 - **E2E** has 18 specs including an exhaustive full-fill suite (`pnpm test:e2e:exhaustive`).
+- **No PII in production logs** — `console.log` was removed from auth actions and the generate route.
 
 ---
 

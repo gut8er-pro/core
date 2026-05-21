@@ -410,12 +410,6 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 	}
 
 	// 4. Update tire data — including dotCode and tireType
-	console.log(`[Generate] Tire results: ${payloads.conditionData.tireResults.length}`)
-	for (const t of payloads.conditionData.tireResults) {
-		console.log(
-			`[Generate] Tire: pos=${t.position} size=${t.size} mfr=${t.manufacturer} tread=${t.treadDepth} profile=${t.profileLevel}`,
-		)
-	}
 	if (payloads.conditionData.tireResults.length > 0) {
 		try {
 			const condition = await prisma.vehicleCondition.upsert({
