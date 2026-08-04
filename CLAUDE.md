@@ -324,3 +324,21 @@ npm run test:e2e:all-reports  # Create + fill + send all 4 via email
 ```
 
 See `testing/README.md` for full testing documentation.
+
+---
+
+## Agent skills
+
+Configuration for the mattpocock engineering skills. Full details in `docs/agents/`.
+
+### Issue tracker
+
+Issues and per-feature specs live as **local markdown** under `.scratch/<feature>/` in this repo (the root `spec.md` and `docs/` remain the project-wide docs). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default triage vocabulary — `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix` — written on each issue's `Status:` line. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: a root `CONTEXT.md` + `docs/adr/`, created lazily by `/domain-modeling`. See `docs/agents/domain.md`.
