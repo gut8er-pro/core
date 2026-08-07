@@ -1,3 +1,5 @@
+import { resolveReportTypeConfig } from '@/lib/report-type'
+import type { ReportType } from '@/lib/validations/reports'
 import { useAccidentInfo } from './use-accident-info'
 import { useCalculation } from './use-calculation'
 import { useCondition } from './use-condition'
@@ -31,23 +33,22 @@ function _countFilled(obj: Record<string, unknown> | null | undefined, keys: str
  * (Identification, Specification, Details, Source).
  * A section counts as "filled" if at least one field in it has a value.
  */
-function useTabCompletion(reportId: string, reportType?: string): TabCompletion {
+function useTabCompletion(reportId: string, reportType?: ReportType | null): TabCompletion {
 	const { data: accidentData } = useAccidentInfo(reportId)
 	const { data: vehicleData } = useVehicleInfo(reportId)
 	const { data: conditionData } = useCondition(reportId)
 	const { data: calcData } = useCalculation(reportId)
 	const { data: invoiceData } = useInvoice(reportId)
 
-	const isOT = reportType === 'OT'
-	const isBE = reportType === 'BE'
+	const config = resolveReportTypeConfig(reportType)
 
 	// ── Accident Info / Customer ──
 	// Sections: Accident Info, Claimant, Opponent, Visits, Expert Opinion, Signatures
 	const accidentSections = (() => {
 		const sections: boolean[] = []
 
-		// Accident Info section (not for BE/OT)
-		if (!isBE && !isOT) {
+		// Accident Info section (HS/KG only)
+		if (config.hasAccidentSection) {
 			const ai = accidentData?.accidentInfo
 			sections.push(hasValue(ai?.accidentDay) || hasValue(ai?.accidentScene))
 		}
@@ -56,8 +57,8 @@ function useTabCompletion(reportId: string, reportType?: string): TabCompletion 
 		const cl = accidentData?.claimantInfo
 		sections.push(hasValue(cl?.firstName) || hasValue(cl?.lastName) || hasValue(cl?.company))
 
-		// Opponent section (not for BE/OT)
-		if (!isBE && !isOT) {
+		// Opponent section (HS/KG only)
+		if (config.hasOpponent) {
 			const op = accidentData?.opponentInfo
 			sections.push(
 				hasValue(op?.firstName) || hasValue(op?.lastName) || hasValue(op?.insuranceCompany),
@@ -134,43 +135,41 @@ function useTabCompletion(reportId: string, reportType?: string): TabCompletion 
 	})()
 
 	// ── Calculation / Valuation ──
+	// Base sections come from the type's `calculationVariant`; the correction
+	// section is counted when the type `hasCorrection` (HS + BE). Correction
+	// results aren't persisted, so completion is proxied by the variant's core
+	// calculation data being present — same approach the HS branch always used.
 	const calculationSections = (() => {
 		// Cast to Record for BE/OT fields that may not be in the strict TS type
 		const c = calcData?.calculation as Record<string, unknown> | null | undefined
-		if (isOT) {
-			// OT: Market value, Replacement value, Restoration, Total
-			const sections = [
-				hasValue(c?.marketValue),
-				hasValue(c?.replacementValue),
-				hasValue(c?.baseVehicleValue) || hasValue(c?.restorationValue),
-			]
-			return { filled: sections.filter(Boolean).length, total: sections.length }
+		const sections: boolean[] = []
+		let correctionFilled = false
+
+		if (config.calculationVariant === 'oldtimer') {
+			// OT: Market value, Replacement value, Restoration/Base
+			sections.push(hasValue(c?.marketValue))
+			sections.push(hasValue(c?.replacementValue))
+			sections.push(hasValue(c?.baseVehicleValue) || hasValue(c?.restorationValue))
+		} else if (config.calculationVariant === 'valuation') {
+			// BE: DAT Valuation + Manual Valuation
+			sections.push(hasValue(c?.generalCondition) || hasValue(c?.taxation))
+			sections.push(hasValue(c?.valuationMax) || hasValue(c?.valuationAvg))
+			correctionFilled = hasValue(c?.valuationMax) || hasValue(c?.valuationAvg)
+		} else {
+			// HS/KG (standard): Vehicle Value, Repair, Loss of Use, Additional Costs
+			sections.push(hasValue(c?.replacementValue) || hasValue(c?.residualValue))
+			sections.push(
+				hasValue(c?.repairMethod) || hasValue(c?.damageClass) || hasValue(c?.wheelAlignment),
+			)
+			sections.push(hasValue(c?.dropoutGroup) || hasValue(c?.costPerDay))
+			sections.push((calcData?.additionalCosts?.length ?? 0) > 0)
+			correctionFilled = hasValue(c?.replacementValue) && hasValue(c?.repairMethod)
 		}
-		if (isBE) {
-			// BE: DAT Valuation, Manual Valuation, Correction
-			const sections = [
-				hasValue(c?.generalCondition) || hasValue(c?.taxation),
-				hasValue(c?.valuationMax) || hasValue(c?.valuationAvg),
-				hasValue(c?.dataSource),
-			]
-			return { filled: sections.filter(Boolean).length, total: sections.length }
+
+		if (config.hasCorrection) {
+			sections.push(correctionFilled)
 		}
-		// HS/KG: Vehicle Value, Repair, Loss of Use, Additional Costs + (HS only: Correction, Results)
-		const isKG = reportType === 'KG'
-		const sections = [
-			// Vehicle Value
-			hasValue(c?.replacementValue) || hasValue(c?.residualValue),
-			// Repair
-			hasValue(c?.repairMethod) || hasValue(c?.damageClass) || hasValue(c?.wheelAlignment),
-			// Loss of Use
-			hasValue(c?.dropoutGroup) || hasValue(c?.costPerDay),
-			// Additional Costs
-			(calcData?.additionalCosts?.length ?? 0) > 0,
-		]
-		if (!isKG) {
-			// Correction (HS only) — count as filled if any calc data exists
-			sections.push(hasValue(c?.replacementValue) && hasValue(c?.repairMethod))
-		}
+
 		return { filled: sections.filter(Boolean).length, total: sections.length }
 	})()
 

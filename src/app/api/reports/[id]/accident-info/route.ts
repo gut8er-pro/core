@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { replaceChildren } from '@/lib/api/replace-children'
 import { prisma } from '@/lib/prisma'
 import { accidentInfoPatchSchema } from '@/lib/validations/accident-info'
 
@@ -116,52 +117,22 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	}
 
 	if (data.visits) {
-		// Replace semantics: the form treats `visits` as a single source of
-		// truth and re-sends the whole array on every auto-save. We do this
-		// in a transaction so a partial failure can't leave duplicate rows.
-		//
-		// Without replace semantics each save with `id: null` produced a brand
-		// new row, so a user typing 5 fields into one visit ended up with 5
-		// duplicates in the DB.
-		const visitResults = await prisma.$transaction(async (tx) => {
-			const incoming = data.visits ?? []
-			const existing = await tx.visit.findMany({
-				where: { reportId: id },
-				select: { id: true },
-			})
-
-			// Delete rows that aren't in the incoming payload anymore.
-			const incomingIds = new Set(incoming.map((v) => v.id).filter((x): x is string => !!x))
-			const toDelete = existing.filter((e) => !incomingIds.has(e.id)).map((e) => e.id)
-			if (toDelete.length > 0) {
-				await tx.visit.deleteMany({ where: { id: { in: toDelete }, reportId: id } })
-			}
-
-			const results = []
-			for (const visit of incoming) {
-				const { id: visitId, ...visitData } = visit
-				const data = {
-					...visitData,
-					date: visitData.date ? new Date(visitData.date) : null,
-				}
-				if (visitId) {
-					// Verify the row still belongs to this report (defence in depth).
-					const owned = await tx.visit.findFirst({
-						where: { id: visitId, reportId: id },
-						select: { id: true },
-					})
-					if (owned) {
-						const updated = await tx.visit.update({ where: { id: visitId }, data })
-						results.push(updated)
-					}
-				} else {
-					const created = await tx.visit.create({ data: { reportId: id, ...data } })
-					results.push(created)
-				}
-			}
-			return results
-		})
-		results.visits = visitResults
+		// Replace semantics: the form treats `visits` as a single source of truth
+		// and re-sends the whole array on every auto-save. The shared module id-diffs
+		// it transactionally, so a partial failure can't leave duplicate rows. Dates
+		// are coerced here (D6: the caller pre-coerces; the module stays generic).
+		const incoming = data.visits.map(({ date, ...rest }) => ({
+			...rest,
+			date: date ? new Date(date) : null,
+		}))
+		results.visits = await prisma.$transaction((tx) =>
+			replaceChildren(tx.visit, {
+				parentKey: 'reportId',
+				parentId: id,
+				incoming,
+				orderBy: { id: 'asc' },
+			}),
+		)
 	}
 
 	if (data.expertOpinion) {

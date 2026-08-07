@@ -25,6 +25,7 @@ import {
 	useSaveTireSet,
 } from '@/hooks/use-condition'
 import { useReport } from '@/hooks/use-reports'
+import { resolveReportTypeConfig } from '@/lib/report-type'
 import { getPaintColor } from '@/lib/validations/condition'
 import { useToastStore } from '@/stores/toast-store'
 
@@ -35,6 +36,7 @@ function ConditionPage() {
 	const reportId = params.id
 	const { data, isLoading } = useCondition(reportId)
 	const { data: report } = useReport(reportId)
+	const config = resolveReportTypeConfig(report?.reportType)
 	const toast = useToastStore()
 	const saveDamageMarker = useSaveDamageMarker(reportId)
 	const deleteDamageMarker = useDeleteDamageMarker(reportId)
@@ -338,7 +340,7 @@ function ConditionPage() {
 			/>
 
 			{/* OT-only sections */}
-			{report?.reportType === 'OT' && (
+			{config.hasConditionValuationSections && (
 				<>
 					<ValueIncreasingFeaturesSection />
 					<VehicleGradingSection />

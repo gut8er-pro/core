@@ -7,6 +7,7 @@ import { TabBar } from '@/components/ui/tab-bar'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
 import { useReport } from '@/hooks/use-reports'
 import { useTabCompletion } from '@/hooks/use-tab-completion'
+import { resolveReportTypeConfig } from '@/lib/report-type'
 
 function DetailsLayout({ children }: { children: ReactNode }) {
 	const t = useTranslations('report')
@@ -17,13 +18,18 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 	const { data: report } = useReport(params.id)
 
 	const reportType = report?.reportType
-	const isOT = reportType === 'OT'
-	const isBEorOT = reportType === 'BE' || reportType === 'OT'
+	const config = resolveReportTypeConfig(reportType)
 
-	const firstTabLabel = isOT ? t('accidentInfo.clientInformation') : t('accidentInfo.title')
-	const calcTabLabel = isBEorOT ? t('calculation.valuationTab') : t('calculation.title')
+	const firstTabLabel =
+		config.customerLabel === 'client'
+			? t('accidentInfo.clientInformation')
+			: t('accidentInfo.title')
+	const calcTabLabel =
+		config.calculationVariant === 'standard'
+			? t('calculation.title')
+			: t('calculation.valuationTab')
 
-	const completion = useTabCompletion(params.id, reportType ?? undefined)
+	const completion = useTabCompletion(params.id, reportType)
 
 	const fmt = (c: { filled: number; total: number }) => `${c.filled}/${c.total}`
 

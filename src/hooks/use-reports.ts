@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { ReportListParams } from '@/lib/validations/reports'
+import type { ReportListParams, ReportType } from '@/lib/validations/reports'
 
 type AiGenerationSummary = {
 	totalFieldsFilled: number
@@ -14,7 +14,7 @@ type Report = {
 	id: string
 	userId: string
 	title: string
-	reportType?: 'HS' | 'BE' | 'KG' | 'OT'
+	reportType?: ReportType
 	status: 'DRAFT' | 'COMPLETED' | 'SENT' | 'LOCKED'
 	completionPercentage: number
 	isLocked: boolean
@@ -57,7 +57,7 @@ async function fetchReports(params: Partial<ReportListParams> = {}): Promise<Rep
 
 type CreateReportParams = {
 	title: string
-	reportType?: 'HS' | 'BE' | 'KG' | 'OT'
+	reportType?: ReportType
 }
 
 async function createReport(params: CreateReportParams): Promise<{ report: Report }> {
