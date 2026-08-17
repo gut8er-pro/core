@@ -21,6 +21,7 @@ import { CompletionBadge } from '@/components/ui/completion-badge'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useCalculation } from '@/hooks/use-calculation'
 import { useReport } from '@/hooks/use-reports'
+import { resolveReportTypeConfig } from '@/lib/report-type'
 
 function CalculationPage() {
 	const t = useTranslations('report.calculation')
@@ -36,10 +37,9 @@ function CalculationPage() {
 	const [datModalOpen, setDatModalOpen] = useState(false)
 	const [correctionMode, setCorrectionMode] = useState<CorrectionMode>('dat')
 
-	const reportType = report?.reportType
-	const isValuationReport = reportType === 'BE'
-	const isOldtimerReport = reportType === 'OT'
-	const isShortReport = reportType === 'KG'
+	const config = resolveReportTypeConfig(report?.reportType)
+	const isValuationReport = config.calculationVariant === 'valuation'
+	const isOldtimerReport = config.calculationVariant === 'oldtimer'
 
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
@@ -356,7 +356,7 @@ function CalculationPage() {
 				)}
 
 				{/* Correction Calculation — HS and BE only (not KG, not OT) */}
-				{!isShortReport && !isOldtimerReport && (
+				{config.hasCorrection && (
 					<CorrectionSection
 						mode={correctionMode}
 						onModeChange={setCorrectionMode}

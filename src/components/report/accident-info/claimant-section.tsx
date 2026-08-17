@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { LicensePlate } from '@/components/ui/license-plate'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
+import { resolveReportTypeConfig } from '@/lib/report-type'
 import type { SectionProps } from './types'
 
 function ClaimantSection({
@@ -23,8 +24,11 @@ function ClaimantSection({
 	const eligibleForTax = useWatch({ control, name: 'claimantEligibleForInputTaxDeduction' })
 	const licensePlate = useWatch({ control, name: 'claimantLicensePlate' })
 
-	const isOT = reportType === 'OT'
-	const sectionTitle = isOT ? t('accidentInfo.client') : t('accidentInfo.claimantInformation')
+	const config = resolveReportTypeConfig(reportType)
+	const sectionTitle =
+		config.customerLabel === 'client'
+			? t('accidentInfo.client')
+			: t('accidentInfo.claimantInformation')
 
 	const salutationOptions = [
 		{ value: 'mr', label: t('accidentInfo.salutationOptions.mr') },
@@ -176,7 +180,7 @@ function ClaimantSection({
 						</Label>
 					</div>
 
-					{!isOT && (
+					{config.hasLawyerFields && (
 						<div className="flex items-center gap-2">
 							<Checkbox
 								id="claimant-represented-by-lawyer"
@@ -200,7 +204,7 @@ function ClaimantSection({
 				</div>
 
 				{/* Conditional fields based on checkboxes */}
-				{(eligibleForTax || (!isOT && representedByLawyer)) && (
+				{(eligibleForTax || (config.hasLawyerFields && representedByLawyer)) && (
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						{eligibleForTax && (
 							<TextField
@@ -210,7 +214,7 @@ function ClaimantSection({
 								onBlur={() => onFieldBlur?.('claimantVatId')}
 							/>
 						)}
-						{!isOT && representedByLawyer && (
+						{config.hasLawyerFields && representedByLawyer && (
 							<TextField
 								label={t('accidentInfo.involvedLawyer')}
 								placeholder="John Doe Lawyer Firm"

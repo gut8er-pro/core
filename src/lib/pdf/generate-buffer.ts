@@ -1,5 +1,6 @@
 import { renderToBuffer } from '@react-pdf/renderer'
 import { prisma } from '@/lib/prisma'
+import { resolveReportType } from '@/lib/report-type'
 import { type ReportData, ReportPdfDocument } from './report-template'
 import { getPdfTranslations } from './translations'
 
@@ -77,7 +78,7 @@ async function generateReportPdfBuffer(
 		report: {
 			id: report.id,
 			title: report.title,
-			reportType: report.reportType ?? 'HS',
+			reportType: resolveReportType(report.reportType),
 			createdAt: report.createdAt,
 			updatedAt: report.updatedAt,
 		},

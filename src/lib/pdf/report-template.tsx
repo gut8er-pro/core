@@ -1,4 +1,10 @@
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
+import {
+	type CalculationVariant,
+	type CustomerLabel,
+	type DocumentSubtitle,
+	resolveReportTypeConfig,
+} from '@/lib/report-type'
 import type { PdfTranslations } from './translations'
 import { translateValue } from './translations'
 
@@ -473,7 +479,28 @@ function DataRow({ label, value }: { label: string; value: string }) {
 	)
 }
 
-function HeaderSection({ data, t }: { data: ReportData; t: PdfTranslations }) {
+// Maps a report type's `documentSubtitle` identifier to its PDF-locale string.
+// The policy module returns the identifier; the wording stays here in the PDF.
+function documentSubtitleLabel(subtitle: DocumentSubtitle, t: PdfTranslations): string {
+	switch (subtitle) {
+		case 'vehicleValuation':
+			return t.vehicleValuation
+		case 'oldtimerValuation':
+			return t.oldtimerValuation
+		case 'damageAssessment':
+			return t.vehicleDamageAssessment
+	}
+}
+
+function HeaderSection({
+	data,
+	t,
+	documentSubtitle,
+}: {
+	data: ReportData
+	t: PdfTranslations
+	documentSubtitle: DocumentSubtitle
+}) {
 	const reportDate = formatDate(data.report.createdAt)
 	const reportId = data.report.id.slice(0, 8).toUpperCase()
 
@@ -482,13 +509,7 @@ function HeaderSection({ data, t }: { data: ReportData; t: PdfTranslations }) {
 			<View style={styles.headerRow}>
 				<View style={styles.headerLeft}>
 					<Text style={styles.headerTitle}>{data.report.title}</Text>
-					<Text style={styles.headerSubtitle}>
-						{data.report.reportType === 'BE'
-							? t.vehicleValuation
-							: data.report.reportType === 'OT'
-								? t.oldtimerValuation
-								: t.vehicleDamageAssessment}
-					</Text>
+					<Text style={styles.headerSubtitle}>{documentSubtitleLabel(documentSubtitle, t)}</Text>
 				</View>
 				<View style={styles.headerRight}>
 					<Text style={styles.reportNumber}>
@@ -565,20 +586,31 @@ function AccidentInfoSection({
 	accidentInfo,
 	claimantInfo,
 	opponentInfo,
+	hasAccidentSection,
+	hasOpponent,
+	customerLabel,
 	t,
 }: {
 	accidentInfo: ReportData['accidentInfo']
 	claimantInfo: ReportData['claimantInfo']
 	opponentInfo: ReportData['opponentInfo']
+	hasAccidentSection: boolean
+	hasOpponent: boolean
+	customerLabel: CustomerLabel
 	t: PdfTranslations
 }) {
-	if (!accidentInfo && !claimantInfo && !opponentInfo) return null
+	// The accident + opponent blocks belong only to types that have them, even
+	// if stray rows survive in the DB — the screen is the source of truth. This
+	// closes the leak where BE/OT reports printed a phantom Accident section.
+	const showAccident = hasAccidentSection && accidentInfo
+	const showOpponent = hasOpponent && opponentInfo
+	if (!showAccident && !claimantInfo && !showOpponent) return null
 
 	return (
 		<View style={styles.section}>
 			<Text style={styles.sectionTitle}>{t.accidentInformation}</Text>
 
-			{accidentInfo && (
+			{hasAccidentSection && accidentInfo && (
 				<View style={{ marginBottom: 8 }}>
 					<DataRow label={t.date} value={formatDate(accidentInfo.accidentDay)} />
 					<DataRow label={t.accidentScene} value={displayValue(accidentInfo.accidentScene)} />
@@ -588,7 +620,7 @@ function AccidentInfoSection({
 			{claimantInfo && (
 				<View style={{ marginBottom: 8 }}>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 6, fontSize: 10 }]}>
-						{t.claimant}
+						{customerLabel === 'client' ? t.client : t.claimant}
 					</Text>
 					<DataRow
 						label={t.name}
@@ -621,7 +653,7 @@ function AccidentInfoSection({
 				</View>
 			)}
 
-			{opponentInfo && (
+			{hasOpponent && opponentInfo && (
 				<View style={{ marginBottom: 8 }}>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 6, fontSize: 10 }]}>
 						{t.opponent}
@@ -815,25 +847,29 @@ function ConditionSection({
 
 function CalculationSection({
 	calculation,
-	reportType,
+	calculationVariant,
 	t,
 }: {
 	calculation: ReportData['calculation']
-	reportType: string
+	calculationVariant: CalculationVariant
 	t: PdfTranslations
 }) {
 	if (!calculation) return null
 
-	const isBE = reportType === 'BE'
-	const isOT = reportType === 'OT'
-	const sectionTitle = isBE || isOT ? t.valuation : t.valuationAndCalculation
+	// Which calc block renders is decided by the report type's variant, NOT by
+	// which fields happen to be non-null — stray data from a type switch no
+	// longer prints a wrong-type block.
+	const isStandard = calculationVariant === 'standard'
+	const isValuation = calculationVariant === 'valuation'
+	const isOldtimer = calculationVariant === 'oldtimer'
+	const sectionTitle = isStandard ? t.valuationAndCalculation : t.valuation
 
 	return (
 		<View style={styles.section}>
 			<Text style={styles.sectionTitle}>{sectionTitle}</Text>
 
 			{/* HS/KG: Vehicle Value + Repair + Loss of Use */}
-			{!isBE && !isOT && (
+			{isStandard && (
 				<View>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
 						{t.vehicleValue}
@@ -859,8 +895,7 @@ function CalculationSection({
 				</View>
 			)}
 
-			{!isBE &&
-				!isOT &&
+			{isStandard &&
 				(calculation.repairMethod || calculation.damageClass || calculation.wheelAlignment) && (
 					<View style={{ marginTop: 8 }}>
 						<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
@@ -891,8 +926,7 @@ function CalculationSection({
 					</View>
 				)}
 
-			{!isBE &&
-				!isOT &&
+			{isStandard &&
 				(calculation.dropoutGroup || calculation.costPerDay || calculation.repairTimeDays) && (
 					<View style={{ marginTop: 8 }}>
 						<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
@@ -924,7 +958,7 @@ function CalculationSection({
 				)}
 
 			{/* BE Valuation */}
-			{(calculation.valuationMax != null || calculation.valuationAvg != null) && (
+			{isValuation && (
 				<View style={{ marginTop: 8 }}>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
 						{t.valuation}
@@ -957,7 +991,7 @@ function CalculationSection({
 			)}
 
 			{/* OT Valuation */}
-			{(calculation.marketValue != null || calculation.baseVehicleValue != null) && (
+			{isOldtimer && (
 				<View style={{ marginTop: 8 }}>
 					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 2, fontSize: 10 }]}>
 						{t.oldtimerValuationSection}
@@ -965,7 +999,7 @@ function CalculationSection({
 					{calculation.marketValue != null && (
 						<DataRow label={t.marketValue} value={formatCurrency(calculation.marketValue)} />
 					)}
-					{isOT && calculation.replacementValue != null && (
+					{calculation.replacementValue != null && (
 						<DataRow
 							label={t.replacementValue}
 							value={formatCurrency(calculation.replacementValue)}
@@ -1278,6 +1312,7 @@ function ReportPdfDocument({
 }) {
 	const includeValuation = data.exportConfig.includeVehicleValuation
 	const includeInvoice = data.exportConfig.includeInvoice
+	const config = resolveReportTypeConfig(data.report.reportType)
 
 	return (
 		<Document
@@ -1287,12 +1322,15 @@ function ReportPdfDocument({
 			creator="Gut8erPRO"
 		>
 			<Page size="A4" style={styles.page}>
-				<HeaderSection data={data} t={t} />
+				<HeaderSection data={data} t={t} documentSubtitle={config.documentSubtitle} />
 				<VehicleInfoSection vehicleInfo={data.vehicleInfo} t={t} locale={locale} />
 				<AccidentInfoSection
 					accidentInfo={data.accidentInfo}
 					claimantInfo={data.claimantInfo}
 					opponentInfo={data.opponentInfo}
+					hasAccidentSection={config.hasAccidentSection}
+					hasOpponent={config.hasOpponent}
+					customerLabel={config.customerLabel}
 					t={t}
 				/>
 				<VisitsSection
@@ -1305,7 +1343,7 @@ function ReportPdfDocument({
 				{includeValuation && (
 					<CalculationSection
 						calculation={data.calculation}
-						reportType={data.report.reportType}
+						calculationVariant={config.calculationVariant}
 						t={t}
 					/>
 				)}

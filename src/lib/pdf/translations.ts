@@ -23,6 +23,7 @@ type PdfTranslations = {
 	previousOwners: string
 	accidentInformation: string
 	claimant: string
+	client: string
 	name: string
 	company: string
 	address: string
@@ -154,6 +155,7 @@ const translations: Record<Locale, PdfTranslations> = {
 		previousOwners: 'Previous Owners',
 		accidentInformation: 'Accident Information',
 		claimant: 'Claimant',
+		client: 'Client',
 		name: 'Name',
 		company: 'Company',
 		address: 'Address',
@@ -282,6 +284,7 @@ const translations: Record<Locale, PdfTranslations> = {
 		previousOwners: 'Vorbesitzer',
 		accidentInformation: 'Unfallinformationen',
 		claimant: 'Geschädigter',
+		client: 'Auftraggeber',
 		name: 'Name',
 		company: 'Firma',
 		address: 'Adresse',

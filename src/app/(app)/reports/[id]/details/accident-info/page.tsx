@@ -18,6 +18,7 @@ import { Modal } from '@/components/ui/modal'
 import { useAccidentInfo, useDeleteSignature, useSaveSignature } from '@/hooks/use-accident-info'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useReport } from '@/hooks/use-reports'
+import { resolveReportTypeConfig } from '@/lib/report-type'
 import { useToastStore } from '@/stores/toast-store'
 
 type SignatureType = 'LAWYER' | 'DATA_PERMISSION' | 'CANCELLATION'
@@ -29,6 +30,7 @@ function AccidentInfoPage() {
 	const reportId = params.id
 	const { data, isLoading } = useAccidentInfo(reportId)
 	const { data: report } = useReport(reportId)
+	const config = resolveReportTypeConfig(report?.reportType)
 	const saveSignature = useSaveSignature(reportId)
 	const deleteSignature = useDeleteSignature(reportId)
 
@@ -255,7 +257,7 @@ function AccidentInfoPage() {
 			{/* Page heading with completion badge + auto-save status */}
 			<div className="flex items-center justify-between">
 				<h2 className="text-subsection font-medium text-black">
-					{report?.reportType === 'OT'
+					{config.customerLabel === 'client'
 						? t('accidentInfo.clientInformation')
 						: t('accidentInfo.title')}
 				</h2>
@@ -291,7 +293,7 @@ function AccidentInfoPage() {
 			</div>
 
 			{/* Form sections — some hidden per report type */}
-			{report?.reportType !== 'BE' && report?.reportType !== 'OT' && (
+			{config.hasAccidentSection && (
 				<AccidentSection
 					register={register}
 					control={control}
@@ -308,7 +310,7 @@ function AccidentInfoPage() {
 				reportType={report?.reportType}
 			/>
 
-			{report?.reportType !== 'BE' && report?.reportType !== 'OT' && (
+			{config.hasOpponent && (
 				<OpponentSection
 					register={register}
 					control={control}

@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { replaceChildren } from '@/lib/api/replace-children'
 import { prisma } from '@/lib/prisma'
 import { invoicePatchSchema } from '@/lib/validations/invoice'
 
@@ -127,50 +128,20 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		}
 	}
 
-	// Handle line items — if all items lack IDs, replace all existing
+	// Line items: one transactional id-diff replace (see lib/api/replace-children).
+	// The client sends the whole array as source of truth, so removed rows are
+	// deleted automatically — no separate deleteLineItemIds path is needed.
 	if (data.lineItems) {
-		const allNew = data.lineItems.every((li) => !li.id)
-		if (allNew) {
-			// Replace all: delete existing, create new
-			await prisma.invoiceLineItem.deleteMany({ where: { invoiceId: invoice.id } })
-		}
-
-		const lineItemResults = []
-		for (const lineItem of data.lineItems) {
-			const { id: lineItemId, ...lineItemData } = lineItem
-			if (lineItemId && !allNew) {
-				const existing = await prisma.invoiceLineItem.findFirst({
-					where: { id: lineItemId, invoiceId: invoice.id },
-				})
-				if (existing) {
-					const updated = await prisma.invoiceLineItem.update({
-						where: { id: lineItemId },
-						data: lineItemData,
-					})
-					lineItemResults.push(updated)
-				}
-			} else {
-				const created = await prisma.invoiceLineItem.create({
-					data: {
-						invoiceId: invoice.id,
-						...lineItemData,
-					},
-				})
-				lineItemResults.push(created)
-			}
-		}
-		results.lineItems = lineItemResults
-	}
-
-	// Delete line items
-	if (data.deleteLineItemIds && data.deleteLineItemIds.length > 0) {
-		await prisma.invoiceLineItem.deleteMany({
-			where: {
-				id: { in: data.deleteLineItemIds },
-				invoiceId: invoice.id,
-			},
-		})
-		results.deletedLineItems = data.deleteLineItemIds
+		const incoming = data.lineItems
+		const invoiceId = invoice.id
+		results.lineItems = await prisma.$transaction((tx) =>
+			replaceChildren(tx.invoiceLineItem, {
+				parentKey: 'invoiceId',
+				parentId: invoiceId,
+				incoming,
+				orderBy: { order: 'asc' },
+			}),
+		)
 	}
 
 	// Touch the report's updatedAt timestamp

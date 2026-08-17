@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Architecture review — Gut8erPRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose", flowchart: { curve: "basis" } });
+    </script>
+    <style>
+      .seam { stroke-dasharray: 5 4; }
+      .deep { background: linear-gradient(135deg, #0f172a, #1e293b); }
+      .band { border-left-width: 5px; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .mermaid { display:flex; justify-content:center; }
+      h1,h2,h3 { font-family: ui-serif, Georgia, "Times New Roman", serif; }
+      .card { scroll-margin-top: 2rem; }
+    </style>
+  </head>
+  <body class="bg-stone-50 text-slate-900">
+    <main class="max-w-5xl mx-auto px-6 py-12 space-y-14">
+
+      <!-- ================= HEADER ================= -->
+      <header class="space-y-6">
+        <div class="flex items-baseline justify-between flex-wrap gap-3">
+          <h1 class="text-4xl font-bold tracking-tight">Architecture review — <span class="text-emerald-700">Gut8erPRO</span></h1>
+          <span class="mono text-sm text-slate-500">2026-08-05</span>
+        </div>
+        <p class="text-slate-600 max-w-3xl">Seven deepening opportunities, ranked by leverage. Each turns a <em>shallow</em> module — interface nearly as wide as its implementation — into a <em>deep</em> one: a lot of behaviour behind a small interface, tested through that interface. Terms are used precisely: <span class="mono">module · interface · implementation · depth · seam · adapter · leverage · locality</span>.</p>
+
+        <!-- legend -->
+        <div class="flex flex-wrap gap-5 items-center text-xs uppercase tracking-wider text-slate-500 border-y border-slate-200 py-4">
+          <span class="flex items-center gap-2"><span class="inline-block w-6 h-4 border border-slate-400 bg-white"></span> module</span>
+          <span class="flex items-center gap-2"><svg width="34" height="8"><line x1="0" y1="4" x2="34" y2="4" stroke="#64748b" stroke-width="2" class="seam"/></svg> seam</span>
+          <span class="flex items-center gap-2"><svg width="34" height="8"><line x1="0" y1="4" x2="34" y2="4" stroke="#dc2626" stroke-width="2"/></svg> leakage</span>
+          <span class="flex items-center gap-2"><span class="inline-block w-6 h-4 border-2 border-slate-900 deep"></span> deep module</span>
+          <span class="flex items-center gap-2"><span class="inline-block px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 normal-case tracking-normal">Strong</span><span class="inline-block px-2 py-0.5 rounded bg-amber-100 text-amber-800 normal-case tracking-normal">Worth exploring</span><span class="inline-block px-2 py-0.5 rounded bg-slate-200 text-slate-700 normal-case tracking-normal">Speculative</span></span>
+        </div>
+
+        <!-- at-a-glance table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="text-left text-slate-500 uppercase tracking-wider text-xs border-b border-slate-200">
+                <th class="py-2 pr-3">#</th><th class="py-2 pr-3">Deepening</th><th class="py-2 pr-3">Shallow today because…</th><th class="py-2 pr-3">Strength</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr><td class="py-2 pr-3 mono">1</td><td class="py-2 pr-3"><a class="text-emerald-700 hover:underline" href="#c1">Report-type policy module</a></td><td class="py-2 pr-3 text-slate-600">bare string re-interpreted in 11 files</td><td class="py-2 pr-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs">Strong</span></td></tr>
+              <tr><td class="py-2 pr-3 mono">2</td><td class="py-2 pr-3"><a class="text-emerald-700 hover:underline" href="#c2">Pipeline result seam</a></td><td class="py-2 pr-3 text-slate-600"><span class="mono">_payloads</span> cast bypasses the interface</td><td class="py-2 pr-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs">Strong</span></td></tr>
+              <tr><td class="py-2 pr-3 mono">3</td><td class="py-2 pr-3"><a class="text-emerald-700 hover:underline" href="#c3">Cached vision-operation module</a></td><td class="py-2 pr-3 text-slate-600">check-call-parse triad copied ~13×</td><td class="py-2 pr-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs">Strong</span></td></tr>
+              <tr><td class="py-2 pr-3 mono">4</td><td class="py-2 pr-3"><a class="text-emerald-700 hover:underline" href="#c4">withReportSection route wrapper</a></td><td class="py-2 pr-3 text-slate-600">guard/validate/touch copied 12×, drifted</td><td class="py-2 pr-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs">Strong</span></td></tr>
+              <tr><td class="py-2 pr-3 mono">5</td><td class="py-2 pr-3"><a class="text-emerald-700 hover:underline" href="#c5">Child-collection persistence</a></td><td class="py-2 pr-3 text-slate-600">"replace-all" implemented 3 divergent ways</td><td class="py-2 pr-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs">Strong</span></td></tr>
+              <tr><td class="py-2 pr-3 mono">6</td><td class="py-2 pr-3"><a class="text-emerald-700 hover:underline" href="#c6">PDF view-model seam</a></td><td class="py-2 pr-3 text-slate-600">fetch + map + render welded, untestable</td><td class="py-2 pr-3"><span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-xs">Worth exploring</span></td></tr>
+              <tr><td class="py-2 pr-3 mono">7</td><td class="py-2 pr-3"><a class="text-emerald-700 hover:underline" href="#c7">Settings feature modules</a></td><td class="py-2 pr-3 text-slate-600">5 feature slabs share one client boundary</td><td class="py-2 pr-3"><span class="px-2 py-0.5 rounded bg-slate-200 text-slate-700 text-xs">Speculative</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </header>
+
+      <section id="candidates" class="space-y-16">
+
+      <!-- ================= CARD 1 ================= -->
+      <article id="c1" class="card space-y-6">
+        <div class="flex items-center gap-3 flex-wrap">
+          <h2 class="text-2xl font-bold">1 · Deepen <span class="mono text-xl">reportType</span> into a policy module</h2>
+          <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-semibold">Strong</span>
+          <span class="px-2 py-0.5 rounded bg-slate-200 text-slate-600 text-xs mono">in-process</span>
+        </div>
+
+        <div class="mono text-xs text-slate-500 space-y-0.5">
+          <div>src/lib/validations/reports.ts:3 · src/hooks/use-tab-completion.ts:41-175 · src/lib/pdf/report-template.tsx:486-999</div>
+          <div>details/{accident-info,calculation,condition}/page.tsx · details/layout.tsx · accident-info/{claimant,visit}-section.tsx · use-reports.ts:17,60 · accident-info/types.ts:65</div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-2">Before — leaky seam</div>
+            <pre class="mermaid">
+flowchart LR
+  T["reportType: string?"]
+  T -->|isOT| A["accident-info/page"]
+  T -->|isBE isOT| C["calculation/page"]
+  T -->|isOT| D["condition/page"]
+  T -->|isBEorOT| L["details/layout"]
+  T -->|isOT| CL["claimant-section"]
+  T -->|isBE isOT| P["pdf report-template"]
+  T -->|counts| TC["use-tab-completion"]
+  P -.->|re-derives type from<br/>field presence| P
+  classDef leak stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+  classDef hub fill:#fee2e2,stroke:#dc2626,stroke-width:2px;
+  class T hub
+  class A,C,D,L,CL,P,TC,leak leak
+            </pre>
+            <p class="text-xs text-slate-500 mt-2">Each consumer re-derives its own <span class="mono">isOT/isBE</span> and re-encodes the rule. Copies disagree: the PDF prints an accident section the form hides.</p>
+          </div>
+          <div class="rounded-lg border-2 border-slate-900 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-2">After — one deep module</div>
+            <pre class="mermaid">
+flowchart LR
+  A["accident-info/page"] --> M
+  C["calculation/page"] --> M
+  D["condition/page"] --> M
+  P["pdf report-template"] --> M
+  TC["use-tab-completion"] --> M
+  M["reportTypePolicy(type)<br/>hasAccidentSection · hasOpponent<br/>claimantLabel · calculationVariant<br/>sectionsFor"]
+  classDef deep fill:#0f172a,stroke:#0f172a,color:#e2e8f0,stroke-width:2px;
+  class M deep
+            </pre>
+            <p class="text-xs text-slate-500 mt-2">One module answers every per-type question. Consumers read policy, never the raw string. New type = one config row + exhaustiveness check.</p>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 text-sm">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Problem</div>
+            <p class="text-slate-700">The report type is a bare nullable string; the same rule ("BE/OT hide accident info", "OT says Client not Claimant") is re-expressed 3–4× and the copies have already drifted.</p>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1 mt-4">Solution</div>
+            <p class="text-slate-700">A <span class="mono">reportTypePolicy</span> module keyed by a config table, exposing questions instead of a string. Every branch site calls it.</p>
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Wins</div>
+            <ul class="list-disc list-inside text-slate-700 space-y-1">
+              <li>Leverage: one interface, 11 call sites</li>
+              <li>Locality: type rules concentrate in one module</li>
+              <li>PDF stops diverging from the form</li>
+              <li>New type is a config row, not a file hunt</li>
+              <li>Exhaustive union kills silent HS fallthrough</li>
+              <li>Delete 3 inline union redeclarations</li>
+            </ul>
+          </div>
+        </div>
+        <div class="rounded bg-amber-50 border border-amber-200 text-amber-900 text-sm px-4 py-2">Latent bug this surfaces: for <span class="mono">BE</span>, the correction section renders in the form but is not counted by <span class="mono">use-tab-completion</span> — the meter can never reach 100%.</div>
+      </article>
+
+      <!-- ================= CARD 2 ================= -->
+      <article id="c2" class="card space-y-6">
+        <div class="flex items-center gap-3 flex-wrap">
+          <h2 class="text-2xl font-bold">2 · Give the pipeline a real result seam</h2>
+          <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-semibold">Strong</span>
+          <span class="px-2 py-0.5 rounded bg-slate-200 text-slate-600 text-xs mono">in-process</span>
+        </div>
+        <div class="mono text-xs text-slate-500">src/lib/ai/pipeline.ts:135-141, 619-642 · src/app/api/reports/[id]/generate/route.ts:164-196, 201-740</div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-3">Before — the interface is a lie</div>
+            <div class="relative" style="height:250px">
+              <div class="absolute inset-x-2 top-0 border border-slate-300 rounded px-3 py-2 bg-white">
+                <div class="mono text-xs text-slate-500">runPipeline(): <span class="text-slate-900">GenerationSummary</span></div>
+                <div class="text-[11px] text-slate-400">declared interface — narrow, honest-looking</div>
+              </div>
+              <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 250" preserveAspectRatio="none">
+                <path d="M 200 44 C 320 90, 330 150, 200 196" fill="none" stroke="#dc2626" stroke-width="2"/>
+                <polygon points="200,196 208,186 192,186" fill="#dc2626"/>
+                <text x="332" y="125" font-size="10" fill="#dc2626" text-anchor="middle">(summary as … )</text>
+                <text x="332" y="138" font-size="10" fill="#dc2626" text-anchor="middle">._payloads = …</text>
+              </svg>
+              <div class="absolute inset-x-2 bottom-0 border-2 border-dashed border-red-400 rounded px-3 py-2 bg-red-50">
+                <div class="mono text-xs text-red-800">_payloads — the ~15-field object the caller actually needs</div>
+                <div class="text-[11px] text-red-600">smuggled by cast · type re-declared by hand in the route · fed to a 540-line persistResults</div>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-lg border-2 border-slate-900 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-3">After — result crosses the interface</div>
+            <div class="space-y-3 pt-1">
+              <div class="deep text-slate-100 rounded px-3 py-3">
+                <div class="mono text-xs">runPipeline(): GenerationResult</div>
+                <div class="text-[11px] text-slate-400">typed view model — every payload the caller needs, in the return</div>
+              </div>
+              <div class="flex justify-center"><svg width="20" height="26"><line x1="10" y1="0" x2="10" y2="20" stroke="#0f172a" stroke-width="2" class="seam"/><polygon points="10,26 4,16 16,16" fill="#0f172a"/></svg></div>
+              <div class="border-2 border-slate-900 rounded px-3 py-3">
+                <div class="mono text-xs text-slate-900">persistReport(result, db)</div>
+                <div class="text-[11px] text-slate-500">consumes the view model · db injected · tire/kW logic testable without a database</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 text-sm">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Problem</div>
+            <p class="text-slate-700">The pipeline's real output escapes through a <span class="mono">_payloads</span> cast, and <span class="mono">persistResults</span> is a 540-line procedure that re-derives the field lists the pipeline already computed, with kW→HP and tire-position logic buried inside inline <span class="mono">prisma</span> calls.</p>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1 mt-4">Solution</div>
+            <p class="text-slate-700">Return a typed <span class="mono">GenerationResult</span> view model; a <span class="mono">persistReport</span> module accepts it plus an injected db and does the writes.</p>
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Wins</div>
+            <ul class="list-disc list-inside text-slate-700 space-y-1">
+              <li>Interface is the test surface again</li>
+              <li>Field list lives in one place, not two</li>
+              <li>Tire assignment testable without a DB</li>
+              <li>Delete the hand-synced payload type in the route</li>
+              <li>Locality: DB writes concentrate behind one seam</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <!-- ================= CARD 3 ================= -->
+      <article id="c3" class="card space-y-6">
+        <div class="flex items-center gap-3 flex-wrap">
+          <h2 class="text-2xl font-bold">3 · A cached vision-operation module</h2>
+          <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-semibold">Strong</span>
+          <span class="px-2 py-0.5 rounded bg-slate-200 text-slate-600 text-xs mono">mock (Anthropic)</span>
+        </div>
+        <div class="mono text-xs text-slate-500">src/lib/ai/{classifier,damage-analyzer,interior-analyzer,overview-analyzer,tire-analyzer}.ts · cache.ts:1-16 · pipeline.ts:922-1121 · api/ai/*/route.ts</div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-3">Before — triad copied ~13×</div>
+            <div class="space-y-1.5">
+              <div class="grid grid-cols-3 gap-1 text-[10px] text-center text-slate-500 mb-1"><div>check cache</div><div>call model</div><div>parse + set</div></div>
+              <!-- 6 rows representing call sites -->
+              <div class="space-y-1">
+                <div class="flex gap-1"><div class="flex-1 h-6 bg-red-50 border border-red-200 rounded text-[10px] flex items-center px-2 mono">damage</div><div class="w-14 h-6 bg-slate-100 border border-slate-200"></div><div class="w-14 h-6 bg-slate-100 border border-slate-200"></div></div>
+                <div class="flex gap-1"><div class="flex-1 h-6 bg-red-50 border border-red-200 rounded text-[10px] flex items-center px-2 mono">interior</div><div class="w-14 h-6 bg-slate-100 border border-slate-200"></div><div class="w-14 h-6 bg-slate-100 border border-slate-200"></div></div>
+                <div class="flex gap-1"><div class="flex-1 h-6 bg-red-50 border border-red-200 rounded text-[10px] flex items-center px-2 mono">overview</div><div class="w-14 h-6 bg-slate-100 border border-slate-200"></div><div class="w-14 h-6 bg-slate-100 border border-slate-200"></div></div>
+                <div class="flex gap-1"><div class="flex-1 h-6 bg-red-50 border border-red-200 rounded text-[10px] flex items-center px-2 mono">tire</div><div class="w-14 h-6 bg-slate-100 border border-slate-200"></div><div class="w-14 h-6 bg-slate-100 border border-slate-200"></div></div>
+                <div class="flex gap-1"><div class="flex-1 h-6 bg-red-50 border border-red-200 rounded text-[10px] flex items-center px-2 mono">vin / plate / ocr ×2</div><div class="w-14 h-6 bg-slate-100 border border-slate-200"></div><div class="w-14 h-6 bg-slate-100 border border-slate-200"></div></div>
+                <div class="text-center text-slate-400 text-xs">… ~13 sites total</div>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-2">Each analyzer owns its own caching, locale suffix, fence-strip + <span class="mono">JSON.parse</span>. The documented concentrator <span class="mono">withAiCache</span> was never built.</p>
+            </div>
+          </div>
+          <div class="rounded-lg border-2 border-slate-900 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-3">After — one deep operation</div>
+            <div class="pt-2 space-y-3">
+              <div class="deep text-slate-100 rounded px-3 py-3">
+                <div class="mono text-xs">runVisionOp(op, image, { locale, client })</div>
+                <div class="text-[11px] text-slate-400">cache key · locale strictness · fence-strip + parse · model choice — all inside</div>
+              </div>
+              <div class="grid grid-cols-3 gap-1 text-[10px] text-center">
+                <div class="h-6 border border-slate-300 rounded flex items-center justify-center mono">damage</div>
+                <div class="h-6 border border-slate-300 rounded flex items-center justify-center mono">tire</div>
+                <div class="h-6 border border-slate-300 rounded flex items-center justify-center mono">vin</div>
+              </div>
+              <p class="text-[11px] text-slate-500">Call sites become one line. <span class="mono">client</span> injected → a fake Anthropic makes wiring bugs testable at last.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 text-sm">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Problem</div>
+            <p class="text-slate-700">Caching, locale-strictness and JSON parsing are cross-cutting concerns smeared across ~13 sites; cache-key shape and "which ops are locale-aware" are each encoded in 3 places that must agree. Every analyzer news up its own <span class="mono">Anthropic</span> client, so only leaf parsers are tested while the wiring bugs have no test surface.</p>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1 mt-4">Solution</div>
+            <p class="text-slate-700">One <span class="mono">runVisionOp</span> module owns the cache→call→parse triad and accepts an injected client; the per-op differences become data (prompt, schema, locale-aware flag).</p>
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Wins</div>
+            <ul class="list-disc list-inside text-slate-700 space-y-1">
+              <li>Collapse ~13 triads into one interface</li>
+              <li>Cache-key + locale rule live once</li>
+              <li>Injected client → wiring becomes testable</li>
+              <li>VIN/plate/OCR stop drifting across stacks</li>
+              <li>Builds the <span class="mono">withAiCache</span> the comment promised</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <!-- ================= CARD 4 ================= -->
+      <article id="c4" class="card space-y-6">
+        <div class="flex items-center gap-3 flex-wrap">
+          <h2 class="text-2xl font-bold">4 · <span class="mono text-xl">withReportSection</span> route wrapper</h2>
+          <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-semibold">Strong</span>
+          <span class="px-2 py-0.5 rounded bg-slate-200 text-slate-600 text-xs mono">in-process</span>
+        </div>
+        <div class="mono text-xs text-slate-500">api/reports/[id]/{accident-info,vehicle,condition,calculation,invoice,export}/route.ts · use-auto-save.ts:49-67 · the six use-*.ts hooks</div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-3">Before — same 5 bands, ×6 routes</div>
+            <div class="space-y-1">
+              <div class="band border-red-300 bg-red-50 h-7 rounded flex items-center px-3 text-[11px] mono">auth guard</div>
+              <div class="band border-red-300 bg-red-50 h-7 rounded flex items-center px-3 text-[11px] mono">load report + ownership 404</div>
+              <div class="band border-red-300 bg-red-50 h-7 rounded flex items-center px-3 text-[11px] mono">lock check (403… or 423, or missing)</div>
+              <div class="band border-slate-300 bg-white h-14 rounded flex items-center px-3 text-[11px] mono text-slate-700">distinct field mapping + upsert</div>
+              <div class="band border-red-300 bg-red-50 h-7 rounded flex items-center px-3 text-[11px] mono">validate body</div>
+              <div class="band border-red-300 bg-red-50 h-7 rounded flex items-center px-3 text-[11px] mono">touch updatedAt</div>
+              <p class="text-[11px] text-slate-500 mt-2">~25% of every route is identical wrapper — already drifted (<span class="mono">user?.id</span> vs <span class="mono">user.id</span>, 403 vs 423, export has no lock check).</p>
+            </div>
+          </div>
+          <div class="rounded-lg border-2 border-slate-900 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-3">After — one band absorbs the rest</div>
+            <div class="space-y-1 pt-1">
+              <div class="deep text-slate-100 h-16 rounded flex items-center px-3 text-[11px] mono">withReportSection(&#123; schema &#125;, handler)<br/><span class="text-[10px] text-slate-400">auth · ownership · lock · validate · touch — once</span></div>
+              <div class="band border-slate-900 bg-white h-14 rounded flex items-center px-3 text-[11px] mono text-slate-900">handler: field mapping + upsert</div>
+              <p class="text-[11px] text-slate-500 mt-2">Route body shrinks to its distinct upsert. One PATCH path — the ~15 dead <span class="mono">useSaveX</span> mutations (0 consumers) get deleted.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 text-sm">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Problem</div>
+            <p class="text-slate-700">The auth + load-report + ownership + lock + validate + touch skeleton is copy-pasted into 12 handlers and has drifted. Meanwhile two PATCH clients exist per section: <span class="mono">useAutoSave.patchSection</span> (live) and <span class="mono">patchXSection</span> feeding ~15 <span class="mono">useSaveX</span> hooks that nothing calls.</p>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1 mt-4">Solution</div>
+            <p class="text-slate-700">A <span class="mono">withReportSection</span> wrapper owns the envelope; each route provides only its schema and upsert. Retire the dead hook layer onto the one PATCH path.</p>
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Wins</div>
+            <ul class="list-disc list-inside text-slate-700 space-y-1">
+              <li>Lock/ownership rule fixed once, everywhere</li>
+              <li>Export's missing lock check can't recur</li>
+              <li>Delete ~15 shallow, unused mutations</li>
+              <li>One PATCH path, not two</li>
+              <li>The wrapper is the place to add route tests</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <!-- ================= CARD 5 ================= -->
+      <article id="c5" class="card space-y-6">
+        <div class="flex items-center gap-3 flex-wrap">
+          <h2 class="text-2xl font-bold">5 · One child-collection persistence module</h2>
+          <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-semibold">Strong</span>
+          <span class="px-2 py-0.5 rounded bg-slate-200 text-slate-600 text-xs mono">in-process</span>
+        </div>
+        <div class="mono text-xs text-slate-500">accident-info/route.ts:118-165 · invoice/route.ts:131-174 · condition/route.ts:174-327 · calculation/route.ts:129-166</div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-3">Before — one rule, three implementations</div>
+            <div class="space-y-2">
+              <div class="border border-red-200 bg-red-50 rounded px-3 py-2"><div class="mono text-[11px] text-red-800">visits</div><div class="text-[11px] text-slate-600">ID-diff delete + upsert in a $transaction</div></div>
+              <div class="border border-red-200 bg-red-50 rounded px-3 py-2"><div class="mono text-[11px] text-red-800">lineItems</div><div class="text-[11px] text-slate-600">if all new → deleteMany + create (no txn)</div></div>
+              <div class="border border-red-200 bg-red-50 rounded px-3 py-2"><div class="mono text-[11px] text-red-800">markers / tireSets / costs</div><div class="text-[11px] text-slate-600">upsert loop + client-sent deleteXIds</div></div>
+              <p class="text-[11px] text-slate-500">CLAUDE.md describes <em>one</em> rule. Three strategies differ in transactionality and who owns deletion — and compensate for each other's bugs.</p>
+            </div>
+          </div>
+          <div class="rounded-lg border-2 border-slate-900 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-3">After — one strategy</div>
+            <div class="pt-6 space-y-3">
+              <div class="deep text-slate-100 rounded px-3 py-4">
+                <div class="mono text-xs">replaceChildren(tx, parentId, incoming)</div>
+                <div class="text-[11px] text-slate-400">ID-diff · transactional · one deletion semantics</div>
+              </div>
+              <div class="grid grid-cols-3 gap-1 text-[10px] text-center text-slate-500">
+                <div class="h-6 border border-slate-300 rounded flex items-center justify-center mono">visits</div>
+                <div class="h-6 border border-slate-300 rounded flex items-center justify-center mono">lineItems</div>
+                <div class="h-6 border border-slate-300 rounded flex items-center justify-center mono">markers</div>
+              </div>
+              <p class="text-[11px] text-slate-500">All child arrays go through one interface. Client stops tracking deletions.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 text-sm">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Problem</div>
+            <p class="text-slate-700">"Save an array of report children" is solved three incompatible ways. The visits path exists specifically to clean up duplicate rows the other path creates — the strategies are patching each other.</p>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1 mt-4">Solution</div>
+            <p class="text-slate-700">A single <span class="mono">replaceChildren</span> module with one deletion semantics, driven by data (parent, child model, incoming rows).</p>
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Wins</div>
+            <ul class="list-disc list-inside text-slate-700 space-y-1">
+              <li>Highest correctness payoff of the seven</li>
+              <li>Deletion semantics defined once</li>
+              <li>Duplicate-row class of bug closed</li>
+              <li>Client stops shipping <span class="mono">deleteXIds</span></li>
+              <li>One place to test array persistence</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <!-- ================= CARD 6 ================= -->
+      <article id="c6" class="card space-y-6">
+        <div class="flex items-center gap-3 flex-wrap">
+          <h2 class="text-2xl font-bold">6 · Open the PDF view-model seam</h2>
+          <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-xs font-semibold">Worth exploring</span>
+          <span class="px-2 py-0.5 rounded bg-slate-200 text-slate-600 text-xs mono">in-process</span>
+        </div>
+        <div class="mono text-xs text-slate-500">src/lib/pdf/generate-buffer.ts:10-293 · report-template.tsx:435-463, 1247 · settings/page.tsx:718</div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-3">Before — fetch + map + render welded</div>
+            <div class="pt-4">
+              <div class="border-2 border-red-300 bg-red-50 rounded-lg p-3 space-y-2">
+                <div class="mono text-[11px] text-red-800">generateReportPdfBuffer(reportId, userId)</div>
+                <div class="bg-white border border-slate-200 rounded px-2 py-1 text-[11px] mono">prisma.findFirst(50-line include)</div>
+                <div class="bg-white border border-slate-200 rounded px-2 py-1 text-[11px] mono">215-line hand map → ReportData</div>
+                <div class="bg-white border border-slate-200 rounded px-2 py-1 text-[11px] mono">renderToBuffer(…)</div>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-2">No injection, no exposed view model. The 215-line map can't be tested without a database; zero PDF tests exist. <span class="mono">ReportPdfDocument</span> itself is already deep — the fetch/map welding is what seals it shut.</p>
+            </div>
+          </div>
+          <div class="rounded-lg border-2 border-slate-900 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-3">After — three modules, one seam</div>
+            <div class="pt-4 space-y-2">
+              <div class="border border-slate-300 rounded px-3 py-2 text-[11px] mono">loadReport(db, id, userId)</div>
+              <div class="flex justify-center"><svg width="16" height="18"><line x1="8" y1="0" x2="8" y2="12" stroke="#0f172a" stroke-width="2" class="seam"/><polygon points="8,18 3,10 13,10" fill="#0f172a"/></svg></div>
+              <div class="deep text-slate-100 rounded px-3 py-2 text-[11px] mono">buildReportView(row): ReportView<br/><span class="text-[10px] text-slate-400">pure · testable · assertable</span></div>
+              <div class="flex justify-center"><svg width="16" height="18"><line x1="8" y1="0" x2="8" y2="12" stroke="#0f172a" stroke-width="2" class="seam"/><polygon points="8,18 3,10 13,10" fill="#0f172a"/></svg></div>
+              <div class="border border-slate-300 rounded px-3 py-2 text-[11px] mono">render(view) → buffer</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 text-sm">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Problem</div>
+            <p class="text-slate-700">The view model can't be obtained without hitting the DB, so the biggest, most bug-prone part — the mapping — is untestable. Locale rides along too: dates and currency are hardcoded <span class="mono">de-DE</span> so EN PDFs still print German dates, and <span class="mono">formatDate</span> exists in triplicate.</p>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1 mt-4">Solution</div>
+            <p class="text-slate-700">Expose <span class="mono">buildReportView</span> as a pure module between an injected <span class="mono">loadReport</span> and <span class="mono">render</span>; fold the three date/number helpers into one locale-aware formatting module.</p>
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Wins</div>
+            <ul class="list-disc list-inside text-slate-700 space-y-1">
+              <li>View-model mapping testable without a DB</li>
+              <li>Locale honored for dates + currency</li>
+              <li>Delete two duplicate <span class="mono">formatDate</span></li>
+              <li>Assert on the view, not a PDF binary</li>
+            </ul>
+          </div>
+        </div>
+        <div class="rounded bg-amber-50 border border-amber-200 text-amber-900 text-sm px-4 py-2">Cross-cut with Card 3: <span class="mono">pipeline.ts</span> imports <span class="mono">normalizeConditionValue</span> from the PDF layer — a renderer concern leaking upstream into AI aggregation. The formatting/enum module is the natural home for it.</div>
+      </article>
+
+      <!-- ================= CARD 7 ================= -->
+      <article id="c7" class="card space-y-6">
+        <div class="flex items-center gap-3 flex-wrap">
+          <h2 class="text-2xl font-bold">7 · Split settings into feature modules with injected data seams</h2>
+          <span class="px-2 py-0.5 rounded bg-slate-200 text-slate-700 text-xs font-semibold">Speculative</span>
+          <span class="px-2 py-0.5 rounded bg-slate-200 text-slate-600 text-xs mono">mock / ports</span>
+        </div>
+        <div class="mono text-xs text-slate-500">src/app/(app)/settings/[[...tab]]/page.tsx:86-1135 (BusinessSection:371 · PrivacySection:254-287 · TemplatesSection:971)</div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-3">Before — 1173 lines, one boundary</div>
+            <div class="grid grid-cols-2 gap-1">
+              <div class="h-10 border border-slate-300 bg-white rounded flex items-center justify-center text-[11px] mono">Profile</div>
+              <div class="h-10 border border-red-300 bg-red-50 rounded flex items-center justify-center text-[11px] mono">Business · inline supabase</div>
+              <div class="h-10 border border-red-300 bg-red-50 rounded flex items-center justify-center text-[11px] mono">Privacy · window + fetch</div>
+              <div class="h-10 border border-slate-300 bg-white rounded flex items-center justify-center text-[11px] mono">Billing · Stripe</div>
+              <div class="h-10 border border-red-300 bg-red-50 rounded col-span-2 flex items-center justify-center text-[11px] mono">Templates · pure MOCK, no backend</div>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-2">Five unrelated concerns share one <span class="mono">'use client'</span> module; each news up its own data access inline, so none renders in a test in isolation.</p>
+          </div>
+          <div class="rounded-lg border-2 border-slate-900 bg-white p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-3">After — deep feature modules</div>
+            <div class="space-y-1 pt-1">
+              <div class="border-2 border-slate-900 rounded h-8 flex items-center px-3 text-[11px] mono">ProfileSettings(data)</div>
+              <div class="border-2 border-slate-900 rounded h-8 flex items-center px-3 text-[11px] mono">BusinessSettings(data, upload)</div>
+              <div class="border-2 border-slate-900 rounded h-8 flex items-center px-3 text-[11px] mono">BillingSettings(data)</div>
+              <div class="text-[11px] text-slate-500">each accepts its data/ports seam · <span class="mono">TemplatesSection</span> either gets a backend or is deleted</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 text-sm">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Problem</div>
+            <p class="text-slate-700">The mega-page bundles five feature modules; <span class="mono">BusinessSection</span> dynamic-imports Supabase and uploads inline, <span class="mono">PrivacySection</span> news up <span class="mono">window</span>/<span class="mono">fetch</span> and hardcodes English, <span class="mono">TemplatesSection</span> is backed by <span class="mono">MOCK_TEMPLATES</span> with no persistence.</p>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1 mt-4">Solution</div>
+            <p class="text-slate-700">Extract each tab into its own module that accepts its data (and an upload port), so it renders and tests in isolation. Decide Templates: wire a backend or delete the stub.</p>
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-1">Wins</div>
+            <ul class="list-disc list-inside text-slate-700 space-y-1">
+              <li>Locality: one feature per module</li>
+              <li>Injected data seam → each tab testable</li>
+              <li>Supabase upload behind a port</li>
+              <li>The mock stub stops masquerading as a feature</li>
+            </ul>
+          </div>
+        </div>
+        <div class="rounded bg-slate-100 border border-slate-200 text-slate-600 text-sm px-4 py-2">Speculative because the deepening here is mostly locality + testability, not new leverage — the router-level <span class="mono">SettingsPage</span> orchestrator is already deep. Lower priority than 1–5.</div>
+      </article>
+
+      </section>
+
+      <!-- ================= TOP RECOMMENDATION ================= -->
+      <section id="top-recommendation" class="space-y-4">
+        <h2 class="text-2xl font-bold">Top recommendation</h2>
+        <div class="rounded-xl border-2 border-emerald-700 bg-white p-6 space-y-3">
+          <div class="flex items-center gap-3">
+            <span class="text-lg font-bold">Start with <a href="#c1" class="text-emerald-700 hover:underline">Card 1 — the report-type policy module</a>.</span>
+            <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-semibold">Strong</span>
+          </div>
+          <p class="text-slate-700 text-sm max-w-3xl">Best leverage-to-risk of the seven. It's a pure in-process module with no runtime dependencies, so it's the safest to adopt incrementally and the easiest to test in isolation — yet it pays back across 11 call sites, ends the copy-drift where the PDF contradicts the form, and turns "add a report type" from an 11-file hunt into one config row. It also gives the other cards a vocabulary: <span class="mono">calculationVariant(type)</span> is exactly what the PDF (Card 6) and tab-completion should ask instead of re-deriving <span class="mono">isBE/isOT</span>.</p>
+          <p class="text-slate-700 text-sm max-w-3xl"><span class="font-semibold">Highest correctness payoff follow-up:</span> <a href="#c5" class="text-emerald-700 hover:underline">Card 5 — child-collection persistence</a>, where three divergent "replace-all" strategies are currently compensating for each other's duplicate-row bugs.</p>
+        </div>
+      </section>
+
+      <footer class="text-xs text-slate-400 pt-6 border-t border-slate-200">Generated by the improve-codebase-architecture skill · vocabulary from codebase-design · read-only review, no files changed.</footer>
+    </main>
+  </body>
+</html>

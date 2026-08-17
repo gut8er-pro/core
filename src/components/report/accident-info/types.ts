@@ -1,4 +1,5 @@
 import type { Control, FieldErrors, UseFormRegister } from 'react-hook-form'
+import type { ReportType } from '@/lib/validations/reports'
 
 type AccidentInfoFormData = {
 	// Accident
@@ -62,7 +63,7 @@ type SectionProps = {
 	control: Control<AccidentInfoFormData>
 	errors: FieldErrors<AccidentInfoFormData>
 	onFieldBlur?: (field: string) => void
-	reportType?: 'HS' | 'BE' | 'KG' | 'OT'
+	reportType?: ReportType
 }
 
 type SignatureData = {

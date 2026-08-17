@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
+import { resolveReportTypeConfig } from '@/lib/report-type'
 import { cn } from '@/lib/utils'
 import type { SectionProps } from './types'
 
@@ -34,7 +35,7 @@ function VisitSection({
 	className,
 }: SectionProps & { className?: string }) {
 	const t = useTranslations('report')
-	const isOT = reportType === 'OT'
+	const config = resolveReportTypeConfig(reportType)
 
 	const VISIT_TYPE_OPTIONS = [
 		{ value: 'claimant_residence', label: t('accidentInfo.visits.typeOptions.claimantResidence') },
@@ -165,7 +166,7 @@ function VisitSection({
 				))}
 
 				{/* Present subsection — OT only */}
-				{isOT && (
+				{config.hasPresentSubsection && (
 					<div className="flex flex-col gap-3">
 						<Label className="text-body-sm font-semibold">{t('accidentInfo.visits.present')}</Label>
 						<div className="flex flex-wrap items-center gap-4">
