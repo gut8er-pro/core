@@ -26,3 +26,8 @@ The exact DNS records to set at the registrar (apex A/ALIAS + `www` CNAME → we
 **2026-09-01 — status.** **Blocked by 02** (no website project to deploy) and awaiting the owner's explicit go-ahead for outward-facing Vercel changes.
 
 One env var is already needed by merged code regardless of when the rest happens: `NEXT_PUBLIC_MARKETING_URL` must be set on the app's Vercel project. Until it is, `marketingUrl()` falls back to `https://gut8erpro.de` — correct for production by luck, but it should be explicit.
+
+**2026-09-01 — unblocked.** Ticket 02 is resolved: the marketing site exists at
+`gut8er/website`, builds clean, and is ready for a Vercel project. This ticket now waits only
+on the owner's go-ahead for the outward-facing Vercel/DNS changes. Note the website project
+also needs `PUBLIC_APP_URL=https://app.gut8erpro.de`.

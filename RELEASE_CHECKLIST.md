@@ -12,20 +12,22 @@
 
 ### 0. ⛔ DO NOT DEPLOY THIS BRANCH TO THE APEX DOMAIN
 The marketing/app split removed the landing page and all four `/legal/*` routes from this
-app (see `docs/adr/0001-split-marketing-site-from-dashboard-app.md`). **The Astro marketing
-site that is supposed to serve them does not exist yet** — `.scratch/marketing-app-split/issues/02-*`
-is still gated on scaffolding it.
+app (see `docs/adr/0001-split-marketing-site-from-dashboard-app.md`). The Astro marketing site
+that serves them now exists (`gut8er/website`), but **it is not deployed and DNS still points
+the apex at this app**.
 
 Right now `gut8erpro.de` *is* this app. Deploying this change to the apex before the split is
 complete takes the live Impressum and Datenschutz offline — a § 5 TMG / DSGVO Art. 13 exposure,
 i.e. blocker #1 below, made worse.
 
 Deploy only once **all** of the following hold:
-1. The Astro site is built and deployed (ticket 02).
+1. ~~The Astro site is built~~ — done, `gut8er/website`. It still needs a Vercel project and a
+   deploy (ticket 07).
 2. `app.gut8erpro.de` points at this app's Vercel project and `gut8erpro.de` + `www` point at
    the marketing project (ticket 07).
 3. Supabase Site URL and redirect allow-list point at `app.gut8erpro.de` (ticket 06).
-4. `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_MARKETING_URL` are set on this app's Vercel project.
+4. `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_MARKETING_URL` are set on this app's Vercel project,
+   and `PUBLIC_APP_URL` on the marketing project.
 
 Until then, keep this work on a branch. Rollback if it does ship early: reassign the domain and
 `git revert`.

@@ -1,6 +1,6 @@
 # 02 — Build the Astro marketing site
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 
 ## Gate
@@ -32,3 +32,40 @@ Carry the Impressum's placeholder company data faithfully; real data is the owne
 **2026-09-01 — status.** **Not started — the gate is unmet.** `gut8er/website` does not exist; the sibling directory alongside `core/` is empty. Per the ticket, the owner scaffolds the Astro project and reports the version + integrations, then this ticket can run.
 
 Prep done so the port is a straight read-across once unblocked: the deleted sources are snapshotted at `.scratch/marketing-app-split/source-snapshot/` — `landing-page.tsx`, the four `legal/` pages with their shared layout, and `globals.css` (the canonical `@theme` block). They are also in git history at `5024886`.
+
+**2026-09-01 — implemented.** The owner approved the agent scaffolding the project, so the
+gate was lifted rather than waited on. Built at the `gut8er/website` sibling directory as its
+own git repo (2 commits).
+
+Scaffold: Astro 7.2.9 + Tailwind v4 (`@tailwindcss/vite`) + `@astrojs/sitemap`, TS strict.
+Two version pins were forced and are documented in the site's README: `astro` is pinned
+exactly because this machine's pnpm enforces a `minimumReleaseAge` supply-chain policy that
+rejects 7.2.10 (published within the cutoff) — 7.2.9 predates it, so the policy is satisfied
+rather than bypassed; and `typescript` is pinned to `^6` because TS 7's native compiler no
+longer exposes the programmatic API `astro check` needs. The scaffold also hit exactly the
+pnpm 11 `allowBuilds` problem flagged in ticket 01 — `esbuild` would not build until a
+`pnpm-workspace.yaml` was added.
+
+Delivered against the acceptance criteria:
+- **Zero client JS.** `find dist -name '*.js'` is empty. The FAQ is a native `<details>`
+  disclosure and the language switcher is a plain `<a>`, so not even the "trivial script"
+  the ticket allowed was needed.
+- **German at `/`, English at `/en`**, with `hreflang` alternates on both plus `x-default`
+  → German. Verified in the built HTML and in `sitemap-0.xml`.
+- **SEO**: per-page `<title>`, meta description, canonical, Open Graph, `robots.txt`,
+  sitemap index.
+- **Visual parity** confirmed in a browser at both locales: hero + stat overlay, all four
+  feature cards (DAT tile, revenue chart, floating AI stat cards, icon grid), FAQ, footer.
+- **CTAs** resolve through `PUBLIC_APP_URL`; verified that a production-value build emits
+  `https://app.gut8erpro.de/...`.
+
+Two deliberate departures from the ticket, both recorded in the site's README:
+1. **Legal pages are German-only.** The ticket's i18n line implies everything is bilingual,
+   but these are German statutory texts (§ 5 TMG, DSGVO, AGB, Widerrufsbelehrung). Machine
+   translation of a legal notice is worse than none, so they are marked `monolingual` —
+   one canonical URL each, no `hreflang` — and both language footers link to them.
+2. **Inter is self-hosted via Fontsource, not Google Fonts.** The ticket allowed either.
+   Google's CDN transmits visitor IPs to a third party, which German courts have held to
+   breach the DSGVO and which contradicts the Datenschutzerklärung this very site serves.
+
+Impressum placeholders carried over faithfully, as instructed.
