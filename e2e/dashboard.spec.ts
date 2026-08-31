@@ -9,7 +9,7 @@ test.describe('Dashboard', () => {
 	test('dashboard page shows top nav bar with logo, settings, and notifications', async ({
 		page,
 	}) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 
 		// Top navigation bar
 		const header = page.locator('header')
@@ -27,13 +27,13 @@ test.describe('Dashboard', () => {
 	})
 
 	test('dashboard shows "Reports" heading', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 
 		await expect(page.getByRole('heading', { name: 'Reports' })).toBeVisible()
 	})
 
 	test('empty state shows descriptive message when no reports exist', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 
 		// When there are no reports, the subtitle says "Manage your vehicle assessment reports"
 		// (the report count text only appears when data.pagination.total is truthy)
@@ -43,7 +43,7 @@ test.describe('Dashboard', () => {
 	})
 
 	test('"New Report" button is visible', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 
 		const newReportButton = page.getByRole('button', { name: 'New Report' })
 		await expect(newReportButton).toBeVisible()

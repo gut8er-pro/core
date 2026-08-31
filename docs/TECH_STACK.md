@@ -11,7 +11,7 @@
 ```
 ┌─────────────────────────────────────────────────┐
 │                   FRONTEND                       │
-│  Next.js 15 · TypeScript · Tailwind v4           │
+│  Next.js 16 · TypeScript · Tailwind v4           │
 │  shadcn/ui · React Hook Form · Zod              │
 │  TanStack Query · Zustand · Fabric.js · Tiptap  │
 ├─────────────────────────────────────────────────┤
@@ -43,7 +43,7 @@
 
 ---
 
-## Frontend — Next.js 15 (App Router) + TypeScript
+## Frontend — Next.js 16 (App Router) + TypeScript
 
 **Why:** Next.js is the dominant React framework in 2026. App Router is fully
 mature. You get SSR for the landing/SEO pages, client-side interactivity for
@@ -666,7 +666,7 @@ Developer writes Prisma schema change
 | **Supabase vendor lock-in** | Low | Medium | Supabase is open-source. You can self-host. Prisma ORM abstracts the DB layer — switching to any PostgreSQL host (Neon, RDS, Railway) means changing one connection string. Auth migration is harder — plan for it if using Supabase Auth. |
 | **Supabase Free tier projects pause** | High | Low | Only affects development. Move to Pro ($25/mo) before any real users. |
 | **Fabric.js complexity** | Medium | Medium | Canvas annotation is the most complex UI feature. Fabric.js has a learning curve. Alternative: Konva.js or excalidraw-based solution. Start with a simple annotation MVP (rectangle + text) and iterate. |
-| **Next.js Server Actions maturity** | Low | Low | Server Actions are stable in Next.js 15. For complex backend logic, you can always add traditional API Route Handlers alongside them. |
+| **Next.js Server Actions maturity** | Low | Low | Server Actions are stable in Next.js 15+. For complex backend logic, you can always add traditional API Route Handlers alongside them. |
 | **Prisma performance at scale** | Low | Medium | Prisma adds slight overhead vs raw SQL. For 99% of queries this is negligible. For hot paths (report listing, search), you can drop to raw SQL via `prisma.$queryRaw`. |
 | **Large form performance** | Medium | Medium | Report editor has 100+ form fields across tabs. React Hook Form handles this well with `useForm` per tab (not one massive form). Lazy-load tab content. |
 | **Photo upload failures** | Medium | Medium | Implement resumable uploads with tus protocol or chunked upload. Add retry logic. Show progress per photo. Compress client-side before upload. |

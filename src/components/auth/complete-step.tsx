@@ -106,14 +106,14 @@ function CompleteStep() {
 				<div className="flex w-full max-w-[846px] gap-3.5">
 					<button
 						type="button"
-						onClick={() => router.push('/dashboard')}
+						onClick={() => router.push('/')}
 						className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] border-2 border-[#e5e7eb] bg-white px-[30px] text-[18px] font-medium text-black transition-colors hover:bg-grey-25"
 					>
 						Create your first report
 					</button>
 					<button
 						type="button"
-						onClick={() => router.push('/dashboard')}
+						onClick={() => router.push('/')}
 						className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] bg-primary px-[30px] text-[18px] font-medium text-white transition-colors hover:bg-primary-hover"
 					>
 						Go to Dashboard

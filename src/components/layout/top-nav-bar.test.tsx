@@ -5,7 +5,7 @@ import { TopNavBar } from './top-nav-bar'
 
 vi.mock('next/navigation', () => ({
 	useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
-	usePathname: () => '/dashboard',
+	usePathname: () => '/',
 	useParams: () => ({}),
 	useSearchParams: () => new URLSearchParams(),
 }))
@@ -44,7 +44,7 @@ describe('TopNavBar', () => {
 		const onNavigate = vi.fn()
 		render(<TopNavBar onNavigate={onNavigate} />)
 		await user.click(screen.getByLabelText('Dashboard'))
-		expect(onNavigate).toHaveBeenCalledWith('/dashboard')
+		expect(onNavigate).toHaveBeenCalledWith('/')
 	})
 
 	it('defaults to U for unknown user', () => {
@@ -53,7 +53,7 @@ describe('TopNavBar', () => {
 	})
 
 	it('shows active label text when activePath matches dashboard', () => {
-		render(<TopNavBar activePath="/dashboard" />)
+		render(<TopNavBar activePath="/" />)
 		const dashboardButton = screen.getByLabelText('Dashboard')
 		expect(dashboardButton).toHaveAttribute('aria-current', 'page')
 		expect(dashboardButton).toHaveTextContent('Dashboard')

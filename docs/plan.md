@@ -119,7 +119,7 @@ Each component gets a `.tsx` + `.test.tsx` file. Validated against specific desi
 - Report CRUD API routes: POST create, GET list/single, PATCH update, DELETE
 - TanStack Query hooks: `useReports`, `useCreateReport`, `useDeleteReport`
 
-**Files**: `src/app/(app)/dashboard/page.tsx`, `src/components/dashboard/report-list.tsx`, `src/app/api/reports/route.ts`, `src/app/api/reports/[id]/route.ts`, `src/hooks/use-reports.ts`
+**Files**: `src/app/(app)/page.tsx`, `src/components/dashboard/report-list.tsx`, `src/app/api/reports/route.ts`, `src/app/api/reports/[id]/route.ts`, `src/hooks/use-reports.ts`
 
 **Tests**: 6 files (page, list, card, hooks, API routes, validations)
 
@@ -326,7 +326,7 @@ Each component gets a `.tsx` + `.test.tsx` file. Validated against specific desi
 
 ## Phase 13: Landing Page + Settings + Polish
 
-**Goal**: Marketing landing page, settings page, loading states, error handling.
+**Goal**: Marketing landing page (since moved to the separate Astro site — see `docs/adr/0001-split-marketing-site-from-dashboard-app.md`), settings page, loading states, error handling.
 
 ### Landing Page (rewrite `src/app/page.tsx`)
 - Hero: headline, subtitle, CTA, stats badges, car image

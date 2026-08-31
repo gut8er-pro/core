@@ -2,21 +2,21 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Dashboard', () => {
 	test('dashboard loads with report list', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
 		await expect(page.getByText('Total Revenue')).toBeVisible()
 		await expect(page.getByText('Recent Reports')).toBeVisible()
 	})
 
 	test('revenue chart has period selector', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		await expect(page.getByText('Yearly')).toBeVisible()
 		await expect(page.getByText('Monthly')).toBeVisible()
 		await expect(page.getByText('Weekly')).toBeVisible()
 	})
 
 	test('nav bar elements visible', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		await expect(page.getByRole('button', { name: 'Dashboard' })).toBeVisible()
 		await expect(page.getByRole('button', { name: 'Statistics' })).toBeVisible()
 		await expect(page.getByRole('button', { name: 'Settings' })).toBeVisible()
@@ -24,7 +24,7 @@ test.describe('Dashboard', () => {
 	})
 
 	test('create HS report via API', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		const response = await page.evaluate(async () => {
 			const r = await fetch('/api/reports', {
 				method: 'POST',

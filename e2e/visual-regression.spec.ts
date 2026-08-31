@@ -2,16 +2,6 @@ import { test } from '@playwright/test'
 import { takeScreenshot, VIEWPORTS } from './helpers/visual-regression'
 
 test.describe('Visual Regression', () => {
-	test.describe('Landing Page', () => {
-		for (const [name, viewport] of Object.entries(VIEWPORTS)) {
-			test(`landing page - ${name}`, async ({ page }) => {
-				await page.setViewportSize(viewport)
-				await page.goto('/')
-				await takeScreenshot(page, `landing-${name}`)
-			})
-		}
-	})
-
 	test.describe('Login Page', () => {
 		for (const [name, viewport] of Object.entries(VIEWPORTS)) {
 			test(`login page - ${name}`, async ({ page }) => {

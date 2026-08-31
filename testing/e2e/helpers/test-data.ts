@@ -23,7 +23,7 @@ export async function createReportViaAPI(
 	title: string,
 	reportType: string,
 ): Promise<string> {
-	await page.goto('http://localhost:3000/dashboard')
+	await page.goto('/')
 	await page.waitForTimeout(500)
 	const id = await page.evaluate(
 		async (args: { title: string; reportType: string }) => {

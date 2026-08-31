@@ -47,7 +47,7 @@ async function POST() {
 	const priceId = process.env.STRIPE_PRO_PRICE_ID ?? ''
 	const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 	const url = await createCheckoutSession(user.id ?? '', priceId, customerId, {
-		successUrl: `${appUrl}/dashboard?payment=success`,
+		successUrl: `${appUrl}/?payment=success`,
 		cancelUrl: `${appUrl}/settings/billing`,
 	})
 

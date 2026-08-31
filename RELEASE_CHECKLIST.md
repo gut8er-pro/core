@@ -10,13 +10,42 @@
 
 ## 🚨 Hard blockers — fix before any paid customer touches the app
 
-### 1. Fill in the legal-page placeholders
-The four pages at `src/app/legal/*` are wired and linked from the landing footer, but the content still contains placeholders like `[Firmenname]`, `[datenschutz@beispiel.de]`, `[HRB …]`. Search for `[` in those files to see them all.
+### 0. ⛔ DO NOT DEPLOY THIS BRANCH TO THE APEX DOMAIN
+The marketing/app split removed the landing page and all four `/legal/*` routes from this
+app (see `docs/adr/0001-split-marketing-site-from-dashboard-app.md`). **The Astro marketing
+site that is supposed to serve them does not exist yet** — `.scratch/marketing-app-split/issues/02-*`
+is still gated on scaffolding it.
 
-- [`src/app/legal/impressum/page.tsx`](src/app/legal/impressum/page.tsx) — must satisfy § 5 TMG (company name, address, registry, USt-IdNr, responsible person)
-- [`src/app/legal/datenschutz/page.tsx`](src/app/legal/datenschutz/page.tsx) — DSGVO Art. 13 (data controller, processors, retention, rights)
-- [`src/app/legal/agb/page.tsx`](src/app/legal/agb/page.tsx) — terms of service
-- [`src/app/legal/widerruf/page.tsx`](src/app/legal/widerruf/page.tsx) — assumes B2B; adjust if you sell to consumers
+Right now `gut8erpro.de` *is* this app. Deploying this change to the apex before the split is
+complete takes the live Impressum and Datenschutz offline — a § 5 TMG / DSGVO Art. 13 exposure,
+i.e. blocker #1 below, made worse.
+
+Deploy only once **all** of the following hold:
+1. The Astro site is built and deployed (ticket 02).
+2. `app.gut8erpro.de` points at this app's Vercel project and `gut8erpro.de` + `www` point at
+   the marketing project (ticket 07).
+3. Supabase Site URL and redirect allow-list point at `app.gut8erpro.de` (ticket 06).
+4. `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_MARKETING_URL` are set on this app's Vercel project.
+
+Until then, keep this work on a branch. Rollback if it does ship early: reassign the domain and
+`git revert`.
+
+
+### 1. Fill in the legal-page placeholders
+The four legal pages have **moved out of this repo** — they now belong to the Astro marketing
+site on the apex domain (see `docs/adr/0001-split-marketing-site-from-dashboard-app.md`).
+Their last state in this repo is the snapshot at
+`.scratch/marketing-app-split/source-snapshot/legal/`, which is what the Astro port carries
+over verbatim, placeholders and all.
+
+The content still contains placeholders like `[Firmenname]`, `[datenschutz@beispiel.de]`,
+`[HRB …]`. Search for `[` in those files to see them all. Fill them in **on the marketing
+site** once it exists:
+
+- `impressum` — must satisfy § 5 TMG (company name, address, registry, USt-IdNr, responsible person)
+- `datenschutz` — DSGVO Art. 13 (data controller, processors, retention, rights)
+- `agb` — terms of service
+- `widerruf` — assumes B2B; adjust if you sell to consumers
 
 **After filling in the placeholders, have a German lawyer skim.** The template is reasonable but not a substitute for legal review.
 
@@ -47,11 +76,11 @@ SENTRY_AUTH_TOKEN=     # only if you want source map upload during build
 Without these, errors hit the console and disappear. First paying customer is the worst time to discover you have no monitoring.
 
 ### 5. Decide what to do about DAT integration
-[`src/components/report/calculation/dat-modal.tsx`](src/components/report/calculation/dat-modal.tsx) has zero `fetch` calls — it's a UI shell. The signup wizard collects DAT credentials and the landing page advertises DAT integration, but the calculation tab can't actually call SilverDAT3.
+[`src/components/report/calculation/dat-modal.tsx`](src/components/report/calculation/dat-modal.tsx) has zero `fetch` calls — it's a UI shell. The signup wizard collects DAT credentials and the marketing site's landing page advertises DAT integration, but the calculation tab can't actually call SilverDAT3.
 
 Options:
 - **Wire DAT for real** — requires SilverDAT3 API credentials and integration work
-- **Remove DAT branding from landing + onboarding for v1** and ship calc as fully-manual. Cheapest path to launch.
+- **Remove DAT branding from the marketing landing page + onboarding for v1** and ship calc as fully-manual. Cheapest path to launch. (The landing copy now lives in the marketing repo.)
 
 Don't ship with DAT advertised but non-functional — that's a refund magnet.
 

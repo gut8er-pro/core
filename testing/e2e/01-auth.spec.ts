@@ -2,14 +2,13 @@ import { test, expect } from '@playwright/test'
 import { TEST_ACCOUNT } from './helpers/test-data'
 
 test.describe('Auth Flow', () => {
-	test.use({ storageState: { cookies: [], origins: [] } }) // No auth for these tests
+	// No auth for these tests. English is pinned in playwright.config.ts.
+	test.use({ storageState: { cookies: [], origins: [] } })
 
-	test('landing page loads', async ({ page }) => {
+	test('app root redirects unauthenticated visitors to login', async ({ page }) => {
 		await page.goto('/')
-		await expect(page).toHaveTitle(/Gut8erPRO/)
-		await expect(page.getByText('Professional Vehicle Assessment')).toBeVisible()
-		await expect(page.getByRole('link', { name: 'Start Free Trial' }).first()).toBeVisible()
-		await expect(page.getByText('Log In')).toBeVisible()
+		await page.waitForURL('/login')
+		await expect(page.getByRole('button', { name: 'Log in' })).toBeVisible()
 	})
 
 	test('login page renders correctly', async ({ page }) => {
@@ -37,7 +36,7 @@ test.describe('Auth Flow', () => {
 		await page.getByRole('textbox', { name: 'Enter your email' }).fill(TEST_ACCOUNT.email)
 		await page.getByRole('textbox', { name: 'Enter your password' }).fill(TEST_ACCOUNT.password)
 		await page.getByRole('button', { name: 'Log in' }).click()
-		await page.waitForURL('/dashboard')
+		await page.waitForURL('/')
 		await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
 	})
 

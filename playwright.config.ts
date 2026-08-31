@@ -11,6 +11,10 @@ export default defineConfig({
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:3000',
+    // The app UI defaults to German; these specs assert English copy, so pin
+    // the language for every request. The middleware seeds NEXT_LOCALE from
+    // Accept-Language, so this covers specs with no stored cookie too.
+    extraHTTPHeaders: { 'Accept-Language': 'en-US,en;q=0.9' },
     trace: 'on-first-retry',
   },
   projects: [

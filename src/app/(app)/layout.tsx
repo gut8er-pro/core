@@ -54,8 +54,8 @@ function AppLayout({ children }: { children: ReactNode }) {
 					'Sachverständiger'
 				}
 				activePath={
-					pathname.startsWith('/dashboard')
-						? '/dashboard'
+					pathname === '/'
+						? '/'
 						: pathname.startsWith('/statistics')
 							? '/statistics'
 							: pathname.startsWith('/settings')

@@ -13,25 +13,6 @@ import { test, expect } from '@playwright/test'
 
 const REPORT_ID = 'test-report-1'
 
-test.describe('Responsive Behavior — Landing Page', () => {
-	test('navigation and hero render correctly at all viewport sizes', async ({ page }) => {
-		await page.goto('/')
-
-		// Navigation header is always visible
-		await expect(page.locator('header').first()).toBeVisible()
-
-		// Hero text is always visible
-		await expect(page.getByText('Professional Vehicle')).toBeVisible()
-		await expect(page.getByText('Damage Assessment')).toBeVisible()
-	})
-
-	test('footer is visible at all viewport sizes', async ({ page }) => {
-		await page.goto('/')
-
-		await expect(page.locator('footer')).toBeVisible()
-	})
-})
-
 test.describe('Responsive Behavior — Login Page', () => {
 	test('login form is always visible regardless of viewport', async ({ page }) => {
 		await page.goto('/login')
@@ -126,7 +107,7 @@ test.describe('Responsive Behavior — Dashboard Nav Buttons', () => {
 	test('top nav bar adapts user info display based on viewport', async ({
 		page,
 	}, testInfo) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 
 		// The user name text uses "hidden lg:block" — only visible at lg+
 		const header = page.locator('header')

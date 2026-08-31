@@ -26,6 +26,7 @@ import { TextField } from '@/components/ui/text-field'
 import { useSaveSettings, useUserSettings } from '@/hooks/use-settings'
 import { useBilling, useCreateCheckout, useCreatePortal } from '@/hooks/use-subscription'
 import { useToast } from '@/hooks/use-toast'
+import { marketingUrl } from '@/lib/urls'
 import { cn } from '@/lib/utils'
 import {
 	type BusinessSettingsInput,
@@ -283,8 +284,8 @@ function PrivacySection() {
 				toast.error(body.error ?? 'Delete failed. Please contact support.')
 				return
 			}
-			// Account is gone — drop the user back at the landing page.
-			window.location.href = '/'
+			// Account is gone — drop the user back at the marketing landing page.
+			window.location.href = marketingUrl()
 		} finally {
 			setIsDeleting(false)
 		}

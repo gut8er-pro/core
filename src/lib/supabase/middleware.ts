@@ -35,7 +35,7 @@ async function updateSession(request: NextRequest) {
 	// Handle Supabase PKCE auth codes — redirect to callback route
 	const code = searchParams.get('code')
 	if (code && (pathname === '/' || pathname === '/login')) {
-		const next = searchParams.get('next') ?? '/dashboard'
+		const next = searchParams.get('next') ?? '/'
 		const url = request.nextUrl.clone()
 		url.pathname = '/auth/callback'
 		url.search = `?code=${code}&next=${encodeURIComponent(next)}`
@@ -43,7 +43,7 @@ async function updateSession(request: NextRequest) {
 	}
 
 	// Public routes that don't need auth
-	const publicRoutes = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/help']
+	const publicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/help']
 	const isPublicRoute =
 		publicRoutes.some((route) => pathname === route || pathname.startsWith('/signup/')) ||
 		pathname.startsWith('/auth/callback')
@@ -62,7 +62,7 @@ async function updateSession(request: NextRequest) {
 		(pathname.startsWith('/signup') && pathname !== '/signup/complete')
 	if (user && isAuthPage && pathname !== '/reset-password') {
 		const url = request.nextUrl.clone()
-		url.pathname = '/dashboard'
+		url.pathname = '/'
 		return NextResponse.redirect(url)
 	}
 

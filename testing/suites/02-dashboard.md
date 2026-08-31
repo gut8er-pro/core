@@ -5,7 +5,7 @@
 
 ---
 
-## 2.1 Dashboard (`/dashboard`)
+## 2.1 Dashboard (`/`)
 - [ ] Page loads with "Dashboard" heading
 - [ ] **Revenue Card**: green gradient, shows total revenue (e.g. "$5,430.50")
 - [ ] Revenue chart: bar chart with period tabs (Weekly, Monthly, Yearly)
@@ -43,7 +43,7 @@
 - [ ] Search with no matches → empty state
 
 ## 2.5 Top Navigation Bar (all pages)
-- [ ] **Logo** (left): "Gut8erPRO" — clickable, goes to `/dashboard`
+- [ ] **Logo** (left): "Gut8erPRO" — clickable, goes to `/`
 - [ ] **Dashboard button**: green pill, "Dashboard" text
 - [ ] **Stats icon** (chart): navigates to `/statistics`
 - [ ] **Settings icon** (gear): navigates to `/settings`

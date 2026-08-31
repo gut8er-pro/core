@@ -13,7 +13,7 @@
 
 **Monetization:** Single plan — Pro tier (€69/month) with 7-day free trial. Card required upfront during signup via Stripe Checkout. All features included: AI auto-fill, image analysis, VIN detection, priority support, custom branding.
 
-**Language/Locale:** German market (DE). UI is in English but forms contain German-specific fields (Steuernummer, USt-IdNr, KBA numbers, Zulassungsbescheinigung). Currency is EUR (€).
+**Language/Locale:** German market (DE). The UI defaults to German, with English available via the in-app language switcher (`de.json`/`en.json` are at full key parity). Forms contain German-specific fields (Steuernummer, USt-IdNr, KBA numbers, Zulassungsbescheinigung). Currency is EUR (€).
 
 ---
 
@@ -58,10 +58,18 @@ design/
 
 ## App Structure — High Level
 
+> **This repo is the app only.** The public marketing site (landing page + the four legal
+> pages) is a separate Astro project on the apex domain — see
+> `docs/adr/0001-split-marketing-site-from-dashboard-app.md`. This app is served from
+> `app.gut8erpro.de`, where `/` is the dashboard and everything except the auth routes and
+> `/help` is auth-gated.
+
 ### Authentication Flow (unauthenticated)
-1. **Landing Page** → marketing, features, FAQ
-2. **Login** → email/password + Google/Apple social auth
-3. **Signup Wizard** (5 steps) → Account → Personal → Business → Plan → Integrations → Complete
+1. **Login** (`/login`) → email/password + Google/Apple social auth
+2. **Signup Wizard** (5 steps) → Account → Personal → Business → Plan → Integrations → Complete
+
+Marketing and legal pages live on the marketing site; link to them with `marketingUrl()`
+from `src/lib/urls.ts` (never a same-origin path, never a hardcoded domain).
 
 ### Main App Flow (authenticated)
 The core workflow is a **Report Editor** — a multi-step form with sidebar navigation:
@@ -119,7 +127,7 @@ Each type has distinct sections — see `docs/ARCHITECTURE.md` for the full matr
 
 ## Tech Stack
 
-- **Framework:** Next.js 14 (App Router, Turbopack dev)
+- **Framework:** Next.js 16 (App Router, Turbopack dev), React 19
 - **Language:** TypeScript strict mode
 - **Styling:** Tailwind CSS v4 with `@theme inline` design tokens
 - **Forms:** React Hook Form + Zod validation

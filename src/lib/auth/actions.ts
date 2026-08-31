@@ -29,7 +29,7 @@ async function login(formData: FormData): Promise<{ error?: string }> {
 		return { error: 'Email or password is incorrect' }
 	}
 
-	redirect('/dashboard')
+	redirect('/')
 }
 
 async function signup(formData: FormData): Promise<{ error?: string }> {
