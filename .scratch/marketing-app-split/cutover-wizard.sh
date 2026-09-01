@@ -183,89 +183,141 @@ finish() {
 # STAGES — author this section. One stage() per step the human takes.
 # ──────────────────────────────────────────────────────────────────────────
 
-TOTAL_STAGES=4
+TOTAL_STAGES=7
 
+TEAM="gut8er-pro"
+APP_PROJECT="gut8er-pro"           # existing Vercel project, linked to github gut8er-pro/core
+SITE_PROJECT="website"             # new Vercel project for the Astro marketing site
 SUPABASE_REF="cqgzckghgoyzijxgbncw"
 SUPABASE_CALLBACK="https://${SUPABASE_REF}.supabase.co/auth/v1/callback"
 APP_ORIGIN="https://app.gut8erpro.de"
 MARKETING_ORIGIN="https://gut8erpro.de"
+VERCEL_APEX_A="76.76.21.21"        # Vercel's documented apex A record
 
 banner "Gut8erPRO — marketing/app split cutover"
 
 # ── Stage 1 ───────────────────────────────────────────────────────────────
+stage "Vercel — create the marketing site project"
+say "The Astro site lives in its own repo. Link it to a new Vercel project so"
+say "it redeploys on every push."
+note "Verified already true, nothing to do for the app: ${APP_ORIGIN} exists,"
+note "resolves to Vercel, and serves the '${APP_PROJECT}' project today."
+open_url "https://vercel.com/new/${TEAM}"
+step "Import the gut8er-pro/website repository."
+step "Project name: ${SITE_PROJECT}"
+step "Framework preset: Astro (Vercel should detect this automatically)."
+step "Leave the build command and output directory at their defaults."
+step "Deploy, and wait for the first build to go green."
+say ""
+say "Optional — the site builds correctly without it, because the production"
+say "fallback already points at ${APP_ORIGIN}:"
+step "Settings → Environment Variables → add PUBLIC_APP_URL = ${APP_ORIGIN}"
+pause "Marketing project created and deployed?"
+
+# ── Stage 2 ───────────────────────────────────────────────────────────────
+stage "Vercel — attach the apex and www to the marketing site"
+say "The apex currently points at a united-domains parking page, not at Vercel."
+warn "Add the domains in Vercel FIRST, then change DNS (next stage). Vercel"
+warn "shows you the exact records to use only after the domain is added."
+open_url "https://vercel.com/${TEAM}/${SITE_PROJECT}/settings/domains"
+step "Add domain: gut8erpro.de"
+step "Add domain: www.gut8erpro.de"
+step "For www, choose 'Redirect to gut8erpro.de' with status 308 (or 301)."
+step "Leave both showing 'Invalid Configuration' for now — DNS comes next."
+say ""
+say "Copy down the two records Vercel displays on this screen. The apex is"
+say "normally an A record to ${VERCEL_APEX_A}; the www CNAME target is"
+say "project-specific, so copy it exactly rather than guessing."
+ask VERCEL_WWW_CNAME "Paste the CNAME target Vercel shows for www:"
+ask VERCEL_APEX_VALUE "Paste the A (or ALIAS) value Vercel shows for the apex:"
+pause "Domains added in Vercel?"
+
+# ── Stage 3 ───────────────────────────────────────────────────────────────
+stage "united-domains — set the DNS records"
+say "Your registrar is united-domains (nameservers ns.udag.net/.org/.de), so"
+say "DNS is managed there, not on Vercel."
+open_url "https://www.united-domains.de/login"
+step "Open the DNS settings for gut8erpro.de."
+say ""
+say "  Set the apex (@):   A      ->  ${VERCEL_APEX_VALUE:-$VERCEL_APEX_A}"
+say "  Set www:            CNAME  ->  ${VERCEL_WWW_CNAME:-<from stage 2>}"
+say ""
+step "REMOVE the existing A records pointing @ and www at 89.31.143.90 —"
+step "  that is the parking page, and it will otherwise keep answering."
+step "Leave app.gut8erpro.de exactly as it is. It already points at Vercel"
+step "  and serves the dashboard; touching it will break the live app."
+warn "Do not delete MX or TXT records — those carry your email and domain"
+warn "verification. Only the A/CNAME records for @ and www change."
+say ""
+note "Propagation is usually minutes, occasionally up to an hour. Vercel will"
+note "issue the TLS certificate automatically once DNS resolves."
+pause "DNS records saved at united-domains?"
+
+# ── Stage 4 ───────────────────────────────────────────────────────────────
 stage "Google Cloud Console — verify the OAuth client"
 say "Google sign-in goes through Supabase, not through the app directly."
 say "So Google's redirect URI points at Supabase and does NOT change in this split."
 say "This stage is a verification, not an edit — expect to change nothing."
-note "(The app-side URL, ${APP_ORIGIN}/auth/callback, belongs in Supabase's"
-note " redirect allow-list instead — the agent sets that over MCP.)"
 open_url "https://console.cloud.google.com/apis/credentials"
 step "Open the OAuth 2.0 Client ID used for Gut8erPRO sign-in."
 step "Under 'Authorized redirect URIs', confirm this exact entry is present:"
 say  "    ${SUPABASE_CALLBACK}"
 step "If it is missing, add it and Save. If it is there, change nothing."
-step "Under 'Authorized JavaScript origins', add ${APP_ORIGIN} if you keep a"
-step "  list there (harmless either way; server-side redirects don't use it)."
 step "Leave any http://localhost:3000 entries in place for local development."
 pause "Done in Google Console?"
 
-# ── Stage 2 ───────────────────────────────────────────────────────────────
+# ── Stage 5 ───────────────────────────────────────────────────────────────
 stage "Apple Developer — verify Sign in with Apple"
 say "Same story as Google: Apple returns to Supabase, not to the app."
-say "Expect no change here either."
 open_url "https://developer.apple.com/account/resources/identifiers/list/serviceId"
-step "Open the Services ID configured for Sign in with Apple."
-step "Click 'Configure' next to 'Sign In with Apple'."
+step "Open the Services ID configured for Sign in with Apple → 'Configure'."
 step "Under 'Return URLs', confirm this exact entry is present:"
 say  "    ${SUPABASE_CALLBACK}"
 step "Under 'Domains and Subdomains', confirm ${SUPABASE_REF}.supabase.co is listed."
-step "If both are present, change nothing and close the dialog."
 warn "Do NOT add app.gut8erpro.de as a Return URL — Apple never redirects there."
 pause "Done in Apple Developer?"
 
-# ── Stage 3 ───────────────────────────────────────────────────────────────
+# ── Stage 6 ───────────────────────────────────────────────────────────────
 stage "Stripe — repoint the webhook endpoint"
-say "This is the one external change the split genuinely requires: the webhook"
-say "endpoint is on the app's own domain, which is moving to the app subdomain."
+say "This is the one external change the split genuinely requires."
 open_url "https://dashboard.stripe.com/webhooks"
 step "Open the existing Gut8erPRO webhook endpoint (or create one if absent)."
 step "Set the endpoint URL to:"
 say  "    ${APP_ORIGIN}/api/stripe/webhook"
 step "Keep the same subscribed events; save the endpoint."
-step "On the endpoint page, click 'Reveal' under 'Signing secret' and copy it."
-note "Editing an endpoint's URL usually keeps its signing secret — but a new"
-note "endpoint always has a new one. Compare before deciding you need to update it."
+step "Click 'Reveal' under 'Signing secret' and compare it to the current value."
+note "Editing an endpoint's URL usually keeps its signing secret; a NEW endpoint"
+note "always has a new one. Only update Vercel if the value actually changed."
 say ""
-say "Now paste that signing secret into Vercel (keep both tabs open):"
-open_url "https://vercel.com/dashboard"
-step "Open the Gut8erPRO app project → Settings → Environment Variables."
-step "Set STRIPE_WEBHOOK_SECRET (Production) to the signing secret you copied."
-step "Redeploy the app project so the new value is picked up."
+open_url "https://vercel.com/${TEAM}/${APP_PROJECT}/settings/environment-variables"
+step "If the secret changed: set STRIPE_WEBHOOK_SECRET (Production), then redeploy."
 warn "Paste it straight into Vercel — don't route the secret through this script."
-SKIPPED+=("Confirm STRIPE_WEBHOOK_SECRET in Vercel matches the live endpoint's signing secret")
-pause "Webhook repointed and secret updated in Vercel?"
+SKIPPED+=("Confirm STRIPE_WEBHOOK_SECRET matches the live endpoint's signing secret")
+pause "Webhook repointed?"
 
-# ── Stage 4 ───────────────────────────────────────────────────────────────
+# ── Stage 7 ───────────────────────────────────────────────────────────────
 stage "Verify the cutover"
-say "Four checks. Stop and report any that fail before calling the split done."
+say "Six checks. Stop and report any that fail before calling the split done."
 say ""
-step "1. Marketing site: ${MARKETING_ORIGIN} serves German; /en serves English."
+step "1. ${MARKETING_ORIGIN} serves the German landing page over HTTPS"
+step "   (not the united-domains parking page, and no certificate warning)."
 open_url "${MARKETING_ORIGIN}"
-step "2. App root: ${APP_ORIGIN} shows the dashboard when signed in, and"
-step "   redirects to /login when signed out (try a private window)."
+step "2. ${MARKETING_ORIGIN}/en/ serves English;"
+step "   ${MARKETING_ORIGIN}/legal/impressum serves the Impressum."
+step "3. www.gut8erpro.de redirects to the apex."
+step "4. ${APP_ORIGIN} shows the dashboard when signed in, and redirects to"
+step "   /login when signed out (try a private window)."
 open_url "${APP_ORIGIN}"
-step "3. OAuth: sign out, then sign in with Google and with Apple. Each should"
-step "   land back on ${APP_ORIGIN}/ — not on the apex, not on an error page."
-step "4. Password reset: request one, open the email, confirm the link host is"
-step "   app.gut8erpro.de and that it opens the reset form."
+step "5. OAuth: sign in with Google and with Apple; each lands back on ${APP_ORIGIN}/."
+step "6. Password reset: request one and confirm the email link host is"
+step "   app.gut8erpro.de. (Requires ticket 06 — Supabase Site URL — to be done.)"
 say ""
-step "5. Stripe: on the webhook endpoint page, 'Send test webhook' →"
-step "   expect a 2xx response. A 400 means the signing secret is stale."
+step "Then in Stripe: 'Send test webhook' → expect a 2xx response."
 open_url "https://dashboard.stripe.com/webhooks"
 if confirm "Did every check above pass?"; then
   say "Cutover verified."
 else
-  SKIPPED+=("Re-run the failing verification checks from stage 4")
+  SKIPPED+=("Re-run the failing verification checks from stage 7")
   warn "Note which check failed and hand that back to the agent."
 fi
 pause "Ready to finish?"
