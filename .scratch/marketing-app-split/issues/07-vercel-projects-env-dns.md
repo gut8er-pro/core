@@ -31,3 +31,29 @@ One env var is already needed by merged code regardless of when the rest happens
 `gut8er/website`, builds clean, and is ready for a Vercel project. This ticket now waits only
 on the owner's go-ahead for the outward-facing Vercel/DNS changes. Note the website project
 also needs `PUBLIC_APP_URL=https://app.gut8erpro.de`.
+
+**2026-09-01 — Vercel inventory (via MCP).** Team `Gut8er Pro` (`team_3s7QvFLr84UC3SgMbwLurzsI`),
+Pro plan. **One** project exists: `gut8er-pro` (`prj_FRJ4NeY3xI8wQ31xk9xUKrJLVgE3`), framework
+`nextjs`, linked to GitHub `gut8er-pro/core`, latest production deployment READY.
+
+Two corrections to this ticket's assumptions:
+
+1. **`app.gut8erpro.de` is already set up.** DNS already CNAMEs it to `vercel-dns-017.com` and it
+   serves the app today (200 on `/`, `/login` renders). The ticket's "reuse the existing project
+   for `app.` if present, else create it" is already satisfied — nothing to do for the app host
+   beyond env vars. (`get_project` lists only the `.vercel.app` domains; the custom domain is
+   attached regardless, as the live 200 proves.)
+2. **The apex is a parking page, not the app.** `gut8erpro.de` and `www` resolve to
+   `89.31.143.90` (united-domains) and have no valid TLS cert. This invalidates the original
+   deploy blocker — see `RELEASE_CHECKLIST.md` §0, since rewritten.
+
+**The Vercel MCP cannot complete this ticket.** It exposes projects, deployments, logs, analytics
+and deployment protection — but **no tool for environment variables and no tool for custom
+domains**. Those two are the substance of this ticket. They need either the Vercel CLI
+(`npm i -g vercel`, then `vercel login` — not installed here) or the dashboard.
+
+Mitigation shipped instead: both apps' cross-origin URL fallbacks are now environment-aware, so
+a production deploy with the variables unset still emits correct absolute URLs rather than
+`localhost`. The env vars remain the right fix; they are no longer load-bearing for correctness.
+
+Registrar is united-domains (`ns.udag.net/.org/.de`), so DNS stays owner-managed as planned.

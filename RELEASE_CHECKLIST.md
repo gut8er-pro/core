@@ -10,28 +10,30 @@
 
 ## 🚨 Hard blockers — fix before any paid customer touches the app
 
-### 0. ⛔ DO NOT DEPLOY THIS BRANCH TO THE APEX DOMAIN
-The marketing/app split removed the landing page and all four `/legal/*` routes from this
-app (see `docs/adr/0001-split-marketing-site-from-dashboard-app.md`). The Astro marketing site
-that serves them now exists (`gut8er/website`), but **it is not deployed and DNS still points
-the apex at this app**.
+### 0. Sequence the marketing/app split correctly
+The split removed the landing page and the four `/legal/*` routes from this app; the Astro
+marketing site (`gut8er/website`) now owns them. See
+`docs/adr/0001-split-marketing-site-from-dashboard-app.md`.
 
-Right now `gut8erpro.de` *is* this app. Deploying this change to the apex before the split is
-complete takes the live Impressum and Datenschutz offline — a § 5 TMG / DSGVO Art. 13 exposure,
-i.e. blocker #1 below, made worse.
+**Verified state of production (2026-09-01):**
 
-Deploy only once **all** of the following hold:
-1. ~~The Astro site is built~~ — done, `gut8er/website`. It still needs a Vercel project and a
-   deploy (ticket 07).
-2. `app.gut8erpro.de` points at this app's Vercel project and `gut8erpro.de` + `www` point at
-   the marketing project (ticket 07).
-3. Supabase Site URL and redirect allow-list point at `app.gut8erpro.de` (ticket 06).
-4. `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_MARKETING_URL` are set on this app's Vercel project,
-   and `PUBLIC_APP_URL` on the marketing project.
+| Host | Today |
+|---|---|
+| `gut8erpro.de`, `www.` | `89.31.143.90` — a united-domains **parking page**. No TLS (`https://` fails outright). Never served the app. |
+| `app.gut8erpro.de` | Already on Vercel, already serving this app. |
+| `app.gut8erpro.de/legal/*` | **307 → `/login`.** The legal routes were never in the middleware's `publicRoutes`, so they have never been publicly reachable. |
 
-Until then, keep this work on a branch. Rollback if it does ship early: reassign the domain and
-`git revert`.
+So deploying this branch takes **nothing publicly-working offline** — there is no live public
+Impressum to lose. The split is what finally publishes those pages, on a domain that currently
+serves a parking page.
 
+The one real change at deploy time: `app.gut8erpro.de/` stops being a landing page and becomes
+the auth-gated dashboard. Until the Astro site is live on the apex there is no public marketing
+page anywhere. That is cosmetic for a launched-but-unofficial product, but it argues for
+deploying the marketing site first, or at least in the same session.
+
+**Recommended order:** marketing site live on the apex → this app deployed → Supabase config
+(ticket 06) → verify. Rollback is a domain reassignment plus `git revert`.
 
 ### 1. Fill in the legal-page placeholders
 The four legal pages have **moved out of this repo** — they now belong to the Astro marketing
