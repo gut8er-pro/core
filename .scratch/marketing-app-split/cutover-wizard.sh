@@ -186,6 +186,8 @@ finish() {
 TOTAL_STAGES=7
 
 TEAM="gut8er-pro"
+GH_ORG="gut8er-pro"
+VERCEL_GH_INSTALL_ID="110446855"   # Vercel's GitHub App installation on the org
 APP_PROJECT="gut8er-pro"           # existing Vercel project, linked to github gut8er-pro/core
 SITE_PROJECT="website"             # new Vercel project for the Astro marketing site
 SUPABASE_REF="cqgzckghgoyzijxgbncw"
@@ -202,8 +204,17 @@ say "The Astro site lives in its own repo. Link it to a new Vercel project so"
 say "it redeploys on every push."
 note "Verified already true, nothing to do for the app: ${APP_ORIGIN} exists,"
 note "resolves to Vercel, and serves the '${APP_PROJECT}' project today."
+say ""
+warn "Do this FIRST — Vercel cannot see the repo until you do."
+say "Vercel's GitHub App is installed on the org with 'only selected repositories',"
+say "so a newly created repo is invisible to it until it is added. Only an"
+say "Organization Owner can change this (the API refuses everyone else)."
+open_url "https://github.com/organizations/${GH_ORG}/settings/installations/${VERCEL_GH_INSTALL_ID}"
+step "Under 'Repository access', add ${GH_ORG}/website to the selected list. Save."
+pause "Vercel granted access to the website repo?"
+say ""
 open_url "https://vercel.com/new/${TEAM}"
-step "Import the gut8er-pro/website repository."
+step "Import the ${GH_ORG}/website repository."
 step "Project name: ${SITE_PROJECT}"
 step "Framework preset: Astro (Vercel should detect this automatically)."
 step "Leave the build command and output directory at their defaults."

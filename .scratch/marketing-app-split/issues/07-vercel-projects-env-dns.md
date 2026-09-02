@@ -83,3 +83,25 @@ Domain + DNS work is delivered as stages 1–3 of `.scratch/marketing-app-split/
 The registrar is united-domains; the apex and `www` currently A-record to `89.31.143.90`
 (parking) and those records must be removed, while `app.gut8erpro.de` must be left untouched —
 it already points at Vercel and serves the live app.
+
+**2026-09-02 — repo created; Vercel project blocked on a GitHub App scope.**
+`gut8er-pro/website` now exists (private) with the site pushed to `main`. The earlier
+permission failure was an account mismatch: `gh` was authenticated as org members with
+`push=false`, while git pushes over SSH as `Quadrition`, which has admin. Once `Quadrition`
+was added to `gh`, both the repo creation and the core PR went through.
+
+`create_git_project` then failed:
+
+```
+Vercel API error 400: repo_not_found — The repository "website" couldn't be found.
+```
+
+Cause: Vercel's GitHub App is installed on the org with `repository_selection: "selected"`
+(installation `110446855`), so a newly created repo is invisible to Vercel until it is added
+to that list. Attempting it over the API returns 403 — *"You do not have permission to modify
+this app on gut8er-pro. Please contact an Organization Owner."* — even as a repo admin.
+
+Owner action, now stage 1 of the cutover wizard:
+`https://github.com/organizations/gut8er-pro/settings/installations/110446855` → Repository
+access → add `gut8er-pro/website` → Save. After that, creating the Vercel project is a single
+MCP call.
