@@ -44,8 +44,13 @@ async function updateSession(request: NextRequest) {
 
 	// Public routes that don't need auth
 	const publicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/help']
+	// Stripe POSTs here with no session cookie and does not follow redirects, so
+	// this endpoint must never be bounced to /login. It authenticates the caller
+	// itself, by verifying the payload against STRIPE_WEBHOOK_SECRET.
+	const publicApiRoutes = ['/api/stripe/webhook']
 	const isPublicRoute =
 		publicRoutes.some((route) => pathname === route || pathname.startsWith('/signup/')) ||
+		publicApiRoutes.includes(pathname) ||
 		pathname.startsWith('/auth/callback')
 
 	// Redirect unauthenticated users to login

@@ -47,7 +47,7 @@ function CompleteStep() {
 	const tSteps = useTranslations('auth.signup.steps.complete')
 
 	return (
-		<div className="relative min-h-screen bg-white">
+		<div className="relative min-h-full bg-white">
 			<div className="relative flex flex-col items-center px-6 pt-20 pb-12">
 				{/* 3D check circle */}
 				<div className="relative mb-5 h-[151px] w-[149px] overflow-hidden rounded-[100px]">

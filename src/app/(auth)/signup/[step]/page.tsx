@@ -45,7 +45,7 @@ function SignupStepPage() {
 	const progressPercent = Math.min((stepNumber / 5) * 100, 100)
 
 	return (
-		<div className="relative flex h-screen">
+		<div className="relative flex h-full">
 			<StepperSidebar steps={STEPS} currentStep={stepNumber} completedSteps={completedSteps} />
 
 			{/* Language switcher — top right */}

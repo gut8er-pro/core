@@ -12,9 +12,12 @@ export const config = {
 		 * - _next/static (static files)
 		 * - _next/image (image optimization)
 		 * - favicon.ico (favicon)
+		 * - robots.txt / sitemap.xml (crawler metadata — these are served to
+		 *   signed-out crawlers, so auth-gating them would 307 them to /login
+		 *   and the robots directives would never be read)
 		 * - public folder files (images, etc.)
 		 */
-		'/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+		'/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
 	],
 }
 

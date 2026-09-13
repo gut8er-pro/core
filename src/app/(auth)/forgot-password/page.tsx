@@ -22,7 +22,7 @@ function ForgotPasswordPage() {
 	)
 
 	return (
-		<div className="flex min-h-screen bg-white">
+		<div className="flex min-h-full bg-white">
 			{/* Left branding panel */}
 			<div className="relative hidden w-1/2 flex-col py-6 pl-20 pr-0 lg:flex">
 				<div className="relative flex flex-1 flex-col overflow-hidden rounded-[40px] bg-primary/10 px-10 pt-10 pb-0">

@@ -21,7 +21,7 @@ function StepperSidebar({ steps, currentStep, completedSteps, className }: Stepp
 	return (
 		<aside
 			className={cn(
-				'hidden lg:flex shrink-0 w-[491px] h-screen sticky top-0 pt-10 pb-6 pl-20 pr-0',
+				'hidden lg:flex shrink-0 w-[491px] h-full sticky top-0 pt-10 pb-6 pl-20 pr-0',
 				className,
 			)}
 			aria-label="Signup progress"
