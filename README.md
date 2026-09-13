@@ -25,7 +25,7 @@ Professional vehicle damage assessment web application for German automotive exp
 ### Prerequisites
 
 - Node.js 20+
-- pnpm 9+
+- pnpm 11+ (the repo pins `pnpm@11.20.0` via `packageManager`)
 - PostgreSQL database (or Supabase project)
 
 ### Installation

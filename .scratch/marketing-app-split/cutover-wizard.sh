@@ -198,7 +198,19 @@ SUPABASE_REF="cqgzckghgoyzijxgbncw"
 SUPABASE_CALLBACK="https://${SUPABASE_REF}.supabase.co/auth/v1/callback"
 APP_ORIGIN="https://app.gut8erpro.de"
 MARKETING_ORIGIN="https://gut8erpro.de"
-VERCEL_APEX_A="76.76.21.21"        # Vercel's documented apex A record
+
+# ask_required KEY "Prompt" — ask() that refuses an empty answer. Stage 3 feeds
+# these two values straight into live DNS for the apex domain, so there is no
+# safe default to fall back on: Vercel's apex A record has changed over the
+# years and the www CNAME target is project-specific.
+ask_required() {
+  local key="$1" prompt="$2"
+  while :; do
+    ask "$key" "$prompt"
+    [[ -n "${!key}" ]] && return 0
+    warn "Required — Vercel shows this on the domains screen opened above."
+  done
+}
 
 banner "Gut8erPRO — marketing/app split cutover"
 
@@ -240,15 +252,15 @@ step "Add domain: www.gut8erpro.de"
 step "For www, choose 'Redirect to gut8erpro.de' with status 308 (or 301)."
 step "Leave both showing 'Invalid Configuration' for now — DNS comes next."
 say ""
-say "Copy down the two records Vercel displays on this screen. The apex is"
-say "normally an A record to ${VERCEL_APEX_A}; the www CNAME target is"
-say "project-specific, so copy it exactly rather than guessing."
-ask VERCEL_WWW_CNAME "Paste the CNAME target Vercel shows for www:"
-ask VERCEL_APEX_VALUE "Paste the A (or ALIAS) value Vercel shows for the apex:"
+say "Copy down the two records Vercel displays on this screen. Copy both"
+say "exactly rather than guessing — the www CNAME target is project-specific,"
+say "and the apex value Vercel hands out has changed over time."
+ask_required VERCEL_WWW_CNAME "Paste the CNAME target Vercel shows for www:"
+ask_required VERCEL_APEX_VALUE "Paste the A (or ALIAS) value Vercel shows for the apex:"
 # Persist them: stage 3 prints these records back, and a Ctrl-C between the two
 # stages would otherwise lose the project-specific CNAME target on re-run.
-[[ -n "$VERCEL_WWW_CNAME" ]]  && write_env VERCEL_WWW_CNAME  "$VERCEL_WWW_CNAME"
-[[ -n "$VERCEL_APEX_VALUE" ]] && write_env VERCEL_APEX_VALUE "$VERCEL_APEX_VALUE"
+write_env VERCEL_WWW_CNAME  "$VERCEL_WWW_CNAME"
+write_env VERCEL_APEX_VALUE "$VERCEL_APEX_VALUE"
 pause "Domains added in Vercel?"
 
 # ── Stage 3 ───────────────────────────────────────────────────────────────
@@ -258,8 +270,8 @@ say "DNS is managed there, not on Vercel."
 open_url "https://www.united-domains.de/login"
 step "Open the DNS settings for gut8erpro.de."
 say ""
-say "  Set the apex (@):   A      ->  ${VERCEL_APEX_VALUE:-$VERCEL_APEX_A}"
-say "  Set www:            CNAME  ->  ${VERCEL_WWW_CNAME:-<from stage 2>}"
+say "  Set the apex (@):   A      ->  ${VERCEL_APEX_VALUE}"
+say "  Set www:            CNAME  ->  ${VERCEL_WWW_CNAME}"
 say ""
 step "REMOVE the existing A records pointing @ and www at 89.31.143.90 —"
 step "  that is the parking page, and it will otherwise keep answering."
