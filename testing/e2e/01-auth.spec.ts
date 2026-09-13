@@ -18,7 +18,6 @@ test.describe('Auth Flow', () => {
 		await expect(page.getByRole('textbox', { name: 'Enter your password' })).toBeVisible()
 		await expect(page.getByRole('button', { name: 'Log in' })).toBeVisible()
 		await expect(page.getByText('Login with Google')).toBeVisible()
-		await expect(page.getByText('Login with Apple')).toBeVisible()
 		await expect(page.getByText('Forgot password?')).toBeVisible()
 		await expect(page.getByRole('link', { name: 'Sign Up' })).toBeVisible()
 	})

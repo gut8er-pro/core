@@ -18,7 +18,6 @@ vi.mock('next/link', () => ({
 vi.mock('@/lib/auth/actions', () => ({
 	login: vi.fn(),
 	signInWithGoogle: vi.fn(),
-	signInWithApple: vi.fn(),
 }))
 
 describe('LoginPage', () => {
@@ -38,10 +37,9 @@ describe('LoginPage', () => {
 		expect(screen.getByRole('button', { name: 'Log in' })).toBeInTheDocument()
 	})
 
-	it('renders social login buttons', () => {
+	it('renders the Google login button', () => {
 		render(<LoginPage />)
 		expect(screen.getByText('Login with Google')).toBeInTheDocument()
-		expect(screen.getByText('Login with Apple')).toBeInTheDocument()
 	})
 
 	it('renders branding panel with stats', () => {

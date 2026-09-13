@@ -226,22 +226,6 @@ async function signInWithGoogle() {
 	redirect(data.url)
 }
 
-async function signInWithApple() {
-	const supabase = await createClient()
-	const { data, error } = await supabase.auth.signInWithOAuth({
-		provider: 'apple',
-		options: {
-			redirectTo: appUrl('/auth/callback'),
-		},
-	})
-
-	if (error || !data.url) {
-		redirect('/login?error=oauth_failed')
-	}
-
-	redirect(data.url)
-}
-
 async function requestPasswordReset(formData: FormData): Promise<{ error?: string }> {
 	const email = formData.get('email') as string
 	if (!email) return { error: 'Email is required' }
@@ -293,7 +277,6 @@ export {
 	login,
 	logout,
 	requestPasswordReset,
-	signInWithApple,
 	signInWithGoogle,
 	signup,
 	updatePassword,

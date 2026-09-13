@@ -18,7 +18,6 @@ test.describe('Login Page', () => {
 
 		// Social login buttons
 		await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible()
-		await expect(page.getByRole('button', { name: 'Continue with Apple' })).toBeVisible()
 	})
 
 	test('login page has "Forgot password?" and signup links', async ({ page }) => {

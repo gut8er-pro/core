@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useActionState, useEffect, useState } from 'react'
 import { LanguageSwitcher } from '@/components/ui/language-switcher'
-import { login, signInWithApple, signInWithGoogle } from '@/lib/auth/actions'
+import { login, signInWithGoogle } from '@/lib/auth/actions'
 import { marketingUrl } from '@/lib/urls'
 
 function LoginPage() {
@@ -181,15 +181,6 @@ function LoginPage() {
 							>
 								<Image src="/images/icon-google.svg" alt="" width={24} height={24} />
 								<span className="text-black">{t('loginWithGoogle')}</span>
-							</button>
-						</form>
-						<form action={signInWithApple} className="flex-1">
-							<button
-								type="submit"
-								className="flex h-[53px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-[15px] border-[1.6px] border-[#e5e7eb] bg-white px-5 text-[16px] transition-colors hover:bg-grey-25"
-							>
-								<Image src="/images/icon-apple.svg" alt="" width={24} height={24} />
-								<span className="text-black">{t('loginWithApple')}</span>
 							</button>
 						</form>
 					</div>
