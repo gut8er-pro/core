@@ -24,10 +24,17 @@ function ResetPasswordPage() {
 	/**
 	 * A link that arrives with its session in the fragment never reached the server, so
 	 * there is no session cookie yet — and `updatePassword` is a server action that reads
-	 * exactly that cookie. Creating a browser client here consumes the fragment and
-	 * writes the cookie; until it resolves, submitting would race it and report the link
-	 * as expired. Links that came through `/auth/callback` carry no fragment and skip all
-	 * of this, already holding a session.
+	 * exactly that cookie. This effect writes it, and submit stays disabled until it has,
+	 * because submitting earlier would race the cookie and report the link as expired.
+	 * Links that came through `/auth/callback` carry no fragment and skip all of this,
+	 * already holding a session.
+	 *
+	 * The tokens are handed over explicitly rather than left to `detectSessionInUrl`:
+	 * `createBrowserClient` pins `flowType: 'pkce'` after spreading its options, so it
+	 * cannot be configured otherwise, and auth-js answers an implicit fragment on a PKCE
+	 * client with `AuthPKCEGrantCodeExchangeError('Not a valid PKCE flow url.')` — which
+	 * initialisation swallows. Automatic detection is therefore a silent no-op here, and
+	 * `setSession` is what actually persists through the cookie-backed storage.
 	 */
 	useEffect(() => {
 		const hash = window.location.hash
@@ -40,14 +47,20 @@ function ResetPasswordPage() {
 			window.history.replaceState(null, '', window.location.pathname)
 			return
 		}
-		if (params.get('type') !== 'recovery') return
+
+		const accessToken = params.get('access_token')
+		const refreshToken = params.get('refresh_token')
+		if (params.get('type') !== 'recovery' || !accessToken || !refreshToken) return
 
 		setExchangingLink(true)
-		const supabase = createClient()
-		supabase.auth
-			.getSession()
-			.then(({ data }) => {
-				if (!data.session) setLinkError(t('linkInvalid'))
+		createClient()
+			.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+			.then(({ data, error }) => {
+				if (error || !data.session) setLinkError(t('linkInvalid'))
+				// Nothing else clears the fragment on this path — the auth-js strip belongs
+				// to the detection routine that never runs — and it holds a live refresh
+				// token, so it must not be left in the URL or in history.
+				window.history.replaceState(null, '', window.location.pathname)
 			})
 			.finally(() => setExchangingLink(false))
 	}, [t])

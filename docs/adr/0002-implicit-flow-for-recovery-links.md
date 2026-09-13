@@ -16,6 +16,14 @@ and point them straight at `/reset-password` instead of `/auth/callback`.
   works cross-device. It is bounded: recovery tokens are single-use, `/reset-password`
   strips the fragment once redeemed, and the app ships no third-party scripts on the auth
   routes.
+- **The receiving client cannot be told to expect an implicit link.** `createBrowserClient`
+  pins `flowType: 'pkce'` after spreading the options it is handed, and auth-js refuses an
+  implicit fragment on a PKCE client — `AuthPKCEGrantCodeExchangeError`, swallowed during
+  initialisation. So `detectSessionInUrl` is a silent no-op for exactly the links this
+  decision creates. `/reset-password` therefore parses the fragment itself and calls
+  `setSession`, and strips the fragment itself afterwards, since the auth-js strip belongs
+  to the detection path that never runs. `src/lib/supabase/client.test.ts` pins this down;
+  the page's own tests mock the client and cannot see it.
 - **A fragment never reaches the server**, so nothing server-side can route these links.
   `RecoveryRedirect` in the root layout exists solely for that reason — it catches a
   recovery fragment on whatever route it lands on (notably the Supabase Site URL, which is
