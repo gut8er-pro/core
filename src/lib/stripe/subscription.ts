@@ -1,7 +1,7 @@
+import { appUrl } from '@/lib/urls'
 import { getStripeClient } from './client'
 
 const PRO_PRICE_ID = process.env.STRIPE_PRO_PRICE_ID ?? ''
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
 type SubscriptionInfo = {
 	status: string
@@ -32,8 +32,8 @@ async function createCheckoutSession(
 			metadata: { userId },
 		},
 		metadata: { userId },
-		success_url: options?.successUrl ?? `${APP_URL}/signup/complete?payment=success`,
-		cancel_url: options?.cancelUrl ?? `${APP_URL}/signup/complete?payment=cancelled`,
+		success_url: options?.successUrl ?? appUrl('/signup/complete?payment=success'),
+		cancel_url: options?.cancelUrl ?? appUrl('/signup/complete?payment=cancelled'),
 	})
 
 	if (!session.url) {
@@ -48,7 +48,7 @@ async function createCustomerPortalSession(customerId: string): Promise<string> 
 
 	const session = await stripe.billingPortal.sessions.create({
 		customer: customerId,
-		return_url: `${APP_URL}/settings/billing`,
+		return_url: appUrl('/settings/billing'),
 	})
 
 	return session.url

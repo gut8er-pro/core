@@ -33,5 +33,9 @@ jobs:
       - name: Unit tests
         run: pnpm vitest run
 
+      # Not `pnpm build`: that script is `prisma generate && next build`, and
+      # the postinstall hook above has already generated the client, so it
+      # would regenerate it for nothing. The generate stays in the script for
+      # Vercel, where a fully cached install can skip postinstall entirely.
       - name: Build
-        run: pnpm build
+        run: pnpm next build

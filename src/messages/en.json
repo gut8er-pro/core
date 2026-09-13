@@ -369,6 +369,17 @@
       "placeholder": "Write Something",
       "addTemplate": "Add Template",
       "create": "Create"
+    },
+    "privacy": {
+      "heading": "Privacy & Account",
+      "description": "Per GDPR (DSGVO Art. 17 + 20), you can export every piece of data we store about you, or permanently delete your account at any time. Deletion removes all reports, photos, and invoices — it cannot be undone.",
+      "exportData": "Export my data",
+      "exporting": "Preparing export…",
+      "exportError": "Export failed. Please try again or contact support.",
+      "deleteAccount": "Delete my account",
+      "deleting": "Deleting…",
+      "deleteConfirm": "Are you sure you want to permanently delete your account? This will remove every report, photo, and invoice. This action cannot be undone.",
+      "deleteError": "Delete failed. Please contact support."
     }
   },
   "report": {
@@ -1340,72 +1351,17 @@
     "english": "English",
     "deutsch": "Deutsch"
   },
-  "landing": {
-    "aiPoweredBadge": "Now with AI-powered auto-fill",
-    "heroTitle": "Professional Vehicle Assessment",
-    "heroSubtitle": "Made Simple",
-    "heroDescription": "Create damage reports in minutes not hours. Upload images let AI do the work and focus on what matters — your expertise.",
-    "startFreeTrial": "Start Free Trial",
-    "logIn": "Log In",
-    "stats": {
-      "reportTime": "Report time",
-      "reportTimeValue": "-35%",
-      "manualWork": "Manual work",
-      "manualWorkValue": "-60%",
-      "professionals": "Professionals",
-      "professionalsValue": "2000+"
-    },
-    "featuresTitle": "Gut8erPRO Features",
-    "featuresSubtitle": "From smart analysis to seamless workflow tools Gut8erPro gives you the clarity and control you need to make faster better decisions.",
-    "features": {
-      "datIntegration": {
-        "title": "DAT Integration",
-        "description": "Real-time vehicle data and valuations directly within your workflow."
-      },
-      "realTimeAnalytics": {
-        "title": "Real-Time Analytics",
-        "description": "Track revenue payments and performance as they happen."
-      },
-      "aiEvaluationTool": {
-        "title": "AI Evaluation Tool",
-        "description": "Automatically analyzes reports and key metrics using AI."
-      },
-      "editingPhotos": {
-        "title": "Editing Photos",
-        "description": "Crop adjust and prepare images directly within the platform."
-      }
-    },
-    "faqTitle": "Frequently Asked Questions",
-    "faqSubtitle": "Everything you need to know about Gut8erPro.",
-    "faq": {
-      "whatIsGut8erPro": {
-        "question": "What is Gut8erPRO?",
-        "answer": "Gut8erPRO is a professional vehicle damage assessment web app designed for Kfz-Sachverständige. Create detailed reports, auto-fill data from images, and streamline your entire workflow."
-      },
-      "howDoesAutoFillWork": {
-        "question": "How does image auto-fill work?",
-        "answer": "Our AI analyzes uploaded vehicle photos to automatically detect damage, read VIN numbers, and pre-populate report fields. Simply upload your images and let the system extract the relevant data for you."
-      },
-      "whatIntegrations": {
-        "question": "What integrations are available?",
-        "answer": "Gut8erPRO integrates with DAT SilverDAT3 for vehicle data, valuation, and repair cost calculation. Support for Audatex and GT Motive is coming soon. The platform also supports Google and Apple social login, Stripe for payments, and email delivery for sending reports."
-      },
-      "isThereFreeTrial": {
-        "question": "Is there a free trial?",
-        "answer": "Yes! When you sign up, you get full access to all features for 7 days at no charge. Your payment details are collected upfront but you will not be charged until the trial period ends. You can cancel anytime during the trial."
-      },
-      "whatSupport": {
-        "question": "What support is available?",
-        "answer": "All users receive priority email support with guaranteed response times, along with onboarding assistance and dedicated account management."
-      }
-    },
-    "copyright": "© {year} Gut8erPRO. All rights reserved."
-  },
   "notFound": {
     "code": "404",
     "title": "Page not found",
     "description": "The page you're looking for doesn't exist or has been moved.",
     "goToDashboard": "Go to Dashboard",
     "goHome": "Go Home"
+  },
+  "legal": {
+    "impressum": "Imprint",
+    "datenschutz": "Privacy Policy",
+    "agb": "Terms & Conditions",
+    "widerruf": "Right of Withdrawal"
   }
 }

@@ -245,6 +245,7 @@ function ProfileSection() {
 }
 
 function PrivacySection() {
+	const t = useTranslations('settings.privacy')
 	const toast = useToast()
 	const [isExporting, setIsExporting] = useState(false)
 	const [isDeleting, setIsDeleting] = useState(false)
@@ -254,7 +255,7 @@ function PrivacySection() {
 		try {
 			const res = await fetch('/api/account/export')
 			if (!res.ok) {
-				toast.error('Export failed. Please try again or contact support.')
+				toast.error(t('exportError'))
 				return
 			}
 			const blob = await res.blob()
@@ -272,16 +273,14 @@ function PrivacySection() {
 	}
 
 	const handleDelete = async () => {
-		const confirmed = window.confirm(
-			'Are you sure you want to permanently delete your account? This will remove every report, photo, and invoice. This action cannot be undone.',
-		)
+		const confirmed = window.confirm(t('deleteConfirm'))
 		if (!confirmed) return
 		setIsDeleting(true)
 		try {
 			const res = await fetch('/api/account/delete', { method: 'DELETE' })
 			if (!res.ok) {
 				const body = await res.json().catch(() => ({}))
-				toast.error(body.error ?? 'Delete failed. Please contact support.')
+				toast.error(body.error ?? t('deleteError'))
 				return
 			}
 			// Account is gone — drop the user back at the marketing landing page.
@@ -293,12 +292,8 @@ function PrivacySection() {
 
 	return (
 		<div className="flex w-full flex-col gap-6 rounded-section bg-white p-8">
-			<h2 className="text-section-title font-medium leading-none text-black">Privacy & Account</h2>
-			<p className="text-body-sm text-grey-100">
-				Per GDPR (DSGVO Art. 17 + 20), you can export every piece of data we store about you, or
-				permanently delete your account at any time. Deletion removes all reports, photos, and
-				invoices — it cannot be undone.
-			</p>
+			<h2 className="text-section-title font-medium leading-none text-black">{t('heading')}</h2>
+			<p className="text-body-sm text-grey-100">{t('description')}</p>
 			<div className="flex flex-wrap items-center gap-3">
 				<button
 					type="button"
@@ -306,7 +301,7 @@ function PrivacySection() {
 					disabled={isExporting}
 					className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-black bg-white px-5 text-input font-medium text-black disabled:opacity-60"
 				>
-					{isExporting ? 'Preparing export…' : 'Export my data'}
+					{isExporting ? t('exporting') : t('exportData')}
 				</button>
 				<button
 					type="button"
@@ -314,7 +309,7 @@ function PrivacySection() {
 					disabled={isDeleting}
 					className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-danger bg-white px-5 text-input font-medium text-danger disabled:opacity-60"
 				>
-					{isDeleting ? 'Deleting…' : 'Delete my account'}
+					{isDeleting ? t('deleting') : t('deleteAccount')}
 				</button>
 			</div>
 		</div>

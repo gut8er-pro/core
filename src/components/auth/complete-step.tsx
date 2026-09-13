@@ -2,6 +2,8 @@
 
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { NEW_REPORT_PARAM } from '@/lib/navigation'
 
 // Card icon positions within the shared sprite image
 const CARD_ICON_STYLE: Record<string, React.CSSProperties> = {
@@ -32,15 +34,17 @@ const CARD_ICON_STYLE: Record<string, React.CSSProperties> = {
 }
 
 const QUICK_START_CARDS = [
-	{ id: 'create-report', title: 'Create Report', description: 'Start your first assessment' },
-	{ id: 'enjoy-ai', title: 'Enjoy AI', description: 'Learn from tooltips' },
-	{ id: 'settings', title: 'Settings', description: 'Customize your workspace' },
-]
+	{ id: 'create-report', titleKey: 'createReport', descriptionKey: 'startFirstAssessment' },
+	{ id: 'enjoy-ai', titleKey: 'enjoyAi', descriptionKey: 'learnFromTooltips' },
+	{ id: 'settings', titleKey: 'settings', descriptionKey: 'customizeWorkspace' },
+] as const
 
 function CompleteStep() {
 	const router = useRouter()
 	const searchParams = useSearchParams()
 	const email = searchParams.get('email')
+	const t = useTranslations('auth.signup.complete')
+	const tSteps = useTranslations('auth.signup.steps.complete')
 
 	return (
 		<div className="relative min-h-screen bg-white">
@@ -58,20 +62,22 @@ function CompleteStep() {
 				{/* Title + subtitle + badge */}
 				<div className="mb-8 flex flex-col items-center gap-6">
 					<h1 className="text-center text-[44px] font-medium leading-none text-black">
-						Welcome aboard!
+						{tSteps('title')}
 					</h1>
 					<p className="text-center text-[23px] leading-snug tracking-[0.23px] text-black">
-						Your account has been created successfully.
+						{tSteps('subtitle')}
 					</p>
 					{/* Pro Plan badge */}
 					<div className="flex items-center gap-2.5 overflow-hidden rounded-[100px] border-2 border-primary bg-primary/5 px-[25px] py-3">
 						<Image src="/images/pro-plan-icon.svg" alt="" width={24} height={24} />
-						<span className="text-[18px] font-medium tracking-[0.18px] text-primary">Pro Plan</span>
+						<span className="text-[18px] font-medium tracking-[0.18px] text-primary">
+							{t('proPlan')}
+						</span>
 						<span className="text-[18px] text-black">&bull;</span>
 						<span className="text-[18px] tracking-[0.18px] text-black">
 							{searchParams.get('payment') === 'cancelled'
-								? 'Payment not completed'
-								: '7-day free trial started'}
+								? t('paymentNotCompleted')
+								: t('trialStarted')}
 						</span>
 					</div>
 				</div>
@@ -93,9 +99,9 @@ function CompleteStep() {
 								/>
 							</div>
 							<div className="flex flex-col items-center gap-[7px]">
-								<p className="text-[23px] font-medium text-black">{card.title}</p>
+								<p className="text-[23px] font-medium text-black">{t(card.titleKey)}</p>
 								<p className="text-center text-[18px] tracking-[0.18px] text-black/70">
-									{card.description}
+									{t(card.descriptionKey)}
 								</p>
 							</div>
 						</div>
@@ -106,33 +112,35 @@ function CompleteStep() {
 				<div className="flex w-full max-w-[846px] gap-3.5">
 					<button
 						type="button"
-						onClick={() => router.push('/')}
+						// There is no standalone /reports/new route — a report is created from
+						// the dashboard's report-type menu, which this param opens on arrival.
+						onClick={() => router.push(`/?${NEW_REPORT_PARAM}=1`)}
 						className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] border-2 border-[#e5e7eb] bg-white px-[30px] text-[18px] font-medium text-black transition-colors hover:bg-grey-25"
 					>
-						Create your first report
+						{t('createFirstReport')}
 					</button>
 					<button
 						type="button"
 						onClick={() => router.push('/')}
 						className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] bg-primary px-[30px] text-[18px] font-medium text-white transition-colors hover:bg-primary-hover"
 					>
-						Go to Dashboard
+						{t('goToDashboard')}
 					</button>
 				</div>
 
 				{/* Payment cancelled nudge */}
 				{searchParams.get('payment') === 'cancelled' && (
 					<p className="mt-4 text-center text-[16px] text-black/70">
-						You can set up your payment method anytime in{' '}
-						<span className="font-medium text-primary">Settings &rarr; Billing</span> to start your
-						7-day free trial.
+						{t('paymentSetupNote')}{' '}
+						<span className="font-medium text-primary">{t('settingsBilling')}</span>{' '}
+						{t('toStartTrial')}
 					</p>
 				)}
 
 				{/* Confirmation email */}
 				<p className="mt-8 text-center text-[16px] text-black">
-					We&apos;ve sent a confirmation email to{' '}
-					<span className="font-medium">{email ?? 'your email'}</span>
+					{t('confirmationEmailSent')}{' '}
+					<span className="font-medium">{email ?? t('yourEmail')}</span>
 				</p>
 			</div>
 		</div>

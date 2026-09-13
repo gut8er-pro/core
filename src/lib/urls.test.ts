@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { appUrl, marketingUrl } from './urls'
+import { appUrl, marketingUrl, safeRedirectPath } from './urls'
 
 afterEach(() => {
 	vi.unstubAllEnvs()
@@ -60,5 +60,31 @@ describe('fallbacks when the env var is unset', () => {
 		vi.stubEnv('NODE_ENV', 'production')
 		expect(appUrl('/login')).toBe('https://app.gut8erpro.de/login')
 		expect(marketingUrl()).toBe('https://gut8erpro.de/')
+	})
+})
+
+describe('safeRedirectPath', () => {
+	const origin = 'https://app.gut8erpro.de'
+
+	it('keeps a plain path', () => {
+		expect(safeRedirectPath('/reset-password', origin)).toBe('/reset-password')
+	})
+
+	it('keeps the query string and hash', () => {
+		expect(safeRedirectPath('/reports?page=2#top', origin)).toBe('/reports?page=2#top')
+	})
+
+	it('falls back to the root for a missing value', () => {
+		expect(safeRedirectPath(null, origin)).toBe('/')
+		expect(safeRedirectPath('', origin)).toBe('/')
+	})
+
+	it('rejects a same-host URL on a different scheme or port', () => {
+		expect(safeRedirectPath('http://app.gut8erpro.de/x', origin)).toBe('/')
+		expect(safeRedirectPath('https://app.gut8erpro.de:8443/x', origin)).toBe('/')
+	})
+
+	it('keeps a same-origin absolute URL as a path', () => {
+		expect(safeRedirectPath(`${origin}/settings/billing`, origin)).toBe('/settings/billing')
 	})
 })

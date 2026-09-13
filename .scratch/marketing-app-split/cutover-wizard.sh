@@ -185,6 +185,10 @@ finish() {
 
 TOTAL_STAGES=7
 
+# Resume state. The values captured below are Vercel/DNS bookkeeping, not app
+# config, so they go in a wizard-local file rather than the app's .env.
+ENV_FILE="${ENV_FILE:-.scratch/marketing-app-split/.cutover.env}"
+
 TEAM="gut8er-pro"
 GH_ORG="gut8er-pro"
 VERCEL_GH_INSTALL_ID="110446855"   # Vercel's GitHub App installation on the org
@@ -241,6 +245,10 @@ say "normally an A record to ${VERCEL_APEX_A}; the www CNAME target is"
 say "project-specific, so copy it exactly rather than guessing."
 ask VERCEL_WWW_CNAME "Paste the CNAME target Vercel shows for www:"
 ask VERCEL_APEX_VALUE "Paste the A (or ALIAS) value Vercel shows for the apex:"
+# Persist them: stage 3 prints these records back, and a Ctrl-C between the two
+# stages would otherwise lose the project-specific CNAME target on re-run.
+[[ -n "$VERCEL_WWW_CNAME" ]]  && write_env VERCEL_WWW_CNAME  "$VERCEL_WWW_CNAME"
+[[ -n "$VERCEL_APEX_VALUE" ]] && write_env VERCEL_APEX_VALUE "$VERCEL_APEX_VALUE"
 pause "Domains added in Vercel?"
 
 # ── Stage 3 ───────────────────────────────────────────────────────────────

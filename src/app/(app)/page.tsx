@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { useCreateReport, useDeleteReport, useReports } from '@/hooks/use-reports'
 import { useStats } from '@/hooks/use-stats'
 import { useToast } from '@/hooks/use-toast'
+import { NEW_REPORT_PARAM } from '@/lib/navigation'
 import { cn } from '@/lib/utils'
 import type { ReportType } from '@/lib/validations/reports'
 
@@ -72,6 +73,19 @@ function DashboardPage() {
 	const chartValues = stats?.monthlyRevenue ?? Array(12).fill(0)
 	const maxChartValue = Math.max(...chartValues, 1)
 	const currentYear = new Date().getFullYear()
+
+	// Arriving from "Create your first report" (signup complete) opens the
+	// report-type menu straight away. Read from location rather than
+	// useSearchParams so this prerendered route needs no Suspense boundary.
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search)
+		if (!params.has(NEW_REPORT_PARAM)) return
+		setShowReportTypeMenu(true)
+		// Drop the param so a refresh doesn't reopen the menu.
+		params.delete(NEW_REPORT_PARAM)
+		const query = params.toString()
+		window.history.replaceState(null, '', query ? `/?${query}` : '/')
+	}, [])
 
 	// Close dropdown on outside click
 	useEffect(() => {

@@ -38,4 +38,25 @@ function appUrl(path = '/'): string {
 	return joinUrl(origin, path)
 }
 
-export { appUrl, marketingUrl }
+/**
+ * Narrow an untrusted `next`/`redirect` parameter down to a path on `origin`.
+ *
+ * Resolving against `origin` is what makes this safe: it collapses the shapes
+ * that a bare string concatenation would let through — a protocol-relative
+ * `//host/x`, an absolute URL on another origin, and a leading-dot value that
+ * would otherwise *extend* our hostname into one the caller controls. Anything
+ * that lands off-origin, or does not parse, falls back to `/`. The result
+ * always starts with a single slash.
+ */
+function safeRedirectPath(next: string | null | undefined, origin: string): string {
+	if (!next) return '/'
+	try {
+		const resolved = new URL(next, origin)
+		if (resolved.origin !== new URL(origin).origin) return '/'
+		return `${resolved.pathname}${resolved.search}${resolved.hash}`
+	} catch {
+		return '/'
+	}
+}
+
+export { appUrl, marketingUrl, safeRedirectPath }

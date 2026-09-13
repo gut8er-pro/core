@@ -220,7 +220,7 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 |-------|-------|
 | **Route** | `/signup/complete` |
 | **Description** | Success screen. Large green checkmark, "Welcome aboard!" heading, plan badge ("Pro Plan · 7-day free trial started"), three quick-start cards (Create Report, Enjoy AI, Settings), two CTAs. |
-| **Navigates to** | Create Report (`/reports/new`), Dashboard (`/`) |
+| **Navigates to** | Dashboard (`/`); "Create your first report" lands on `/?new-report=1`, which opens the dashboard's report-type menu |
 | **Navigates from** | Step 5 |
 | **User actions** | "Create your first report", "Go to Dashboard" |
 
@@ -269,7 +269,7 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 
 | Field | Value |
 |-------|-------|
-| **Route** | `/reports/:id/gallery` or `/reports/new` |
+| **Route** | `/reports/:id/gallery` |
 | **Description** | Initial photo upload screen. Left sidebar with instructions (good lighting, JPG/PNG, max 20 images) and suggested photo types (Vehicle Diagonals, Damage Overview, Document Shot). Main area shows single photo viewer with filmstrip thumbnails at bottom. Actions on photo: edit/annotate icon, delete icon. |
 | **Navigates to** | Edit Gallery, Report Details, Export & Send |
 | **Navigates from** | Dashboard, Signup Complete |

@@ -9,6 +9,8 @@ node_modules/
 .env
 .env.local
 .env.production.local
+# Resume state captured by the cutover wizard
+.scratch/**/.cutover.env
 
 # Next.js
 .next/

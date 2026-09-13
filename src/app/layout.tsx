@@ -11,10 +11,13 @@ const inter = Inter({
 	variable: '--font-inter',
 })
 
+// The marketing copy and its brand keywords belong to the Astro site on the
+// apex. This origin is the app, and it stays out of search entirely — see
+// `robots.ts` for the crawler-level half of the same decision.
 export const metadata: Metadata = {
-	title: 'Gut8erPRO - Professional Vehicle Assessment',
-	description:
-		'Create damage reports in minutes, not hours. Upload images, let AI do the work, and focus on what matters — your expertise.',
+	title: 'Gut8erPRO',
+	description: 'Vehicle damage assessment workspace for Kfz-Sachverständige.',
+	robots: { index: false, follow: false },
 }
 
 export default async function RootLayout({

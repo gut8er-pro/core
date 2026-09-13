@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { marketingUrl } from '@/lib/urls'
 import { cn } from '@/lib/utils'
 
 type Step = {
@@ -29,9 +30,9 @@ function StepperSidebar({ steps, currentStep, completedSteps, className }: Stepp
 			<div className="flex w-full flex-col overflow-hidden rounded-[40px] bg-primary/10 px-10 pb-6 pt-10">
 				{/* Logo */}
 				<div className="mb-10 shrink-0">
-					<Link href="/">
+					<a href={marketingUrl()}>
 						<Image src="/images/logo.svg" alt="Gut8erPRO" width={131} height={31} priority />
-					</Link>
+					</a>
 				</div>
 
 				{/* Steps */}
