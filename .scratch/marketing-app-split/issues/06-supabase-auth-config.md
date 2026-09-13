@@ -1,6 +1,6 @@
 # 06 — Supabase auth config (via MCP)
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 
 ## Goal
@@ -68,3 +68,10 @@ One claim in this ticket is simply wrong and should not be carried forward: the 
 does **not** drive the email templates. All five under `supabase/email-templates/` use
 `{{ .ConfirmationURL }}`; none references `{{ .SiteURL }}`. The Site URL matters only as
 the fallback GoTrue substitutes when a `redirect_to` is absent or rejected.
+
+**2026-09-13 (final) — closed.** The Supabase change this ticket held is applied:
+`https://app.gut8erpro.de/**` is allow-listed and the Site URL is
+`https://app.gut8erpro.de`. Done under
+`.scratch/password-reset-recovery/issues/01-password-reset-recovery.md`, which carries
+the probe output. Nothing outstanding here.
+

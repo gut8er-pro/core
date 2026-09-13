@@ -1342,6 +1342,7 @@
     "datDisconnected": "DAT integration disconnected",
     "datDisconnectError": "Failed to disconnect DAT integration. Please try again.",
     "reportCreateError": "Failed to create report. Please try again.",
+    "subscriptionRequired": "Creating new reports requires an active subscription. Your existing reports stay available.",
     "reportDeleted": "Report deleted successfully",
     "reportDeleteError": "Failed to delete report. Please try again.",
     "reportUpdated": "Report updated",

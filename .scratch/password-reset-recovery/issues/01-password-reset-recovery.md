@@ -1,6 +1,6 @@
 # 01 — Make password reset work in production
 
-Status: ready-for-human
+Status: resolved
 Type: bug
 
 One issue, one PR. It has a code half (this branch) and a configuration half (Supabase and
@@ -95,3 +95,39 @@ The legal footer on every auth page links to `https://gut8erpro.de/impressum` an
 `/datenschutz`. The apex resolves to `89.31.143.90`, is not a Vercel project, and does not
 answer HTTPS — so both links are dead in production. For a German commercial site that is
 a compliance exposure, not a cosmetic one. Needs its own ticket.
+
+## 2026-09-13 — configuration applied and verified
+
+Both dashboard halves are done. Probed against `/auth/v1/verify` after the change:
+
+```
+redirect_to=https://app.gut8erpro.de/reset-password  -> https://app.gut8erpro.de/reset-password
+redirect_to=https://app.gut8erpro.de/auth/callback   -> https://app.gut8erpro.de/auth/callback
+redirect_to=http://localhost:3000/reset-password     -> http://localhost:3000/reset-password
+redirect_to=https://gut8er-pro.vercel.app/...        -> preserved (kept deliberately)
+(no redirect_to)                                     -> https://app.gut8erpro.de/
+```
+
+Each echoes back rather than collapsing to the Site URL, which is the check that
+distinguishes allow-listed from silently substituted. The Site URL is now
+`https://app.gut8erpro.de`.
+
+The code half shipped in PR #3 (`6e13ed4`) and is live in production
+(`dpl_641tP2YfrUmesW1u88hebP2CjJ5i`, target production).
+
+### Still open
+
+- **`NEXT_PUBLIC_APP_URL` / `NEXT_PUBLIC_MARKETING_URL` on Vercel Production.** Not yet
+  set. Reset works without them — `appUrl()` falls back to `https://app.gut8erpro.de` in
+  production, which is now allow-listed — so this is no longer load-bearing, only the
+  removal of a guess. Neither the Vercel MCP surface nor a CLI can reach env vars from
+  here, so it stays human.
+- **Drop `https://gut8er-pro.vercel.app/**` from the allow-list.** Kept through the
+  cutover because `NEXT_PUBLIC_APP_URL` could not be read, and removing it while OAuth
+  still pointed at that origin would have broken Google/Apple sign-in. Now that
+  `app.gut8erpro.de/auth/callback` is allow-listed, it is safe to remove once a social
+  login has been exercised on the new origin.
+- **End-to-end confirmation.** Not performed here: no way to trigger a real recovery mail,
+  and the Chrome extension was not connected, so the fragment redemption itself is
+  untested in production. Everything upstream of it is measured.
+

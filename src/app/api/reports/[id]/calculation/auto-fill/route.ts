@@ -4,7 +4,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { extractCalculationData } from '@/lib/ai/calculation-extractor'
 import { fetchImageAsBase64 } from '@/lib/ai/fetch-image'
-import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { authErrorResponse, getEntitledUser } from '@/lib/api/auth'
 import { prisma } from '@/lib/prisma'
 
 type RouteContext = {
@@ -12,8 +12,8 @@ type RouteContext = {
 }
 
 async function POST(request: NextRequest, context: RouteContext) {
-	const { user, error } = await getAuthenticatedUser()
-	if (error) return unauthorizedResponse()
+	const { user, error } = await getEntitledUser()
+	if (error) return authErrorResponse(error)
 
 	const { id: reportId } = await context.params
 

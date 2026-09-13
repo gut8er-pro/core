@@ -2,12 +2,12 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { getAnthropicClient } from '@/lib/ai/anthropic'
 import { getCachedResult, getCacheKey, setCachedResult } from '@/lib/ai/cache'
 import { fetchImageAsBase64 } from '@/lib/ai/fetch-image'
-import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { authErrorResponse, getEntitledUser } from '@/lib/api/auth'
 import { aiPhotoRequestSchema } from '@/lib/validations/ai'
 
 async function POST(request: NextRequest) {
-	const { error } = await getAuthenticatedUser()
-	if (error) return unauthorizedResponse()
+	const { error } = await getEntitledUser()
+	if (error) return authErrorResponse(error)
 
 	const body = await request.json()
 	const parsed = aiPhotoRequestSchema.safeParse(body)

@@ -1342,6 +1342,7 @@
     "datDisconnected": "DAT-Integration getrennt",
     "datDisconnectError": "DAT-Integration konnte nicht getrennt werden. Bitte versuchen Sie es erneut.",
     "reportCreateError": "Gutachten konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+    "subscriptionRequired": "Für neue Gutachten wird ein aktives Abonnement benötigt. Ihre bestehenden Gutachten bleiben verfügbar.",
     "reportDeleted": "Gutachten erfolgreich gelöscht",
     "reportDeleteError": "Gutachten konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
     "reportUpdated": "Gutachten aktualisiert",

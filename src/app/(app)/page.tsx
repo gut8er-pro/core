@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { useCreateReport, useDeleteReport, useReports } from '@/hooks/use-reports'
 import { useStats } from '@/hooks/use-stats'
 import { useToast } from '@/hooks/use-toast'
+import { SubscriptionRequiredError } from '@/lib/api/errors'
 import { NEW_REPORT_PARAM } from '@/lib/navigation'
 import { cn } from '@/lib/utils'
 import type { ReportType } from '@/lib/validations/reports'
@@ -108,7 +109,12 @@ function DashboardPage() {
 				onSuccess: (data) => {
 					router.push(`/reports/${data.report.id}/gallery`)
 				},
-				onError: () => {
+				onError: (err) => {
+					if (err instanceof SubscriptionRequiredError) {
+						toast.error(tt('subscriptionRequired'))
+						router.push('/settings/billing')
+						return
+					}
 					toast.error(tt('reportCreateError'))
 				},
 			},

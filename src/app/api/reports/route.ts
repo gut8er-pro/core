@@ -1,5 +1,10 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import {
+	authErrorResponse,
+	getAuthenticatedUser,
+	getEntitledUser,
+	unauthorizedResponse,
+} from '@/lib/api/auth'
 import { prisma } from '@/lib/prisma'
 import { createReportSchema, reportListParamsSchema } from '@/lib/validations/reports'
 
@@ -82,8 +87,8 @@ async function GET(request: NextRequest) {
 }
 
 async function POST(request: NextRequest) {
-	const { user, error } = await getAuthenticatedUser()
-	if (error || !user) return unauthorizedResponse()
+	const { user, error } = await getEntitledUser()
+	if (error || !user) return authErrorResponse(error)
 
 	const body = await request.json()
 	const parsed = createReportSchema.safeParse(body)
