@@ -5,8 +5,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { updatePassword } from '@/lib/auth/actions'
+import { createClient } from '@/lib/supabase/client'
 import { marketingUrl } from '@/lib/urls'
 
 function ResetPasswordPage() {
@@ -17,6 +18,39 @@ function ResetPasswordPage() {
 	const [showPassword, setShowPassword] = useState(false)
 	const [showConfirm, setShowConfirm] = useState(false)
 	const [success, setSuccess] = useState(false)
+	const [exchangingLink, setExchangingLink] = useState(false)
+	const [linkError, setLinkError] = useState<string | null>(null)
+
+	/**
+	 * A link that arrives with its session in the fragment never reached the server, so
+	 * there is no session cookie yet — and `updatePassword` is a server action that reads
+	 * exactly that cookie. Creating a browser client here consumes the fragment and
+	 * writes the cookie; until it resolves, submitting would race it and report the link
+	 * as expired. Links that came through `/auth/callback` carry no fragment and skip all
+	 * of this, already holding a session.
+	 */
+	useEffect(() => {
+		const hash = window.location.hash
+		if (hash.length < 2) return
+		const params = new URLSearchParams(hash.slice(1))
+
+		if (params.has('error')) {
+			setLinkError(t('linkInvalid'))
+			// Drop the spent fragment so a reload does not resurrect the error.
+			window.history.replaceState(null, '', window.location.pathname)
+			return
+		}
+		if (params.get('type') !== 'recovery') return
+
+		setExchangingLink(true)
+		const supabase = createClient()
+		supabase.auth
+			.getSession()
+			.then(({ data }) => {
+				if (!data.session) setLinkError(t('linkInvalid'))
+			})
+			.finally(() => setExchangingLink(false))
+	}, [t])
 
 	const [error, formAction, isPending] = useActionState(
 		async (_prev: string | null, formData: FormData) => {
@@ -94,10 +128,19 @@ function ResetPasswordPage() {
 							<h2 className="text-[36px] font-medium leading-[46px] text-black">{t('title')}</h2>
 							<p className="mt-3.5 text-[16px] leading-6 text-grey-100">{t('subtitle')}</p>
 
-							{error && (
+							{(error ?? linkError) && (
 								<div className="mt-4 rounded-[15px] bg-error-light px-4 py-2.5 text-[16px] text-error">
-									{error}
+									{error ?? linkError}
 								</div>
+							)}
+
+							{linkError && (
+								<Link
+									href="/forgot-password"
+									className="mt-4 block text-[16px] font-medium text-primary hover:text-primary-hover"
+								>
+									{t('requestNewLink')}
+								</Link>
 							)}
 
 							<form action={formAction} className="mt-10 flex flex-col gap-6">
@@ -153,10 +196,14 @@ function ResetPasswordPage() {
 
 								<button
 									type="submit"
-									disabled={isPending}
+									disabled={isPending || exchangingLink}
 									className="flex h-[58px] w-full cursor-pointer items-center justify-center rounded-[15px] bg-primary text-[18px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
 								>
-									{isPending ? t('updating') : t('updatePassword')}
+									{exchangingLink
+										? t('verifyingLink')
+										: isPending
+											? t('updating')
+											: t('updatePassword')}
 								</button>
 							</form>
 						</>

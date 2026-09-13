@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getStripeClient } from '@/lib/stripe/client'
 import { createCheckoutSession } from '@/lib/stripe/subscription'
-import { createAdminClient, createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient, createLinkMailerClient } from '@/lib/supabase/server'
 import { appUrl } from '@/lib/urls'
 import { loginSchema, signupAccountSchema } from '@/lib/validations/auth'
 
@@ -246,9 +246,15 @@ async function requestPasswordReset(formData: FormData): Promise<{ error?: strin
 	const email = formData.get('email') as string
 	if (!email) return { error: 'Email is required' }
 
-	const supabase = await createClient()
+	/**
+	 * Straight to `/reset-password`, not through `/auth/callback`: an implicit link has
+	 * no `?code=` to exchange, and its fragment never reaches the server anyway. The
+	 * page's own browser client redeems it. Links already in flight when this shipped
+	 * are PKCE and still route through the callback, which is unchanged.
+	 */
+	const supabase = createLinkMailerClient()
 	const { error } = await supabase.auth.resetPasswordForEmail(email, {
-		redirectTo: appUrl('/auth/callback?next=/reset-password'),
+		redirectTo: appUrl('/reset-password'),
 	})
 
 	if (error) {

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
+import { RecoveryRedirect } from '@/components/auth/recovery-redirect'
 import { ToastContainer } from '@/components/ui/toast'
 import { Providers } from './providers'
 import './globals.css'
@@ -32,6 +33,9 @@ export default async function RootLayout({
 		<html lang={locale} suppressHydrationWarning>
 			<body className={`${inter.variable} font-sans antialiased`}>
 				<NextIntlClientProvider locale={locale} messages={messages}>
+					{/* Must sit above every route: an implicit recovery link lands on whichever
+					    page the Supabase Site URL names, not on a route of our choosing. */}
+					<RecoveryRedirect />
 					<Providers>{children}</Providers>
 				</NextIntlClientProvider>
 				<ToastContainer />
