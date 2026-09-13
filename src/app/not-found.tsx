@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import { marketingUrl } from '@/lib/urls'
 
 function NotFoundPage() {
 	const t = useTranslations('notFound')
@@ -14,10 +15,10 @@ function NotFoundPage() {
 			<p className="mt-2 text-center text-body-sm text-grey-100">{t('description')}</p>
 			<div className="mt-8 flex items-center gap-4">
 				<Button asChild>
-					<Link href="/dashboard">{t('goToDashboard')}</Link>
+					<Link href="/">{t('goToDashboard')}</Link>
 				</Button>
 				<Button variant="ghost" asChild>
-					<Link href="/">{t('goHome')}</Link>
+					<a href={marketingUrl()}>{t('goHome')}</a>
 				</Button>
 			</div>
 		</div>

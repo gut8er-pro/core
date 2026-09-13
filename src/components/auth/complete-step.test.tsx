@@ -56,6 +56,6 @@ describe('CompleteStep', () => {
 		const user = userEvent.setup()
 		render(<CompleteStep />)
 		await user.click(screen.getByRole('button', { name: 'Go to Dashboard' }))
-		expect(mockPush).toHaveBeenCalledWith('/dashboard')
+		expect(mockPush).toHaveBeenCalledWith('/')
 	})
 })

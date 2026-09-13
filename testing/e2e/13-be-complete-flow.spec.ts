@@ -9,7 +9,7 @@ test.describe('BE Complete Flow', () => {
 	let reportId: string
 
 	test('create BE report', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		const res = await page.evaluate(async () => {
 			const r = await fetch('/api/reports', {
 				method: 'POST',

@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { type ReactNode, useEffect } from 'react'
+import { LegalFooter } from '@/components/layout/legal-footer'
 import { TopNavBar } from '@/components/layout/top-nav-bar'
 import { useAuth } from '@/hooks/use-auth'
 import { useUserSettings } from '@/hooks/use-settings'
@@ -54,8 +55,8 @@ function AppLayout({ children }: { children: ReactNode }) {
 					'Sachverständiger'
 				}
 				activePath={
-					pathname.startsWith('/dashboard')
-						? '/dashboard'
+					pathname === '/'
+						? '/'
 						: pathname.startsWith('/statistics')
 							? '/statistics'
 							: pathname.startsWith('/settings')
@@ -66,6 +67,7 @@ function AppLayout({ children }: { children: ReactNode }) {
 				onLogout={handleLogout}
 			/>
 			<main className="mx-auto max-w-7xl px-3 py-4 sm:px-4 md:px-6 md:py-6">{children}</main>
+			<LegalFooter />
 		</div>
 	)
 }

@@ -1,0 +1,10 @@
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/engines': true
+  '@sentry/cli': true
+  '@swc/core': true
+  canvas: true
+  esbuild: true
+  msw: true
+  prisma: true
+  sharp: true

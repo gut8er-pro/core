@@ -16,6 +16,11 @@ export default defineConfig({
 	outputDir: path.join(__dirname, '../screenshots/test-results'),
 	use: {
 		baseURL: 'http://localhost:3000',
+		// The app UI defaults to German; these specs assert English copy, so pin
+		// the language. `locale` sets Accept-Language *and* navigator.language, so
+		// client-side Intl formatting matches the server. With no NEXT_LOCALE
+		// cookie, src/i18n/request.ts reads Accept-Language directly.
+		locale: 'en-US',
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure',
 		video: 'retain-on-failure',

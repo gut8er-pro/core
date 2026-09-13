@@ -52,7 +52,7 @@ function ReportLayout({ children }: { children: ReactNode }) {
 			<div className="flex flex-wrap items-center gap-3">
 				<button
 					type="button"
-					onClick={() => router.push('/dashboard')}
+					onClick={() => router.push('/')}
 					className="flex cursor-pointer items-center gap-1.5 text-body-sm font-medium text-black hover:text-grey-100 md:text-input"
 				>
 					<div className="flex items-center justify-center rounded-[13.5px] bg-white p-1.5">

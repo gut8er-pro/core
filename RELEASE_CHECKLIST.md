@@ -10,13 +10,46 @@
 
 ## 🚨 Hard blockers — fix before any paid customer touches the app
 
-### 1. Fill in the legal-page placeholders
-The four pages at `src/app/legal/*` are wired and linked from the landing footer, but the content still contains placeholders like `[Firmenname]`, `[datenschutz@beispiel.de]`, `[HRB …]`. Search for `[` in those files to see them all.
+### 0. Sequence the marketing/app split correctly
+The split removed the landing page and the four `/legal/*` routes from this app; the Astro
+marketing site (`gut8er/website`) now owns them. See
+`docs/adr/0001-split-marketing-site-from-dashboard-app.md`.
 
-- [`src/app/legal/impressum/page.tsx`](src/app/legal/impressum/page.tsx) — must satisfy § 5 TMG (company name, address, registry, USt-IdNr, responsible person)
-- [`src/app/legal/datenschutz/page.tsx`](src/app/legal/datenschutz/page.tsx) — DSGVO Art. 13 (data controller, processors, retention, rights)
-- [`src/app/legal/agb/page.tsx`](src/app/legal/agb/page.tsx) — terms of service
-- [`src/app/legal/widerruf/page.tsx`](src/app/legal/widerruf/page.tsx) — assumes B2B; adjust if you sell to consumers
+**Verified state of production (2026-09-01):**
+
+| Host | Today |
+|---|---|
+| `gut8erpro.de`, `www.` | `89.31.143.90` — a united-domains **parking page**. No TLS (`https://` fails outright). Never served the app. |
+| `app.gut8erpro.de` | Already on Vercel, already serving this app. |
+| `app.gut8erpro.de/legal/*` | **307 → `/login`.** The legal routes were never in the middleware's `publicRoutes`, so they have never been publicly reachable. |
+
+So deploying this branch takes **nothing publicly-working offline** — there is no live public
+Impressum to lose. The split is what finally publishes those pages, on a domain that currently
+serves a parking page.
+
+The one real change at deploy time: `app.gut8erpro.de/` stops being a landing page and becomes
+the auth-gated dashboard. Until the Astro site is live on the apex there is no public marketing
+page anywhere. That is cosmetic for a launched-but-unofficial product, but it argues for
+deploying the marketing site first, or at least in the same session.
+
+**Recommended order:** marketing site live on the apex → this app deployed → Supabase config
+(ticket 06) → verify. Rollback is a domain reassignment plus `git revert`.
+
+### 1. Fill in the legal-page placeholders
+The four legal pages have **moved out of this repo** — they now belong to the Astro marketing
+site on the apex domain (see `docs/adr/0001-split-marketing-site-from-dashboard-app.md`).
+Their last state in this repo is the snapshot at
+`.scratch/marketing-app-split/source-snapshot/legal/`, which is what the Astro port carries
+over verbatim, placeholders and all.
+
+The content still contains placeholders like `[Firmenname]`, `[datenschutz@beispiel.de]`,
+`[HRB …]`. Search for `[` in those files to see them all. Fill them in **on the marketing
+site** once it exists:
+
+- `impressum` — must satisfy § 5 TMG (company name, address, registry, USt-IdNr, responsible person)
+- `datenschutz` — DSGVO Art. 13 (data controller, processors, retention, rights)
+- `agb` — terms of service
+- `widerruf` — assumes B2B; adjust if you sell to consumers
 
 **After filling in the placeholders, have a German lawyer skim.** The template is reasonable but not a substitute for legal review.
 
@@ -47,11 +80,11 @@ SENTRY_AUTH_TOKEN=     # only if you want source map upload during build
 Without these, errors hit the console and disappear. First paying customer is the worst time to discover you have no monitoring.
 
 ### 5. Decide what to do about DAT integration
-[`src/components/report/calculation/dat-modal.tsx`](src/components/report/calculation/dat-modal.tsx) has zero `fetch` calls — it's a UI shell. The signup wizard collects DAT credentials and the landing page advertises DAT integration, but the calculation tab can't actually call SilverDAT3.
+[`src/components/report/calculation/dat-modal.tsx`](src/components/report/calculation/dat-modal.tsx) has zero `fetch` calls — it's a UI shell. The signup wizard collects DAT credentials and the marketing site's landing page advertises DAT integration, but the calculation tab can't actually call SilverDAT3.
 
 Options:
 - **Wire DAT for real** — requires SilverDAT3 API credentials and integration work
-- **Remove DAT branding from landing + onboarding for v1** and ship calc as fully-manual. Cheapest path to launch.
+- **Remove DAT branding from the marketing landing page + onboarding for v1** and ship calc as fully-manual. Cheapest path to launch. (The landing copy now lives in the marketing repo.)
 
 Don't ship with DAT advertised but non-functional — that's a refund magnet.
 

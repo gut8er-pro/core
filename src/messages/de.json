@@ -369,6 +369,17 @@
       "placeholder": "Text eingeben",
       "addTemplate": "Vorlage hinzufügen",
       "create": "Erstellen"
+    },
+    "privacy": {
+      "heading": "Datenschutz & Konto",
+      "description": "Gemäß DSGVO (Art. 17 + 20) können Sie jederzeit alle über Sie gespeicherten Daten exportieren oder Ihr Konto dauerhaft löschen. Beim Löschen werden sämtliche Gutachten, Fotos und Rechnungen entfernt — dies kann nicht rückgängig gemacht werden.",
+      "exportData": "Meine Daten exportieren",
+      "exporting": "Export wird vorbereitet…",
+      "exportError": "Export fehlgeschlagen. Bitte erneut versuchen oder den Support kontaktieren.",
+      "deleteAccount": "Mein Konto löschen",
+      "deleting": "Wird gelöscht…",
+      "deleteConfirm": "Möchten Sie Ihr Konto wirklich dauerhaft löschen? Dabei werden alle Gutachten, Fotos und Rechnungen entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteError": "Löschen fehlgeschlagen. Bitte kontaktieren Sie den Support."
     }
   },
   "report": {
@@ -1340,72 +1351,17 @@
     "english": "English",
     "deutsch": "Deutsch"
   },
-  "landing": {
-    "aiPoweredBadge": "Jetzt mit KI-gestütztem Auto-Fill",
-    "heroTitle": "Professionelle Fahrzeugbegutachtung",
-    "heroSubtitle": "Einfach gemacht",
-    "heroDescription": "Erstellen Sie Schadensgutachten in Minuten statt Stunden. Laden Sie Bilder hoch, lassen Sie die KI arbeiten und konzentrieren Sie sich auf das Wesentliche — Ihre Expertise.",
-    "startFreeTrial": "Kostenlos testen",
-    "logIn": "Anmelden",
-    "stats": {
-      "reportTime": "Gutachtenzeit",
-      "reportTimeValue": "-35%",
-      "manualWork": "Manuelle Arbeit",
-      "manualWorkValue": "-60%",
-      "professionals": "Sachverständige",
-      "professionalsValue": "2000+"
-    },
-    "featuresTitle": "Gut8erPRO Funktionen",
-    "featuresSubtitle": "Von intelligenter Analyse bis hin zu nahtlosen Workflow-Tools — Gut8erPRO gibt Ihnen die Klarheit und Kontrolle, die Sie für schnellere, bessere Entscheidungen brauchen.",
-    "features": {
-      "datIntegration": {
-        "title": "DAT-Integration",
-        "description": "Echtzeit-Fahrzeugdaten und Bewertungen direkt in Ihrem Arbeitsablauf."
-      },
-      "realTimeAnalytics": {
-        "title": "Echtzeit-Auswertungen",
-        "description": "Umsatz, Zahlungen und Leistung in Echtzeit verfolgen."
-      },
-      "aiEvaluationTool": {
-        "title": "KI-Bewertungstool",
-        "description": "Analysiert Gutachten und Kennzahlen automatisch mittels KI."
-      },
-      "editingPhotos": {
-        "title": "Fotobearbeitung",
-        "description": "Bilder direkt in der Plattform zuschneiden, anpassen und vorbereiten."
-      }
-    },
-    "faqTitle": "Häufig gestellte Fragen",
-    "faqSubtitle": "Alles, was Sie über Gut8erPRO wissen müssen.",
-    "faq": {
-      "whatIsGut8erPro": {
-        "question": "Was ist Gut8erPRO?",
-        "answer": "Gut8erPRO ist eine professionelle Web-App zur Kfz-Schadensbegutachtung, entwickelt für Kfz-Sachverständige. Erstellen Sie detaillierte Gutachten, füllen Sie Daten automatisch per Bildanalyse aus und optimieren Sie Ihren gesamten Arbeitsablauf."
-      },
-      "howDoesAutoFillWork": {
-        "question": "Wie funktioniert das bildbasierte Auto-Fill?",
-        "answer": "Unsere KI analysiert hochgeladene Fahrzeugfotos, erkennt automatisch Schäden, liest VIN-Nummern und füllt Gutachtenfelder vor. Laden Sie einfach Ihre Bilder hoch und lassen Sie das System die relevanten Daten extrahieren."
-      },
-      "whatIntegrations": {
-        "question": "Welche Integrationen sind verfügbar?",
-        "answer": "Gut8erPRO ist mit DAT SilverDAT3 für Fahrzeugdaten, Bewertungen und Reparaturkostenkalkulation integriert. Unterstützung für Audatex und GT Motive folgt in Kürze. Die Plattform unterstützt außerdem Google- und Apple-Anmeldung, Stripe für Zahlungen und E-Mail-Versand für Gutachten."
-      },
-      "isThereFreeTrial": {
-        "question": "Gibt es eine kostenlose Testphase?",
-        "answer": "Ja! Bei der Registrierung erhalten Sie 7 Tage lang kostenlosen Vollzugriff auf alle Funktionen. Ihre Zahlungsdaten werden vorab erfasst, eine Belastung erfolgt jedoch erst nach Ablauf der Testphase. Sie können jederzeit während der Testphase kündigen."
-      },
-      "whatSupport": {
-        "question": "Welcher Support steht zur Verfügung?",
-        "answer": "Alle Nutzer erhalten priorisierten E-Mail-Support mit garantierten Antwortzeiten sowie Unterstützung beim Onboarding und persönliche Betreuung."
-      }
-    },
-    "copyright": "© {year} Gut8erPRO. Alle Rechte vorbehalten."
-  },
   "notFound": {
     "code": "404",
     "title": "Seite nicht gefunden",
     "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
     "goToDashboard": "Zur Übersicht",
     "goHome": "Zur Startseite"
+  },
+  "legal": {
+    "impressum": "Impressum",
+    "datenschutz": "Datenschutz",
+    "agb": "AGB",
+    "widerruf": "Widerruf"
   }
 }

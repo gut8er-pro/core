@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
 import { LanguageSwitcher } from '@/components/ui/language-switcher'
 import { login, signInWithApple, signInWithGoogle } from '@/lib/auth/actions'
+import { marketingUrl } from '@/lib/urls'
 
 function LoginPage() {
 	const [error, formAction, isPending] = useActionState(
@@ -22,15 +23,15 @@ function LoginPage() {
 	const tCommon = useTranslations('common')
 
 	return (
-		<div className="flex min-h-screen bg-white">
+		<div className="flex min-h-full bg-white">
 			{/* Left branding panel — inset green card */}
 			<div className="relative hidden w-1/2 flex-col py-6 pl-20 pr-0 lg:flex">
 				<div className="relative flex flex-1 flex-col overflow-hidden rounded-[40px] bg-primary/10 px-10 pt-10 pb-0">
 					{/* Logo */}
 					<div className="z-10">
-						<Link href="/">
+						<a href={marketingUrl()}>
 							<Image src="/images/logo.svg" alt="Gut8erPRO" width={131} height={31} priority />
-						</Link>
+						</a>
 					</div>
 
 					{/* Title */}
@@ -68,9 +69,9 @@ function LoginPage() {
 				<div className="w-full max-w-[519px]">
 					{/* Mobile logo */}
 					<div className="mb-8 lg:hidden">
-						<Link href="/">
+						<a href={marketingUrl()}>
 							<Image src="/images/logo.svg" alt="Gut8erPRO" width={131} height={31} />
-						</Link>
+						</a>
 					</div>
 
 					{/* Header */}

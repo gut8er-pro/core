@@ -64,7 +64,7 @@ type NavItem = {
 }
 
 const CENTER_NAV_ITEMS: NavItem[] = [
-	{ path: '/dashboard', icon: Home, labelKey: 'dashboard' },
+	{ path: '/', icon: Home, labelKey: 'dashboard' },
 	{ path: '/statistics', icon: BarChart3, labelKey: 'statistics' },
 	{ path: '/settings', icon: Settings, labelKey: 'settings' },
 ]
@@ -104,7 +104,7 @@ function TopNavBar({
 				<button
 					type="button"
 					className="cursor-pointer"
-					onClick={() => onNavigate?.('/dashboard')}
+					onClick={() => onNavigate?.('/')}
 					aria-label={t('gut8erproHome')}
 				>
 					<Image

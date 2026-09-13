@@ -37,7 +37,7 @@
 - [ ] Social buttons: "Login with Google" + "Login with Apple" (side by side)
 - [ ] **Edge: Submit empty** → browser validation on email field
 - [ ] **Edge: Wrong credentials** → red error banner "Email or password is incorrect"
-- [ ] **Edge: Valid login** → `ivanvukasino+2@gmail.com` / `Ivanivan1!` → redirects to `/dashboard`
+- [ ] **Edge: Valid login** → `ivanvukasino+2@gmail.com` / `Ivanivan1!` → redirects to `/` (the dashboard)
 - [ ] No console errors
 - **Figma:** `design/Login and Sign Up/🟢 LOGIN/Gut8erPRO - Login.png`
 
@@ -129,4 +129,4 @@
 ## 1.6 Logout
 - [ ] Click user avatar in navbar → dropdown with "Logout"
 - [ ] Click Logout → redirects to `/login`
-- [ ] Visit `/dashboard` after logout → redirects to `/login`
+- [ ] Visit `/` after logout → redirects to `/login`

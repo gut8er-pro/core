@@ -135,7 +135,7 @@ test.describe.serial('HS Exhaustive Full-Fill', () => {
 	let reportId: string
 
 	test('1. create HS report', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		await page.waitForTimeout(500)
 		const id = await page.evaluate(async (title: string) => {
 			const r = await fetch('/api/reports', {
@@ -298,7 +298,7 @@ test.describe.serial('BE Exhaustive Full-Fill', () => {
 	let reportId: string
 
 	test('1. create BE report', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		await page.waitForTimeout(500)
 		reportId = await page.evaluate(async (title: string) => {
 			const r = await fetch('/api/reports', {
@@ -476,7 +476,7 @@ test.describe.serial('KG Exhaustive Full-Fill', () => {
 	let reportId: string
 
 	test('1. create KG report', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		await page.waitForTimeout(500)
 		reportId = await page.evaluate(async (title: string) => {
 			const r = await fetch('/api/reports', {
@@ -635,7 +635,7 @@ test.describe.serial('OT Exhaustive Full-Fill', () => {
 	let reportId: string
 
 	test('1. create OT report', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		await page.waitForTimeout(500)
 		reportId = await page.evaluate(async (title: string) => {
 			const r = await fetch('/api/reports', {

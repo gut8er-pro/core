@@ -60,14 +60,21 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 
 ## 1. SCREEN INVENTORY
 
-### 1.0 Landing Page (Welcome Screen)
+### 1.0 Landing Page (Welcome Screen) — moved off this app
+
+> The marketing landing page and the four legal pages now live in the separate
+> **Astro marketing site** on the apex domain, not in this app. See
+> `docs/adr/0001-split-marketing-site-from-dashboard-app.md`. This app is served from
+> `app.gut8erpro.de`, where `/` is the Dashboard (§1.7) and every route except the auth
+> routes and `/help` requires auth. Link to marketing pages with `marketingUrl()` from
+> `src/lib/urls.ts`.
 
 | Field | Value |
 |-------|-------|
-| **Route** | `/` |
+| **Route** | `/` on the marketing site (apex domain) — no longer a route in this app |
 | **Description** | Marketing landing page for unauthenticated users. Hero section with headline "Professional Vehicle Assessment Made Simple", stats badges (-35% report time, -60% less manual work, 2000+ reports), feature cards (DAT Integration, Real Time Analytics, AI Evaluation Tool, Editing Photos), FAQ accordion. |
-| **Navigates to** | Login (`/login`), Signup (`/signup`) |
-| **Navigates from** | Direct URL, logout redirect |
+| **Navigates to** | Login (`${APP_URL}/login`), Signup (`${APP_URL}/signup/account`) |
+| **Navigates from** | Direct URL, account-deletion redirect |
 | **Data displayed** | Static marketing content |
 | **User actions** | "Start Free Trial" CTA, "Sign Up for Free" CTA, Login link, expand/collapse FAQ items |
 | **Form fields** | None |
@@ -80,8 +87,8 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 |-------|-------|
 | **Route** | `/login` |
 | **Description** | Split-screen login. Left: branding panel with illustration and stat badges. Right: login form. |
-| **Navigates to** | Dashboard (`/dashboard`), Signup (`/signup`), Forgot Password (`/forgot-password`) |
-| **Navigates from** | Landing, Signup, any unauthenticated redirect |
+| **Navigates to** | Dashboard (`/`), Signup (`/signup`), Forgot Password (`/forgot-password`) |
+| **Navigates from** | The marketing site, Signup, any unauthenticated redirect |
 | **Data displayed** | None |
 | **User actions** | Enter credentials, toggle password visibility, login, social login (Google/Apple), navigate to signup, forgot password |
 | **Form fields** | |
@@ -100,7 +107,7 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 | **Route** | `/signup` or `/signup/account` |
 | **Description** | First step of 5-step signup wizard. Left sidebar shows step progress with numbered stepper. Right side shows account creation form. |
 | **Navigates to** | Step 2: Personal, Login |
-| **Navigates from** | Login, Landing |
+| **Navigates from** | Login, the marketing site |
 | **User actions** | Fill form, Continue, Cancel, navigate to Login |
 | **Form fields** | |
 
@@ -213,7 +220,7 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 |-------|-------|
 | **Route** | `/signup/complete` |
 | **Description** | Success screen. Large green checkmark, "Welcome aboard!" heading, plan badge ("Pro Plan · 7-day free trial started"), three quick-start cards (Create Report, Enjoy AI, Settings), two CTAs. |
-| **Navigates to** | Create Report (`/reports/new`), Dashboard (`/dashboard`) |
+| **Navigates to** | Dashboard (`/`); "Create your first report" lands on `/?new-report=1`, which opens the dashboard's report-type menu |
 | **Navigates from** | Step 5 |
 | **User actions** | "Create your first report", "Go to Dashboard" |
 
@@ -262,7 +269,7 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 
 | Field | Value |
 |-------|-------|
-| **Route** | `/reports/:id/gallery` or `/reports/new` |
+| **Route** | `/reports/:id/gallery` |
 | **Description** | Initial photo upload screen. Left sidebar with instructions (good lighting, JPG/PNG, max 20 images) and suggested photo types (Vehicle Diagonals, Damage Overview, Document Shot). Main area shows single photo viewer with filmstrip thumbnails at bottom. Actions on photo: edit/annotate icon, delete icon. |
 | **Navigates to** | Edit Gallery, Report Details, Export & Send |
 | **Navigates from** | Dashboard, Signup Complete |
@@ -653,7 +660,6 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 
 ```
 Root
-├── / (Landing Page)                          [public]
 ├── /login                                    [public]
 ├── /forgot-password                          [public]
 ├── /signup                                   [public]
@@ -664,7 +670,7 @@ Root
 │   ├── /signup/integrations   (Step 5)
 │   └── /signup/complete       (Step Complete)
 │
-├── /dashboard                                [auth required]
+├── /                                         [auth required] — Dashboard
 │
 ├── /reports/:id                              [auth required]
 │   ├── /reports/:id/gallery
@@ -1499,10 +1505,10 @@ Reports should auto-save on field blur or after 2-second debounce. Show a subtle
 ## APPENDIX: Screen Flow Diagram
 
 ```
-                    ┌──────────┐
-                    │ Landing  │
-                    │ Page  /  │
-                    └────┬─────┘
+                 ┌───────────────┐
+                 │ Marketing site │
+                 │  (apex, Astro) │
+                 └───────┬────────┘
                          │
               ┌──────────┴──────────┐
               │                     │
@@ -1516,7 +1522,7 @@ Reports should auto-save on field blur or after 2-second debounce. Show a subtle
               │    │
         ┌─────▼────▼─┐
         │  Dashboard  │
-        │ /dashboard  │
+        │      /      │
         └──────┬──────┘
                │
         ┌──────▼──────┐

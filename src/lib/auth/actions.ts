@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { getStripeClient } from '@/lib/stripe/client'
 import { createCheckoutSession } from '@/lib/stripe/subscription'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
+import { appUrl } from '@/lib/urls'
 import { loginSchema, signupAccountSchema } from '@/lib/validations/auth'
 
 async function login(formData: FormData): Promise<{ error?: string }> {
@@ -29,7 +30,7 @@ async function login(formData: FormData): Promise<{ error?: string }> {
 		return { error: 'Email or password is incorrect' }
 	}
 
-	redirect('/dashboard')
+	redirect('/')
 }
 
 async function signup(formData: FormData): Promise<{ error?: string }> {
@@ -214,7 +215,7 @@ async function signInWithGoogle() {
 	const { data, error } = await supabase.auth.signInWithOAuth({
 		provider: 'google',
 		options: {
-			redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+			redirectTo: appUrl('/auth/callback'),
 		},
 	})
 
@@ -230,7 +231,7 @@ async function signInWithApple() {
 	const { data, error } = await supabase.auth.signInWithOAuth({
 		provider: 'apple',
 		options: {
-			redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+			redirectTo: appUrl('/auth/callback'),
 		},
 	})
 
@@ -247,7 +248,7 @@ async function requestPasswordReset(formData: FormData): Promise<{ error?: strin
 
 	const supabase = await createClient()
 	const { error } = await supabase.auth.resetPasswordForEmail(email, {
-		redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/reset-password`,
+		redirectTo: appUrl('/auth/callback?next=/reset-password'),
 	})
 
 	if (error) {

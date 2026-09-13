@@ -35,7 +35,7 @@ async function updateSession(request: NextRequest) {
 	// Handle Supabase PKCE auth codes — redirect to callback route
 	const code = searchParams.get('code')
 	if (code && (pathname === '/' || pathname === '/login')) {
-		const next = searchParams.get('next') ?? '/dashboard'
+		const next = searchParams.get('next') ?? '/'
 		const url = request.nextUrl.clone()
 		url.pathname = '/auth/callback'
 		url.search = `?code=${code}&next=${encodeURIComponent(next)}`
@@ -43,9 +43,14 @@ async function updateSession(request: NextRequest) {
 	}
 
 	// Public routes that don't need auth
-	const publicRoutes = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/help']
+	const publicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/help']
+	// Stripe POSTs here with no session cookie and does not follow redirects, so
+	// this endpoint must never be bounced to /login. It authenticates the caller
+	// itself, by verifying the payload against STRIPE_WEBHOOK_SECRET.
+	const publicApiRoutes = ['/api/stripe/webhook']
 	const isPublicRoute =
 		publicRoutes.some((route) => pathname === route || pathname.startsWith('/signup/')) ||
+		publicApiRoutes.includes(pathname) ||
 		pathname.startsWith('/auth/callback')
 
 	// Redirect unauthenticated users to login
@@ -62,7 +67,7 @@ async function updateSession(request: NextRequest) {
 		(pathname.startsWith('/signup') && pathname !== '/signup/complete')
 	if (user && isAuthPage && pathname !== '/reset-password') {
 		const url = request.nextUrl.clone()
-		url.pathname = '/dashboard'
+		url.pathname = '/'
 		return NextResponse.redirect(url)
 	}
 

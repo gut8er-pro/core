@@ -9,28 +9,9 @@ import { test, expect } from '@playwright/test'
 // Some assertions are conditional on the project name, since elements like
 // sidebars are hidden at smaller breakpoints.
 
-// Note: auth-gated pages require auth setup — mock or seed user before running
-
-const REPORT_ID = 'test-report-1'
-
-test.describe('Responsive Behavior — Landing Page', () => {
-	test('navigation and hero render correctly at all viewport sizes', async ({ page }) => {
-		await page.goto('/')
-
-		// Navigation header is always visible
-		await expect(page.locator('header').first()).toBeVisible()
-
-		// Hero text is always visible
-		await expect(page.getByText('Professional Vehicle')).toBeVisible()
-		await expect(page.getByText('Damage Assessment')).toBeVisible()
-	})
-
-	test('footer is visible at all viewport sizes', async ({ page }) => {
-		await page.goto('/')
-
-		await expect(page.locator('footer')).toBeVisible()
-	})
-})
+// This suite has no auth setup, so it covers signed-out pages only: everything
+// behind the login gate lives in testing/e2e/, which has a setup project and a
+// real session (see testing/README.md).
 
 test.describe('Responsive Behavior — Login Page', () => {
 	test('login form is always visible regardless of viewport', async ({ page }) => {
@@ -83,61 +64,5 @@ test.describe('Responsive Behavior — Signup Stepper', () => {
 			const mobileProgress = page.locator('[aria-current="step"]').first()
 			await expect(mobileProgress).toBeVisible()
 		}
-	})
-})
-
-test.describe('Responsive Behavior — Report Sidebar', () => {
-	test('report sidebar visibility depends on viewport', async ({ page }, testInfo) => {
-		await page.goto(`/reports/${REPORT_ID}/gallery`)
-
-		// ReportSidebar: "hidden lg:block" — only visible at lg (1024px+)
-		const reportSidebar = page.getByLabel('Report navigation')
-
-		if (testInfo.project.name === 'desktop') {
-			await expect(reportSidebar).toBeVisible()
-		} else if (testInfo.project.name === 'tablet-portrait') {
-			// On tablet portrait (~834px), sidebar is hidden and content fills full width
-			await expect(reportSidebar).not.toBeVisible()
-		}
-	})
-})
-
-test.describe('Responsive Behavior — Gallery Instruction Sidebar', () => {
-	test('instruction sidebar visibility depends on viewport', async ({ page }, testInfo) => {
-		await page.goto(`/reports/${REPORT_ID}/gallery`)
-
-		// InstructionSidebar: "hidden xl:block" — only visible at xl (1280px+)
-		const photoTips = page.getByRole('heading', { name: 'Photo Tips' })
-
-		if (testInfo.project.name === 'desktop') {
-			// Desktop is 1440px — above xl breakpoint
-			await expect(photoTips).toBeVisible()
-		} else if (
-			testInfo.project.name === 'tablet-portrait' ||
-			testInfo.project.name === 'tablet-landscape'
-		) {
-			// iPad Pro 11 portrait (~834px) and landscape (~1194px) are both below xl
-			await expect(photoTips).not.toBeVisible()
-		}
-	})
-})
-
-test.describe('Responsive Behavior — Dashboard Nav Buttons', () => {
-	test('top nav bar adapts user info display based on viewport', async ({
-		page,
-	}, testInfo) => {
-		await page.goto('/dashboard')
-
-		// The user name text uses "hidden lg:block" — only visible at lg+
-		const header = page.locator('header')
-
-		if (testInfo.project.name === 'desktop') {
-			// At 1440px, the nav buttons and user avatar should all be visible
-			await expect(header.getByRole('button', { name: 'Settings' })).toBeVisible()
-			await expect(header.getByRole('button', { name: 'Notifications' })).toBeVisible()
-		}
-
-		// The avatar circle (with initial letter) is always visible in the header
-		// regardless of viewport
 	})
 })

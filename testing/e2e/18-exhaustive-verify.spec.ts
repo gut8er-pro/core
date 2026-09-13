@@ -195,25 +195,25 @@ async function verifyType(
 
 test.describe.serial('Exhaustive PDF verification', () => {
 	test('verify HS PDF', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		await verifyType(page, 'HS', 'PW Exhaustive HS', HS_EXPECT)
 		expect(OUTCOMES.at(-1)?.reportId).toBeTruthy()
 	})
 
 	test('verify BE PDF', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		await verifyType(page, 'BE', 'PW Exhaustive BE', BE_EXPECT)
 		expect(OUTCOMES.at(-1)?.reportId).toBeTruthy()
 	})
 
 	test('verify KG PDF', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		await verifyType(page, 'KG', 'PW Exhaustive KG', KG_EXPECT)
 		expect(OUTCOMES.at(-1)?.reportId).toBeTruthy()
 	})
 
 	test('verify OT PDF', async ({ page }) => {
-		await page.goto('/dashboard')
+		await page.goto('/')
 		await verifyType(page, 'OT', 'PW Exhaustive OT', OT_EXPECT)
 		expect(OUTCOMES.at(-1)?.reportId).toBeTruthy()
 	})

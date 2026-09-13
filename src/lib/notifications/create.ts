@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { prisma } from '@/lib/prisma'
+import { appUrl } from '@/lib/urls'
 
 type NotificationEventType =
 	| 'REPORT_COMPLETED'
@@ -60,7 +61,7 @@ async function createNotification({
 					from: process.env.EMAIL_FROM ?? 'Gut8erPRO <noreply@gut8erpro.de>',
 					to: user.email,
 					subject: title,
-					html: `<p>${greeting}</p><p>${description}</p><p>Log in to <a href="${process.env.NEXT_PUBLIC_APP_URL ?? 'https://gut8erpro.de'}">Gut8erPRO</a> to view details.</p>`,
+					html: `<p>${greeting}</p><p>${description}</p><p>Log in to <a href="${appUrl()}">Gut8erPRO</a> to view details.</p>`,
 				})
 				await prisma.notification.update({
 					where: { id: notification.id },

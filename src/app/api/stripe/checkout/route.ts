@@ -3,6 +3,7 @@ import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { prisma } from '@/lib/prisma'
 import { getStripeClient } from '@/lib/stripe/client'
 import { createCheckoutSession } from '@/lib/stripe/subscription'
+import { appUrl } from '@/lib/urls'
 
 async function POST() {
 	if (!process.env.STRIPE_SECRET_KEY) {
@@ -45,10 +46,9 @@ async function POST() {
 	}
 
 	const priceId = process.env.STRIPE_PRO_PRICE_ID ?? ''
-	const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 	const url = await createCheckoutSession(user.id ?? '', priceId, customerId, {
-		successUrl: `${appUrl}/dashboard?payment=success`,
-		cancelUrl: `${appUrl}/settings/billing`,
+		successUrl: appUrl('/?payment=success'),
+		cancelUrl: appUrl('/settings/billing'),
 	})
 
 	return NextResponse.json({ url })

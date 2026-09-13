@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
+import { safeRedirectPath } from '@/lib/urls'
 
 async function GET(request: Request) {
 	const { searchParams, origin } = new URL(request.url)
 	const code = searchParams.get('code')
-	const next = searchParams.get('next') ?? '/dashboard'
+	// `next` arrives from the query string, so it is attacker-controlled.
+	const next = safeRedirectPath(searchParams.get('next'), origin)
 
 	if (code) {
 		const supabase = await createClient()
@@ -32,11 +34,11 @@ async function GET(request: Request) {
 					})
 				}
 			}
-			return NextResponse.redirect(`${origin}${next}`)
+			return NextResponse.redirect(new URL(next, origin))
 		}
 	}
 
-	return NextResponse.redirect(`${origin}/login?error=auth_callback_error`)
+	return NextResponse.redirect(new URL('/login?error=auth_callback_error', origin))
 }
 
 export { GET }
