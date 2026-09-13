@@ -63,7 +63,8 @@
       "reportTime": "Report time",
       "reportTimeValue": "-35%",
       "lessManualWork": "Less manual work",
-      "lessManualWorkValue": "-40%"
+      "lessManualWorkValue": "-40%",
+      "callbackError": "We couldn't complete that sign-in. Please try again."
     },
     "signup": {
       "steps": {
@@ -212,7 +213,10 @@
       "successMessage": "Your password has been updated successfully. Redirecting to login...",
       "goToLogin": "Go to login",
       "passwordsDoNotMatch": "Passwords do not match",
-      "passwordMinLength": "Password must be at least 8 characters"
+      "passwordMinLength": "Password must be at least 8 characters",
+      "linkInvalid": "This password reset link is invalid or has expired.",
+      "requestNewLink": "Request a new link",
+      "verifyingLink": "Verifying link..."
     }
   },
   "dashboard": {

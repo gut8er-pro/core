@@ -35,4 +35,25 @@ function createAdminClient() {
 	)
 }
 
-export { createAdminClient, createClient }
+/**
+ * Anonymous client that mails **implicit-flow** links rather than PKCE ones.
+ *
+ * PKCE stores its code verifier next to the client that created the challenge. For a
+ * link sent by a server action that means a cookie on the browser which submitted the
+ * form — so the emailed link only redeems in that same browser, and reading the mail on
+ * a phone dead-ends at `/login?error=auth_callback_error`. An implicit link carries its
+ * session in the URL fragment instead and redeems wherever it is opened; `/reset-password`
+ * is what picks the fragment up. See `docs/adr/0002-implicit-flow-for-recovery-links.md`.
+ *
+ * Deliberately unwired from cookies: this client only sends mail, it never holds a
+ * session, and it must not disturb the caller's.
+ */
+function createLinkMailerClient() {
+	return createSupabaseClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL!,
+		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+		{ auth: { flowType: 'implicit', persistSession: false, autoRefreshToken: false } },
+	)
+}
+
+export { createAdminClient, createClient, createLinkMailerClient }

@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { LanguageSwitcher } from '@/components/ui/language-switcher'
 import { login, signInWithApple, signInWithGoogle } from '@/lib/auth/actions'
 import { marketingUrl } from '@/lib/urls'
@@ -19,8 +19,21 @@ function LoginPage() {
 	)
 
 	const [showPassword, setShowPassword] = useState(false)
+	const [callbackError, setCallbackError] = useState<string | null>(null)
 	const t = useTranslations('auth.login')
 	const tCommon = useTranslations('common')
+
+	/**
+	 * `/auth/callback` redirects here with `?error=` when a code exchange fails. Read
+	 * from `window` rather than `useSearchParams` so this page needs no Suspense
+	 * boundary to stay statically renderable.
+	 */
+	useEffect(() => {
+		if (new URLSearchParams(window.location.search).has('error')) {
+			setCallbackError(t('callbackError'))
+			window.history.replaceState(null, '', window.location.pathname)
+		}
+	}, [t])
 
 	return (
 		<div className="flex min-h-full bg-white">
@@ -78,9 +91,9 @@ function LoginPage() {
 					<h2 className="text-[36px] font-medium leading-[46px] text-black">{t('welcomeBack')}</h2>
 					<p className="mt-3.5 text-[16px] leading-6 text-grey-100">{t('subtitle')}</p>
 
-					{error && (
+					{(error ?? callbackError) && (
 						<div className="mt-4 rounded-[15px] bg-error-light px-4 py-2.5 text-[16px] text-error">
-							{error}
+							{error ?? callbackError}
 						</div>
 					)}
 
