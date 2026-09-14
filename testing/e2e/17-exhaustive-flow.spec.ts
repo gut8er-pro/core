@@ -15,6 +15,7 @@ import {
 	triggerGenerate,
 	uploadPhotos,
 } from './helpers/exhaustive-fill'
+import { completeManifest, fetchMissingCount } from './helpers/manifest-fill'
 
 /**
  * Exhaustive full-fill flow per report type. One describe per type.
@@ -203,6 +204,15 @@ test.describe.serial('HS Exhaustive Full-Fill', () => {
 		await fillInvoice(page, HS_DATA.invoice)
 	})
 
+	test('8b. satisfy the completeness manifest', async ({ page }) => {
+		await page.goto(`/reports/${reportId}/export`)
+		await completeManifest(page, reportId, 'HS')
+
+		// The gate is the reason this step exists — prove it would let us past
+		// before the next step asks it to.
+		expect(await fetchMissingCount(page, reportId)).toBe(0)
+	})
+
 	test('9. send email', async ({ page }) => {
 		await page.goto(`/reports/${reportId}/export`)
 		await page.waitForTimeout(1500)
@@ -360,6 +370,15 @@ test.describe.serial('BE Exhaustive Full-Fill', () => {
 		await page.goto(`/reports/${reportId}/details/invoice`)
 		await page.waitForTimeout(1500)
 		await fillInvoice(page, BE_DATA.invoice)
+	})
+
+	test('8b. satisfy the completeness manifest', async ({ page }) => {
+		await page.goto(`/reports/${reportId}/export`)
+		await completeManifest(page, reportId, 'BE')
+
+		// The gate is the reason this step exists — prove it would let us past
+		// before the next step asks it to.
+		expect(await fetchMissingCount(page, reportId)).toBe(0)
 	})
 
 	test('9. send email', async ({ page }) => {
@@ -543,6 +562,15 @@ test.describe.serial('KG Exhaustive Full-Fill', () => {
 		await fillInvoice(page, KG_DATA.invoice)
 	})
 
+	test('8b. satisfy the completeness manifest', async ({ page }) => {
+		await page.goto(`/reports/${reportId}/export`)
+		await completeManifest(page, reportId, 'KG')
+
+		// The gate is the reason this step exists — prove it would let us past
+		// before the next step asks it to.
+		expect(await fetchMissingCount(page, reportId)).toBe(0)
+	})
+
 	test('9. send email', async ({ page }) => {
 		await page.goto(`/reports/${reportId}/export`)
 		await page.waitForTimeout(1500)
@@ -697,6 +725,15 @@ test.describe.serial('OT Exhaustive Full-Fill', () => {
 		await page.goto(`/reports/${reportId}/details/invoice`)
 		await page.waitForTimeout(1500)
 		await fillInvoice(page, OT_DATA.invoice)
+	})
+
+	test('8b. satisfy the completeness manifest', async ({ page }) => {
+		await page.goto(`/reports/${reportId}/export`)
+		await completeManifest(page, reportId, 'OT')
+
+		// The gate is the reason this step exists — prove it would let us past
+		// before the next step asks it to.
+		expect(await fetchMissingCount(page, reportId)).toBe(0)
 	})
 
 	test('9. send email', async ({ page }) => {

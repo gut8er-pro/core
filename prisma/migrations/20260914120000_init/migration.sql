@@ -1,4 +1,3 @@
-
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 
@@ -280,8 +279,8 @@ CREATE TABLE "VehicleCondition" (
     "nextMot" TIMESTAMP(3),
     "fullServiceHistory" BOOLEAN NOT NULL DEFAULT false,
     "testDrivePerformed" BOOLEAN NOT NULL DEFAULT false,
-    "errorMemoryRead" BOOLEAN NOT NULL DEFAULT false,
-    "airbagsDeployed" BOOLEAN NOT NULL DEFAULT false,
+    "errorMemoryRead" BOOLEAN,
+    "airbagsDeployed" BOOLEAN,
     "produceGroups" TEXT[],
     "notes" TEXT,
     "manualSetup" BOOLEAN NOT NULL DEFAULT false,
@@ -368,7 +367,7 @@ CREATE TABLE "Calculation" (
     "valuationMax" DOUBLE PRECISION,
     "valuationAvg" DOUBLE PRECISION,
     "valuationMin" DOUBLE PRECISION,
-    "valuationDate" TEXT,
+    "valuationDate" TIMESTAMP(3),
     "marketValue" DOUBLE PRECISION,
     "baseVehicleValue" DOUBLE PRECISION,
     "restorationValue" DOUBLE PRECISION,
@@ -384,6 +383,35 @@ CREATE TABLE "AdditionalCost" (
     "amount" DOUBLE PRECISION NOT NULL,
 
     CONSTRAINT "AdditionalCost_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "OldtimerDetails" (
+    "id" TEXT NOT NULL,
+    "reportId" TEXT NOT NULL,
+    "gradingBodywork" TEXT,
+    "gradingTires" TEXT,
+    "gradingPaint" TEXT,
+    "gradingInterior" TEXT,
+    "gradingChrome" TEXT,
+    "gradingEngineBay" TEXT,
+    "gradingSeals" TEXT,
+    "gradingEngine" TEXT,
+    "gradingGlass" TEXT,
+    "gradingTrunk" TEXT,
+    "gradingOverall" TEXT,
+    "autoCalculateGrade" BOOLEAN NOT NULL DEFAULT true,
+    "originality" TEXT,
+    "rareEquipment" TEXT[],
+    "conditionNotes" TEXT[],
+    "technicalFeatures" TEXT[],
+    "mileageNotes" TEXT[],
+    "historyDocumentation" TEXT[],
+    "rarityMarketDemand" TEXT[],
+    "particulars" TEXT,
+    "marketReputation" TEXT,
+
+    CONSTRAINT "OldtimerDetails_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -535,6 +563,9 @@ CREATE UNIQUE INDEX "Calculation_reportId_key" ON "Calculation"("reportId");
 CREATE INDEX "AdditionalCost_calculationId_idx" ON "AdditionalCost"("calculationId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "OldtimerDetails_reportId_key" ON "OldtimerDetails"("reportId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Invoice_reportId_key" ON "Invoice"("reportId");
 
 -- CreateIndex
@@ -613,6 +644,9 @@ ALTER TABLE "Calculation" ADD CONSTRAINT "Calculation_reportId_fkey" FOREIGN KEY
 ALTER TABLE "AdditionalCost" ADD CONSTRAINT "AdditionalCost_calculationId_fkey" FOREIGN KEY ("calculationId") REFERENCES "Calculation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "OldtimerDetails" ADD CONSTRAINT "OldtimerDetails_reportId_fkey" FOREIGN KEY ("reportId") REFERENCES "Report"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_reportId_fkey" FOREIGN KEY ("reportId") REFERENCES "Report"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -626,10 +660,3 @@ ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_reportId_fkey" FOREIGN KEY ("reportId") REFERENCES "Report"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-┌─────────────────────────────────────────────────────────┐
-│  Update available 7.4.0 -> 7.8.0                        │
-│  Run the following to update                            │
-│    npm i --save-dev prisma@latest                       │
-│    npm i @prisma/client@latest                          │
-└─────────────────────────────────────────────────────────┘
-

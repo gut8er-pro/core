@@ -47,5 +47,4 @@
 - [ ] All form fields disabled/read-only
 - [ ] Lock indicator visible (padlock badge near title)
 - [ ] Auto-save disabled (no saving indicator)
-- [ ] "Update Report" button disabled or hidden
 - [ ] Navigate back to Export → Lock toggle still ON

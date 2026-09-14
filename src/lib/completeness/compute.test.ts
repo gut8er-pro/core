@@ -4,6 +4,7 @@ import type { ReportType, TabKey } from './types'
 
 /** Empty values for a tab — the state a freshly created report is in. */
 const EMPTY: Record<TabKey, Record<string, unknown>> = {
+	gallery: {},
 	accidentInfo: {},
 	vehicle: {},
 	condition: {},
@@ -195,7 +196,7 @@ describe('array-backed sections', () => {
 	})
 })
 
-describe('booleans are never reported missing', () => {
+describe('unrequired booleans are never reported missing', () => {
 	const booleanFields = [
 		['accidentInfo', 'claimantEligibleForInputTaxDeduction'],
 		['accidentInfo', 'claimantIsVehicleOwner'],
@@ -203,7 +204,6 @@ describe('booleans are never reported missing', () => {
 		['accidentInfo', 'orderByClaimant'],
 		['condition', 'fullServiceHistory'],
 		['condition', 'testDrivePerformed'],
-		['condition', 'airbagsDeployed'],
 		['condition', 'parkingSensors'],
 		['calculation', 'plasticRepair'],
 		['invoice', 'eInvoice'],
@@ -217,12 +217,110 @@ describe('booleans are never reported missing', () => {
 			}
 		}
 	})
+})
 
-	it('does not flag a boolean even if the manifest were to name it', () => {
-		// feeSchedule is a required invoice field; a boolean in its place is skipped.
-		const paths = missingPaths('HS', 'invoice', { feeSchedule: false })
+describe('the two required findings', () => {
+	const findings = ['airbagsDeployed', 'errorMemoryRead'] as const
+	const reportTypes = ['HS', 'BE', 'KG', 'OT'] as const
+
+	it.each(reportTypes)('asks %s for both findings while they are unanswered', (reportType) => {
+		const paths = missingPaths(reportType, 'condition', {})
+
+		expect(paths).toContain('airbagsDeployed')
+		expect(paths).toContain('errorMemoryRead')
+	})
+
+	it.each(findings)('accepts an explicit "no" for %s', (fieldName) => {
+		const paths = missingPaths('HS', 'condition', { [fieldName]: false })
+
+		expect(paths).not.toContain(fieldName)
+	})
+
+	it.each(findings)('accepts an explicit "yes" for %s', (fieldName) => {
+		const paths = missingPaths('HS', 'condition', { [fieldName]: true })
+
+		expect(paths).not.toContain(fieldName)
+	})
+
+	it.each(findings)('still asks for %s when it is explicitly null', (fieldName) => {
+		const paths = missingPaths('HS', 'condition', { [fieldName]: null })
+
+		expect(paths).toContain(fieldName)
+	})
+})
+
+describe('rules that could never fail are gone', () => {
+	it('does not ask for the invoice fee schedule', () => {
+		const paths = missingPaths('HS', 'invoice', {})
 
 		expect(paths).not.toContain('feeSchedule')
+	})
+
+	it('does ask for the invoice recipient', () => {
+		const paths = missingPaths('HS', 'invoice', {})
+
+		expect(paths).toContain('recipientId')
+	})
+})
+
+describe('gallery requirements', () => {
+	const reportTypes = ['HS', 'BE', 'KG', 'OT'] as const
+
+	it.each(reportTypes)('requires at least one photo on %s', (reportType) => {
+		expect(missingPaths(reportType, 'gallery', {})).toContain('photos')
+		expect(missingPaths(reportType, 'gallery', { photos: [] })).toContain('photos')
+	})
+
+	it('is satisfied by a single photo', () => {
+		expect(missingPaths('HS', 'gallery', { photos: [{ id: 'photo-1' }] })).toHaveLength(0)
+	})
+})
+
+describe('oldtimer vehicle grading', () => {
+	const GRADES = {
+		gradingBodywork: '2',
+		gradingTires: '3',
+		gradingPaint: '2',
+		gradingInterior: '2',
+		gradingChrome: '3',
+		gradingEngineBay: '2',
+		gradingSeals: '3',
+		gradingEngine: '2',
+		gradingGlass: '2',
+		gradingTrunk: '3',
+		gradingOverall: '2',
+	}
+
+	it('requires every category and the overall score on an oldtimer valuation', () => {
+		const paths = missingPaths('OT', 'condition', {})
+
+		for (const key of Object.keys(GRADES)) {
+			expect(paths).toContain(key)
+		}
+	})
+
+	it('is satisfied once every category is graded', () => {
+		const paths = missingPaths('OT', 'condition', GRADES)
+
+		for (const key of Object.keys(GRADES)) {
+			expect(paths).not.toContain(key)
+		}
+	})
+
+	it('does not ask the other three types to grade anything', () => {
+		for (const reportType of ['HS', 'BE', 'KG'] as const) {
+			const paths = missingPaths(reportType, 'condition', {})
+
+			expect(paths.some((path) => path.startsWith('grading'))).toBe(false)
+		}
+	})
+
+	it('never requires the value-increasing lists', () => {
+		const paths = missingPaths('OT', 'condition', GRADES)
+
+		expect(paths).not.toContain('rareEquipment')
+		expect(paths).not.toContain('originality')
+		expect(paths).not.toContain('marketReputation')
 	})
 })
 
@@ -365,6 +463,7 @@ describe('section roll-up', () => {
 
 	it('reports a report with nothing missing as complete', () => {
 		const report = computeMissingInfo('HS', {
+			gallery: { photos: [{ id: 'photo-1' }] },
 			accidentInfo: {
 				accidentDay: '2026-03-01',
 				accidentScene: 'A7, km 42',
@@ -411,6 +510,8 @@ describe('section roll-up', () => {
 				bodyCondition: 'Minor cosmetic',
 				interiorCondition: 'Minor wear',
 				drivingAbility: 'Roadworthy',
+				airbagsDeployed: true,
+				errorMemoryRead: false,
 				previousDamageReported: 'Keine',
 				damageMarkers: [{ id: 'd1', x: 10, y: 10, comment: null }],
 				paintMarkers: [{ id: 'p1', x: 10, y: 10, thickness: 120, color: null, position: null }],
@@ -430,7 +531,7 @@ describe('section roll-up', () => {
 			invoice: {
 				invoiceNumber: 'GH-3552-2026',
 				date: '2026-03-06',
-				feeSchedule: 'bvsk',
+				recipientId: 'individual',
 				lineItems: [{ description: 'BVSK Appraisal Fee', rate: '890' }],
 			},
 		})

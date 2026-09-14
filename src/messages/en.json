@@ -526,8 +526,7 @@
         "updateSignature": "Update Signature",
         "yourSignature": "Your Signature",
         "signatureConsent": "By signing this document with an electronic signature I agree that such signature will be extend allowed by local law."
-      },
-      "updateReport": "Update Report"
+      }
     },
     "vehicle": {
       "title": "Vehicle",
@@ -929,7 +928,13 @@
       "reportSentToast": "Report sent successfully",
       "sendFailed": "Failed to send report. Please try again.",
       "pdfLanguage": "PDF Language",
-      "bothLanguagesNote": "Both German and English PDFs will be generated and attached."
+      "bothLanguagesNote": "Both German and English PDFs will be generated and attached.",
+      "checkingCompleteness": "Checking what this report still needs…",
+      "incompleteTitle": "This Gutachten cannot be sent yet",
+      "incompleteDescription": "{count} required fields are still missing. Fill them in and the report can be sent.",
+      "incompleteTabCount": "{count} missing",
+      "goToSection": "Go to {section}",
+      "notSavedYet": "Not everything had saved yet when the report was sent. Check the highlighted sections and try again."
     },
     "annotation": {
       "draw": "Draw",

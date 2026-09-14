@@ -130,11 +130,11 @@ Prior art: the co-located unit tests beside the Zod schemas in the validations d
 
 ## Out of Scope
 
-- **Making the Oldtimer grading and value-increasing-features sections persist.** Both are currently local component state with no database columns, so an OT report loses them on reload. This is a real data-loss bug discovered during triage, but it is a separate issue. Neither section can appear in the manifest until it persists, and both are excluded here.
-- **Migrating boolean columns to nullable** so that "unanswered" becomes expressible for checkboxes. It would touch fourteen columns, every existing report row and the PDF's rendering of each, and none of those checkboxes are ones a Gutachten is invalid without. Raise separately if wanted.
+- ~~**Making the Oldtimer grading and value-increasing-features sections persist.**~~ **Superseded by `.scratch/enforce-completeness-on-send/spec.md`.** Both are currently local component state with no database columns, so an OT report loses them on reload. Excluded here as a separate issue; that issue is now the linked spec, which persists both and puts the grading table in the OT manifest.
+- ~~**Migrating boolean columns to nullable**~~ **Superseded by `.scratch/enforce-completeness-on-send/spec.md`.** Declined here on migration cost across existing report rows — a cost that does not exist pre-launch. The linked spec makes `airbagsDeployed` and `errorMemoryRead` nullable and required, on the grounds that `false` by default asserts a finding nobody made.
 - **A "jump to next missing field" affordance.** Not requested; the section badges already solve the find-the-gap problem.
-- **Any change to the export, send or PDF surfaces.** Completeness does not gate sending, and a report with missing fields remains sendable.
-- **Blocking or warning on save.** The toggle is advisory only.
+- ~~**Any change to the export, send or PDF surfaces.**~~ **Superseded by `.scratch/enforce-completeness-on-send/spec.md`.** Completeness now hard-blocks both email send and PDF generation, enforced server-side, with one exemption for reports already sent.
+- ~~**Blocking or warning on save.**~~ **Partly superseded by `.scratch/enforce-completeness-on-send/spec.md`.** The toggle remains advisory and nothing blocks on save — but sending is now blocked, and the Update Report button described in the Further Notes has been deleted.
 - **Changing the permissive Zod schemas or the autosave contract.**
 
 ## Further Notes

@@ -2,67 +2,57 @@
 
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
+import { useMissingProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { MISSING_GROUP_CLASS } from '@/components/ui/missing'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
-
-const GRADING_CATEGORY_KEYS = [
-	'bodywork',
-	'tires',
-	'paint',
-	'interior',
-	'chrome',
-	'engineBay',
-	'seals',
-	'engine',
-	'glass',
-	'trunk',
-] as const
+import type { GradingField, OldtimerDetailsData } from './types'
+import { GRADING_CATEGORIES, gradingKey } from './types'
 
 const SCORE_OPTIONS = ['Non', '1', '2', '3', '4', '5'] as const
-const _MODIFIERS = ['+', '', '-'] as const
 
-type GradeScore = {
-	value: string
-	modifier: string
-}
+/** Shown on a category that has not been graded — never a number. */
+const UNGRADED = '–'
 
 type VehicleGradingSectionProps = {
+	values: OldtimerDetailsData
+	onChange: <K extends keyof OldtimerDetailsData>(field: K, value: OldtimerDetailsData[K]) => void
 	className?: string
 }
 
-function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
+/**
+ * The Oldtimer grading table.
+ *
+ * Every category starts ungraded. A pre-filled 5 would ship an OT report
+ * asserting a perfect grade no assessor ever entered, and would look complete to
+ * the manifest while saying nothing.
+ */
+function VehicleGradingSection({ values, onChange, className }: VehicleGradingSectionProps) {
 	const t = useTranslations('report.condition')
+	const missing = useMissingProps()
+	const badge = useSectionBadge(SECTION.vehicleGrading)
 
-	const GRADING_CATEGORIES = GRADING_CATEGORY_KEYS.map((key) => ({
+	const categories = GRADING_CATEGORIES.map((key) => ({
 		key,
+		field: gradingKey(key),
 		label: t(`vehicleGrading.${key}` as `vehicleGrading.${typeof key}`),
 	}))
 
 	const [activeTab, setActiveTab] = useState<'grading' | 'paint'>('grading')
-	const [autoCalculate, setAutoCalculate] = useState(true)
-	const [overallScore, setOverallScore] = useState<string>('5')
-	const [scores, setScores] = useState<Record<string, GradeScore>>(() => {
-		const initial: Record<string, GradeScore> = {}
-		for (const key of GRADING_CATEGORY_KEYS) {
-			initial[key] = { value: '5', modifier: '' }
-		}
-		return initial
-	})
 	const [editingCategory, setEditingCategory] = useState<string | null>(null)
 
-	function formatScore(score: GradeScore): string {
-		if (score.value === 'Non') return 'Non'
-		return `${score.value}${score.modifier}`
-	}
-
-	function handleScoreChange(key: string, value: string, modifier: string) {
-		setScores((prev) => ({ ...prev, [key]: { value, modifier } }))
+	function selectScore(field: GradingField, value: string, modifier?: string) {
+		onChange(field, value === 'Non' ? 'Non' : `${value}${modifier ?? ''}`)
 		setEditingCategory(null)
 	}
 
+	const overall = values.gradingOverall
+	const overallMissing = missing('gradingOverall')
+
 	return (
-		<CollapsibleSection title={t('vehicleGrading.title')} info className={className}>
+		<CollapsibleSection title={t('vehicleGrading.title')} info className={className} {...badge}>
 			<div className="flex flex-col gap-6">
 				{/* Grading / Paint toggle */}
 				<div className="flex rounded-full bg-grey-25 p-1">
@@ -95,12 +85,20 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 							<span className="text-body font-medium text-black">
 								{t('vehicleGrading.overallCondition')}
 							</span>
+							{overallMissing.isMissing && (
+								<span className="sr-only">{overallMissing.missingLabel}</span>
+							)}
 							<button
 								type="button"
 								onClick={() => setEditingCategory('overall')}
-								className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-body-sm font-semibold text-white"
+								aria-label={t('vehicleGrading.overallConditionTitle')}
+								className={cn(
+									'flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-body-sm font-semibold',
+									overall ? 'bg-primary text-white' : 'bg-grey-25 text-grey-100',
+									overallMissing.isMissing && MISSING_GROUP_CLASS,
+								)}
 							>
-								{overallScore}
+								{overall || UNGRADED}
 							</button>
 						</div>
 
@@ -109,36 +107,46 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 							<ScorePopup
 								title={t('vehicleGrading.overallConditionTitle')}
 								hint={t('vehicleGrading.scorePopupHint')}
-								onSelect={(value) => {
-									setOverallScore(value)
-									setEditingCategory(null)
-								}}
+								onSelect={(value) => selectScore('gradingOverall', value)}
 							/>
 						)}
 
 						{/* Category grid */}
 						<div className="grid grid-cols-2 gap-y-4 gap-x-8">
-							{GRADING_CATEGORIES.map((cat) => (
-								<div key={cat.key} className="flex items-center justify-between">
-									<span className="text-body-sm text-black">{cat.label}</span>
-									<button
-										type="button"
-										onClick={() => setEditingCategory(cat.key)}
-										className="flex h-8 min-w-8 items-center justify-center rounded-full bg-primary/10 px-2 text-body-sm font-semibold text-primary"
-									>
-										{formatScore(scores[cat.key]!)}
-									</button>
-								</div>
-							))}
+							{categories.map((category) => {
+								const score = values[category.field]
+								const categoryMissing = missing(category.field)
+								return (
+									<div key={category.key} className="flex items-center justify-between">
+										<span className="text-body-sm text-black">{category.label}</span>
+										{categoryMissing.isMissing && (
+											<span className="sr-only">{categoryMissing.missingLabel}</span>
+										)}
+										<button
+											type="button"
+											onClick={() => setEditingCategory(category.key)}
+											aria-label={category.label}
+											className={cn(
+												'flex h-8 min-w-8 cursor-pointer items-center justify-center rounded-full px-2 text-body-sm font-semibold',
+												score ? 'bg-primary/10 text-primary' : 'bg-grey-25 text-grey-100',
+												categoryMissing.isMissing && MISSING_GROUP_CLASS,
+											)}
+										>
+											{score || UNGRADED}
+										</button>
+									</div>
+								)
+							})}
 						</div>
 
 						{/* Score popup for categories */}
-						{editingCategory && editingCategory !== 'overall' && (
+						{editingCategory !== null && editingCategory !== 'overall' && (
 							<ScorePopup
-								title={GRADING_CATEGORIES.find((c) => c.key === editingCategory)?.label ?? ''}
+								title={categories.find((c) => c.key === editingCategory)?.label ?? ''}
 								hint={t('vehicleGrading.scorePopupHint')}
 								onSelect={(value, modifier) => {
-									handleScoreChange(editingCategory, value, modifier ?? '')
+									const category = categories.find((c) => c.key === editingCategory)
+									if (category) selectScore(category.field, value, modifier)
 								}}
 								showModifiers
 							/>
@@ -149,7 +157,11 @@ function VehicleGradingSection({ className }: VehicleGradingSectionProps) {
 							<span className="text-body-sm text-black">
 								{t('vehicleGrading.autoCalculateGrade')}
 							</span>
-							<ToggleSwitch label="" checked={autoCalculate} onCheckedChange={setAutoCalculate} />
+							<ToggleSwitch
+								label=""
+								checked={values.autoCalculateGrade}
+								onCheckedChange={(checked) => onChange('autoCalculateGrade', checked)}
+							/>
 						</div>
 					</>
 				)}
@@ -183,12 +195,14 @@ function ScorePopup({
 						i === 0 ? (
 							<div key="spacer" className="w-10" />
 						) : (
-							<div
+							<button
 								key={`plus-${i}`}
-								className="flex w-10 items-center justify-center text-caption text-grey-100"
+								type="button"
+								onClick={() => onSelect(String(i + 1), '+')}
+								className="flex w-10 cursor-pointer items-center justify-center text-caption text-grey-100 hover:text-black"
 							>
 								+
-							</div>
+							</button>
 						),
 					)}
 				</div>
@@ -199,7 +213,7 @@ function ScorePopup({
 						key={value}
 						type="button"
 						onClick={() => onSelect(value)}
-						className="flex h-10 w-10 items-center justify-center rounded-lg border border-border text-body-sm font-medium text-black transition-colors hover:bg-grey-25"
+						className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border text-body-sm font-medium text-black transition-colors hover:bg-grey-25"
 					>
 						{value}
 					</button>
@@ -215,7 +229,7 @@ function ScorePopup({
 								key={`minus-${i}`}
 								type="button"
 								onClick={() => onSelect(String(i + 1), '-')}
-								className="flex w-10 items-center justify-center text-caption text-grey-100 hover:text-black"
+								className="flex w-10 cursor-pointer items-center justify-center text-caption text-grey-100 hover:text-black"
 							>
 								-
 							</button>

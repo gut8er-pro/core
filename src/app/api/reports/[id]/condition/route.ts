@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { getPaintColor } from '@/lib/design-tokens'
 import { prisma } from '@/lib/prisma'
+import { syncReportCompletion } from '@/lib/reports/completion'
 import { conditionPatchSchema } from '@/lib/validations/condition'
 
 type RouteContext = {
@@ -22,19 +23,23 @@ async function GET(_request: NextRequest, context: RouteContext) {
 		return NextResponse.json({ error: 'Report not found' }, { status: 404 })
 	}
 
-	const condition = await prisma.vehicleCondition.findUnique({
-		where: { reportId: id },
-		include: {
-			damageMarkers: { orderBy: { id: 'asc' } },
-			paintMarkers: { orderBy: { id: 'asc' } },
-			tireSets: {
-				orderBy: { setNumber: 'asc' },
-				include: {
-					tires: { orderBy: { position: 'asc' } },
+	const [condition, oldtimerDetails] = await Promise.all([
+		prisma.vehicleCondition.findUnique({
+			where: { reportId: id },
+			include: {
+				damageMarkers: { orderBy: { id: 'asc' } },
+				paintMarkers: { orderBy: { id: 'asc' } },
+				tireSets: {
+					orderBy: { setNumber: 'asc' },
+					include: {
+						tires: { orderBy: { position: 'asc' } },
+					},
 				},
 			},
-		},
-	})
+		}),
+		// Oldtimer-only, and absent on every other type.
+		prisma.oldtimerDetails.findUnique({ where: { reportId: id } }),
+	])
 
 	return NextResponse.json({
 		condition: condition
@@ -69,6 +74,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 		damageMarkers: condition?.damageMarkers ?? [],
 		paintMarkers: condition?.paintMarkers ?? [],
 		tireSets: condition?.tireSets ?? [],
+		oldtimerDetails,
 	})
 }
 
@@ -111,6 +117,19 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	if (!condition) {
 		condition = await prisma.vehicleCondition.create({
 			data: { reportId: id },
+		})
+	}
+
+	// Oldtimer grading and value-increasing features
+	if (data.oldtimerDetails) {
+		const oldtimerData: Record<string, unknown> = {}
+		for (const [key, value] of Object.entries(data.oldtimerDetails)) {
+			if (value !== undefined) oldtimerData[key] = value
+		}
+		results.oldtimerDetails = await prisma.oldtimerDetails.upsert({
+			where: { reportId: id },
+			create: { reportId: id, ...oldtimerData },
+			update: oldtimerData,
 		})
 	}
 
@@ -326,11 +345,8 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		results.deletedTireSets = data.deleteTireSetIds
 	}
 
-	// Touch the report's updatedAt timestamp
-	await prisma.report.update({
-		where: { id },
-		data: { updatedAt: new Date() },
-	})
+	// Recompute completion and touch updatedAt in one write.
+	await syncReportCompletion(id, user.id)
 
 	return NextResponse.json(results)
 }

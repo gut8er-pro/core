@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { prisma } from '@/lib/prisma'
+import { syncReportCompletion } from '@/lib/reports/completion'
 import { calculationPatchSchema } from '@/lib/validations/calculation'
 
 type RouteContext = {
@@ -117,6 +118,13 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 			if (val !== undefined) updateData[key] = val
 		}
 
+		// Date column, string on the wire — same conversion its siblings get.
+		if (data.calculation.valuationDate !== undefined) {
+			updateData.valuationDate = data.calculation.valuationDate
+				? new Date(data.calculation.valuationDate)
+				: null
+		}
+
 		if (Object.keys(updateData).length > 0) {
 			results.calculation = await prisma.calculation.update({
 				where: { id: calculation.id },
@@ -165,11 +173,8 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		results.deletedAdditionalCosts = data.deleteAdditionalCostIds
 	}
 
-	// Touch the report's updatedAt timestamp
-	await prisma.report.update({
-		where: { id },
-		data: { updatedAt: new Date() },
-	})
+	// Recompute completion and touch updatedAt in one write.
+	await syncReportCompletion(id, user.id)
 
 	return NextResponse.json(results)
 }

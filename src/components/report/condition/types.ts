@@ -18,14 +18,68 @@ type ConditionFormData = {
 	nextMot: string
 	fullServiceHistory: boolean
 	testDrivePerformed: boolean
-	errorMemoryRead: boolean
-	airbagsDeployed: boolean
+	errorMemoryRead: boolean | null
+	airbagsDeployed: boolean | null
 	notes: string
 	manualSetup: boolean
 	// Prior damage
 	previousDamageReported: string
 	existingDamageNotReported: string
 	subsequentDamage: string
+}
+
+/**
+ * The two sections an Oldtimer valuation adds to the Condition tab. Flat keys,
+ * because a completeness rule can only name a top-level key of a tab's values.
+ */
+type OldtimerDetailsData = {
+	// Vehicle grading — ten categories plus the overall score
+	gradingBodywork: string
+	gradingTires: string
+	gradingPaint: string
+	gradingInterior: string
+	gradingChrome: string
+	gradingEngineBay: string
+	gradingSeals: string
+	gradingEngine: string
+	gradingGlass: string
+	gradingTrunk: string
+	gradingOverall: string
+	autoCalculateGrade: boolean
+	// Value-increasing features
+	originality: string
+	rareEquipment: string[]
+	conditionNotes: string[]
+	technicalFeatures: string[]
+	mileageNotes: string[]
+	historyDocumentation: string[]
+	rarityMarketDemand: string[]
+	particulars: string
+	marketReputation: string
+}
+
+/** The ten graded categories, in the order the grading table renders them. */
+const GRADING_CATEGORIES = [
+	'bodywork',
+	'tires',
+	'paint',
+	'interior',
+	'chrome',
+	'engineBay',
+	'seals',
+	'engine',
+	'glass',
+	'trunk',
+] as const
+
+type GradingCategory = (typeof GRADING_CATEGORIES)[number]
+
+/** Every column that holds a grade — the ten categories plus the overall score. */
+type GradingField = `grading${Capitalize<GradingCategory>}` | 'gradingOverall'
+
+/** `bodywork` → `gradingBodywork`, the key both the form and the column use. */
+function gradingKey(category: GradingCategory): GradingField {
+	return `grading${category.charAt(0).toUpperCase()}${category.slice(1)}` as GradingField
 }
 
 type ConditionSectionProps = {
@@ -90,8 +144,8 @@ type ConditionResponse = {
 		nextMot: string | null
 		fullServiceHistory: boolean
 		testDrivePerformed: boolean
-		errorMemoryRead: boolean
-		airbagsDeployed: boolean
+		errorMemoryRead: boolean | null
+		airbagsDeployed: boolean | null
 		notes: string | null
 		manualSetup: boolean
 		previousDamageReported: string | null
@@ -101,6 +155,16 @@ type ConditionResponse = {
 	damageMarkers: DamageMarkerData[]
 	paintMarkers: PaintMarkerData[]
 	tireSets: (TireSetData & { id: string })[]
+	oldtimerDetails: OldtimerDetailsApi | null
+}
+
+/** `OldtimerDetails` as the API serialises it — every column nullable. */
+type OldtimerDetailsApi = {
+	[K in keyof OldtimerDetailsData]: OldtimerDetailsData[K] extends string[]
+		? string[]
+		: OldtimerDetailsData[K] extends boolean
+			? boolean
+			: string | null
 }
 
 export type {
@@ -108,7 +172,12 @@ export type {
 	ConditionResponse,
 	ConditionSectionProps,
 	DamageMarkerData,
+	GradingCategory,
+	GradingField,
+	OldtimerDetailsApi,
+	OldtimerDetailsData,
 	PaintMarkerData,
 	TireData,
 	TireSetData,
 }
+export { GRADING_CATEGORIES, gradingKey }

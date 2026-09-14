@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { prisma } from '@/lib/prisma'
+import { syncReportCompletion } from '@/lib/reports/completion'
 import { invoicePatchSchema } from '@/lib/validations/invoice'
 
 type RouteContext = {
@@ -173,11 +174,8 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		results.deletedLineItems = data.deleteLineItemIds
 	}
 
-	// Touch the report's updatedAt timestamp
-	await prisma.report.update({
-		where: { id },
-		data: { updatedAt: new Date() },
-	})
+	// Recompute completion and touch updatedAt in one write.
+	await syncReportCompletion(id, user.id)
 
 	return NextResponse.json(results)
 }

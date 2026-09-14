@@ -5,7 +5,6 @@
 ## 11.1 Auto-Save Behavior
 - [ ] Fill a text field, click away (blur) → "Saving..." indicator appears briefly
 - [ ] No toast on auto-save (silent, only inline indicator)
-- [ ] Click "Update Report" → toast "Report updated" shown
 - [ ] Fill field, immediately switch to different tab → data saved (flush on unmount)
 - [ ] Close browser tab with unsaved changes → beforeunload warning dialog
 - [ ] Auto-save debounce: fill 3 fields rapidly → only 1 API call (batched)
@@ -38,7 +37,6 @@
 - [ ] Navigate to Calculation → all fields disabled
 - [ ] Navigate to Invoice → all fields disabled
 - [ ] Auto-save indicator doesn't appear (disabled)
-- [ ] "Update Report" button disabled or hidden
 
 ## 11.5 Photo Edge Cases
 - [ ] Upload 0 photos → upload zone shown, no "Generate Report" button

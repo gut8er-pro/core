@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import path from 'path'
+import { completeManifest, fetchMissingCount } from './helpers/manifest-fill'
 
 const RECIPIENT = 'ivanvukasino@gmail.com'
 const IMAGES_DIR = path.resolve('testing/testing-images')
@@ -157,6 +158,10 @@ test.describe.serial('All 4 Reports — Create, Fill, Send', () => {
 			{ description: 'Fotos', rate: 7.5, amount: 7.5, quantity: 1, isLumpSum: true, order: 1 },
 			{ description: 'Fahrtkosten', rate: 40, amount: 40, quantity: 1, isLumpSum: true, order: 2 },
 		])
+		// The server refuses an incomplete Gutachten, so finish the manifest
+		// and confirm the gate agrees before asking it to send.
+		await completeManifest(page, id, 'HS')
+		expect(await fetchMissingCount(page, id)).toBe(0)
 		await sendReport(page, id, 'PW Run — HS Liability Report')
 	})
 
@@ -179,6 +184,10 @@ test.describe.serial('All 4 Reports — Create, Fill, Send', () => {
 			{ description: 'Bewertungsgutachten', rate: 450, amount: 450, quantity: 1, isLumpSum: true, order: 0 },
 			{ description: 'Fotos', rate: 7.5, amount: 7.5, quantity: 1, isLumpSum: true, order: 1 },
 		])
+		// The server refuses an incomplete Gutachten, so finish the manifest
+		// and confirm the gate agrees before asking it to send.
+		await completeManifest(page, id, 'BE')
+		expect(await fetchMissingCount(page, id)).toBe(0)
 		await sendReport(page, id, 'PW Run — BE Valuation Report')
 	})
 
@@ -201,6 +210,10 @@ test.describe.serial('All 4 Reports — Create, Fill, Send', () => {
 			{ description: 'Kurzgutachten', rate: 250, amount: 250, quantity: 1, isLumpSum: true, order: 0 },
 			{ description: 'Fahrtkosten', rate: 30, amount: 30, quantity: 1, isLumpSum: true, order: 1 },
 		])
+		// The server refuses an incomplete Gutachten, so finish the manifest
+		// and confirm the gate agrees before asking it to send.
+		await completeManifest(page, id, 'KG')
+		expect(await fetchMissingCount(page, id)).toBe(0)
 		await sendReport(page, id, 'PW Run — KG Short Report')
 	})
 
@@ -233,6 +246,10 @@ test.describe.serial('All 4 Reports — Create, Fill, Send', () => {
 			{ description: 'Historische Recherche', rate: 150, amount: 150, quantity: 1, isLumpSum: true, order: 1 },
 			{ description: 'Fahrtkosten', rate: 45, amount: 45, quantity: 1, isLumpSum: true, order: 2 },
 		])
+		// The server refuses an incomplete Gutachten, so finish the manifest
+		// and confirm the gate agrees before asking it to send.
+		await completeManifest(page, id, 'OT')
+		expect(await fetchMissingCount(page, id)).toBe(0)
 		await sendReport(page, id, 'PW Run — OT Oldtimer Valuation')
 	})
 })

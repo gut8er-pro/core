@@ -1,17 +1,28 @@
 import { renderToBuffer } from '@react-pdf/renderer'
+import type { MissingInfoReport } from '@/lib/completeness'
+import { getMissingInfo, isDelivered } from '@/lib/completeness/server'
 import { prisma } from '@/lib/prisma'
 import { type ReportData, ReportPdfDocument } from './report-template'
 import { getPdfTranslations } from './translations'
 
+type PdfResult =
+	| { buffer: Buffer; filename: string }
+	/** `missingInfo` present means the gate refused, not that anything broke. */
+	| { error: string; missingInfo?: MissingInfoReport }
+
 /**
  * Generates a PDF buffer for a report.
- * Shared between the export route (download) and send route (email attachment).
+ *
+ * The single choke point both the export route (download) and the send route
+ * (email attachment) call, and therefore where the completeness gate lives: an
+ * incomplete Gutachten cannot be walked around by downloading it and sending it
+ * by hand.
  */
 async function generateReportPdfBuffer(
 	reportId: string,
 	userId: string,
 	locale?: string,
-): Promise<{ buffer: Buffer; filename: string } | { error: string }> {
+): Promise<PdfResult> {
 	const report = await prisma.report.findFirst({
 		where: { id: reportId, userId },
 		include: {
@@ -66,6 +77,15 @@ async function generateReportPdfBuffer(
 
 	if (!report) {
 		return { error: 'Report not found' }
+	}
+
+	// A report already delivered stays downloadable forever: it passed at send
+	// time, and tightening the manifest later must not retract it.
+	if (!isDelivered(report)) {
+		const missingInfo = await getMissingInfo(reportId, userId)
+		if (missingInfo && !missingInfo.isComplete) {
+			return { error: 'incomplete', missingInfo }
+		}
 	}
 
 	const exportConfig = report.exportConfig ?? {
@@ -301,4 +321,5 @@ async function generateReportPdfBuffer(
 	return { buffer: pdfBuffer, filename }
 }
 
+export type { PdfResult }
 export { generateReportPdfBuffer }

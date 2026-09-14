@@ -65,19 +65,6 @@ test.describe('Edge Cases', () => {
 		await expect(page.locator('input[name="claimantLocation"]')).toHaveValue('Rapid5')
 	})
 
-	test('Update Report button shows toast', async ({ page }) => {
-		await page.goto(`/reports/${reportId}/details/vehicle`)
-		await page.waitForTimeout(1000)
-		await page.locator('input[name="vin"]').fill('TEST12345678901')
-		await page.locator('input[name="vin"]').blur()
-		await page.waitForTimeout(500)
-
-		await page.locator('text=Update Report').click()
-		await page.waitForTimeout(1000)
-		// Toast should appear
-		await expect(page.getByText('Report updated')).toBeVisible({ timeout: 3000 })
-	})
-
 	test('no console errors on normal navigation', async ({ page }) => {
 		const errors: string[] = []
 		page.on('console', msg => {

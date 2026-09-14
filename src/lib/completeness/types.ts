@@ -3,6 +3,7 @@ import type { CalculationFormData } from '@/components/report/calculation/types'
 import type {
 	ConditionFormData,
 	DamageMarkerData,
+	OldtimerDetailsData,
 	PaintMarkerData,
 	TireSetData,
 } from '@/components/report/condition/types'
@@ -11,7 +12,10 @@ import type { VehicleFormData } from '@/components/report/vehicle/types'
 import type { ReportType } from '@/lib/validations/reports'
 import type { SectionId } from './sections'
 
-type TabKey = 'accidentInfo' | 'vehicle' | 'condition' | 'calculation' | 'invoice'
+type TabKey = 'gallery' | 'accidentInfo' | 'vehicle' | 'condition' | 'calculation' | 'invoice'
+
+/** The five tabs of the Report Details screen — everything but the gallery. */
+type DetailTabKey = Exclude<TabKey, 'gallery'>
 
 /** Only top-level keys of a tab's value object may be named by a rule. */
 type FieldName<TValues> = Extract<keyof TValues, string>
@@ -51,18 +55,23 @@ type SectionSpec<TValues> = {
 	rules: Rule<TValues>[]
 }
 
+/** The gallery owns no form — only the photos the assessor uploaded. */
+type GalleryValues = { photos: { id: string }[] }
+
 /** Tab data as the forms hold it, plus the collections the forms don't own. */
 type AccidentInfoValues = AccidentInfoFormData & { signatures: SignatureData[] }
 type VehicleValues = VehicleFormData
-type ConditionValues = ConditionFormData & {
-	damageMarkers: DamageMarkerData[]
-	paintMarkers: PaintMarkerData[]
-	tireSets: TireSetData[]
-}
+type ConditionValues = ConditionFormData &
+	OldtimerDetailsData & {
+		damageMarkers: DamageMarkerData[]
+		paintMarkers: PaintMarkerData[]
+		tireSets: TireSetData[]
+	}
 type CalculationValues = CalculationFormData
 type InvoiceValues = InvoiceFormData
 
 type ReportManifest = {
+	gallery: SectionSpec<GalleryValues>[]
 	accidentInfo: SectionSpec<AccidentInfoValues>[]
 	vehicle: SectionSpec<VehicleValues>[]
 	condition: SectionSpec<ConditionValues>[]
@@ -97,6 +106,15 @@ type MissingInfoReport = {
 	tabs: Record<TabKey, TabReport>
 	/** Required fields still empty across the whole report. */
 	missingCount: number
+	sectionsComplete: number
+	sectionsTotal: number
+	/**
+	 * Sections satisfied, as a percentage. Measured in sections rather than
+	 * fields because sections are a fixed set per report type, while a row-backed
+	 * requirement grows a gap per row — so a field-based denominator would move
+	 * under its own numerator. 100 means the same thing as `isComplete`.
+	 */
+	completionPercentage: number
 	isComplete: boolean
 }
 
@@ -104,6 +122,8 @@ export type {
 	AccidentInfoValues,
 	CalculationValues,
 	ConditionValues,
+	DetailTabKey,
+	GalleryValues,
 	InvoiceValues,
 	Manifest,
 	MissingInfoReport,

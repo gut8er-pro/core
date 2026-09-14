@@ -27,7 +27,9 @@ testing/
 │   ├── playwright.config.ts     # Playwright configuration
 │   ├── auth.setup.ts            # Login + save session (runs before all tests)
 │   ├── helpers/
-│   │   └── test-data.ts         # Shared test data (account, form values)
+│   │   ├── test-data.ts         # Shared test data (account, form values)
+│   │   ├── exhaustive-fill.ts   # Per-section fillers for the exhaustive flow
+│   │   └── manifest-fill.ts     # Fill everything a type's completeness manifest needs
 │   ├── 01-auth.spec.ts          # Login, forgot password, signup
 │   ├── 02-dashboard.spec.ts     # Dashboard, nav, create report
 │   ├── 03-settings.spec.ts      # All 5 settings tabs
@@ -43,7 +45,10 @@ testing/
 │   ├── 13-be-complete-flow.spec.ts   # Full BE report: create → fill → verify
 │   ├── 14-kg-complete-flow.spec.ts   # Full KG report: create → fill → verify
 │   ├── 15-ot-complete-flow.spec.ts   # Full OT report: create → fill → verify
-│   └── 16-all-reports-send.spec.ts   # Create all 4 types + send PDF emails
+│   ├── 16-all-reports-send.spec.ts   # Create all 4 types + send PDF emails
+│   ├── 17-exhaustive-flow.spec.ts    # Fill every field of every type, then send
+│   ├── 18-exhaustive-verify.spec.ts  # Verify each filled value lands in the PDF
+│   └── 19-send-gate.spec.ts          # Completeness gate: refusals + locked exemption
 ├── testing-images/              # Car photos for upload tests
 │   ├── car1.png ... car5.png
 ├── reference-pdfs/              # Baseline PDFs for comparison

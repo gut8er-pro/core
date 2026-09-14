@@ -1,4 +1,9 @@
 import { test, expect } from '@playwright/test'
+import {
+	completeManifest,
+	fetchMissingCount,
+	fetchReportCompletion,
+} from './helpers/manifest-fill'
 
 /**
  * Complete OT (Oldtimer Valuation) Flow — E2E
@@ -125,6 +130,22 @@ test.describe('OT Complete Flow', () => {
 		await page.waitForTimeout(2000)
 		await expect(firstName).toHaveValue('Werner')
 		await expect(lastName).toHaveValue('Hartmann')
+	})
+
+	test('satisfy the completeness manifest', async ({ page }) => {
+		await page.goto(`/reports/${reportId}/export`)
+		await completeManifest(page, reportId, 'OT')
+
+		// Send and PDF are refused server-side while anything required is
+		// empty, so a happy path that never reaches a complete report proves
+		// nothing about the rest of this flow.
+		expect(await fetchMissingCount(page, reportId)).toBe(0)
+
+		// The same fills make the dashboard honest: the percentage is written
+		// by the autosave routes, and the status flips itself at 100%.
+		const completion = await fetchReportCompletion(page, reportId)
+		expect(completion.completionPercentage).toBe(100)
+		expect(completion.status).toBe('COMPLETED')
 	})
 
 	test('export page works for OT', async ({ page }) => {

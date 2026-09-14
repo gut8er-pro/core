@@ -46,7 +46,7 @@
 - **Figma:** `design/Main report flow/11-Gut8erPRO - Edit  _ Vehicle Default.png`
 
 ## 6.5 Save & Reload
-- [ ] Fill all sections → click "Update Report" → toast
+- [ ] Fill all sections → auto-save indicator settles on "Saved"
 - [ ] **RELOAD** → all data persists:
   - VIN, manufacturer, type, subtype ✓
   - Power kW/HP, engine, cylinders, transmission ✓

@@ -24,7 +24,6 @@ import { useAccidentInfo, useDeleteSignature, useSaveSignature } from '@/hooks/u
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useReport } from '@/hooks/use-reports'
 import { toReportType } from '@/lib/completeness'
-import { useToastStore } from '@/stores/toast-store'
 
 type SignatureType = 'LAWYER' | 'DATA_PERMISSION' | 'CANCELLATION'
 
@@ -38,17 +37,12 @@ function AccidentInfoPage() {
 	const saveSignature = useSaveSignature(reportId)
 	const deleteSignature = useDeleteSignature(reportId)
 
-	const {
-		saveField,
-		flushNow,
-		state: autoSaveState,
-	} = useAutoSave({
+	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'accident-info',
 		disabled: report?.isLocked,
 	})
 
-	const toast = useToastStore()
 	const [signatureModalType, setSignatureModalType] = useState<SignatureType | null>(null)
 	const [signatureValue, setSignatureValue] = useState('')
 
@@ -282,20 +276,6 @@ function AccidentInfoPage() {
 					{t('accidentInfo.signatures.signatureConsent')}
 				</p>
 			</Modal>
-
-			{/* Update Report button */}
-			<div className="flex justify-end">
-				<Button
-					variant="primary"
-					onClick={() => {
-						flushNow()
-						toast.success('Report updated', 2000)
-					}}
-					loading={autoSaveState.status === 'saving'}
-				>
-					{t('accidentInfo.updateReport')}
-				</Button>
-			</div>
 		</div>
 	)
 }

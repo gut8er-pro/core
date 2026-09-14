@@ -3,18 +3,22 @@
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { ConditionSection } from '@/components/report/condition/condition-section'
 import { DamageDiagramSection } from '@/components/report/condition/damage-diagram-section'
-import { CONDITION_DEFAULTS, conditionFromApi } from '@/components/report/condition/form-data'
+import {
+	CONDITION_DEFAULTS,
+	conditionFromApi,
+	OLDTIMER_DEFAULTS,
+	oldtimerFromApi,
+} from '@/components/report/condition/form-data'
 import { PriorDamageSection } from '@/components/report/condition/prior-damage-section'
 import { TireSection } from '@/components/report/condition/tire-section'
-import type { ConditionFormData } from '@/components/report/condition/types'
+import type { ConditionFormData, OldtimerDetailsData } from '@/components/report/condition/types'
 import { ValueIncreasingFeaturesSection } from '@/components/report/condition/value-increasing-features-section'
 import { VehicleGradingSection } from '@/components/report/condition/vehicle-grading-section'
 import { MissingFieldsProvider } from '@/components/report/missing-info'
-import { Button } from '@/components/ui/button'
 import { CompletionBadge } from '@/components/ui/completion-badge'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import {
@@ -29,7 +33,6 @@ import {
 import { useReport } from '@/hooks/use-reports'
 import { toReportType } from '@/lib/completeness'
 import { getPaintColor } from '@/lib/validations/condition'
-import { useToastStore } from '@/stores/toast-store'
 
 function ConditionPage() {
 	const t = useTranslations('report')
@@ -38,7 +41,6 @@ function ConditionPage() {
 	const reportId = params.id
 	const { data, isLoading } = useCondition(reportId)
 	const { data: report } = useReport(reportId)
-	const toast = useToastStore()
 	const saveDamageMarker = useSaveDamageMarker(reportId)
 	const deleteDamageMarker = useDeleteDamageMarker(reportId)
 	const savePaintMarker = useSavePaintMarker(reportId)
@@ -46,11 +48,7 @@ function ConditionPage() {
 	const saveTireSet = useSaveTireSet(reportId)
 	const deleteTireSet = useDeleteTireSet(reportId)
 
-	const {
-		saveField,
-		flushNow,
-		state: autoSaveState,
-	} = useAutoSave({
+	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'condition',
 		disabled: report?.isLocked,
@@ -72,6 +70,24 @@ function ConditionPage() {
 		initializedRef.current = true
 		reset(conditionFromApi(data))
 	}, [data, reset])
+
+	// The two Oldtimer sections sit outside the form — they are their own
+	// columns, saved field by field the same way the form's fields are.
+	const [oldtimer, setOldtimer] = useState<OldtimerDetailsData>(OLDTIMER_DEFAULTS)
+	const oldtimerInitializedRef = useRef(false)
+	useEffect(() => {
+		if (!data || oldtimerInitializedRef.current) return
+		oldtimerInitializedRef.current = true
+		setOldtimer(oldtimerFromApi(data.oldtimerDetails))
+	}, [data])
+
+	const handleOldtimerChange = useCallback(
+		<K extends keyof OldtimerDetailsData>(field: K, value: OldtimerDetailsData[K]) => {
+			setOldtimer((prev) => ({ ...prev, [field]: value }))
+			saveField(`oldtimerDetails.${field}`, value)
+		},
+		[saveField],
+	)
 
 	const handleFieldBlur = useCallback(
 		(field: string) => {
@@ -200,8 +216,9 @@ function ConditionPage() {
 			damageMarkers: data?.damageMarkers ?? [],
 			paintMarkers: data?.paintMarkers ?? [],
 			tireSets: data?.tireSets ?? [],
+			...oldtimer,
 		}),
-		[data?.damageMarkers, data?.paintMarkers, data?.tireSets],
+		[data?.damageMarkers, data?.paintMarkers, data?.tireSets, oldtimer],
 	)
 
 	// Completion percentage
@@ -283,8 +300,8 @@ function ConditionPage() {
 					{/* OT-only sections */}
 					{report?.reportType === 'OT' && (
 						<>
-							<ValueIncreasingFeaturesSection />
-							<VehicleGradingSection />
+							<ValueIncreasingFeaturesSection values={oldtimer} onChange={handleOldtimerChange} />
+							<VehicleGradingSection values={oldtimer} onChange={handleOldtimerChange} />
 						</>
 					)}
 
@@ -308,21 +325,6 @@ function ConditionPage() {
 					<PriorDamageSection register={register} errors={errors} onFieldBlur={handleFieldBlur} />
 				</div>
 			</MissingFieldsProvider>
-
-			{/* Update Report button */}
-			<div className="flex justify-end">
-				<Button
-					variant="primary"
-					size="lg"
-					onClick={() => {
-						flushNow()
-						toast.success('Report updated', 2000)
-					}}
-					loading={autoSaveState.status === 'saving'}
-				>
-					{t('accidentInfo.updateReport')}
-				</Button>
-			</div>
 		</div>
 	)
 }

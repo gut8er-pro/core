@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test'
 import path from 'path'
+import {
+	completeManifest,
+	fetchMissingCount,
+	fetchReportCompletion,
+} from './helpers/manifest-fill'
 
 /**
  * Complete HS (Liability) Report Flow — E2E Happy Path
@@ -250,6 +255,22 @@ test.describe('HS Complete Flow', () => {
 		await page.waitForTimeout(2000)
 		await expect(page.locator('input[name="invoiceNumber"]')).not.toHaveValue('')
 		await expect(page.locator('input[name="date"]')).toHaveValue('2026-04-03')
+	})
+
+	test('satisfy the completeness manifest', async ({ page }) => {
+		await page.goto(`/reports/${reportId}/export`)
+		await completeManifest(page, reportId, 'HS')
+
+		// Send and PDF are refused server-side while anything required is
+		// empty, so a happy path that never reaches a complete report proves
+		// nothing about the rest of this flow.
+		expect(await fetchMissingCount(page, reportId)).toBe(0)
+
+		// The same fills make the dashboard honest: the percentage is written
+		// by the autosave routes, and the status flips itself at 100%.
+		const completion = await fetchReportCompletion(page, reportId)
+		expect(completion.completionPercentage).toBe(100)
+		expect(completion.status).toBe('COMPLETED')
 	})
 
 	test('export page renders correctly', async ({ page }) => {

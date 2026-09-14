@@ -13,6 +13,8 @@ type IconSelectorProps = {
 	selected: string
 	onChange: (value: string) => void
 	className?: string
+	/** Keep each option's label for screen readers only, leaving a bare icon row. */
+	hideLabels?: boolean
 	/** Required but nothing chosen yet. */
 	isMissing?: boolean
 	/** Screen-reader text for the missing state. */
@@ -24,6 +26,7 @@ function IconSelector({
 	selected,
 	onChange,
 	className,
+	hideLabels,
 	isMissing,
 	missingLabel,
 }: IconSelectorProps) {
@@ -57,7 +60,9 @@ function IconSelector({
 						)}
 					>
 						<Icon className="h-6 w-6" />
-						{option.label && <span className="text-caption font-medium">{option.label}</span>}
+						{option.label && !hideLabels && (
+							<span className="text-caption font-medium">{option.label}</span>
+						)}
 					</button>
 				)
 			})}

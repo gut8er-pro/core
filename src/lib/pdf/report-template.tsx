@@ -85,8 +85,8 @@ type ReportData = {
 		nextMot: Date | null
 		fullServiceHistory: boolean
 		testDrivePerformed: boolean
-		errorMemoryRead: boolean
-		airbagsDeployed: boolean
+		errorMemoryRead: boolean | null
+		airbagsDeployed: boolean | null
 		notes: string | null
 		previousDamageReported: string | null
 		existingDamageNotReported: string | null
@@ -159,7 +159,7 @@ type ReportData = {
 		valuationMax: number | null
 		valuationAvg: number | null
 		valuationMin: number | null
-		valuationDate: string | null
+		valuationDate: Date | null
 		// OT valuation
 		marketValue: number | null
 		baseVehicleValue: number | null
@@ -703,8 +703,13 @@ function ConditionSection({
 			{condition.parkingSensors && <DataRow label={t.parkingSensors} value={t.yes} />}
 			{condition.fullServiceHistory && <DataRow label={t.fullServiceHistory} value={t.yes} />}
 			{condition.testDrivePerformed && <DataRow label={t.testDrivePerformed} value={t.yes} />}
-			{condition.errorMemoryRead && <DataRow label={t.errorMemoryRead} value={t.yes} />}
-			{condition.airbagsDeployed && <DataRow label={t.airbagsDeployed} value={t.yes} />}
+			{/* Stated outright either way — "nein" is a finding, not an absence. */}
+			{condition.errorMemoryRead != null && (
+				<DataRow label={t.errorMemoryRead} value={condition.errorMemoryRead ? t.yes : t.no} />
+			)}
+			{condition.airbagsDeployed != null && (
+				<DataRow label={t.airbagsDeployed} value={condition.airbagsDeployed ? t.yes : t.no} />
+			)}
 			{condition.notes && <DataRow label={t.notes} value={displayValue(condition.notes)} />}
 			{condition.previousDamageReported && (
 				<DataRow
@@ -951,7 +956,7 @@ function CalculationSection({
 						<DataRow label={t.minimumValue} value={formatCurrency(calculation.valuationMin)} />
 					)}
 					{calculation.valuationDate && (
-						<DataRow label={t.valuationDate} value={displayValue(calculation.valuationDate)} />
+						<DataRow label={t.valuationDate} value={formatDate(calculation.valuationDate)} />
 					)}
 				</View>
 			)}

@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { getMissingInfo, isDelivered } from '@/lib/completeness/server'
 import { sendReportEmail } from '@/lib/email/send-report'
 import { generateReportPdfBuffer } from '@/lib/pdf/generate-buffer'
 import { prisma } from '@/lib/prisma'
@@ -35,6 +36,16 @@ async function POST(request: NextRequest, context: RouteContext) {
 
 	if (report.isLocked) {
 		return NextResponse.json({ error: 'Report is already locked and sent' }, { status: 403 })
+	}
+
+	// The gate. Checked here as well as inside the PDF generator so this route
+	// can answer with the structured breakdown rather than a PDF-layer error —
+	// a count is meaningless to the assessor without the locations.
+	if (!isDelivered(report)) {
+		const missingInfo = await getMissingInfo(id, user.id)
+		if (missingInfo && !missingInfo.isComplete) {
+			return NextResponse.json({ error: 'incomplete', missingInfo }, { status: 422 })
+		}
 	}
 
 	const body = await request.json()

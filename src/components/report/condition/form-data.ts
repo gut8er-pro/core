@@ -1,5 +1,10 @@
 import type { ConditionValues } from '@/lib/completeness'
-import type { ConditionFormData, ConditionResponse } from './types'
+import type {
+	ConditionFormData,
+	ConditionResponse,
+	OldtimerDetailsApi,
+	OldtimerDetailsData,
+} from './types'
 
 const CONDITION_DEFAULTS: ConditionFormData = {
 	paintType: '',
@@ -18,8 +23,9 @@ const CONDITION_DEFAULTS: ConditionFormData = {
 	nextMot: '',
 	fullServiceHistory: false,
 	testDrivePerformed: false,
-	errorMemoryRead: false,
-	airbagsDeployed: false,
+	// Unanswered, not "no" — a report must not record a finding nobody made.
+	errorMemoryRead: null,
+	airbagsDeployed: null,
 	notes: '',
 	manualSetup: false,
 	previousDamageReported: '',
@@ -50,8 +56,8 @@ function conditionFromApi(data: ConditionResponse | undefined | null): Condition
 		nextMot: condition.nextMot?.split('T')[0] ?? '',
 		fullServiceHistory: condition.fullServiceHistory ?? CONDITION_DEFAULTS.fullServiceHistory,
 		testDrivePerformed: condition.testDrivePerformed ?? CONDITION_DEFAULTS.testDrivePerformed,
-		errorMemoryRead: condition.errorMemoryRead ?? CONDITION_DEFAULTS.errorMemoryRead,
-		airbagsDeployed: condition.airbagsDeployed ?? CONDITION_DEFAULTS.airbagsDeployed,
+		errorMemoryRead: condition.errorMemoryRead,
+		airbagsDeployed: condition.airbagsDeployed,
 		notes: condition.notes ?? '',
 		manualSetup: condition.manualSetup ?? CONDITION_DEFAULTS.manualSetup,
 		previousDamageReported: condition.previousDamageReported ?? '',
@@ -60,14 +66,78 @@ function conditionFromApi(data: ConditionResponse | undefined | null): Condition
 	}
 }
 
-/** Form values plus the diagram markers and tyre sets the form does not own. */
+const OLDTIMER_DEFAULTS: OldtimerDetailsData = {
+	// No pre-filled grades: a score nobody entered is not a score.
+	gradingBodywork: '',
+	gradingTires: '',
+	gradingPaint: '',
+	gradingInterior: '',
+	gradingChrome: '',
+	gradingEngineBay: '',
+	gradingSeals: '',
+	gradingEngine: '',
+	gradingGlass: '',
+	gradingTrunk: '',
+	gradingOverall: '',
+	autoCalculateGrade: true,
+	originality: '',
+	rareEquipment: [],
+	conditionNotes: [],
+	technicalFeatures: [],
+	mileageNotes: [],
+	historyDocumentation: [],
+	rarityMarketDemand: [],
+	particulars: '',
+	marketReputation: '',
+}
+
+/** The saved Oldtimer sections as their controls hold them. */
+function oldtimerFromApi(data: OldtimerDetailsApi | undefined | null): OldtimerDetailsData {
+	if (!data) return { ...OLDTIMER_DEFAULTS }
+
+	return {
+		gradingBodywork: data.gradingBodywork ?? '',
+		gradingTires: data.gradingTires ?? '',
+		gradingPaint: data.gradingPaint ?? '',
+		gradingInterior: data.gradingInterior ?? '',
+		gradingChrome: data.gradingChrome ?? '',
+		gradingEngineBay: data.gradingEngineBay ?? '',
+		gradingSeals: data.gradingSeals ?? '',
+		gradingEngine: data.gradingEngine ?? '',
+		gradingGlass: data.gradingGlass ?? '',
+		gradingTrunk: data.gradingTrunk ?? '',
+		gradingOverall: data.gradingOverall ?? '',
+		autoCalculateGrade: data.autoCalculateGrade ?? OLDTIMER_DEFAULTS.autoCalculateGrade,
+		originality: data.originality ?? '',
+		rareEquipment: data.rareEquipment ?? [],
+		conditionNotes: data.conditionNotes ?? [],
+		technicalFeatures: data.technicalFeatures ?? [],
+		mileageNotes: data.mileageNotes ?? [],
+		historyDocumentation: data.historyDocumentation ?? [],
+		rarityMarketDemand: data.rarityMarketDemand ?? [],
+		particulars: data.particulars ?? '',
+		marketReputation: data.marketReputation ?? '',
+	}
+}
+
+/**
+ * Form values plus the diagram markers, tyre sets and Oldtimer sections the form
+ * does not own.
+ */
 function conditionValuesFromApi(data: ConditionResponse | undefined | null): ConditionValues {
 	return {
 		...conditionFromApi(data),
+		...oldtimerFromApi(data?.oldtimerDetails),
 		damageMarkers: data?.damageMarkers ?? [],
 		paintMarkers: data?.paintMarkers ?? [],
 		tireSets: data?.tireSets ?? [],
 	}
 }
 
-export { CONDITION_DEFAULTS, conditionFromApi, conditionValuesFromApi }
+export {
+	CONDITION_DEFAULTS,
+	conditionFromApi,
+	conditionValuesFromApi,
+	OLDTIMER_DEFAULTS,
+	oldtimerFromApi,
+}

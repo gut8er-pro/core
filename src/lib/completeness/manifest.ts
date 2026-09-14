@@ -1,8 +1,10 @@
+import { GRADING_CATEGORIES, gradingKey } from '@/components/report/condition/types'
 import { SECTION } from './sections'
 import type {
 	AccidentInfoValues,
 	CalculationValues,
 	ConditionValues,
+	GalleryValues,
 	InvoiceValues,
 	Manifest,
 	ReportType,
@@ -13,6 +15,16 @@ import type {
 
 const field = <T>(path: Extract<keyof T, string>): Rule<T> => ({ kind: 'field', path })
 const fields = <T>(...paths: Extract<keyof T, string>[]): Rule<T>[] => paths.map((p) => field<T>(p))
+
+// ── Gallery ───────────────────────────────────────────────────────────────
+
+/**
+ * A Gutachten with no photographs is not a defensible one: the funnel starts at
+ * photo upload and the PDF renders them.
+ */
+const galleryTab: SectionSpec<GalleryValues>[] = [
+	{ id: SECTION.photos, rules: [{ kind: 'rows', path: 'photos' }] },
+]
 
 // ── Accident Info / Customer ──────────────────────────────────────────────
 
@@ -143,6 +155,11 @@ function vehicleTab(reportType: ReportType): SectionSpec<VehicleValues>[] {
 
 // ── Condition ─────────────────────────────────────────────────────────────
 
+/**
+ * Position is the row's identity rather than an answer — the tyre section always
+ * sets it from the position tab the assessor is on — so only size and profile
+ * depth can actually be left empty.
+ */
 const tiresSection: SectionSpec<ConditionValues> = {
 	id: SECTION.tires,
 	rules: [
@@ -154,13 +171,26 @@ const tiresSection: SectionSpec<ConditionValues> = {
 					kind: 'rows',
 					path: 'tires',
 					row: [
-						{ kind: 'field', path: 'position' },
 						{ kind: 'field', path: 'size' },
 						{ kind: 'field', path: 'profileLevel' },
 					],
 				},
 			],
 		},
+	],
+}
+
+/**
+ * Every category graded, plus the overall score. The value-increasing lists are
+ * not required — a car with no rare equipment is a real answer.
+ */
+const vehicleGradingSection: SectionSpec<ConditionValues> = {
+	id: SECTION.vehicleGrading,
+	rules: [
+		...GRADING_CATEGORIES.map((category) =>
+			field<ConditionValues>(gradingKey(category) as Extract<keyof ConditionValues, string>),
+		),
+		field<ConditionValues>('gradingOverall'),
 	],
 }
 
@@ -185,8 +215,14 @@ function conditionTab(reportType: ReportType): SectionSpec<ConditionValues>[] {
 				'bodyCondition',
 				'interiorCondition',
 				'drivingAbility',
+				// Findings, not preferences: every type inspects the vehicle, and
+				// the Yes/No control renders on all four.
+				'airbagsDeployed',
+				'errorMemoryRead',
 			),
 		},
+		// OT grades the vehicle; the other three types never render the table.
+		...(reportType === 'OT' ? [vehicleGradingSection] : []),
 		...(diagramRules.length > 0 ? [{ id: SECTION.damageDiagram, rules: diagramRules }] : []),
 		tiresSection,
 		{ id: SECTION.priorDamage, rules: fields<ConditionValues>('previousDamageReported') },
@@ -250,16 +286,22 @@ function calculationTab(reportType: ReportType): SectionSpec<CalculationValues>[
 
 // ── Invoice ───────────────────────────────────────────────────────────────
 
+/**
+ * No rule for the fee schedule: it defaults to `bvsk` in both the form and the
+ * column, and BVSK is the German standard the invoice maths is built on, so the
+ * default is a genuine answer and the rule could never fail.
+ */
 const invoiceTab: SectionSpec<InvoiceValues>[] = [
 	{
 		id: SECTION.invoiceSettings,
-		rules: fields<InvoiceValues>('invoiceNumber', 'date', 'feeSchedule'),
+		rules: fields<InvoiceValues>('invoiceNumber', 'date', 'recipientId'),
 	},
 	{ id: SECTION.lineItems, rules: [{ kind: 'rows', path: 'lineItems' }] },
 ]
 
 function manifestFor(reportType: ReportType) {
 	return {
+		gallery: galleryTab,
 		accidentInfo: accidentInfoTab(reportType),
 		vehicle: vehicleTab(reportType),
 		condition: conditionTab(reportType),

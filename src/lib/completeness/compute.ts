@@ -11,7 +11,15 @@ import type {
 	TabReport,
 } from './types'
 
-const TAB_KEYS: TabKey[] = ['accidentInfo', 'vehicle', 'condition', 'calculation', 'invoice']
+const TAB_KEYS: TabKey[] = [
+	'gallery',
+	'accidentInfo',
+	'vehicle',
+	'condition',
+	'calculation',
+	'invoice',
+]
+
 /** Narrows a stored report type, falling back to liability while it loads. */
 function toReportType(value: string | null | undefined): ReportType {
 	return REPORT_TYPES.find((type) => type === value) ?? 'HS'
@@ -29,13 +37,12 @@ type Gaps = { count: number; paths: string[] }
 /**
  * Whether a stored value counts as filled in.
  *
- * Booleans deliberately never count: every boolean column in the database is
- * non-nullable with a default, so "unchecked" and "never answered" are the same
- * stored value. Callers must skip boolean fields rather than report them.
+ * `false` counts. A boolean a rule may name is stored nullable, so "no" and
+ * "never answered" are different values, and only the second is a gap. Booleans
+ * that are non-nullable with a default are simply never named by a rule.
  */
 function hasValue(value: unknown): boolean {
 	if (value === null || value === undefined) return false
-	if (typeof value === 'boolean') return false
 	if (typeof value === 'string') return value.trim().length > 0
 	if (typeof value === 'number') return !Number.isNaN(value)
 	if (Array.isArray(value)) return value.length > 0
@@ -55,21 +62,16 @@ function toRows(value: unknown): LooseValues[] {
 }
 
 function collectField(values: LooseValues, path: string, prefix: string, gaps: Gaps): void {
-	const value = values[path]
-	// Booleans can never be reported missing — see hasValue().
-	if (typeof value === 'boolean') return
-	if (hasValue(value)) return
+	if (hasValue(values[path])) return
 	gaps.count += 1
 	gaps.paths.push(`${prefix}${path}`)
 }
 
 function collectEither(values: LooseValues, paths: string[], prefix: string, gaps: Gaps): void {
-	const eligible = paths.filter((path) => typeof values[path] !== 'boolean')
-	if (eligible.length === 0) return
-	if (eligible.some((path) => hasValue(values[path]))) return
+	if (paths.some((path) => hasValue(values[path]))) return
 	// One gap — but flag every member, because either one would close it.
 	gaps.count += 1
-	for (const path of eligible) gaps.paths.push(`${prefix}${path}`)
+	for (const path of paths) gaps.paths.push(`${prefix}${path}`)
 }
 
 function collectRows(
@@ -175,14 +177,38 @@ type ReportValuesInput = Partial<Record<TabKey, LooseValues | null | undefined>>
 function computeMissingInfo(reportType: ReportType, values: ReportValuesInput): MissingInfoReport {
 	const tabs = {} as Record<TabKey, TabReport>
 	let missingCount = 0
+	let sectionsComplete = 0
+	let sectionsTotal = 0
 
 	for (const tab of TAB_KEYS) {
 		const report = evaluateTab(reportType, tab, values[tab])
 		tabs[tab] = report
 		missingCount += report.missingCount
+		sectionsComplete += report.sectionsComplete
+		sectionsTotal += report.sectionsTotal
 	}
 
-	return { tabs, missingCount, isComplete: missingCount === 0 }
+	return {
+		tabs,
+		missingCount,
+		sectionsComplete,
+		sectionsTotal,
+		completionPercentage:
+			sectionsTotal === 0 ? 100 : Math.round((sectionsComplete / sectionsTotal) * 100),
+		isComplete: missingCount === 0,
+	}
 }
 
-export { computeMissingInfo, evaluateTab, toReportType }
+/**
+ * Whether the completeness gate leaves this report alone.
+ *
+ * The one exemption, and the only one: a report that has already been delivered
+ * passed at send time, so tightening the manifest later must not retract a
+ * Gutachten that is already in an insurer's inbox. Pure, so the Export page and
+ * the server gates cannot disagree about who is exempt.
+ */
+function isDelivered(report: { isLocked?: boolean | null; status?: string | null }): boolean {
+	return Boolean(report.isLocked) || report.status === 'SENT' || report.status === 'LOCKED'
+}
+
+export { computeMissingInfo, evaluateTab, isDelivered, toReportType }

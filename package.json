@@ -17,6 +17,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:integration": "node --env-file-if-exists=.env ./node_modules/vitest/vitest.mjs run --config vitest.integration.config.ts",
     "test:e2e": "playwright test --config testing/e2e/playwright.config.ts",
     "test:e2e:ui": "playwright test --config testing/e2e/playwright.config.ts --ui",
     "test:e2e:auth": "playwright test --config testing/e2e/playwright.config.ts 01-auth",
@@ -37,6 +38,7 @@
     "test:e2e:all-reports": "playwright test --config testing/e2e/playwright.config.ts 16-all-reports",
     "test:e2e:flows": "playwright test --config testing/e2e/playwright.config.ts 12-hs 13-be 14-kg 15-ot",
     "test:e2e:exhaustive": "playwright test --config testing/e2e/playwright.config.ts 17-exhaustive 18-exhaustive-verify",
+    "test:e2e:gate": "playwright test --config testing/e2e/playwright.config.ts 19-send-gate",
     "analyze": "ANALYZE=true next build",
     "prepare": "husky"
   },

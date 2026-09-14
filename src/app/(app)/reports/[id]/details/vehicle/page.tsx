@@ -11,13 +11,11 @@ import { VEHICLE_DEFAULTS, vehicleFromApi } from '@/components/report/vehicle/fo
 import { IdentificationSection } from '@/components/report/vehicle/identification-section'
 import { SpecificationSection } from '@/components/report/vehicle/specification-section'
 import type { VehicleFormData } from '@/components/report/vehicle/types'
-import { Button } from '@/components/ui/button'
 import { CompletionBadge } from '@/components/ui/completion-badge'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useReport } from '@/hooks/use-reports'
 import { useVehicleInfo } from '@/hooks/use-vehicle-info'
 import { toReportType } from '@/lib/completeness'
-import { useToastStore } from '@/stores/toast-store'
 
 function VehiclePage() {
 	const t = useTranslations('report')
@@ -26,13 +24,8 @@ function VehiclePage() {
 	const reportId = params.id
 	const { data, isLoading } = useVehicleInfo(reportId)
 	const { data: report } = useReport(reportId)
-	const toast = useToastStore()
 
-	const {
-		saveField,
-		flushNow,
-		state: autoSaveState,
-	} = useAutoSave({
+	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'vehicle',
 		disabled: report?.isLocked,
@@ -196,21 +189,6 @@ function VehiclePage() {
 					/>
 				</div>
 			</MissingFieldsProvider>
-
-			{/* Update Report button */}
-			<div className="flex justify-end">
-				<Button
-					variant="primary"
-					size="lg"
-					onClick={() => {
-						flushNow()
-						toast.success('Report updated', 2000)
-					}}
-					loading={autoSaveState.status === 'saving'}
-				>
-					{t('accidentInfo.updateReport')}
-				</Button>
-			</div>
 		</div>
 	)
 }

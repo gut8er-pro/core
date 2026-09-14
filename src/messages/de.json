@@ -526,8 +526,7 @@
         "updateSignature": "Unterschrift aktualisieren",
         "yourSignature": "Ihre Unterschrift",
         "signatureConsent": "Mit der elektronischen Unterschrift dieses Dokuments erkläre ich mich damit einverstanden, dass diese Unterschrift nach geltendem Recht Gültigkeit besitzt."
-      },
-      "updateReport": "Gutachten aktualisieren"
+      }
     },
     "vehicle": {
       "title": "Fahrzeug",
@@ -929,7 +928,13 @@
       "reportSentToast": "Gutachten erfolgreich gesendet",
       "sendFailed": "Gutachten konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
       "pdfLanguage": "PDF-Sprache",
-      "bothLanguagesNote": "Es werden beide PDFs (Deutsch und Englisch) erstellt und angehängt."
+      "bothLanguagesNote": "Es werden beide PDFs (Deutsch und Englisch) erstellt und angehängt.",
+      "checkingCompleteness": "Es wird geprüft, was diesem Gutachten noch fehlt …",
+      "incompleteTitle": "Dieses Gutachten kann noch nicht versendet werden",
+      "incompleteDescription": "{count} Pflichtfelder fehlen noch. Sobald sie ausgefüllt sind, kann das Gutachten versendet werden.",
+      "incompleteTabCount": "{count} fehlen",
+      "goToSection": "Zu {section}",
+      "notSavedYet": "Beim Versenden war noch nicht alles gespeichert. Prüfen Sie die markierten Bereiche und versuchen Sie es erneut."
     },
     "annotation": {
       "draw": "Zeichnen",

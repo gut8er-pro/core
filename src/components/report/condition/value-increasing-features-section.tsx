@@ -6,8 +6,7 @@ import { useState } from 'react'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
-
-// Options moved inside component for translation access
+import type { OldtimerDetailsData } from './types'
 
 type TagInputProps = {
 	label: string
@@ -61,11 +60,32 @@ function TagInput({ label, tags, onAdd, onRemove, placeholder }: TagInputProps) 
 	)
 }
 
+/** The six tag lists, in the order the section renders them. */
+const TAG_LISTS = [
+	{ field: 'rareEquipment', label: 'rareEquipment', placeholder: 'addRareEquipment' },
+	{ field: 'conditionNotes', label: 'condition', placeholder: 'addConditionNote' },
+	{ field: 'technicalFeatures', label: 'technicalFeatures', placeholder: 'addTechnicalFeature' },
+	{ field: 'mileageNotes', label: 'mileage', placeholder: 'addMileageNote' },
+	{ field: 'historyDocumentation', label: 'historyDocumentation', placeholder: 'addHistoryItem' },
+	{ field: 'rarityMarketDemand', label: 'rarityMarketDemand', placeholder: 'addRarityNote' },
+] as const
+
 type ValueIncreasingFeaturesSectionProps = {
+	values: OldtimerDetailsData
+	onChange: <K extends keyof OldtimerDetailsData>(field: K, value: OldtimerDetailsData[K]) => void
 	className?: string
 }
 
-function ValueIncreasingFeaturesSection({ className }: ValueIncreasingFeaturesSectionProps) {
+/**
+ * The value-increasing features of an Oldtimer. Nothing here is required — a car
+ * with no rare equipment is a real answer — but all of it is now saved, so the
+ * substance of a valuation survives a reload.
+ */
+function ValueIncreasingFeaturesSection({
+	values,
+	onChange,
+	className,
+}: ValueIncreasingFeaturesSectionProps) {
 	const t = useTranslations('report.condition')
 
 	const ORIGINALITY_OPTIONS = [
@@ -88,16 +108,6 @@ function ValueIncreasingFeaturesSection({ className }: ValueIncreasingFeaturesSe
 		},
 	]
 
-	const [_originality, setOriginality] = useState('')
-	const [rareEquipment, setRareEquipment] = useState<string[]>([])
-	const [condition, setCondition] = useState<string[]>([])
-	const [technicalFeatures, setTechnicalFeatures] = useState<string[]>([])
-	const [mileage, setMileage] = useState<string[]>([])
-	const [history, setHistory] = useState<string[]>([])
-	const [rarity, setRarity] = useState<string[]>([])
-	const [particulars, setParticulars] = useState('')
-	const [_marketReputation, setMarketReputation] = useState('')
-
 	return (
 		<CollapsibleSection title={t('valueIncreasingFeatures.title')} info className={className}>
 			<div className="flex flex-col gap-6">
@@ -105,69 +115,39 @@ function ValueIncreasingFeaturesSection({ className }: ValueIncreasingFeaturesSe
 					label={t('valueIncreasingFeatures.originality')}
 					options={ORIGINALITY_OPTIONS}
 					placeholder="Select"
-					onValueChange={setOriginality}
+					value={values.originality || undefined}
+					onValueChange={(value) => onChange('originality', value)}
 				/>
 
-				<TagInput
-					label={t('valueIncreasingFeatures.rareEquipment')}
-					tags={rareEquipment}
-					onAdd={(tag) => setRareEquipment((prev) => [...prev, tag])}
-					onRemove={(i) => setRareEquipment((prev) => prev.filter((_, j) => j !== i))}
-					placeholder={t('valueIncreasingFeatures.addRareEquipment')}
-				/>
-
-				<TagInput
-					label={t('valueIncreasingFeatures.condition')}
-					tags={condition}
-					onAdd={(tag) => setCondition((prev) => [...prev, tag])}
-					onRemove={(i) => setCondition((prev) => prev.filter((_, j) => j !== i))}
-					placeholder={t('valueIncreasingFeatures.addConditionNote')}
-				/>
-
-				<TagInput
-					label={t('valueIncreasingFeatures.technicalFeatures')}
-					tags={technicalFeatures}
-					onAdd={(tag) => setTechnicalFeatures((prev) => [...prev, tag])}
-					onRemove={(i) => setTechnicalFeatures((prev) => prev.filter((_, j) => j !== i))}
-					placeholder={t('valueIncreasingFeatures.addTechnicalFeature')}
-				/>
-
-				<TagInput
-					label={t('valueIncreasingFeatures.mileage')}
-					tags={mileage}
-					onAdd={(tag) => setMileage((prev) => [...prev, tag])}
-					onRemove={(i) => setMileage((prev) => prev.filter((_, j) => j !== i))}
-					placeholder={t('valueIncreasingFeatures.addMileageNote')}
-				/>
-
-				<TagInput
-					label={t('valueIncreasingFeatures.historyDocumentation')}
-					tags={history}
-					onAdd={(tag) => setHistory((prev) => [...prev, tag])}
-					onRemove={(i) => setHistory((prev) => prev.filter((_, j) => j !== i))}
-					placeholder={t('valueIncreasingFeatures.addHistoryItem')}
-				/>
-
-				<TagInput
-					label={t('valueIncreasingFeatures.rarityMarketDemand')}
-					tags={rarity}
-					onAdd={(tag) => setRarity((prev) => [...prev, tag])}
-					onRemove={(i) => setRarity((prev) => prev.filter((_, j) => j !== i))}
-					placeholder={t('valueIncreasingFeatures.addRarityNote')}
-				/>
+				{TAG_LISTS.map(({ field, label, placeholder }) => (
+					<TagInput
+						key={field}
+						label={t(`valueIncreasingFeatures.${label}`)}
+						tags={values[field]}
+						onAdd={(tag) => onChange(field, [...values[field], tag])}
+						onRemove={(i) =>
+							onChange(
+								field,
+								values[field].filter((_, j) => j !== i),
+							)
+						}
+						placeholder={t(`valueIncreasingFeatures.${placeholder}`)}
+					/>
+				))}
 
 				<TextField
 					label={t('valueIncreasingFeatures.particularsNotes')}
 					placeholder={t('valueIncreasingFeatures.additionalNotes')}
-					value={particulars}
-					onChange={(e) => setParticulars(e.target.value)}
+					value={values.particulars}
+					onChange={(e) => onChange('particulars', e.target.value)}
 				/>
 
 				<SelectField
 					label={t('valueIncreasingFeatures.marketReputation')}
 					options={MARKET_REPUTATION_OPTIONS}
 					placeholder="Select"
-					onValueChange={setMarketReputation}
+					value={values.marketReputation || undefined}
+					onValueChange={(value) => onChange('marketReputation', value)}
 				/>
 			</div>
 		</CollapsibleSection>

@@ -45,7 +45,7 @@
 - [ ] "Result with repair" green card with € value + edit icon
 
 ### Save & Reload
-- [ ] Fill all fields → "Update Report" → toast
+- [ ] Fill all fields → auto-save indicator settles on "Saved"
 - [ ] **RELOAD** → all values persist
 - **Figma:** `design/Main report flow/14-Gut8erPRO - Edit  _ Calculation.png`
 

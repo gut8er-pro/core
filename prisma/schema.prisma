@@ -91,6 +91,7 @@ model Report {
   condition      VehicleCondition?
   calculation    Calculation?
   invoice        Invoice?
+  oldtimer       OldtimerDetails?
   exportConfig   ExportConfig?
   notifications  Notification[]
 
@@ -309,8 +310,8 @@ model VehicleCondition {
   nextMot                   DateTime?
   fullServiceHistory        Boolean @default(false)
   testDrivePerformed        Boolean @default(false)
-  errorMemoryRead           Boolean @default(false)
-  airbagsDeployed           Boolean @default(false)
+  errorMemoryRead           Boolean?
+  airbagsDeployed           Boolean?
   produceGroups             String[]
   notes                     String?
   // Manual setup toggle
@@ -411,7 +412,7 @@ model Calculation {
   valuationMax          Float?
   valuationAvg          Float?
   valuationMin          Float?
-  valuationDate         String?
+  valuationDate         DateTime?
   // OT valuation
   marketValue           Float?
   baseVehicleValue      Float?
@@ -430,6 +431,41 @@ model AdditionalCost {
   calculation Calculation @relation(fields: [calculationId], references: [id], onDelete: Cascade)
 
   @@index([calculationId])
+}
+
+// ─── Oldtimer (OT only) ─────────────────────────────────────
+
+/// Vehicle grading and value-increasing features, the two sections an
+/// Oldtimer valuation adds to the Condition tab. Flat columns rather than a
+/// JSON blob so the completeness manifest can require an individual grade.
+model OldtimerDetails {
+  id                   String   @id @default(uuid())
+  reportId             String   @unique
+  // Vehicle grading — ten categories plus the overall score
+  gradingBodywork      String?
+  gradingTires         String?
+  gradingPaint         String?
+  gradingInterior      String?
+  gradingChrome        String?
+  gradingEngineBay     String?
+  gradingSeals         String?
+  gradingEngine        String?
+  gradingGlass         String?
+  gradingTrunk         String?
+  gradingOverall       String?
+  autoCalculateGrade   Boolean  @default(true)
+  // Value-increasing features
+  originality          String?
+  rareEquipment        String[]
+  conditionNotes       String[]
+  technicalFeatures    String[]
+  mileageNotes         String[]
+  historyDocumentation String[]
+  rarityMarketDemand   String[]
+  particulars          String?
+  marketReputation     String?
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
 }
 
 // ─── Invoice ────────────────────────────────────────────────

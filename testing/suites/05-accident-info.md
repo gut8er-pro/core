@@ -9,7 +9,6 @@
 - [ ] Tab bar: 5 tabs with completion badges
 - [ ] "Show missing information" toggle with section count text
 - [ ] Completion percentage in header area
-- [ ] "Update Report" button at bottom (green)
 
 ## 5.2 HS Report — Full Accident Info
 
@@ -86,7 +85,7 @@
 - **Figma:** `design/Main report flow/07-Gut8erPRO - Edit  _ Digital Signature.png`
 
 ### Save & Reload
-- [ ] Click "Update Report" → toast "Report updated"
+- [ ] Wait for the auto-save indicator to settle on "Saved"
 - [ ] **RELOAD PAGE** → ALL fields persist (accident, claimant, opponent, visits, expert, signature)
 - **Figma:** `design/Main report flow/09-Gut8erPRO - Edit  _ Accident Overview-1.png`
 

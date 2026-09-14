@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
-import type { TabKey, TabReport } from '@/lib/completeness'
+import type { DetailTabKey, TabReport } from '@/lib/completeness'
 import { useMissingInfo } from './use-missing-info'
 
-type TabCompletion = Record<TabKey, { filled: number; total: number; isComplete: boolean }>
+type TabCompletion = Record<DetailTabKey, { filled: number; total: number; isComplete: boolean }>
 
 function toCompletion(tab: TabReport) {
 	return {
@@ -15,7 +15,8 @@ function toCompletion(tab: TabReport) {
 /**
  * Section completion counts for the tab bar — a thin adapter over the
  * completeness engine. A section counts as filled only when every required
- * field inside it has a value.
+ * field inside it has a value. The gallery has no tab of its own, so its
+ * photo requirement is left to the Export page's breakdown.
  */
 function useTabCompletion(reportId: string, reportType?: string): TabCompletion {
 	const report = useMissingInfo(reportId, reportType)

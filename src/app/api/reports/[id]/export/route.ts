@@ -22,6 +22,13 @@ async function GET(request: NextRequest, context: RouteContext) {
 			const locale = searchParams.get('locale') ?? 'de'
 			const result = await generateReportPdfBuffer(id, user.id, locale)
 			if ('error' in result) {
+				// A refused download is not a missing report — say which it is.
+				if (result.missingInfo) {
+					return NextResponse.json(
+						{ error: result.error, missingInfo: result.missingInfo },
+						{ status: 422 },
+					)
+				}
 				return NextResponse.json({ error: result.error }, { status: 404 })
 			}
 			return new NextResponse(new Uint8Array(result.buffer), {

@@ -6,11 +6,13 @@ import { Controller } from 'react-hook-form'
 import {
 	useControlledFieldProps,
 	useFieldProps,
+	useMissingProps,
 	useSectionBadge,
 } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
+import { YesNoField } from '@/components/ui/yes-no-field'
 import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import type { ConditionSectionProps } from './types'
@@ -64,8 +66,10 @@ function ConditionSection({
 	className,
 }: ConditionSectionProps) {
 	const t = useTranslations('report')
+	const tc = useTranslations('common')
 	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
 	const controlled = useControlledFieldProps({ errors, onFieldBlur })
+	const missing = useMissingProps()
 	const badge = useSectionBadge(SECTION.condition)
 
 	const PAINT_TYPE_OPTIONS = [
@@ -318,34 +322,6 @@ function ConditionSection({
 						)}
 					/>
 					<Controller
-						name="errorMemoryRead"
-						control={control}
-						render={({ field }) => (
-							<CheckboxPill
-								label={t('condition.errorMemoryRead')}
-								checked={field.value}
-								onChange={(checked) => {
-									field.onChange(checked)
-									onFieldBlur?.('errorMemoryRead')
-								}}
-							/>
-						)}
-					/>
-					<Controller
-						name="airbagsDeployed"
-						control={control}
-						render={({ field }) => (
-							<CheckboxPill
-								label={t('condition.airbagsDeployed')}
-								checked={field.value}
-								onChange={(checked) => {
-									field.onChange(checked)
-									onFieldBlur?.('airbagsDeployed')
-								}}
-							/>
-						)}
-					/>
-					<Controller
 						name="parkingSensors"
 						control={control}
 						render={({ field }) => (
@@ -356,6 +332,45 @@ function ConditionSection({
 									field.onChange(checked)
 									onFieldBlur?.('parkingSensors')
 								}}
+							/>
+						)}
+					/>
+				</div>
+
+				{/* Findings the report states outright — answered yes or no, never
+				    left to an unchecked box that reads as "no". */}
+				<div className="flex flex-wrap items-start gap-8">
+					<Controller
+						name="airbagsDeployed"
+						control={control}
+						render={({ field }) => (
+							<YesNoField
+								label={t('condition.airbagsDeployed')}
+								value={field.value}
+								onChange={(answer) => {
+									field.onChange(answer)
+									onFieldBlur?.('airbagsDeployed')
+								}}
+								yesLabel={tc('yes')}
+								noLabel={tc('no')}
+								{...missing('airbagsDeployed')}
+							/>
+						)}
+					/>
+					<Controller
+						name="errorMemoryRead"
+						control={control}
+						render={({ field }) => (
+							<YesNoField
+								label={t('condition.errorMemoryRead')}
+								value={field.value}
+								onChange={(answer) => {
+									field.onChange(answer)
+									onFieldBlur?.('errorMemoryRead')
+								}}
+								yesLabel={tc('yes')}
+								noLabel={tc('no')}
+								{...missing('errorMemoryRead')}
 							/>
 						)}
 					/>

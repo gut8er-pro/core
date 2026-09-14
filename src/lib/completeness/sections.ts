@@ -4,6 +4,7 @@
  * agree without either importing the other's internals.
  */
 const SECTION = {
+	photos: 'photos',
 	accident: 'accident',
 	claimant: 'claimant',
 	opponent: 'opponent',
@@ -17,6 +18,7 @@ const SECTION = {
 	damageDiagram: 'damage-diagram',
 	tires: 'tires',
 	priorDamage: 'prior-damage',
+	vehicleGrading: 'vehicle-grading',
 	value: 'value',
 	repair: 'repair',
 	loss: 'loss',

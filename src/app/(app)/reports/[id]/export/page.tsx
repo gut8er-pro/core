@@ -7,12 +7,15 @@ import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { EmailComposer } from '@/components/report/export/email-composer'
 import { ExportToggles } from '@/components/report/export/export-toggles'
+import { IncompleteNotice } from '@/components/report/export/incomplete-notice'
 import type { ExportFormData } from '@/components/report/export/types'
 import { Button } from '@/components/ui/button'
 import { useAutoSave } from '@/hooks/use-auto-save'
-import { useExportConfig, useSendReport } from '@/hooks/use-export'
+import { IncompleteReportError, useExportConfig, useSendReport } from '@/hooks/use-export'
+import { useFreshMissingInfo } from '@/hooks/use-missing-info'
 import { useReport } from '@/hooks/use-reports'
 import { useToast } from '@/hooks/use-toast'
+import { isDelivered, toReportType } from '@/lib/completeness'
 
 function ExportPage() {
 	const t = useTranslations('report.export')
@@ -24,6 +27,16 @@ function ExportPage() {
 	const sendMutation = useSendReport(reportId)
 	const toast = useToast()
 	const [sendSuccess, setSendSuccess] = useState(false)
+
+	// A delivered report is past the gate for good, so it is never judged again.
+	const reportType = toReportType(report?.reportType)
+	const isSent = isDelivered(report ?? {})
+	const { missingInfo, isRefreshing } = useFreshMissingInfo(
+		reportId,
+		report?.reportType ?? undefined,
+	)
+	const isBlocked = !isSent && !missingInfo.isComplete
+	const canSend = !isRefreshing && !isBlocked
 
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
@@ -94,7 +107,14 @@ function ExportPage() {
 					toast.success(t('reportSentToast'))
 				},
 				onError: (error: Error) => {
-					toast.error(error.message || t('sendFailed'))
+					// A 422 that reached a click means the browser was working from
+					// stale data. Say so and leave the retry to the assessor —
+					// sending is irreversible and must follow a deliberate click.
+					toast.error(
+						error instanceof IncompleteReportError
+							? t('notSavedYet')
+							: error.message || t('sendFailed'),
+					)
 				},
 			},
 		)
@@ -139,6 +159,7 @@ function ExportPage() {
 						icon={<Send className="h-4 w-4" />}
 						iconPosition="right"
 						loading={sendMutation.isPending}
+						disabled={!canSend}
 						onClick={handleSend}
 					>
 						{t('sendReport')}
@@ -157,8 +178,20 @@ function ExportPage() {
 			{/* Send error message */}
 			{sendMutation.isError && (
 				<div className="rounded-md border border-error bg-error-light p-4">
-					<span className="text-body-sm text-error">{sendMutation.error.message}</span>
+					<span className="text-body-sm text-error">
+						{sendMutation.error instanceof IncompleteReportError
+							? t('notSavedYet')
+							: sendMutation.error.message}
+					</span>
 				</div>
+			)}
+
+			{/* Why Send is disabled, and where to go about it */}
+			{isRefreshing && !isSent && (
+				<p className="text-body-sm text-grey-100">{t('checkingCompleteness')}</p>
+			)}
+			{isBlocked && !isRefreshing && (
+				<IncompleteNotice reportId={reportId} reportType={reportType} missingInfo={missingInfo} />
 			)}
 
 			{/* Two-column layout: Toggles (left) + Email composer (right) */}

@@ -73,7 +73,7 @@ function calculationFromApi(data: CalculationResponse | undefined | null): Calcu
 		valuationMax: text(rest.valuationMax),
 		valuationAvg: text(rest.valuationAvg),
 		valuationMin: text(rest.valuationMin),
-		valuationDate: text(rest.valuationDate),
+		valuationDate: text(rest.valuationDate).split('T')[0] ?? '',
 		marketValue: text(rest.marketValue),
 		baseVehicleValue: text(rest.baseVehicleValue),
 		restorationValue: text(rest.restorationValue),

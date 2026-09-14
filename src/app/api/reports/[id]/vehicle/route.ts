@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { prisma } from '@/lib/prisma'
+import { syncReportCompletion } from '@/lib/reports/completion'
 import { vehicleInfoSchema } from '@/lib/validations/vehicle'
 
 type RouteContext = {
@@ -146,11 +147,8 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		update: dbData,
 	})
 
-	// Touch the report's updatedAt timestamp
-	await prisma.report.update({
-		where: { id },
-		data: { updatedAt: new Date() },
-	})
+	// Recompute completion and touch updatedAt in one write.
+	await syncReportCompletion(id, user.id)
 
 	return NextResponse.json(vehicleInfo)
 }

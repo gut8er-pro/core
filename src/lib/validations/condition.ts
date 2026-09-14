@@ -16,8 +16,8 @@ const conditionSchema = z.object({
 	nextMot: z.string().max(30).nullable().optional(),
 	fullServiceHistory: z.boolean().optional(),
 	testDrivePerformed: z.boolean().optional(),
-	errorMemoryRead: z.boolean().optional(),
-	airbagsDeployed: z.boolean().optional(),
+	errorMemoryRead: z.boolean().nullable().optional(),
+	airbagsDeployed: z.boolean().nullable().optional(),
 	notes: z.string().max(2000).nullable().optional(),
 	manualSetup: z.boolean().optional(),
 	previousDamageReported: z.string().max(2000).nullable().optional(),
@@ -25,6 +25,38 @@ const conditionSchema = z.object({
 	subsequentDamage: z.string().max(2000).nullable().optional(),
 	vehicleColor: z.string().max(50).nullable().optional(),
 	produceGroups: z.array(z.string().max(50)).optional(),
+})
+
+const gradeScore = z.string().max(10).nullable().optional()
+const tagList = z.array(z.string().max(200)).max(50).optional()
+
+/**
+ * The Oldtimer grading table and value-increasing features. Permissive like
+ * every other persistence schema — autosave writes partial drafts, and what a
+ * finished report needs is the completeness manifest's business.
+ */
+const oldtimerDetailsSchema = z.object({
+	gradingBodywork: gradeScore,
+	gradingTires: gradeScore,
+	gradingPaint: gradeScore,
+	gradingInterior: gradeScore,
+	gradingChrome: gradeScore,
+	gradingEngineBay: gradeScore,
+	gradingSeals: gradeScore,
+	gradingEngine: gradeScore,
+	gradingGlass: gradeScore,
+	gradingTrunk: gradeScore,
+	gradingOverall: gradeScore,
+	autoCalculateGrade: z.boolean().optional(),
+	originality: z.string().max(50).nullable().optional(),
+	rareEquipment: tagList,
+	conditionNotes: tagList,
+	technicalFeatures: tagList,
+	mileageNotes: tagList,
+	historyDocumentation: tagList,
+	rarityMarketDemand: tagList,
+	particulars: z.string().max(2000).nullable().optional(),
+	marketReputation: z.string().max(50).nullable().optional(),
 })
 
 const damageMarkerSchema = z.object({
@@ -63,6 +95,7 @@ const tireSetSchema = z.object({
 
 const conditionPatchSchema = z.object({
 	condition: conditionSchema.optional(),
+	oldtimerDetails: oldtimerDetailsSchema.optional(),
 	damageMarkers: z.array(damageMarkerSchema).optional(),
 	paintMarkers: z.array(paintMarkerSchema).optional(),
 	tireSets: z.array(tireSetSchema).optional(),
@@ -80,6 +113,7 @@ function getPaintColor(thickness: number): string {
 }
 
 type ConditionInput = z.infer<typeof conditionSchema>
+type OldtimerDetailsInput = z.infer<typeof oldtimerDetailsSchema>
 type DamageMarkerInput = z.infer<typeof damageMarkerSchema>
 type PaintMarkerInput = z.infer<typeof paintMarkerSchema>
 type TireInput = z.infer<typeof tireSchema>
@@ -90,6 +124,7 @@ export type {
 	ConditionInput,
 	ConditionPatchInput,
 	DamageMarkerInput,
+	OldtimerDetailsInput,
 	PaintMarkerInput,
 	TireInput,
 	TireSetInput,
@@ -99,6 +134,7 @@ export {
 	conditionSchema,
 	damageMarkerSchema,
 	getPaintColor,
+	oldtimerDetailsSchema,
 	paintMarkerSchema,
 	tireSchema,
 	tireSetSchema,

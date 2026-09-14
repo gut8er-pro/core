@@ -171,7 +171,8 @@ See `docs/TECH_STACK.md` for full details.
 6. **Photo limit:** Maximum 20 images per report.
 7. **Photo requirements:** Good lighting, no flash, JPG/PNG format.
 8. **7-day free trial:** Pro plan starts with trial. Card collected upfront via Stripe Checkout but not charged until trial ends.
-9. **Completion tracking:** Each report section shows completion percentage (e.g., "50% Complete", "3/4 fields").
+9. **Completion tracking:** Each report section shows completion percentage (e.g., "50% Complete", "3/4 fields"). `Report.completionPercentage` and `status` are recomputed server-side on every autosave.
+10. **Completeness gate:** A report cannot be emailed and its PDF cannot be generated until it satisfies its type's manifest (`src/lib/completeness/`). Enforced server-side with no override. The one exemption: a report that is already `isLocked`/`SENT`/`LOCKED` stays downloadable forever.
 
 ---
 
@@ -294,6 +295,8 @@ The app is **feature-complete** with all 4 report types working end-to-end.
 - Gallery: photo upload (max 20), grid/single view, Fabric.js annotation canvas, AI generation
 - Report Details: 5 tabs with auto-save, dynamic tab completion badges
 - All 4 report types (HS/BE/KG/OT) with correct conditional sections
+- Completeness manifest + engine, shared by client and server (`src/lib/completeness/`)
+- Hard completeness gate on email send and PDF generation, with one exemption for delivered reports
 - PDF export with report-type-specific templates
 - Email send via Resend with PDF attachment
 - Report locking (read-only after send, unlockable from Export)
@@ -308,6 +311,8 @@ The app is **feature-complete** with all 4 report types working end-to-end.
 - **Tab completion** — dynamic `useTabCompletion` hook counts filled sections per report type
 - **PDF template** — conditionally renders sections based on `reportType` (hides HS fields for BE/OT)
 - **Gallery sidebar** — shows report nav when photos exist (not just after AI generation)
+- **Completeness** — one manifest, two callers: `useMissingInfo` in the browser and `getMissingInfo` on the server, both feeding the same `*FromApi` mappers
+- **Migrations** — pre-launch, so schema changes regenerate the single `prisma/migrations/*_init` rather than stacking incremental files. See `prisma/migrations/README.md`
 
 ### Documentation
 | Document | Location | Purpose |
@@ -320,7 +325,7 @@ The app is **feature-complete** with all 4 report types working end-to-end.
 | Email templates | `supabase/email-templates/` | 5 branded Supabase email templates |
 
 ### E2E Testing
-16 Playwright test specs in `testing/e2e/` covering all flows. Reference PDFs in `testing/reference-pdfs/`.
+19 Playwright test specs in `testing/e2e/` covering all flows. Reference PDFs in `testing/reference-pdfs/`.
 
 ```bash
 npm run test:e2e              # All tests
@@ -330,7 +335,11 @@ npm run test:e2e:kg           # Full KG Short Report flow
 npm run test:e2e:ot           # Full OT Oldtimer flow
 npm run test:e2e:flows        # All 4 flows
 npm run test:e2e:all-reports  # Create + fill + send all 4 via email
+npm run test:e2e:gate         # Completeness gate: refusals and the locked-report exemption
 ```
+
+`npm run test:integration` runs the database-backed suite in `src/test/integration/`
+(needs `DATABASE_URL`; skipped without it).
 
 See `testing/README.md` for full testing documentation.
 

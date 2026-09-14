@@ -481,7 +481,9 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 | Estimate mileage | number input | Optional |
 | Unit(s) km | text input | Auto |
 | Next MOT (optional) | date picker | Optional |
-| Checkboxes | multi-select chips (Full service history, Test drive performed, Error memory read, Airbags deployed) | Optional |
+| Checkboxes | multi-select chips (Full service history, Test drive performed) | Optional |
+| Airbags deployed | Yes/No control, starts unselected | Required |
+| Error memory read | Yes/No control, starts unselected | Required |
 | Produce Groups | multi-select with avatars/icons | Optional |
 | Notes | textarea | Optional |
 
@@ -652,7 +654,15 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 | The Invoice | toggle with eye icon | On |
 | Lock Report | toggle | On |
 
-**Actions:** "Send Report" button (green with send icon, top right)
+**Actions:** "Send Report" button (green with send icon, top right). Disabled while
+the report is short of its type's completeness manifest, with a per-tab breakdown
+linking to each place that is missing something.
+
+**Completeness gate:** `POST /api/reports/:id/send` and PDF generation both refuse
+an incomplete report with `422` carrying the structured `MissingInfoReport`. The one
+exemption is a report that is `isLocked` or whose status is `SENT`/`LOCKED` — it
+passed at send time and stays downloadable forever. See
+`src/lib/completeness/server.ts`.
 
 ---
 
@@ -1203,8 +1213,9 @@ interface VehicleCondition {
   nextMot?: string;
   fullServiceHistory: boolean;
   testDrivePerformed: boolean;
-  errorMemoryRead: boolean;
-  airbagsDeployed: boolean;
+  /** null until the assessor answers — an unchecked box is not a finding. */
+  errorMemoryRead: boolean | null;
+  airbagsDeployed: boolean | null;
   produceGroups?: string[];
   notes?: string;
 
@@ -1563,7 +1574,7 @@ All report detail pages use a shared `useAutoSave` hook (`src/hooks/use-auto-sav
 **Behavior:**
 - Field changes are batched and debounced (800ms)
 - Saves silently — no toast on auto-save, only inline "Saving..."/"Saved" indicator
-- "Update Report" button triggers immediate flush + success toast
+- Each PATCH recomputes and persists `Report.completionPercentage` and flips `status` between `DRAFT` and `COMPLETED` (never touching `SENT`/`LOCKED`)
 - If a save is in-flight and new changes arrive, they're queued and auto-flushed after
 - On tab switch / unmount: flushes pending changes (fire-and-forget)
 - `beforeunload` warning if unsaved changes exist
