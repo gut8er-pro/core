@@ -2,8 +2,10 @@
 
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
+import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import type { ConditionSectionProps } from './types'
 
@@ -17,6 +19,8 @@ function PriorDamageSection({
 }: Omit<ConditionSectionProps, 'control'> & { className?: string }) {
 	const [activeTab, setActiveTab] = useState<PriorDamageTab>('damage-notes')
 	const t = useTranslations('report.condition')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const badge = useSectionBadge(SECTION.priorDamage)
 
 	return (
 		<CollapsibleSection
@@ -24,6 +28,7 @@ function PriorDamageSection({
 			info
 			defaultOpen={false}
 			className={className}
+			{...badge}
 		>
 			<div className="flex flex-col gap-6">
 				{/* Segmented tab control */}
@@ -62,16 +67,12 @@ function PriorDamageSection({
 							<TextField
 								label={t('priorDamage.previousDamage')}
 								placeholder={t('priorDamage.addRepairedDamage')}
-								error={errors.previousDamageReported?.message}
-								{...register('previousDamageReported')}
-								onBlur={() => onFieldBlur?.('previousDamageReported')}
+								{...fieldProps('previousDamageReported')}
 							/>
 							<TextField
 								label={t('priorDamage.existingDamage')}
 								placeholder={t('priorDamage.currentCarAge')}
-								error={errors.existingDamageNotReported?.message}
-								{...register('existingDamageNotReported')}
-								onBlur={() => onFieldBlur?.('existingDamageNotReported')}
+								{...fieldProps('existingDamageNotReported')}
 							/>
 						</div>
 
@@ -79,9 +80,7 @@ function PriorDamageSection({
 						<TextField
 							label={t('priorDamage.subsequentDamage')}
 							placeholder={t('priorDamage.subsequentDamagePlaceholder')}
-							error={errors.subsequentDamage?.message}
-							{...register('subsequentDamage')}
-							onBlur={() => onFieldBlur?.('subsequentDamage')}
+							{...fieldProps('subsequentDamage')}
 						/>
 					</div>
 				)}

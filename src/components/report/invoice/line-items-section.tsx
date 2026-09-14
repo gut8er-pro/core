@@ -4,10 +4,12 @@ import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 import { Controller, useFieldArray } from 'react-hook-form'
+import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import type { InvoiceSectionProps } from './types'
 
@@ -31,13 +33,15 @@ function LineItemsSection({
 	bvskContent,
 }: LineItemsSectionProps) {
 	const t = useTranslations('report.invoice')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const badge = useSectionBadge(SECTION.lineItems)
 	const { fields, append } = useFieldArray({
 		control,
 		name: 'lineItems',
 	})
 
 	return (
-		<CollapsibleSection title={t('itemDetails')} info defaultOpen className={className}>
+		<CollapsibleSection title={t('itemDetails')} info defaultOpen className={className} {...badge}>
 			<div className="flex flex-col gap-5">
 				{/* BVSK rate table content, passed from parent */}
 				{bvskContent}
@@ -58,7 +62,7 @@ function LineItemsSection({
 				</div>
 
 				{/* Line item rows */}
-				{fields.map((field, index) => {
+				{fields.map((row, index) => {
 					const amountVal =
 						parseFloat(
 							document.querySelector<HTMLInputElement>(`[name="lineItems.${index}.amount"]`)
@@ -67,7 +71,7 @@ function LineItemsSection({
 
 					return (
 						<div
-							key={field.id}
+							key={row.id}
 							className={cn(
 								'flex flex-col gap-2 border-b border-border pb-4 last:border-b-0',
 								'md:grid md:grid-cols-12 md:items-center md:gap-4 md:px-1',
@@ -78,9 +82,7 @@ function LineItemsSection({
 								<TextField
 									label={t('description')}
 									placeholder={t('serviceDescription')}
-									error={errors.lineItems?.[index]?.description?.message}
-									{...register(`lineItems.${index}.description`)}
-									onBlur={() => onFieldBlur?.(`lineItems.${index}.description`)}
+									{...fieldProps(`lineItems.${index}.description`)}
 									className="md:[&>label]:hidden"
 								/>
 							</div>
@@ -115,9 +117,7 @@ function LineItemsSection({
 									prefix="€"
 									placeholder="0,00"
 									step="0.01"
-									error={errors.lineItems?.[index]?.rate?.message}
-									{...register(`lineItems.${index}.rate`)}
-									onBlur={() => onFieldBlur?.(`lineItems.${index}.rate`)}
+									{...fieldProps(`lineItems.${index}.rate`)}
 									className="md:[&>label]:hidden"
 								/>
 							</div>

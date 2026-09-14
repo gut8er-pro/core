@@ -2,13 +2,15 @@
 
 import { useTranslations } from 'next-intl'
 import { useWatch } from 'react-hook-form'
+import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Label } from '@/components/ui/label'
 import { LicensePlate } from '@/components/ui/license-plate'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
-import type { SectionProps } from './types'
+import { SECTION } from '@/lib/completeness'
+import type { AccidentInfoFormData, SectionProps } from './types'
 
 function ClaimantSection({
 	register,
@@ -19,6 +21,8 @@ function ClaimantSection({
 	className,
 }: SectionProps & { className?: string }) {
 	const t = useTranslations('report')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const badge = useSectionBadge(SECTION.claimant)
 	const representedByLawyer = useWatch({ control, name: 'claimantRepresentedByLawyer' })
 	const eligibleForTax = useWatch({ control, name: 'claimantEligibleForInputTaxDeduction' })
 	const licensePlate = useWatch({ control, name: 'claimantLicensePlate' })
@@ -35,14 +39,12 @@ function ClaimantSection({
 	]
 
 	return (
-		<CollapsibleSection title={sectionTitle} info defaultOpen className={className}>
+		<CollapsibleSection title={sectionTitle} info defaultOpen className={className} {...badge}>
 			<div className="flex flex-col gap-4">
 				<TextField
 					label={t('accidentInfo.company')}
 					placeholder={t('accidentInfo.companyPlaceholder')}
-					error={errors.claimantCompany?.message}
-					{...register('claimantCompany')}
-					onBlur={() => onFieldBlur?.('claimantCompany')}
+					{...fieldProps('claimantCompany')}
 				/>
 
 				{/* Salutation | First Name | Last Name — 3-column per Figma */}
@@ -61,16 +63,12 @@ function ClaimantSection({
 					<TextField
 						label={t('accidentInfo.firstName')}
 						placeholder={t('accidentInfo.firstName')}
-						error={errors.claimantFirstName?.message}
-						{...register('claimantFirstName')}
-						onBlur={() => onFieldBlur?.('claimantFirstName')}
+						{...fieldProps('claimantFirstName')}
 					/>
 					<TextField
 						label={t('accidentInfo.lastName')}
 						placeholder={t('accidentInfo.lastName')}
-						error={errors.claimantLastName?.message}
-						{...register('claimantLastName')}
-						onBlur={() => onFieldBlur?.('claimantLastName')}
+						{...fieldProps('claimantLastName')}
 					/>
 				</div>
 
@@ -79,23 +77,17 @@ function ClaimantSection({
 					<TextField
 						label={t('accidentInfo.street')}
 						placeholder="Musterstraße 123"
-						error={errors.claimantStreet?.message}
-						{...register('claimantStreet')}
-						onBlur={() => onFieldBlur?.('claimantStreet')}
+						{...fieldProps('claimantStreet')}
 					/>
 					<TextField
 						label={t('accidentInfo.postcode')}
 						placeholder="R0S312"
-						error={errors.claimantPostcode?.message}
-						{...register('claimantPostcode')}
-						onBlur={() => onFieldBlur?.('claimantPostcode')}
+						{...fieldProps('claimantPostcode')}
 					/>
 					<TextField
 						label={t('accidentInfo.location')}
 						placeholder="Berlin"
-						error={errors.claimantLocation?.message}
-						{...register('claimantLocation')}
-						onBlur={() => onFieldBlur?.('claimantLocation')}
+						{...fieldProps('claimantLocation')}
 					/>
 				</div>
 
@@ -105,24 +97,18 @@ function ClaimantSection({
 						label={t('accidentInfo.email')}
 						type="email"
 						placeholder="markecooper@gmail.com"
-						error={errors.claimantEmail?.message}
-						{...register('claimantEmail')}
-						onBlur={() => onFieldBlur?.('claimantEmail')}
+						{...fieldProps('claimantEmail')}
 					/>
 					<TextField
 						label={t('accidentInfo.iban')}
 						placeholder="123/456/78901"
-						error={errors.claimantVehicleMake?.message}
-						{...register('claimantVehicleMake')}
-						onBlur={() => onFieldBlur?.('claimantVehicleMake')}
+						{...fieldProps('claimantVehicleMake')}
 					/>
 					<TextField
 						label={t('accidentInfo.firstNumber')}
 						type="tel"
 						placeholder="DE123456780"
-						error={errors.claimantPhone?.message}
-						{...register('claimantPhone')}
-						onBlur={() => onFieldBlur?.('claimantPhone')}
+						{...fieldProps('claimantPhone')}
 					/>
 				</div>
 
@@ -131,9 +117,7 @@ function ClaimantSection({
 					<div className="flex items-center gap-4">
 						<TextField
 							placeholder="B AB 1234"
-							error={errors.claimantLicensePlate?.message}
-							{...register('claimantLicensePlate')}
-							onBlur={() => onFieldBlur?.('claimantLicensePlate')}
+							{...fieldProps('claimantLicensePlate')}
 							className="flex-1"
 						/>
 						{licensePlate && <LicensePlate plate={licensePlate} />}
@@ -206,17 +190,14 @@ function ClaimantSection({
 							<TextField
 								label={t('accidentInfo.vatId')}
 								placeholder="DE344/490424"
-								{...register('claimantVatId' as keyof import('./types').AccidentInfoFormData)}
-								onBlur={() => onFieldBlur?.('claimantVatId')}
+								{...fieldProps('claimantVatId' as keyof AccidentInfoFormData)}
 							/>
 						)}
 						{!isOT && representedByLawyer && (
 							<TextField
 								label={t('accidentInfo.involvedLawyer')}
 								placeholder="John Doe Lawyer Firm"
-								error={errors.claimantInvolvedLawyer?.message}
-								{...register('claimantInvolvedLawyer')}
-								onBlur={() => onFieldBlur?.('claimantInvolvedLawyer')}
+								{...fieldProps('claimantInvolvedLawyer')}
 							/>
 						)}
 					</div>

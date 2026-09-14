@@ -1,0 +1,58 @@
+{
+  "skill_name": "pr-review",
+  "evals": [
+    {
+      "id": 0,
+      "name": "full-spec-pr",
+      "prompt": "review PR #2 and post the findings",
+      "expected_output": "A review comment body that traces PR #2 back to .scratch/marketing-app-split/spec.md and its tickets, walks the acceptance criteria, cites CLAUDE.md house rules and ADR-0001, and reports verified findings with file:line.",
+      "files": [],
+      "assertions": [
+        "Cites the feature spec or ticket files under .scratch/marketing-app-split/ by path",
+        "Grades the tickets' acceptance criteria individually (a scope-vs-spec section exists, not just prose)",
+        "Cites at least one normative project doc (CLAUDE.md rule or docs/adr/0001) as the basis for a finding",
+        "Every finding carries a file:line reference",
+        "Findings are ranked into severity tiers rather than presented as a flat list",
+        "Checks at least one factual claim made in the PR description against the actual code",
+        "Contains no vague findings \u2014 every item names a concrete consequence, not 'consider improving X'",
+        "Comment body includes the <!-- pr-review --> marker",
+        "Offers to run /code-review at the end"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "no-spec-no-description",
+      "prompt": "hey can you review pr 1 for me, its the report type policy refactor. want to know if its safe to merge",
+      "expected_output": "PR #1 has an empty body and its specs live on its own branch under .scratch/architecture-deepening/. Should find them via the PR's head ref, grade against them, flag that the PR bundles unrelated work, and give an explicit merge verdict.",
+      "files": [],
+      "assertions": [
+        "Locates the spec on the PR's own branch rather than concluding none exists from the local working tree",
+        "Does not fabricate acceptance criteria or invent scope the author never committed to",
+        "Notes that the PR bundles unrelated changes (report-type policy + replaceChildren + docs)",
+        "Reviews on correctness and architecture, citing project docs (CLAUDE.md or docs/ARCHITECTURE.md)",
+        "Every finding carries a file:line reference",
+        "Answers the user's actual question with an explicit merge verdict",
+        "Contains no vague findings - every item names a concrete consequence",
+        "Comment body includes the <!-- pr-review --> marker",
+        "Offers to run /code-review at the end"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "current-branch-spec-conformance",
+      "prompt": "before i merge this branch can you double check it actually does everything the tickets asked for? feels like i might have missed something",
+      "expected_output": "Resolves the current branch to its PR without being given a number, finds the marketing-app-split tickets, and produces a scope-vs-spec table grading each acceptance criterion.",
+      "files": [],
+      "assertions": [
+        "Resolves the current branch to PR #2 without being given a number",
+        "Locates the marketing-app-split tickets and cites them by path",
+        "Produces a per-criterion scope-vs-spec grading covering the referenced tickets",
+        "Grades at least one criterion as something other than met \u2014 i.e. actually audits rather than rubber-stamps",
+        "Every finding carries a file:line reference",
+        "Contains no vague findings \u2014 every item names a concrete consequence",
+        "Comment body includes the <!-- pr-review --> marker",
+        "Offers to run /code-review at the end"
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { Check, ChevronDown } from 'lucide-react'
 import { type ComponentPropsWithoutRef, type ElementRef, forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 import { Label } from './label'
+import { MISSING_FIELD_CLASS } from './missing'
 
 type SelectOption = {
 	value: string
@@ -20,6 +21,10 @@ type SelectFieldProps = {
 	disabled?: boolean
 	className?: string
 	id?: string
+	/** Required but not chosen yet. Distinct from `error`, which wins. */
+	isMissing?: boolean
+	/** Screen-reader text for the missing state, e.g. "Not filled in yet". */
+	missingLabel?: string
 }
 
 function SelectField({
@@ -33,8 +38,12 @@ function SelectField({
 	disabled,
 	className,
 	id,
+	isMissing,
+	missingLabel,
 }: SelectFieldProps) {
 	const selectId = id || label?.toLowerCase().replace(/\s+/g, '-')
+	// A wrong value is more urgent than an absent one.
+	const showMissing = !!isMissing && !error
 
 	return (
 		<div className={cn('flex flex-col gap-1', className)}>
@@ -45,7 +54,17 @@ function SelectField({
 				onValueChange={onValueChange}
 				disabled={disabled}
 			>
-				<SelectTrigger id={selectId} className={cn(error && 'border-error focus:border-error')}>
+				<SelectTrigger
+					id={selectId}
+					className={cn(
+						error && 'border-error focus:border-error',
+						showMissing && MISSING_FIELD_CLASS,
+					)}
+					// Deliberately not aria-invalid — an unanswered select holds no
+					// wrong value. See TextField for the full rationale.
+					data-missing={showMissing ? 'true' : undefined}
+					aria-describedby={showMissing && missingLabel ? `${selectId}-missing` : undefined}
+				>
 					<SelectPrimitive.Value placeholder={placeholder} />
 				</SelectTrigger>
 				<SelectContent>
@@ -60,6 +79,11 @@ function SelectField({
 				<p className="text-caption text-error" role="alert">
 					{error}
 				</p>
+			)}
+			{showMissing && missingLabel && (
+				<span id={`${selectId}-missing`} className="sr-only">
+					{missingLabel}
+				</span>
 			)}
 		</div>
 	)

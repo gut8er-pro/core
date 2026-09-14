@@ -82,3 +82,79 @@ test.describe('Report Type Differences', () => {
 		await expect(page.locator('text=Correction Calculation')).not.toBeVisible()
 	})
 })
+
+test.describe('Show missing information', () => {
+	let hsReportId = ''
+	let lockedReportId = ''
+
+	test.beforeAll(async ({ browser }) => {
+		const page = await createAuthPage(browser)
+		hsReportId = await createReportViaAPI(page, 'PW Missing Info', 'HS')
+		lockedReportId = await createReportViaAPI(page, 'PW Missing Info Locked', 'HS')
+		await page.evaluate(async (id: string) => {
+			await fetch(`/api/reports/${id}/export`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ lockReport: true }),
+			})
+		}, lockedReportId)
+		await page.context().close()
+	})
+
+	test('highlights empty required fields only while the toggle is on', async ({ page }) => {
+		await page.goto(`/reports/${hsReportId}/details/vehicle`)
+		await expect(page.getByText('Show missing information')).toBeVisible()
+
+		// Off by default — nothing highlighted.
+		await expect(page.locator('[data-missing="true"]')).toHaveCount(0)
+
+		await page.locator('#show-missing-toggle').click()
+		await expect(page.locator('input[name="vin"]')).toHaveAttribute('data-missing', 'true')
+		await expect(page.locator('input[name="manufacturer"]')).toHaveAttribute('data-missing', 'true')
+
+		// A field that is not required is left alone.
+		await expect(page.locator('input[name="subType"]')).not.toHaveAttribute('data-missing', 'true')
+
+		await page.locator('#show-missing-toggle').click()
+		await expect(page.locator('[data-missing="true"]')).toHaveCount(0)
+	})
+
+	test('counts missing fields across the whole report, not just this tab', async ({ page }) => {
+		await page.goto(`/reports/${hsReportId}/details/vehicle`)
+		await expect(page.getByText(/required fields are still missing in this report/)).toBeVisible()
+	})
+
+	test('shows a missing count on collapsed section headers', async ({ page }) => {
+		await page.goto(`/reports/${hsReportId}/details/vehicle`)
+		await page.locator('#show-missing-toggle').click()
+		await expect(page.locator('[data-missing-count]').first()).toBeVisible()
+	})
+
+	test('stays on while moving between tabs', async ({ page }) => {
+		await page.goto(`/reports/${hsReportId}/details/vehicle`)
+		await page.locator('#show-missing-toggle').click()
+		await expect(page.locator('input[name="vin"]')).toHaveAttribute('data-missing', 'true')
+
+		await page.getByRole('tab', { name: 'Condition' }).click()
+		await expect(page).toHaveURL(/\/details\/condition/)
+		await expect(page.locator('#show-missing-toggle')).toHaveAttribute('data-state', 'checked')
+		await expect(page.locator('input[name="vehicleColor"]')).toHaveAttribute('data-missing', 'true')
+	})
+
+	test('clears a highlight as soon as the field is filled', async ({ page }) => {
+		await page.goto(`/reports/${hsReportId}/details/condition`)
+		await page.locator('#show-missing-toggle').click()
+
+		const color = page.locator('input[name="vehicleColor"]')
+		await expect(color).toHaveAttribute('data-missing', 'true')
+		await color.fill('Schwarz')
+		await expect(color).not.toHaveAttribute('data-missing', 'true')
+	})
+
+	test('hides the banner entirely on a locked report', async ({ page }) => {
+		await page.goto(`/reports/${lockedReportId}/details/vehicle`)
+		await expect(page.getByRole('tab', { name: 'Vehicle' })).toBeVisible()
+		await expect(page.getByText('Show missing information')).toHaveCount(0)
+		await expect(page.locator('#show-missing-toggle')).toHaveCount(0)
+	})
+})

@@ -3,9 +3,11 @@
 import { FileText, Info, User, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
+import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import type { InvoiceSectionProps } from './types'
 
@@ -17,9 +19,11 @@ function InvoiceSettings({
 	className,
 }: InvoiceSectionProps) {
 	const t = useTranslations('report.invoice')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const badge = useSectionBadge(SECTION.invoiceSettings)
 
 	return (
-		<CollapsibleSection title={t('settings')} info defaultOpen className={className}>
+		<CollapsibleSection title={t('settings')} info defaultOpen className={className} {...badge}>
 			<div className="flex flex-col gap-6">
 				{/* Recipient row with icon buttons */}
 				<div className="flex items-center justify-between">
@@ -57,27 +61,21 @@ function InvoiceSettings({
 					<TextField
 						label={t('invoiceNumber')}
 						placeholder="HB-3552-2026"
-						error={errors.invoiceNumber?.message}
-						{...register('invoiceNumber')}
-						onBlur={() => onFieldBlur?.('invoiceNumber')}
+						{...fieldProps('invoiceNumber')}
 					/>
 
 					<TextField
 						label={t('date')}
 						type="date"
 						placeholder={t('datePlaceholder')}
-						error={errors.date?.message}
-						{...register('date')}
-						onBlur={() => onFieldBlur?.('date')}
+						{...fieldProps('date')}
 					/>
 
 					<TextField
 						label={t('payoutDelay')}
 						type="number"
 						placeholder="DD"
-						error={errors.payoutDelay?.message}
-						{...register('payoutDelay')}
-						onBlur={() => onFieldBlur?.('payoutDelay')}
+						{...fieldProps('payoutDelay')}
 					/>
 				</div>
 

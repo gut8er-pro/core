@@ -3,6 +3,7 @@
 import { Plus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useFieldArray } from 'react-hook-form'
+import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
@@ -10,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import type { SectionProps } from './types'
 
@@ -34,6 +36,8 @@ function VisitSection({
 	className,
 }: SectionProps & { className?: string }) {
 	const t = useTranslations('report')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const badge = useSectionBadge(SECTION.visits)
 	const isOT = reportType === 'OT'
 
 	const VISIT_TYPE_OPTIONS = [
@@ -58,10 +62,10 @@ function VisitSection({
 	})
 
 	return (
-		<CollapsibleSection title={t('accidentInfo.visits.title')} className={className}>
+		<CollapsibleSection title={t('accidentInfo.visits.title')} className={className} {...badge}>
 			<div className="flex flex-col gap-6">
-				{fields.map((field, index) => (
-					<div key={field.id} className="relative rounded-lg border border-border bg-white p-4">
+				{fields.map((row, index) => (
+					<div key={row.id} className="relative rounded-lg border border-border bg-white p-4">
 						<div className="mb-4 flex items-center justify-between">
 							<span className="text-body-sm font-semibold text-black">
 								{t('accidentInfo.visits.visitIndex', { index: index + 1 })}
@@ -112,23 +116,17 @@ function VisitSection({
 								<TextField
 									label={t('accidentInfo.street')}
 									placeholder="Street address or po box"
-									error={errors.visits?.[index]?.street?.message}
-									{...register(`visits.${index}.street`)}
-									onBlur={() => onFieldBlur?.(`visits.${index}.street`)}
+									{...fieldProps(`visits.${index}.street`)}
 								/>
 								<TextField
 									label={t('accidentInfo.postcode')}
 									placeholder="eg 006312"
-									error={errors.visits?.[index]?.postcode?.message}
-									{...register(`visits.${index}.postcode`)}
-									onBlur={() => onFieldBlur?.(`visits.${index}.postcode`)}
+									{...fieldProps(`visits.${index}.postcode`)}
 								/>
 								<TextField
 									label={t('accidentInfo.location')}
 									placeholder="Berlin"
-									error={errors.visits?.[index]?.location?.message}
-									{...register(`visits.${index}.location`)}
-									onBlur={() => onFieldBlur?.(`visits.${index}.location`)}
+									{...fieldProps(`visits.${index}.location`)}
 								/>
 							</div>
 
@@ -137,16 +135,12 @@ function VisitSection({
 								<TextField
 									label={t('accidentInfo.visits.data')}
 									type="date"
-									error={errors.visits?.[index]?.date?.message}
-									{...register(`visits.${index}.date`)}
-									onBlur={() => onFieldBlur?.(`visits.${index}.date`)}
+									{...fieldProps(`visits.${index}.date`)}
 								/>
 								<TextField
 									label={t('accidentInfo.visits.expert')}
 									placeholder={t('accidentInfo.visits.expertName')}
-									error={errors.visits?.[index]?.expert?.message}
-									{...register(`visits.${index}.expert`)}
-									onBlur={() => onFieldBlur?.(`visits.${index}.expert`)}
+									{...fieldProps(`visits.${index}.expert`)}
 								/>
 								<SelectField
 									label={t('accidentInfo.visits.vehicleCondition')}

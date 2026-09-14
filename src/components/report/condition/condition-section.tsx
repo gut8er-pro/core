@@ -3,9 +3,15 @@
 import { QrCode } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
+import {
+	useControlledFieldProps,
+	useFieldProps,
+	useSectionBadge,
+} from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import type { ConditionSectionProps } from './types'
 
@@ -58,6 +64,9 @@ function ConditionSection({
 	className,
 }: ConditionSectionProps) {
 	const t = useTranslations('report')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const controlled = useControlledFieldProps({ errors, onFieldBlur })
+	const badge = useSectionBadge(SECTION.condition)
 
 	const PAINT_TYPE_OPTIONS = [
 		{ value: 'Uni (2 Schicht)', label: t('condition.paintTypeOptions.uni') },
@@ -114,6 +123,7 @@ function ConditionSection({
 			info
 			defaultOpen
 			className={className}
+			{...badge}
 		>
 			<div className="flex flex-col gap-6">
 				{/* Row 1: Paint type / Paint / Paint condition */}
@@ -126,12 +136,7 @@ function ConditionSection({
 								label={t('condition.paintType')}
 								options={PAINT_TYPE_OPTIONS}
 								placeholder="Select"
-								value={field.value}
-								onValueChange={(val) => {
-									field.onChange(val)
-									onFieldBlur?.('paintType')
-								}}
-								error={errors.paintType?.message}
+								{...controlled('paintType', field)}
 							/>
 						)}
 					/>
@@ -144,12 +149,7 @@ function ConditionSection({
 								label={t('condition.paint')}
 								options={PAINT_OPTIONS}
 								placeholder="Select"
-								value={field.value}
-								onValueChange={(val) => {
-									field.onChange(val)
-									onFieldBlur?.('hard')
-								}}
-								error={errors.hard?.message}
+								{...controlled('hard', field)}
 							/>
 						)}
 					/>
@@ -162,12 +162,7 @@ function ConditionSection({
 								label={t('condition.paintCondition')}
 								options={PAINT_CONDITION_OPTIONS}
 								placeholder="Select"
-								value={field.value}
-								onValueChange={(val) => {
-									field.onChange(val)
-									onFieldBlur?.('paintCondition')
-								}}
-								error={errors.paintCondition?.message}
+								{...controlled('paintCondition', field)}
 							/>
 						)}
 					/>
@@ -183,12 +178,7 @@ function ConditionSection({
 								label={t('condition.generalCondition')}
 								options={GENERAL_CONDITION_OPTIONS}
 								placeholder="Select"
-								value={field.value}
-								onValueChange={(val) => {
-									field.onChange(val)
-									onFieldBlur?.('generalCondition')
-								}}
-								error={errors.generalCondition?.message}
+								{...controlled('generalCondition', field)}
 							/>
 						)}
 					/>
@@ -201,12 +191,7 @@ function ConditionSection({
 								label={t('condition.bodyCondition')}
 								options={BODY_CONDITION_OPTIONS}
 								placeholder="Select"
-								value={field.value}
-								onValueChange={(val) => {
-									field.onChange(val)
-									onFieldBlur?.('bodyCondition')
-								}}
-								error={errors.bodyCondition?.message}
+								{...controlled('bodyCondition', field)}
 							/>
 						)}
 					/>
@@ -219,12 +204,7 @@ function ConditionSection({
 								label={t('condition.interiorCondition')}
 								options={INTERIOR_CONDITION_OPTIONS}
 								placeholder="Select"
-								value={field.value}
-								onValueChange={(val) => {
-									field.onChange(val)
-									onFieldBlur?.('interiorCondition')
-								}}
-								error={errors.interiorCondition?.message}
+								{...controlled('interiorCondition', field)}
 							/>
 						)}
 					/>
@@ -240,12 +220,7 @@ function ConditionSection({
 								label={t('condition.drivingAbility')}
 								options={DRIVING_ABILITY_OPTIONS}
 								placeholder="Select"
-								value={field.value}
-								onValueChange={(val) => {
-									field.onChange(val)
-									onFieldBlur?.('drivingAbility')
-								}}
-								error={errors.drivingAbility?.message}
+								{...controlled('drivingAbility', field)}
 							/>
 						)}
 					/>
@@ -253,17 +228,13 @@ function ConditionSection({
 					<TextField
 						label={t('condition.vehicleColor')}
 						placeholder={t('condition.vehicleColorPlaceholder')}
-						error={errors.vehicleColor?.message}
-						{...register('vehicleColor')}
-						onBlur={() => onFieldBlur?.('vehicleColor')}
+						{...fieldProps('vehicleColor')}
 					/>
 
 					<TextField
 						label={t('condition.specialFeatures')}
 						placeholder={t('condition.parkingSensors')}
-						error={errors.specialFeatures?.message}
-						{...register('specialFeatures')}
-						onBlur={() => onFieldBlur?.('specialFeatures')}
+						{...fieldProps('specialFeatures')}
 					/>
 				</div>
 
@@ -273,18 +244,14 @@ function ConditionSection({
 						label={t('condition.mileageRead')}
 						type="number"
 						placeholder="e.g. 125,450 km"
-						error={errors.mileageRead?.message}
-						{...register('mileageRead')}
-						onBlur={() => onFieldBlur?.('mileageRead')}
+						{...fieldProps('mileageRead')}
 					/>
 
 					<TextField
 						label={t('condition.estimationMileage')}
 						type="number"
 						placeholder="e.g. 125,450 km"
-						error={errors.estimateMileage?.message}
-						{...register('estimateMileage')}
-						onBlur={() => onFieldBlur?.('estimateMileage')}
+						{...fieldProps('estimateMileage')}
 					/>
 
 					<Controller
@@ -312,9 +279,7 @@ function ConditionSection({
 							label={t('condition.nextMot')}
 							type="date"
 							placeholder="MM/YY/YY"
-							error={errors.nextMot?.message}
-							{...register('nextMot')}
-							onBlur={() => onFieldBlur?.('nextMot')}
+							{...fieldProps('nextMot')}
 						/>
 					</div>
 					<div className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-white">

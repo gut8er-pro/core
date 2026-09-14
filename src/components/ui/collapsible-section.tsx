@@ -4,6 +4,7 @@ import * as AccordionPrimitive from '@radix-ui/react-accordion'
 import { ChevronUp, Info } from 'lucide-react'
 import { type ComponentPropsWithoutRef, type ElementRef, forwardRef, type ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import { MissingBadge } from './missing'
 
 type CollapsibleSectionProps = {
 	title: string
@@ -11,6 +12,14 @@ type CollapsibleSectionProps = {
 	defaultOpen?: boolean
 	children: ReactNode
 	className?: string
+	/**
+	 * Required fields still empty inside this section. Shown only while the
+	 * missing-information review mode is on, so a collapsed section still tells
+	 * the assessor whether anything is hiding inside it.
+	 */
+	missingCount?: number
+	/** Screen-reader text for the badge, e.g. "fields missing". */
+	missingLabel?: string
 }
 
 function CollapsibleSection({
@@ -19,6 +28,8 @@ function CollapsibleSection({
 	defaultOpen = false,
 	children,
 	className,
+	missingCount = 0,
+	missingLabel,
 }: CollapsibleSectionProps) {
 	return (
 		<AccordionPrimitive.Root
@@ -32,6 +43,7 @@ function CollapsibleSection({
 					<span className="flex items-center gap-2">
 						{title}
 						{info && <Info className="h-4 w-4 text-grey-100" />}
+						<MissingBadge count={missingCount} label={missingLabel} />
 					</span>
 				</AccordionTrigger>
 				<AccordionContent>{children}</AccordionContent>

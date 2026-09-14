@@ -3,8 +3,15 @@
 import { Info } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
+import {
+	useControlledFieldProps,
+	useFieldProps,
+	useSectionBadge,
+} from '@/components/report/missing-info'
+import { MissingBadge } from '@/components/ui/missing'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import type { CalculationSectionProps } from './types'
 
@@ -43,6 +50,9 @@ function LossSection({
 	className,
 }: CalculationSectionProps) {
 	const t = useTranslations('report.calculation')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const controlled = useControlledFieldProps({ errors, onFieldBlur })
+	const badge = useSectionBadge(SECTION.loss)
 
 	return (
 		<div className={cn('flex flex-col gap-5', className)}>
@@ -50,6 +60,7 @@ function LossSection({
 			<div className="flex items-center gap-2">
 				<h4 className="text-body font-semibold text-black">{t('lossOfUse.title')}</h4>
 				<Info className="h-4 w-4 text-grey-100" />
+				<MissingBadge count={badge.missingCount} label={badge.missingLabel} />
 			</div>
 
 			{/* First row: Dropout group, Cost per Day, Rental Car Class */}
@@ -62,12 +73,7 @@ function LossSection({
 							label={t('lossOfUse.dropoutGroup')}
 							options={DROPOUT_GROUP_OPTIONS}
 							placeholder="Choose"
-							value={field.value}
-							onValueChange={(val) => {
-								field.onChange(val)
-								onFieldBlur?.('dropoutGroup')
-							}}
-							error={errors.dropoutGroup?.message}
+							{...controlled('dropoutGroup', field)}
 						/>
 					)}
 				/>
@@ -78,9 +84,7 @@ function LossSection({
 					prefix="€"
 					placeholder="0.00"
 					step="0.01"
-					error={errors.costPerDay?.message}
-					{...register('costPerDay')}
-					onBlur={() => onFieldBlur?.('costPerDay')}
+					{...fieldProps('costPerDay')}
 				/>
 
 				<Controller
@@ -108,18 +112,14 @@ function LossSection({
 					label={t('lossOfUse.repairTimeDays')}
 					type="number"
 					placeholder={t('lossOfUse.addDays')}
-					error={errors.repairTimeDays?.message}
-					{...register('repairTimeDays')}
-					onBlur={() => onFieldBlur?.('repairTimeDays')}
+					{...fieldProps('repairTimeDays')}
 				/>
 
 				<TextField
 					label={t('lossOfUse.replacementTimeDays')}
 					type="number"
 					placeholder={t('lossOfUse.addDays')}
-					error={errors.replacementTimeDays?.message}
-					{...register('replacementTimeDays')}
-					onBlur={() => onFieldBlur?.('replacementTimeDays')}
+					{...fieldProps('replacementTimeDays')}
 				/>
 			</div>
 		</div>

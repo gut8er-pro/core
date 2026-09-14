@@ -3,9 +3,11 @@
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
+import { MissingFieldsProvider } from '@/components/report/missing-info'
 import { DetailsSection } from '@/components/report/vehicle/details-section'
+import { VEHICLE_DEFAULTS, vehicleFromApi } from '@/components/report/vehicle/form-data'
 import { IdentificationSection } from '@/components/report/vehicle/identification-section'
 import { SpecificationSection } from '@/components/report/vehicle/specification-section'
 import type { VehicleFormData } from '@/components/report/vehicle/types'
@@ -14,6 +16,7 @@ import { CompletionBadge } from '@/components/ui/completion-badge'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useReport } from '@/hooks/use-reports'
 import { useVehicleInfo } from '@/hooks/use-vehicle-info'
+import { toReportType } from '@/lib/completeness'
 import { useToastStore } from '@/stores/toast-store'
 
 function VehiclePage() {
@@ -24,7 +27,6 @@ function VehiclePage() {
 	const { data, isLoading } = useVehicleInfo(reportId)
 	const { data: report } = useReport(reportId)
 	const toast = useToastStore()
-	const [_showMissing, _setShowMissing] = useState(false)
 
 	const {
 		saveField,
@@ -44,67 +46,14 @@ function VehiclePage() {
 		setValue,
 		getValues,
 		watch,
-	} = useForm<VehicleFormData>({
-		defaultValues: {
-			vin: '',
-			datsCode: '',
-			marketIndex: '',
-			manufacturer: '',
-			mainType: '',
-			subType: '',
-			kbaNumber: '',
-			powerKw: '',
-			powerHp: '',
-			engineDesign: '',
-			cylinders: '',
-			transmission: '',
-			displacement: '',
-			firstRegistration: '',
-			lastRegistration: '',
-			sourceOfTechnicalData: '',
-			vehicleType: '',
-			motorType: '',
-			axles: 2,
-			drivenAxles: 1,
-			doors: 4,
-			seats: 5,
-			previousOwners: 1,
-		},
-	})
+	} = useForm<VehicleFormData>({ defaultValues: { ...VEHICLE_DEFAULTS } })
 
 	// Populate form on initial load only (not on refetch after auto-save)
 	const initializedRef = useRef(false)
 	useEffect(() => {
 		if (!data || initializedRef.current) return
 		initializedRef.current = true
-
-		const formData: Partial<VehicleFormData> = {
-			vin: data.vin ?? '',
-			datsCode: data.datsCode ?? '',
-			marketIndex: data.marketIndex ?? '',
-			manufacturer: data.manufacturer ?? '',
-			mainType: data.mainType ?? '',
-			subType: data.subType ?? '',
-			kbaNumber: data.kbaNumber ?? '',
-			powerKw: data.powerKw != null ? String(data.powerKw) : '',
-			powerHp: data.powerHp != null ? String(data.powerHp) : '',
-			engineDesign: data.engineDesign ?? '',
-			cylinders: data.cylinders != null ? String(data.cylinders) : '',
-			transmission: data.transmission ?? '',
-			displacement: data.displacement != null ? String(data.displacement) : '',
-			firstRegistration: data.firstRegistration?.split('T')[0] ?? '',
-			lastRegistration: data.lastRegistration?.split('T')[0] ?? '',
-			sourceOfTechnicalData: data.sourceOfTechnicalData ?? '',
-			vehicleType: data.vehicleType ?? '',
-			motorType: data.motorType ?? '',
-			axles: data.axles ?? 2,
-			drivenAxles: data.drivenAxles ?? 1,
-			doors: data.doors ?? 4,
-			seats: data.seats ?? 5,
-			previousOwners: data.previousOwners ?? 1,
-		}
-
-		reset(formData as VehicleFormData)
+		reset(vehicleFromApi(data))
 	}, [data, reset])
 
 	const handleFieldBlur = useCallback(
@@ -147,34 +96,6 @@ function VehiclePage() {
 		})
 		return () => sub.unsubscribe()
 	}, [watch, handleFieldBlur, dirtyFields])
-
-	// Count missing fields for the banner
-	const _missingFieldCount = (() => {
-		const values = getValues()
-		let count = 0
-		const stringFields: (keyof VehicleFormData)[] = [
-			'vin',
-			'datsCode',
-			'marketIndex',
-			'manufacturer',
-			'mainType',
-			'subType',
-			'kbaNumber',
-			'powerKw',
-			'powerHp',
-			'engineDesign',
-			'cylinders',
-			'transmission',
-			'displacement',
-			'firstRegistration',
-			'lastRegistration',
-			'sourceOfTechnicalData',
-		]
-		for (const f of stringFields) {
-			if (!values[f]) count++
-		}
-		return count
-	})()
 
 	// Completion percentage
 	const completionPercentage = (() => {
@@ -244,29 +165,37 @@ function VehiclePage() {
 			)}
 
 			{/* Form sections */}
-			<IdentificationSection
-				register={register}
+			<MissingFieldsProvider
+				tab="vehicle"
+				reportType={toReportType(report?.reportType)}
 				control={control}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
-				setValue={setValue}
-			/>
+			>
+				<div className="flex flex-col gap-6">
+					<IdentificationSection
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={handleFieldBlur}
+						setValue={setValue}
+					/>
 
-			<SpecificationSection
-				register={register}
-				control={control}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
-				setValue={setValue}
-			/>
+					<SpecificationSection
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={handleFieldBlur}
+						setValue={setValue}
+					/>
 
-			<DetailsSection
-				register={register}
-				control={control}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
-				setValue={setValue}
-			/>
+					<DetailsSection
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={handleFieldBlur}
+						setValue={setValue}
+					/>
+				</div>
+			</MissingFieldsProvider>
 
 			{/* Update Report button */}
 			<div className="flex justify-end">

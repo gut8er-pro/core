@@ -1,8 +1,10 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
+import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
+import { SECTION } from '@/lib/completeness'
 import type { VehicleSectionProps } from './types'
 
 function IdentificationSection({
@@ -12,12 +14,16 @@ function IdentificationSection({
 	className,
 }: VehicleSectionProps & { className?: string }) {
 	const t = useTranslations('report')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const badge = useSectionBadge(SECTION.identification)
+
 	return (
 		<CollapsibleSection
 			title={t('vehicle.identification.heading')}
 			info
 			defaultOpen
 			className={className}
+			{...badge}
 		>
 			<div className="flex flex-col gap-4">
 				{/* Row 1: VIN / DATSCode / Market Index */}
@@ -26,23 +32,17 @@ function IdentificationSection({
 						label={t('vehicle.identification.vin')}
 						placeholder="e.g. WVWZZZ3CZWE123456"
 						maxLength={17}
-						error={errors.vin?.message}
-						{...register('vin')}
-						onBlur={() => onFieldBlur?.('vin')}
+						{...fieldProps('vin')}
 					/>
 					<TextField
 						label={t('vehicle.identification.datsCode')}
 						placeholder={t('vehicle.identification.addCode')}
-						error={errors.datsCode?.message}
-						{...register('datsCode')}
-						onBlur={() => onFieldBlur?.('datsCode')}
+						{...fieldProps('datsCode')}
 					/>
 					<TextField
 						label={t('vehicle.identification.marketIndex')}
 						placeholder={t('vehicle.identification.findMarketIndex')}
-						error={errors.marketIndex?.message}
-						{...register('marketIndex')}
-						onBlur={() => onFieldBlur?.('marketIndex')}
+						{...fieldProps('marketIndex')}
 					/>
 				</div>
 
@@ -51,23 +51,17 @@ function IdentificationSection({
 					<TextField
 						label={t('vehicle.identification.manufacturer')}
 						placeholder="e.g. Volkswagen AG"
-						error={errors.manufacturer?.message}
-						{...register('manufacturer')}
-						onBlur={() => onFieldBlur?.('manufacturer')}
+						{...fieldProps('manufacturer')}
 					/>
 					<TextField
 						label={t('vehicle.identification.mainType')}
 						placeholder="e.g. Golf VII"
-						error={errors.mainType?.message}
-						{...register('mainType')}
-						onBlur={() => onFieldBlur?.('mainType')}
+						{...fieldProps('mainType')}
 					/>
 					<TextField
 						label={t('vehicle.identification.subtype')}
 						placeholder="e.g. Golf VII 2.0 TDI"
-						error={errors.subType?.message}
-						{...register('subType')}
-						onBlur={() => onFieldBlur?.('subType')}
+						{...fieldProps('subType')}
 					/>
 				</div>
 
@@ -77,9 +71,7 @@ function IdentificationSection({
 						label={t('vehicle.identification.kbaNumber')}
 						placeholder="e.g. 0603 / BGH"
 						maxLength={10}
-						error={errors.kbaNumber?.message}
-						{...register('kbaNumber')}
-						onBlur={() => onFieldBlur?.('kbaNumber')}
+						{...fieldProps('kbaNumber')}
 					/>
 				</div>
 			</div>

@@ -1,11 +1,13 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
+import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Label } from '@/components/ui/label'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
+import { SECTION } from '@/lib/completeness'
 import type { SectionProps } from './types'
 
 function ExpertOpinionSection({
@@ -15,6 +17,8 @@ function ExpertOpinionSection({
 	className,
 }: SectionProps & { className?: string }) {
 	const t = useTranslations('report')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const badge = useSectionBadge(SECTION.expertOpinion)
 
 	const ORDER_PLACEMENT_OPTIONS = [
 		{ value: 'direct', label: t('accidentInfo.expertOpinion.orderOptions.direct') },
@@ -23,14 +27,16 @@ function ExpertOpinionSection({
 	]
 
 	return (
-		<CollapsibleSection title={t('accidentInfo.expertOpinion.title')} className={className}>
+		<CollapsibleSection
+			title={t('accidentInfo.expertOpinion.title')}
+			className={className}
+			{...badge}
+		>
 			<div className="flex flex-col gap-4">
 				<TextField
 					label={t('accidentInfo.visits.expertName')}
 					placeholder={t('accidentInfo.visits.expertName')}
-					error={errors.expertName?.message}
-					{...register('expertName')}
-					onBlur={() => onFieldBlur?.('expertName')}
+					{...fieldProps('expertName')}
 				/>
 
 				{/* File number | Case date — 2-column per Figma */}
@@ -38,16 +44,12 @@ function ExpertOpinionSection({
 					<TextField
 						label={t('accidentInfo.expertOpinion.fileNumber')}
 						placeholder="HB3351"
-						error={errors.fileNumber?.message}
-						{...register('fileNumber')}
-						onBlur={() => onFieldBlur?.('fileNumber')}
+						{...fieldProps('fileNumber')}
 					/>
 					<TextField
 						label={t('accidentInfo.expertOpinion.caseDate')}
 						type="date"
-						error={errors.caseDate?.message}
-						{...register('caseDate')}
-						onBlur={() => onFieldBlur?.('caseDate')}
+						{...fieldProps('caseDate')}
 					/>
 				</div>
 
@@ -67,9 +69,7 @@ function ExpertOpinionSection({
 					<TextField
 						label={t('accidentInfo.expertOpinion.issuedDate')}
 						type="date"
-						error={errors.issuedDate?.message}
-						{...register('issuedDate')}
-						onBlur={() => onFieldBlur?.('issuedDate')}
+						{...fieldProps('issuedDate')}
 					/>
 				</div>
 
@@ -91,9 +91,7 @@ function ExpertOpinionSection({
 				<TextField
 					label={t('accidentInfo.expertOpinion.mediator')}
 					placeholder="Mark Cooper"
-					error={errors.mediator?.message}
-					{...register('mediator')}
-					onBlur={() => onFieldBlur?.('mediator')}
+					{...fieldProps('mediator')}
 				/>
 			</div>
 		</CollapsibleSection>

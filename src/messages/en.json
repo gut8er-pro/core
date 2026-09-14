@@ -951,9 +951,11 @@
     },
     "details": {
       "showMissing": "Show missing information",
-      "highlightingEmpty": "Highlighting empty fields",
-      "sectionsNeedAttention": "{count} sections need attention",
-      "allCompleted": "All sections completed"
+      "fieldsMissing": "{count} required fields are still missing in this report",
+      "highlightingMissing": "Highlighting {count} required fields still missing in this report",
+      "allCompleted": "All sections completed",
+      "notFilledIn": "Not filled in yet",
+      "fieldsMissingBadge": "required fields missing in this section"
     }
   },
   "help": {

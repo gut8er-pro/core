@@ -2,8 +2,10 @@
 
 import { Ban, Scale, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useSectionBadge } from '@/components/report/missing-info'
 import { Button } from '@/components/ui/button'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import type { SignatureSectionProps } from './types'
 
@@ -14,7 +16,7 @@ function SignatureSection({
 	className,
 }: SignatureSectionProps) {
 	const t = useTranslations('report')
-	const _tc = useTranslations('common')
+	const badge = useSectionBadge(SECTION.signatures)
 
 	const SIGNATURE_TYPES = [
 		{ type: 'LAWYER' as const, label: t('accidentInfo.signatures.types.lawyer'), icon: Scale },
@@ -48,6 +50,7 @@ function SignatureSection({
 			info
 			defaultOpen
 			className={className}
+			{...badge}
 		>
 			<div className="flex flex-col gap-4">
 				{/* Permission Use label */}

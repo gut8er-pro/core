@@ -3,9 +3,12 @@
 import { Info } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
+import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { Checkbox } from '@/components/ui/checkbox'
+import { MissingBadge } from '@/components/ui/missing'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import type { CalculationSectionProps } from './types'
 
@@ -17,6 +20,8 @@ function RepairSection({
 	className,
 }: CalculationSectionProps) {
 	const t = useTranslations('report.calculation')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const badge = useSectionBadge(SECTION.repair)
 
 	const WHEEL_ALIGNMENT_OPTIONS = [
 		{ value: 'not_required', label: t('repair.wheelAlignmentOptions.notRequired') },
@@ -42,6 +47,7 @@ function RepairSection({
 			<div className="flex items-center gap-2">
 				<h4 className="text-body font-semibold text-black">{t('repair.title')}</h4>
 				<Info className="h-4 w-4 text-grey-100" />
+				<MissingBadge count={badge.missingCount} label={badge.missingLabel} />
 			</div>
 
 			{/* Wheel alignment + Body measurements on same row */}
@@ -124,18 +130,14 @@ function RepairSection({
 			<TextField
 				label={t('repair.repairMethod')}
 				placeholder={t('repair.addMethod')}
-				error={errors.repairMethod?.message}
-				{...register('repairMethod')}
-				onBlur={() => onFieldBlur?.('repairMethod')}
+				{...fieldProps('repairMethod')}
 			/>
 
 			{/* Risks - full width */}
 			<TextField
 				label={t('repair.risks')}
 				placeholder={t('repair.addRisks')}
-				error={errors.risks?.message}
-				{...register('risks')}
-				onBlur={() => onFieldBlur?.('risks')}
+				{...fieldProps('risks')}
 			/>
 		</div>
 	)

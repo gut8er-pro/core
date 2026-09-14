@@ -10,17 +10,20 @@ import type { CorrectionMode } from '@/components/report/calculation/correction-
 import { CorrectionSection } from '@/components/report/calculation/correction-section'
 import type { DatFormData } from '@/components/report/calculation/dat-modal'
 import { DatModal } from '@/components/report/calculation/dat-modal'
+import { CALCULATION_DEFAULTS, calculationFromApi } from '@/components/report/calculation/form-data'
 import { LossSection } from '@/components/report/calculation/loss-section'
 import { OldtimerValuationSection } from '@/components/report/calculation/oldtimer-valuation-section'
 import { RepairSection } from '@/components/report/calculation/repair-section'
 import type { CalculationFormData } from '@/components/report/calculation/types'
 import { ValuationSection } from '@/components/report/calculation/valuation-section'
 import { ValueSection } from '@/components/report/calculation/value-section'
+import { MissingFieldsProvider } from '@/components/report/missing-info'
 import { Button } from '@/components/ui/button'
 import { CompletionBadge } from '@/components/ui/completion-badge'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useCalculation } from '@/hooks/use-calculation'
 import { useReport } from '@/hooks/use-reports'
+import { toReportType } from '@/lib/completeness'
 
 function CalculationPage() {
 	const t = useTranslations('report.calculation')
@@ -54,84 +57,13 @@ function CalculationPage() {
 		reset,
 		getValues,
 		watch,
-	} = useForm<CalculationFormData>({
-		defaultValues: {
-			replacementValue: '',
-			taxRate: '19',
-			residualValue: '',
-			diminutionInValue: '',
-			wheelAlignment: '',
-			bodyMeasurements: '',
-			bodyPaint: '',
-			plasticRepair: false,
-			repairMethod: '',
-			risks: '',
-			damageClass: '',
-			dropoutGroup: '',
-			costPerDay: '',
-			rentalCarClass: '',
-			repairTimeDays: '',
-			replacementTimeDays: '',
-			additionalCosts: [],
-			// BE valuation
-			generalCondition: '',
-			taxation: '2.4',
-			dataSource: '',
-			valuationMax: '',
-			valuationAvg: '',
-			valuationMin: '',
-			valuationDate: '',
-			// Correction results
-			correctionResultWithout: '',
-			correctionResultWith: '',
-		},
-	})
+	} = useForm<CalculationFormData>({ defaultValues: { ...CALCULATION_DEFAULTS } })
 
 	const initializedRef = useRef(false)
 	useEffect(() => {
 		if (!data?.calculation || initializedRef.current) return
 		initializedRef.current = true
-
-		const c = data.calculation
-		const formData: Partial<CalculationFormData> = {
-			// HS/KG fields
-			replacementValue: c.replacementValue?.toString() ?? '',
-			taxRate: c.taxRate ?? '19',
-			residualValue: c.residualValue?.toString() ?? '',
-			diminutionInValue: c.diminutionInValue?.toString() ?? '',
-			wheelAlignment: c.wheelAlignment ?? '',
-			bodyMeasurements: c.bodyMeasurements ?? '',
-			bodyPaint: c.bodyPaint ?? '',
-			plasticRepair: c.plasticRepair,
-			repairMethod: c.repairMethod ?? '',
-			risks: c.risks ?? '',
-			damageClass: c.damageClass ?? '',
-			dropoutGroup: c.dropoutGroup ?? '',
-			costPerDay: c.costPerDay?.toString() ?? '',
-			rentalCarClass: c.rentalCarClass ?? '',
-			repairTimeDays: c.repairTimeDays?.toString() ?? '',
-			replacementTimeDays: c.replacementTimeDays?.toString() ?? '',
-			additionalCosts: (data.additionalCosts ?? []).map((ac) => ({
-				description: ac.description,
-				amount: ac.amount.toString(),
-			})),
-			// BE valuation fields
-			generalCondition: ((c as Record<string, unknown>).generalCondition as string) ?? '',
-			taxation: ((c as Record<string, unknown>).taxation as string) ?? '2.4',
-			dataSource: ((c as Record<string, unknown>).dataSource as string) ?? '',
-			valuationMax: ((c as Record<string, unknown>).valuationMax as number)?.toString() ?? '',
-			valuationAvg: ((c as Record<string, unknown>).valuationAvg as number)?.toString() ?? '',
-			valuationMin: ((c as Record<string, unknown>).valuationMin as number)?.toString() ?? '',
-			valuationDate: ((c as Record<string, unknown>).valuationDate as string) ?? '',
-			// OT valuation fields
-			marketValue: ((c as Record<string, unknown>).marketValue as number)?.toString() ?? '',
-			baseVehicleValue:
-				((c as Record<string, unknown>).baseVehicleValue as number)?.toString() ?? '',
-			restorationValue:
-				((c as Record<string, unknown>).restorationValue as number)?.toString() ?? '',
-		}
-
-		reset(formData as CalculationFormData)
+		reset(calculationFromApi(data))
 	}, [data, reset])
 
 	const handleFieldBlur = useCallback(
@@ -310,67 +242,75 @@ function CalculationPage() {
 					/>
 				</div>
 
-				{isOldtimerReport ? (
-					/* OT — Simple Vehicle Value with Market/Replacement/Restoration */
-					<OldtimerValuationSection
-						register={register}
-						control={control}
-						errors={errors}
-						onFieldBlur={handleFieldBlur}
-					/>
-				) : isValuationReport ? (
-					/* BE — DAT Valuation + Manual Valuation side by side */
-					<ValuationSection
-						register={register}
-						control={control}
-						errors={errors}
-						onFieldBlur={handleFieldBlur}
-					/>
-				) : (
-					/* HS / KG — Value + Repair + Loss of Use */
-					<>
-						<div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-							<ValueSection
+				<MissingFieldsProvider
+					tab="calculation"
+					reportType={toReportType(reportType)}
+					control={control}
+				>
+					<div className="flex flex-col gap-5">
+						{isOldtimerReport ? (
+							/* OT — Simple Vehicle Value with Market/Replacement/Restoration */
+							<OldtimerValuationSection
 								register={register}
 								control={control}
 								errors={errors}
 								onFieldBlur={handleFieldBlur}
-								className="rounded-3xl border-2 border-[#f5f5f5] p-5"
 							/>
-							<RepairSection
+						) : isValuationReport ? (
+							/* BE — DAT Valuation + Manual Valuation side by side */
+							<ValuationSection
 								register={register}
 								control={control}
 								errors={errors}
 								onFieldBlur={handleFieldBlur}
-								className="rounded-3xl border-2 border-[#f5f5f5] p-5"
 							/>
-						</div>
-						<LossSection
-							register={register}
-							control={control}
-							errors={errors}
-							onFieldBlur={handleFieldBlur}
-							className="rounded-3xl border-2 border-[#f5f5f5] p-5"
-						/>
-					</>
-				)}
+						) : (
+							/* HS / KG — Value + Repair + Loss of Use */
+							<>
+								<div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+									<ValueSection
+										register={register}
+										control={control}
+										errors={errors}
+										onFieldBlur={handleFieldBlur}
+										className="rounded-3xl border-2 border-border-faint p-5"
+									/>
+									<RepairSection
+										register={register}
+										control={control}
+										errors={errors}
+										onFieldBlur={handleFieldBlur}
+										className="rounded-3xl border-2 border-border-faint p-5"
+									/>
+								</div>
+								<LossSection
+									register={register}
+									control={control}
+									errors={errors}
+									onFieldBlur={handleFieldBlur}
+									className="rounded-3xl border-2 border-border-faint p-5"
+								/>
+							</>
+						)}
 
-				{/* Correction Calculation — HS and BE only (not KG, not OT) */}
-				{!isShortReport && !isOldtimerReport && (
-					<CorrectionSection
-						mode={correctionMode}
-						onModeChange={setCorrectionMode}
-						onOpenDat={() => setDatModalOpen(true)}
-						resultWithoutLabel={
-							isValuationReport ? t('valuationResultsManual') : t('resultsWithoutRepair')
-						}
-						resultWithLabel={
-							isValuationReport ? t('valuationAfterCorrection') : t('resultsWithRepair')
-						}
-						resultWithoutValue="—"
-						resultWithValue="—"
-					/>
-				)}
+						{/* Correction Calculation — HS and BE only (not KG, not OT) */}
+						{!isShortReport && !isOldtimerReport && (
+							<CorrectionSection
+								mode={correctionMode}
+								onModeChange={setCorrectionMode}
+								onOpenDat={() => setDatModalOpen(true)}
+								resultWithoutLabel={
+									isValuationReport ? t('valuationResultsManual') : t('resultsWithoutRepair')
+								}
+								resultWithLabel={
+									isValuationReport ? t('valuationAfterCorrection') : t('resultsWithRepair')
+								}
+								resultWithoutValue="—"
+								resultWithValue="—"
+							/>
+						)}
+					</div>
+				</MissingFieldsProvider>
 			</div>
 		</div>
 	)

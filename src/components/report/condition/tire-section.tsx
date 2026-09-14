@@ -3,8 +3,10 @@
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useMissingProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import type { TireData, TireSetData } from './types'
 
@@ -36,14 +38,21 @@ type TireSectionProps = {
 /** Extracted component — uses local state so typing doesn't trigger API on every keystroke */
 function TirePositionFields({
 	activeTireSet,
+	activeSetIndex,
 	activePosition,
 	onSaveTireSet,
 }: {
 	activeTireSet: TireSetData & { id: string }
+	activeSetIndex: number
 	activePosition: string
 	onSaveTireSet: (tireSet: TireSetData & { id?: string }) => void
 }) {
 	const t = useTranslations('report.condition')
+	const missing = useMissingProps()
+	// The engine addresses a tyre by its place in the saved set, not by the
+	// position tab the assessor happens to be looking at.
+	const tireIndex = activeTireSet.tires.findIndex((tr) => tr.position === activePosition)
+	const tirePath = (name: string) => `tireSets.${activeSetIndex}.tires.${tireIndex}.${name}`
 	const existingTire = activeTireSet.tires.find((tr) => tr.position === activePosition)
 	const baseTire = existingTire ?? { ...DEFAULT_TIRE, position: activePosition }
 
@@ -94,6 +103,7 @@ function TirePositionFields({
 					value={tire.size}
 					onChange={(e) => handleLocalChange('size', e.target.value)}
 					onBlur={handleBlur}
+					{...missing(tirePath('size'))}
 				/>
 				<TextField
 					label={t('tires.profileMm')}
@@ -101,6 +111,7 @@ function TirePositionFields({
 					value={tire.profileLevel}
 					onChange={(e) => handleLocalChange('profileLevel', e.target.value)}
 					onBlur={handleBlur}
+					{...missing(tirePath('profileLevel'))}
 				/>
 				<TextField
 					label={t('tires.manufacturer')}
@@ -171,6 +182,7 @@ function TirePositionFields({
 
 function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 	const t = useTranslations('report.condition')
+	const badge = useSectionBadge(SECTION.tires)
 	const [activeSetIndex, setActiveSetIndex] = useState(0)
 	const [activePosition, setActivePosition] = useState<string>('VL')
 	const autoCreated = useRef(false)
@@ -206,7 +218,13 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 	const activeTireSet = tireSets[activeSetIndex] ?? null
 
 	return (
-		<CollapsibleSection title={t('tires.title')} info defaultOpen={false} className={className}>
+		<CollapsibleSection
+			title={t('tires.title')}
+			info
+			defaultOpen={false}
+			className={className}
+			{...badge}
+		>
 			<div className="flex flex-col gap-6">
 				{/* Set selector tabs — black active per Figma */}
 				<div className="flex rounded-full bg-[rgba(224,225,229,0.6)] p-1.5">
@@ -260,6 +278,7 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 						{/* Tire fields for active position */}
 						<TirePositionFields
 							activeTireSet={activeTireSet}
+							activeSetIndex={activeSetIndex}
 							activePosition={activePosition}
 							onSaveTireSet={onSaveTireSet}
 						/>

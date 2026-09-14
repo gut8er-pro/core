@@ -3,38 +3,40 @@
 import { Info } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
+import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { Button } from '@/components/ui/button'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import type { CalculationSectionProps } from './types'
 
 function OldtimerValuationSection({
 	register,
-	errors: _errors,
+	errors,
 	onFieldBlur,
 	className,
 }: CalculationSectionProps & { className?: string }) {
 	const [showRestoration, setShowRestoration] = useState(false)
 	const t = useTranslations('report.calculation')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const badge = useSectionBadge(SECTION.oldtimerValue)
 
 	return (
 		<div className={cn('flex flex-col gap-6', className)}>
 			{/* Value section */}
-			<CollapsibleSection title={t('oldtimer.value')} info defaultOpen>
+			<CollapsibleSection title={t('oldtimer.value')} info defaultOpen {...badge}>
 				<div className="flex flex-col gap-6">
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<TextField
 							label={`${t('oldtimer.marketValue')} (€)`}
 							placeholder="€"
-							{...register('marketValue')}
-							onBlur={() => onFieldBlur?.('marketValue')}
+							{...fieldProps('marketValue')}
 						/>
 						<TextField
 							label={`${t('oldtimer.replacementValue')} (€)`}
 							placeholder="€"
-							{...register('replacementValue')}
-							onBlur={() => onFieldBlur?.('replacementValue')}
+							{...fieldProps('replacementValue')}
 						/>
 					</div>
 
@@ -60,14 +62,12 @@ function OldtimerValuationSection({
 									<TextField
 										label={`${t('oldtimer.baseVehicleValue')} (€)`}
 										placeholder="€"
-										{...register('baseVehicleValue')}
-										onBlur={() => onFieldBlur?.('baseVehicleValue')}
+										{...fieldProps('baseVehicleValue')}
 									/>
 									<TextField
 										label={`${t('oldtimer.restorationValue')} (€)`}
 										placeholder="€"
-										{...register('restorationValue')}
-										onBlur={() => onFieldBlur?.('restorationValue')}
+										{...fieldProps('restorationValue')}
 									/>
 								</div>
 							</div>

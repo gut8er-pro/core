@@ -3,6 +3,7 @@ import { forwardRef, type InputHTMLAttributes, type ReactNode, useState } from '
 import { cn } from '@/lib/utils'
 import { Input } from './input'
 import { Label } from './label'
+import { MISSING_FIELD_CLASS } from './missing'
 
 type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'prefix'> & {
 	label?: string
@@ -10,15 +11,24 @@ type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'prefix'> & {
 	hint?: string
 	icon?: ReactNode
 	prefix?: string
+	/** Required but not filled in yet. Distinct from `error`, which wins. */
+	isMissing?: boolean
+	/** Screen-reader text for the missing state, e.g. "Not filled in yet". */
+	missingLabel?: string
 }
 
 const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
-	({ label, error, hint, icon, prefix, type, className, id, ...props }, ref) => {
+	(
+		{ label, error, hint, icon, prefix, type, className, id, isMissing, missingLabel, ...props },
+		ref,
+	) => {
 		const [showPassword, setShowPassword] = useState(false)
 		const isPassword = type === 'password'
 		const inputType = isPassword && showPassword ? 'text' : type
 
 		const inputId = id || label?.toLowerCase().replace(/\s+/g, '-')
+		// A wrong value is more urgent than an absent one.
+		const showMissing = !!isMissing && !error
 
 		return (
 			<div className={cn('flex flex-col gap-3', className)}>
@@ -41,9 +51,22 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
 							icon && 'pl-11',
 							isPassword && 'pr-11',
 							error && 'border-error focus:border-error',
+							showMissing && MISSING_FIELD_CLASS,
 						)}
+						// Deliberately not aria-invalid: an empty required field holds no
+						// wrong value, and flagging a hundred of them as invalid would
+						// make a screen reader announce the whole form as broken.
 						aria-invalid={!!error}
-						aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+						data-missing={showMissing ? 'true' : undefined}
+						aria-describedby={
+							error
+								? `${inputId}-error`
+								: showMissing && missingLabel
+									? `${inputId}-missing`
+									: hint
+										? `${inputId}-hint`
+										: undefined
+						}
 						{...props}
 					/>
 					{isPassword && (
@@ -62,6 +85,11 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
 					<p id={`${inputId}-error`} className="text-caption text-error" role="alert">
 						{error}
 					</p>
+				)}
+				{showMissing && missingLabel && (
+					<span id={`${inputId}-missing`} className="sr-only">
+						{missingLabel}
+					</span>
 				)}
 				{hint && !error && (
 					<p id={`${inputId}-hint`} className="text-caption text-grey-100">

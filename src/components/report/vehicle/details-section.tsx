@@ -3,10 +3,12 @@
 import { Bus, Car, Fuel, Leaf, Plus, Truck, Zap } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useController } from 'react-hook-form'
+import { useMissingProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { IconSelector } from '@/components/ui/icon-selector'
 import { Label } from '@/components/ui/label'
 import { NumberChipSelector } from '@/components/ui/number-chip-selector'
+import { SECTION } from '@/lib/completeness'
 import type { VehicleSectionProps } from './types'
 
 // Options defined inside component to access translations
@@ -49,6 +51,8 @@ function DetailsSection({
 	className,
 }: VehicleSectionProps & { className?: string }) {
 	const t = useTranslations('report')
+	const missing = useMissingProps()
+	const badge = useSectionBadge(SECTION.vehicleDetails)
 
 	const VEHICLE_TYPE_OPTIONS = [
 		{ value: 'sedan', label: t('vehicle.details.vehicleTypeOptions.sedan'), icon: Car },
@@ -84,7 +88,7 @@ function DetailsSection({
 	const previousOwners = useController({ control, name: 'previousOwners' })
 
 	return (
-		<CollapsibleSection title={t('vehicle.details.heading')} info className={className}>
+		<CollapsibleSection title={t('vehicle.details.heading')} info className={className} {...badge}>
 			<div className="flex flex-col gap-6">
 				{/* Vehicle Type row */}
 				<div className="flex items-center justify-between">
@@ -97,6 +101,7 @@ function DetailsSection({
 								vehicleType.field.onChange(value)
 								onFieldBlur?.('vehicleType')
 							}}
+							{...missing('vehicleType')}
 						/>
 						<button
 							type="button"
@@ -119,6 +124,7 @@ function DetailsSection({
 								motorType.field.onChange(value)
 								onFieldBlur?.('motorType')
 							}}
+							{...missing('motorType')}
 						/>
 						<button
 							type="button"

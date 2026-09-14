@@ -951,9 +951,11 @@
     },
     "details": {
       "showMissing": "Fehlende Informationen anzeigen",
-      "highlightingEmpty": "Leere Felder werden hervorgehoben",
-      "sectionsNeedAttention": "{count} Abschnitte benötigen Aufmerksamkeit",
-      "allCompleted": "Alle Abschnitte ausgefüllt"
+      "fieldsMissing": "{count} Pflichtfelder fehlen noch in diesem Gutachten",
+      "highlightingMissing": "{count} noch fehlende Pflichtfelder in diesem Gutachten werden hervorgehoben",
+      "allCompleted": "Alle Abschnitte ausgefüllt",
+      "notFilledIn": "Noch nicht ausgefüllt",
+      "fieldsMissingBadge": "Pflichtfelder fehlen in diesem Abschnitt"
     }
   },
   "help": {

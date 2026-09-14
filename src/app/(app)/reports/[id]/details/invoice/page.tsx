@@ -6,13 +6,17 @@ import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { BvskRateTable } from '@/components/report/invoice/bvsk-rate-table'
+import { INVOICE_DEFAULTS, invoiceFromApi } from '@/components/report/invoice/form-data'
 import { InvoiceBanner } from '@/components/report/invoice/invoice-banner'
 import { InvoiceSettings } from '@/components/report/invoice/invoice-settings'
 import { LineItemsSection } from '@/components/report/invoice/line-items-section'
 import type { InvoiceFormData } from '@/components/report/invoice/types'
+import { MissingFieldsProvider } from '@/components/report/missing-info'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useInvoice } from '@/hooks/use-invoice'
 import { useReport } from '@/hooks/use-reports'
+import { toReportType } from '@/lib/completeness'
+import { generateInvoiceNumber } from '@/lib/utils/invoice-calculations'
 
 function InvoicePage() {
 	const t = useTranslations('report.invoice')
@@ -39,17 +43,7 @@ function InvoicePage() {
 		reset,
 		setValue,
 		getValues,
-	} = useForm<InvoiceFormData>({
-		defaultValues: {
-			invoiceNumber: '',
-			date: '',
-			recipientId: '',
-			payoutDelay: '30',
-			eInvoice: true,
-			feeSchedule: 'bvsk',
-			lineItems: [],
-		},
-	})
+	} = useForm<InvoiceFormData>({ defaultValues: { ...INVOICE_DEFAULTS } })
 
 	// Populate form when data loads
 	const initializedRef = useRef(false)
@@ -57,34 +51,17 @@ function InvoicePage() {
 		if (!data || initializedRef.current) return
 		initializedRef.current = true
 
-		const inv = data.invoice
-		const formData: Partial<InvoiceFormData> = {
-			invoiceNumber: inv?.invoiceNumber ?? '',
-			date: inv?.date?.split('T')[0] ?? '',
-			recipientId: inv?.recipientId ?? '',
-			payoutDelay: inv?.payoutDelay?.toString() ?? '30',
-			eInvoice: inv?.eInvoice ?? true,
-			feeSchedule: inv?.feeSchedule ?? 'bvsk',
-			lineItems: (data.lineItems ?? []).map((li) => ({
-				description: li.description,
-				specialFeature: li.specialFeature ?? '',
-				isLumpSum: li.isLumpSum,
-				rate: li.rate.toString(),
-				amount: li.amount.toString(),
-				quantity: li.quantity.toString(),
-			})),
-		}
+		const formData = invoiceFromApi(data)
 
 		// Generate invoice number if missing
 		if (!formData.invoiceNumber) {
-			const { generateInvoiceNumber } = require('@/lib/utils/invoice-calculations')
 			formData.invoiceNumber = generateInvoiceNumber('GH')
 		}
 
-		reset(formData as InvoiceFormData)
+		reset(formData)
 
 		// Auto-save invoice number if it was just generated (not yet in DB)
-		if (!inv?.invoiceNumber && formData.invoiceNumber) {
+		if (!data.invoice?.invoiceNumber && formData.invoiceNumber) {
 			saveField('invoice.invoiceNumber', formData.invoiceNumber)
 		}
 	}, [data, reset, saveField])
@@ -195,22 +172,30 @@ function InvoicePage() {
 				{/* Invoice Details heading */}
 				<h3 className="text-h3 font-semibold text-black">{t('title')}</h3>
 
-				{/* Invoice settings */}
-				<InvoiceSettings
-					register={register}
+				<MissingFieldsProvider
+					tab="invoice"
+					reportType={toReportType(report?.reportType)}
 					control={control}
-					errors={errors}
-					onFieldBlur={handleFieldBlur}
-				/>
+				>
+					<div className="flex flex-col gap-6">
+						{/* Invoice settings */}
+						<InvoiceSettings
+							register={register}
+							control={control}
+							errors={errors}
+							onFieldBlur={handleFieldBlur}
+						/>
 
-				{/* Line items with BVSK rate table embedded */}
-				<LineItemsSection
-					register={register}
-					control={control}
-					errors={errors}
-					onFieldBlur={handleFieldBlur}
-					bvskContent={<BvskRateTable onApplyRate={handleApplyBvskRate} />}
-				/>
+						{/* Line items with BVSK rate table embedded */}
+						<LineItemsSection
+							register={register}
+							control={control}
+							errors={errors}
+							onFieldBlur={handleFieldBlur}
+							bvskContent={<BvskRateTable onApplyRate={handleApplyBvskRate} />}
+						/>
+					</div>
+				</MissingFieldsProvider>
 			</div>
 		</div>
 	)

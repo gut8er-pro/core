@@ -219,6 +219,7 @@ All styles MUST use Tailwind design tokens from `src/app/globals.css`. **Never h
 | `--color-border` | `border-border` | `#E5E7EB` |
 | `--color-border-card` | `border-border-card` | `#EAEAEA` |
 | `--color-border-subtle` | `border-border-subtle` | `#EEF0F3` |
+| `--color-border-faint` | `border-border-faint` | `#F5F5F5` |
 | `--color-success-dark` | `text-success-dark` | `#126147` |
 | `--color-warning-dark` | `text-warning-dark` | `#A78700` |
 | `--color-warning-border` | `border-warning-border` | `#EEC200` |

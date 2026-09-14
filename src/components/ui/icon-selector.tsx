@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { MISSING_GROUP_CLASS } from './missing'
 
 type IconOption = {
 	value: string
@@ -12,11 +13,31 @@ type IconSelectorProps = {
 	selected: string
 	onChange: (value: string) => void
 	className?: string
+	/** Required but nothing chosen yet. */
+	isMissing?: boolean
+	/** Screen-reader text for the missing state. */
+	missingLabel?: string
 }
 
-function IconSelector({ options, selected, onChange, className }: IconSelectorProps) {
+function IconSelector({
+	options,
+	selected,
+	onChange,
+	className,
+	isMissing,
+	missingLabel,
+}: IconSelectorProps) {
 	return (
-		<div className={cn('flex items-center gap-2 flex-wrap', className)} role="radiogroup">
+		<div
+			className={cn(
+				'flex items-center gap-2 flex-wrap',
+				isMissing && cn('rounded-lg', MISSING_GROUP_CLASS),
+				className,
+			)}
+			role="radiogroup"
+			data-missing={isMissing ? 'true' : undefined}
+		>
+			{isMissing && missingLabel && <span className="sr-only">{missingLabel}</span>}
 			{options.map((option) => {
 				const Icon = option.icon
 				const isSelected = option.value === selected

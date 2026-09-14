@@ -3,9 +3,11 @@
 import { useTranslations } from 'next-intl'
 import { useCallback } from 'react'
 import { useWatch } from 'react-hook-form'
+import { useFieldProps, useMissingProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
+import { SECTION } from '@/lib/completeness'
 import { hpToKw, kwToHp } from '@/lib/utils/power-conversion'
 import type { VehicleSectionProps } from './types'
 
@@ -18,6 +20,9 @@ function SpecificationSection({
 	className,
 }: VehicleSectionProps & { className?: string }) {
 	const t = useTranslations('report')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const missing = useMissingProps()
+	const badge = useSectionBadge(SECTION.specification)
 	const engineDesign = useWatch({ control, name: 'engineDesign' })
 	const transmission = useWatch({ control, name: 'transmission' })
 
@@ -70,6 +75,7 @@ function SpecificationSection({
 			title={t('vehicle.identification.specification')}
 			info
 			className={className}
+			{...badge}
 		>
 			<div className="flex flex-col gap-4">
 				{/* Row 1: Power (kW) / Power (HP) / Engine Design */}
@@ -78,16 +84,14 @@ function SpecificationSection({
 						label={t('vehicle.identification.powerKw')}
 						type="number"
 						placeholder="e.g. 110 kW"
-						error={errors.powerKw?.message}
-						{...register('powerKw')}
+						{...fieldProps('powerKw')}
 						onBlur={handleKwBlur}
 					/>
 					<TextField
 						label={t('vehicle.identification.powerHp')}
 						type="number"
 						placeholder="e.g. 150 HP"
-						error={errors.powerHp?.message}
-						{...register('powerHp')}
+						{...fieldProps('powerHp')}
 						onBlur={handleHpBlur}
 					/>
 					<SelectField
@@ -109,9 +113,7 @@ function SpecificationSection({
 						label={t('vehicle.identification.cylinder')}
 						type="number"
 						placeholder="e.g. 4"
-						error={errors.cylinders?.message}
-						{...register('cylinders')}
-						onBlur={() => onFieldBlur?.('cylinders')}
+						{...fieldProps('cylinders')}
 					/>
 					<SelectField
 						label={t('vehicle.identification.transmission')}
@@ -123,14 +125,13 @@ function SpecificationSection({
 							onFieldBlur?.('transmission')
 						}}
 						error={errors.transmission?.message}
+						{...missing('transmission')}
 					/>
 					<TextField
 						label={t('vehicle.identification.displacement')}
 						type="number"
 						placeholder="e.g. 1968 ccm"
-						error={errors.displacement?.message}
-						{...register('displacement')}
-						onBlur={() => onFieldBlur?.('displacement')}
+						{...fieldProps('displacement')}
 					/>
 				</div>
 
@@ -139,23 +140,17 @@ function SpecificationSection({
 					<TextField
 						label={t('vehicle.identification.firstRegistration')}
 						type="date"
-						error={errors.firstRegistration?.message}
-						{...register('firstRegistration')}
-						onBlur={() => onFieldBlur?.('firstRegistration')}
+						{...fieldProps('firstRegistration')}
 					/>
 					<TextField
 						label={t('vehicle.identification.lastRegistration')}
 						type="date"
-						error={errors.lastRegistration?.message}
-						{...register('lastRegistration')}
-						onBlur={() => onFieldBlur?.('lastRegistration')}
+						{...fieldProps('lastRegistration')}
 					/>
 					<TextField
 						label={t('vehicle.identification.technicalDataSource')}
 						placeholder={t('vehicle.identification.kba')}
-						error={errors.sourceOfTechnicalData?.message}
-						{...register('sourceOfTechnicalData')}
-						onBlur={() => onFieldBlur?.('sourceOfTechnicalData')}
+						{...fieldProps('sourceOfTechnicalData')}
 					/>
 				</div>
 			</div>

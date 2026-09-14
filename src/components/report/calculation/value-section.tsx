@@ -3,9 +3,16 @@
 import { Info, Plus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Controller, useFieldArray } from 'react-hook-form'
+import {
+	useControlledFieldProps,
+	useFieldProps,
+	useSectionBadge,
+} from '@/components/report/missing-info'
 import { Button } from '@/components/ui/button'
+import { MissingBadge } from '@/components/ui/missing'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import type { CalculationSectionProps } from './types'
 
@@ -32,6 +39,9 @@ function ValueSection({
 	className,
 }: CalculationSectionProps) {
 	const t = useTranslations('report.calculation')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const controlled = useControlledFieldProps({ errors, onFieldBlur })
+	const badge = useSectionBadge(SECTION.value)
 	const { fields, append, remove } = useFieldArray({
 		control,
 		name: 'additionalCosts',
@@ -43,6 +53,7 @@ function ValueSection({
 			<div className="flex items-center gap-2">
 				<h4 className="text-body font-semibold text-black">{t('vehicleValue')}</h4>
 				<Info className="h-4 w-4 text-grey-100" />
+				<MissingBadge count={badge.missingCount} label={badge.missingLabel} />
 			</div>
 
 			{/* Replacement value + Tax rate on same row */}
@@ -53,9 +64,7 @@ function ValueSection({
 					prefix="€"
 					placeholder={t('addValue')}
 					step="0.01"
-					error={errors.replacementValue?.message}
-					{...register('replacementValue')}
-					onBlur={() => onFieldBlur?.('replacementValue')}
+					{...fieldProps('replacementValue')}
 				/>
 
 				<Controller
@@ -66,12 +75,7 @@ function ValueSection({
 							label={t('chooseTaxRate')}
 							options={TAX_RATE_OPTIONS}
 							placeholder="Choose"
-							value={field.value}
-							onValueChange={(val) => {
-								field.onChange(val)
-								onFieldBlur?.('taxRate')
-							}}
-							error={errors.taxRate?.message}
+							{...controlled('taxRate', field)}
 						/>
 					)}
 				/>
@@ -81,30 +85,24 @@ function ValueSection({
 			<TextField
 				label={t('residualValue')}
 				placeholder={t('addValue')}
-				error={errors.residualValue?.message}
-				{...register('residualValue')}
-				onBlur={() => onFieldBlur?.('residualValue')}
+				{...fieldProps('residualValue')}
 			/>
 
 			{/* Diminution in value - full width */}
 			<TextField
 				label={t('diminutionInValue')}
 				placeholder={t('addValue')}
-				error={errors.diminutionInValue?.message}
-				{...register('diminutionInValue')}
-				onBlur={() => onFieldBlur?.('diminutionInValue')}
+				{...fieldProps('diminutionInValue')}
 			/>
 
 			{/* Additional Costs */}
-			{fields.map((field, index) => (
-				<div key={field.id} className="flex items-end gap-3">
+			{fields.map((row, index) => (
+				<div key={row.id} className="flex items-end gap-3">
 					<div className="flex-1">
 						<TextField
 							label={t('description')}
 							placeholder={t('costDescription')}
-							error={errors.additionalCosts?.[index]?.description?.message}
-							{...register(`additionalCosts.${index}.description`)}
-							onBlur={() => onFieldBlur?.(`additionalCosts.${index}.description`)}
+							{...fieldProps(`additionalCosts.${index}.description`)}
 						/>
 					</div>
 					<div className="w-36">
@@ -114,9 +112,7 @@ function ValueSection({
 							prefix="€"
 							placeholder="0.00"
 							step="0.01"
-							error={errors.additionalCosts?.[index]?.amount?.message}
-							{...register(`additionalCosts.${index}.amount`)}
-							onBlur={() => onFieldBlur?.(`additionalCosts.${index}.amount`)}
+							{...fieldProps(`additionalCosts.${index}.amount`)}
 						/>
 					</div>
 					<Button
@@ -146,9 +142,7 @@ function ValueSection({
 			<TextField
 				label={t('damageClass')}
 				placeholder={t('addDamageClass')}
-				error={errors.damageClass?.message}
-				{...register('damageClass')}
-				onBlur={() => onFieldBlur?.('damageClass')}
+				{...fieldProps('damageClass')}
 			/>
 		</div>
 	)

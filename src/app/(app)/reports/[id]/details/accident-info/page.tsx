@@ -3,21 +3,27 @@
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { AccidentSection } from '@/components/report/accident-info/accident-section'
 import { ClaimantSection } from '@/components/report/accident-info/claimant-section'
 import { ExpertOpinionSection } from '@/components/report/accident-info/expert-opinion-section'
+import {
+	ACCIDENT_INFO_DEFAULTS,
+	accidentInfoFromApi,
+} from '@/components/report/accident-info/form-data'
 import { OpponentSection } from '@/components/report/accident-info/opponent-section'
 import { SignatureSection } from '@/components/report/accident-info/signature-section'
 import type { AccidentInfoFormData } from '@/components/report/accident-info/types'
 import { VisitSection } from '@/components/report/accident-info/visit-section'
+import { MissingFieldsProvider } from '@/components/report/missing-info'
 import { SignaturePad } from '@/components/signature/signature-pad.dynamic'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { useAccidentInfo, useDeleteSignature, useSaveSignature } from '@/hooks/use-accident-info'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useReport } from '@/hooks/use-reports'
+import { toReportType } from '@/lib/completeness'
 import { useToastStore } from '@/stores/toast-store'
 
 type SignatureType = 'LAWYER' | 'DATA_PERMISSION' | 'CANCELLATION'
@@ -53,121 +59,14 @@ function AccidentInfoPage() {
 		reset,
 		getValues,
 		watch,
-	} = useForm<AccidentInfoFormData>({
-		defaultValues: {
-			accidentDay: '',
-			accidentScene: '',
-			claimantCompany: '',
-			claimantSalutation: '',
-			claimantFirstName: '',
-			claimantLastName: '',
-			claimantStreet: '',
-			claimantPostcode: '',
-			claimantLocation: '',
-			claimantEmail: '',
-			claimantPhone: '',
-			claimantVehicleMake: '',
-			claimantLicensePlate: '',
-			claimantEligibleForInputTaxDeduction: false,
-			claimantIsVehicleOwner: true,
-			claimantRepresentedByLawyer: false,
-			claimantInvolvedLawyer: '',
-			opponentCompany: '',
-			opponentSalutation: '',
-			opponentFirstName: '',
-			opponentLastName: '',
-			opponentStreet: '',
-			opponentPostcode: '',
-			opponentLocation: '',
-			opponentEmail: '',
-			opponentIban: '',
-			opponentPhone: '',
-			opponentInsuranceCompany: '',
-			opponentInsuranceNumber: '',
-			opponentClaimNumber: '',
-			expertName: '',
-			fileNumber: '',
-			caseDate: '',
-			orderWasPlacement: '',
-			issuedDate: '',
-			orderByClaimant: false,
-			mediator: '',
-			visits: [],
-		},
-	})
+	} = useForm<AccidentInfoFormData>({ defaultValues: { ...ACCIDENT_INFO_DEFAULTS } })
 
 	// Populate form on initial load only (not on refetch after auto-save)
 	const initializedRef = useRef(false)
 	useEffect(() => {
 		if (!data || initializedRef.current) return
 		initializedRef.current = true
-
-		const formData: Partial<AccidentInfoFormData> = {}
-
-		if (data.accidentInfo) {
-			formData.accidentDay = data.accidentInfo.accidentDay?.split('T')[0] ?? ''
-			formData.accidentScene = data.accidentInfo.accidentScene ?? ''
-		}
-
-		if (data.claimantInfo) {
-			const c = data.claimantInfo
-			formData.claimantCompany = c.company ?? ''
-			formData.claimantSalutation = c.salutation ?? ''
-			formData.claimantFirstName = c.firstName ?? ''
-			formData.claimantLastName = c.lastName ?? ''
-			formData.claimantStreet = c.street ?? ''
-			formData.claimantPostcode = c.postcode ?? ''
-			formData.claimantLocation = c.location ?? ''
-			formData.claimantEmail = c.email ?? ''
-			formData.claimantPhone = c.phone ?? ''
-			formData.claimantVehicleMake = c.vehicleMake ?? ''
-			formData.claimantLicensePlate = c.licensePlate ?? ''
-			formData.claimantEligibleForInputTaxDeduction = c.eligibleForInputTaxDeduction
-			formData.claimantIsVehicleOwner = c.isVehicleOwner
-			formData.claimantRepresentedByLawyer = c.representedByLawyer
-			formData.claimantInvolvedLawyer = c.involvedLawyer ?? ''
-		}
-
-		if (data.opponentInfo) {
-			const o = data.opponentInfo
-			formData.opponentCompany = o.company ?? ''
-			formData.opponentSalutation = o.salutation ?? ''
-			formData.opponentFirstName = o.firstName ?? ''
-			formData.opponentLastName = o.lastName ?? ''
-			formData.opponentStreet = o.street ?? ''
-			formData.opponentPostcode = o.postcode ?? ''
-			formData.opponentLocation = o.location ?? ''
-			formData.opponentEmail = o.email ?? ''
-			formData.opponentPhone = o.phone ?? ''
-			formData.opponentInsuranceCompany = o.insuranceCompany ?? ''
-			formData.opponentInsuranceNumber = o.insuranceNumber ?? ''
-		}
-
-		if (data.expertOpinion) {
-			const e = data.expertOpinion
-			formData.expertName = e.expertName ?? ''
-			formData.fileNumber = e.fileNumber ?? ''
-			formData.caseDate = e.caseDate?.split('T')[0] ?? ''
-			formData.orderWasPlacement = e.orderWasPlacement ?? ''
-			formData.issuedDate = e.issuedDate?.split('T')[0] ?? ''
-			formData.orderByClaimant = e.orderByClaimant
-			formData.mediator = e.mediator ?? ''
-		}
-
-		if (data.visits && data.visits.length > 0) {
-			formData.visits = data.visits.map((v) => ({
-				id: v.id,
-				type: v.type,
-				street: v.street ?? '',
-				postcode: v.postcode ?? '',
-				location: v.location ?? '',
-				date: v.date?.split('T')[0] ?? '',
-				expert: v.expert ?? '',
-				vehicleCondition: v.vehicleCondition ?? '',
-			}))
-		}
-
-		reset(formData as AccidentInfoFormData)
+		reset(accidentInfoFromApi(data))
 	}, [data, reset])
 
 	const handleFieldBlur = useCallback(
@@ -230,6 +129,11 @@ function AccidentInfoPage() {
 		return () => sub.unsubscribe()
 	}, [watch, handleFieldBlur, dirtyFields])
 
+	// Signatures live outside the form, so the completeness engine is handed
+	// them alongside the form's own values.
+	const signatures = data?.signatures
+	const signatureValues = useMemo(() => ({ signatures: signatures ?? [] }), [signatures])
+
 	const handleSignatureSave = useCallback(() => {
 		if (!signatureModalType || !signatureValue) return
 
@@ -291,52 +195,61 @@ function AccidentInfoPage() {
 			</div>
 
 			{/* Form sections — some hidden per report type */}
-			{report?.reportType !== 'BE' && report?.reportType !== 'OT' && (
-				<AccidentSection
-					register={register}
-					control={control}
-					errors={errors}
-					onFieldBlur={handleFieldBlur}
-				/>
-			)}
-
-			<ClaimantSection
-				register={register}
+			<MissingFieldsProvider
+				tab="accidentInfo"
+				reportType={toReportType(report?.reportType)}
 				control={control}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
-				reportType={report?.reportType}
-			/>
+				extraValues={signatureValues}
+			>
+				<div className="flex flex-col gap-6">
+					{report?.reportType !== 'BE' && report?.reportType !== 'OT' && (
+						<AccidentSection
+							register={register}
+							control={control}
+							errors={errors}
+							onFieldBlur={handleFieldBlur}
+						/>
+					)}
 
-			{report?.reportType !== 'BE' && report?.reportType !== 'OT' && (
-				<OpponentSection
-					register={register}
-					control={control}
-					errors={errors}
-					onFieldBlur={handleFieldBlur}
-				/>
-			)}
+					<ClaimantSection
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={handleFieldBlur}
+						reportType={report?.reportType}
+					/>
 
-			<VisitSection
-				register={register}
-				control={control}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
-				reportType={report?.reportType}
-			/>
+					{report?.reportType !== 'BE' && report?.reportType !== 'OT' && (
+						<OpponentSection
+							register={register}
+							control={control}
+							errors={errors}
+							onFieldBlur={handleFieldBlur}
+						/>
+					)}
 
-			<ExpertOpinionSection
-				register={register}
-				control={control}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
-			/>
+					<VisitSection
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={handleFieldBlur}
+						reportType={report?.reportType}
+					/>
 
-			<SignatureSection
-				signatures={data?.signatures ?? []}
-				onSignatureClick={setSignatureModalType}
-				onSignatureRemove={(sigId) => deleteSignature.mutate(sigId)}
-			/>
+					<ExpertOpinionSection
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={handleFieldBlur}
+					/>
+
+					<SignatureSection
+						signatures={data?.signatures ?? []}
+						onSignatureClick={setSignatureModalType}
+						onSignatureRemove={(sigId) => deleteSignature.mutate(sigId)}
+					/>
+				</div>
+			</MissingFieldsProvider>
 
 			{/* Signature Modal */}
 			<Modal

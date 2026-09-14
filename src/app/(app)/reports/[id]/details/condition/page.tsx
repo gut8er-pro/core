@@ -3,15 +3,17 @@
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { ConditionSection } from '@/components/report/condition/condition-section'
 import { DamageDiagramSection } from '@/components/report/condition/damage-diagram-section'
+import { CONDITION_DEFAULTS, conditionFromApi } from '@/components/report/condition/form-data'
 import { PriorDamageSection } from '@/components/report/condition/prior-damage-section'
 import { TireSection } from '@/components/report/condition/tire-section'
 import type { ConditionFormData } from '@/components/report/condition/types'
 import { ValueIncreasingFeaturesSection } from '@/components/report/condition/value-increasing-features-section'
 import { VehicleGradingSection } from '@/components/report/condition/vehicle-grading-section'
+import { MissingFieldsProvider } from '@/components/report/missing-info'
 import { Button } from '@/components/ui/button'
 import { CompletionBadge } from '@/components/ui/completion-badge'
 import { useAutoSave } from '@/hooks/use-auto-save'
@@ -25,6 +27,7 @@ import {
 	useSaveTireSet,
 } from '@/hooks/use-condition'
 import { useReport } from '@/hooks/use-reports'
+import { toReportType } from '@/lib/completeness'
 import { getPaintColor } from '@/lib/validations/condition'
 import { useToastStore } from '@/stores/toast-store'
 
@@ -42,7 +45,6 @@ function ConditionPage() {
 	const deletePaintMarker = useDeletePaintMarker(reportId)
 	const saveTireSet = useSaveTireSet(reportId)
 	const deleteTireSet = useDeleteTireSet(reportId)
-	const [_showMissing, _setShowMissing] = useState(false)
 
 	const {
 		saveField,
@@ -61,68 +63,14 @@ function ConditionPage() {
 		reset,
 		getValues,
 		watch,
-	} = useForm<ConditionFormData>({
-		defaultValues: {
-			paintType: '',
-			hard: '',
-			paintCondition: '',
-			generalCondition: '',
-			bodyCondition: '',
-			interiorCondition: '',
-			drivingAbility: '',
-			vehicleColor: '',
-			specialFeatures: '',
-			parkingSensors: false,
-			mileageRead: '',
-			estimateMileage: '',
-			unit: 'km',
-			nextMot: '',
-			fullServiceHistory: false,
-			testDrivePerformed: false,
-			errorMemoryRead: false,
-			airbagsDeployed: false,
-			notes: '',
-			manualSetup: false,
-			previousDamageReported: '',
-			existingDamageNotReported: '',
-			subsequentDamage: '',
-		},
-	})
+	} = useForm<ConditionFormData>({ defaultValues: { ...CONDITION_DEFAULTS } })
 
 	// Populate form on initial load only
 	const initializedRef = useRef(false)
 	useEffect(() => {
 		if (!data?.condition || initializedRef.current) return
 		initializedRef.current = true
-
-		const c = data.condition
-		const formData: Partial<ConditionFormData> = {
-			paintType: c.paintType ?? '',
-			hard: c.hard ?? '',
-			paintCondition: c.paintCondition ?? '',
-			generalCondition: c.generalCondition ?? '',
-			bodyCondition: c.bodyCondition ?? '',
-			interiorCondition: c.interiorCondition ?? '',
-			drivingAbility: c.drivingAbility ?? '',
-			vehicleColor: c.vehicleColor ?? '',
-			specialFeatures: c.specialFeatures ?? '',
-			parkingSensors: c.parkingSensors,
-			mileageRead: c.mileageRead?.toString() ?? '',
-			estimateMileage: c.estimateMileage?.toString() ?? '',
-			unit: c.unit ?? 'km',
-			nextMot: c.nextMot?.split('T')[0] ?? '',
-			fullServiceHistory: c.fullServiceHistory,
-			testDrivePerformed: c.testDrivePerformed,
-			errorMemoryRead: c.errorMemoryRead,
-			airbagsDeployed: c.airbagsDeployed,
-			notes: c.notes ?? '',
-			manualSetup: c.manualSetup,
-			previousDamageReported: c.previousDamageReported ?? '',
-			existingDamageNotReported: c.existingDamageNotReported ?? '',
-			subsequentDamage: c.subsequentDamage ?? '',
-		}
-
-		reset(formData as ConditionFormData)
+		reset(conditionFromApi(data))
 	}, [data, reset])
 
 	const handleFieldBlur = useCallback(
@@ -245,28 +193,16 @@ function ConditionPage() {
 		[deleteTireSet],
 	)
 
-	// Count missing fields for the banner
-	const _missingFieldCount = (() => {
-		const values = getValues()
-		let count = 0
-		const stringFields: (keyof ConditionFormData)[] = [
-			'paintType',
-			'hard',
-			'paintCondition',
-			'generalCondition',
-			'bodyCondition',
-			'interiorCondition',
-			'drivingAbility',
-			'specialFeatures',
-			'mileageRead',
-			'estimateMileage',
-			'nextMot',
-		]
-		for (const f of stringFields) {
-			if (!values[f]) count++
-		}
-		return count
-	})()
+	// Markers and tyre sets live outside the form, so the completeness engine
+	// is handed them alongside the form's own values.
+	const diagramValues = useMemo(
+		() => ({
+			damageMarkers: data?.damageMarkers ?? [],
+			paintMarkers: data?.paintMarkers ?? [],
+			tireSets: data?.tireSets ?? [],
+		}),
+		[data?.damageMarkers, data?.paintMarkers, data?.tireSets],
+	)
 
 	// Completion percentage
 	const completionPercentage = (() => {
@@ -330,39 +266,48 @@ function ConditionPage() {
 			)}
 
 			{/* Sections */}
-			<ConditionSection
-				register={register}
+			<MissingFieldsProvider
+				tab="condition"
+				reportType={toReportType(report?.reportType)}
 				control={control}
-				errors={errors}
-				onFieldBlur={handleFieldBlur}
-			/>
+				extraValues={diagramValues}
+			>
+				<div className="flex flex-col gap-6">
+					<ConditionSection
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={handleFieldBlur}
+					/>
 
-			{/* OT-only sections */}
-			{report?.reportType === 'OT' && (
-				<>
-					<ValueIncreasingFeaturesSection />
-					<VehicleGradingSection />
-				</>
-			)}
+					{/* OT-only sections */}
+					{report?.reportType === 'OT' && (
+						<>
+							<ValueIncreasingFeaturesSection />
+							<VehicleGradingSection />
+						</>
+					)}
 
-			<DamageDiagramSection
-				damageMarkers={data?.damageMarkers ?? []}
-				paintMarkers={data?.paintMarkers ?? []}
-				onAddDamageMarker={handleAddDamageMarker}
-				onDeleteDamageMarker={handleDeleteDamageMarker}
-				onUpdateDamageMarker={handleUpdateDamageMarker}
-				onAddPaintMarker={handleAddPaintMarker}
-				onUpdatePaintMarker={handleUpdatePaintMarker}
-				onDeletePaintMarker={handleDeletePaintMarker}
-			/>
+					<DamageDiagramSection
+						damageMarkers={data?.damageMarkers ?? []}
+						paintMarkers={data?.paintMarkers ?? []}
+						onAddDamageMarker={handleAddDamageMarker}
+						onDeleteDamageMarker={handleDeleteDamageMarker}
+						onUpdateDamageMarker={handleUpdateDamageMarker}
+						onAddPaintMarker={handleAddPaintMarker}
+						onUpdatePaintMarker={handleUpdatePaintMarker}
+						onDeletePaintMarker={handleDeletePaintMarker}
+					/>
 
-			<TireSection
-				tireSets={data?.tireSets ?? []}
-				onSaveTireSet={handleSaveTireSet}
-				onDeleteTireSet={handleDeleteTireSet}
-			/>
+					<TireSection
+						tireSets={data?.tireSets ?? []}
+						onSaveTireSet={handleSaveTireSet}
+						onDeleteTireSet={handleDeleteTireSet}
+					/>
 
-			<PriorDamageSection register={register} errors={errors} onFieldBlur={handleFieldBlur} />
+					<PriorDamageSection register={register} errors={errors} onFieldBlur={handleFieldBlur} />
+				</div>
+			</MissingFieldsProvider>
 
 			{/* Update Report button */}
 			<div className="flex justify-end">

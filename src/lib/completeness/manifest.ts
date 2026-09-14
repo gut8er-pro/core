@@ -1,0 +1,279 @@
+import { SECTION } from './sections'
+import type {
+	AccidentInfoValues,
+	CalculationValues,
+	ConditionValues,
+	InvoiceValues,
+	Manifest,
+	ReportType,
+	Rule,
+	SectionSpec,
+	VehicleValues,
+} from './types'
+
+const field = <T>(path: Extract<keyof T, string>): Rule<T> => ({ kind: 'field', path })
+const fields = <T>(...paths: Extract<keyof T, string>[]): Rule<T>[] => paths.map((p) => field<T>(p))
+
+// ── Accident Info / Customer ──────────────────────────────────────────────
+
+/** Accident day and scene exist only on the types that describe a collision. */
+const accidentSection: SectionSpec<AccidentInfoValues> = {
+	id: SECTION.accident,
+	rules: fields<AccidentInfoValues>('accidentDay', 'accidentScene'),
+}
+
+function claimantSection(reportType: ReportType): SectionSpec<AccidentInfoValues> {
+	const rules: Rule<AccidentInfoValues>[] = [
+		{ kind: 'either', paths: ['claimantLastName', 'claimantCompany'] },
+		...fields<AccidentInfoValues>('claimantStreet', 'claimantPostcode', 'claimantLocation'),
+		{ kind: 'either', paths: ['claimantEmail', 'claimantPhone'] },
+		...fields<AccidentInfoValues>('claimantVehicleMake', 'claimantLicensePlate'),
+	]
+
+	// OT renders no "represented by a lawyer" checkbox, so the rule cannot apply.
+	if (reportType !== 'OT') {
+		rules.push({
+			kind: 'when',
+			path: 'claimantRepresentedByLawyer',
+			equals: true,
+			rules: [field<AccidentInfoValues>('claimantInvolvedLawyer')],
+		})
+	}
+
+	return { id: SECTION.claimant, rules }
+}
+
+const opponentSection: SectionSpec<AccidentInfoValues> = {
+	id: SECTION.opponent,
+	rules: [
+		{ kind: 'either', paths: ['opponentLastName', 'opponentCompany'] },
+		...fields<AccidentInfoValues>('opponentInsuranceCompany', 'opponentInsuranceNumber'),
+	],
+}
+
+const visitsSection: SectionSpec<AccidentInfoValues> = {
+	id: SECTION.visits,
+	rules: [
+		{
+			kind: 'rows',
+			path: 'visits',
+			row: [
+				{ kind: 'field', path: 'date' },
+				{ kind: 'field', path: 'location' },
+				{ kind: 'field', path: 'expert' },
+			],
+		},
+	],
+}
+
+const expertOpinionSection: SectionSpec<AccidentInfoValues> = {
+	id: SECTION.expertOpinion,
+	rules: fields<AccidentInfoValues>('expertName', 'fileNumber', 'caseDate', 'issuedDate'),
+}
+
+function signaturesSection(reportType: ReportType): SectionSpec<AccidentInfoValues> {
+	const rules: Rule<AccidentInfoValues>[] = [
+		{
+			kind: 'rows',
+			path: 'signatures',
+			where: { type: 'DATA_PERMISSION' },
+			row: [{ kind: 'field', path: 'imageUrl' }],
+		},
+	]
+
+	if (reportType !== 'OT') {
+		rules.push({
+			kind: 'when',
+			path: 'claimantRepresentedByLawyer',
+			equals: true,
+			rules: [
+				{
+					kind: 'rows',
+					path: 'signatures',
+					where: { type: 'LAWYER' },
+					row: [{ kind: 'field', path: 'imageUrl' }],
+				},
+			],
+		})
+	}
+
+	return { id: SECTION.signatures, rules }
+}
+
+function accidentInfoTab(reportType: ReportType): SectionSpec<AccidentInfoValues>[] {
+	const describesAccident = reportType === 'HS' || reportType === 'KG'
+	return [
+		...(describesAccident ? [accidentSection] : []),
+		claimantSection(reportType),
+		...(describesAccident ? [opponentSection] : []),
+		visitsSection,
+		expertOpinionSection,
+		signaturesSection(reportType),
+	]
+}
+
+// ── Vehicle ───────────────────────────────────────────────────────────────
+
+function vehicleTab(reportType: ReportType): SectionSpec<VehicleValues>[] {
+	const detailRules = fields<VehicleValues>('vehicleType', 'motorType', 'doors', 'seats')
+
+	// Previous owners bears on valuation, so the valuation types require it.
+	if (reportType === 'BE' || reportType === 'OT') {
+		detailRules.push(field<VehicleValues>('previousOwners'))
+	}
+
+	return [
+		{
+			id: SECTION.identification,
+			rules: fields<VehicleValues>('vin', 'manufacturer', 'mainType', 'kbaNumber'),
+		},
+		{
+			id: SECTION.specification,
+			rules: fields<VehicleValues>(
+				'firstRegistration',
+				'powerKw',
+				'displacement',
+				'transmission',
+				'sourceOfTechnicalData',
+			),
+		},
+		{ id: SECTION.vehicleDetails, rules: detailRules },
+	]
+}
+
+// ── Condition ─────────────────────────────────────────────────────────────
+
+const tiresSection: SectionSpec<ConditionValues> = {
+	id: SECTION.tires,
+	rules: [
+		{
+			kind: 'rows',
+			path: 'tireSets',
+			row: [
+				{
+					kind: 'rows',
+					path: 'tires',
+					row: [
+						{ kind: 'field', path: 'position' },
+						{ kind: 'field', path: 'size' },
+						{ kind: 'field', path: 'profileLevel' },
+					],
+				},
+			],
+		},
+	],
+}
+
+function conditionTab(reportType: ReportType): SectionSpec<ConditionValues>[] {
+	const marksDamage = reportType === 'HS' || reportType === 'KG'
+	const marksPaint = marksDamage || reportType === 'OT'
+
+	const diagramRules: Rule<ConditionValues>[] = []
+	if (marksDamage) diagramRules.push({ kind: 'rows', path: 'damageMarkers' })
+	if (marksPaint) diagramRules.push({ kind: 'rows', path: 'paintMarkers' })
+
+	return [
+		{
+			id: SECTION.condition,
+			rules: fields<ConditionValues>(
+				'mileageRead',
+				'nextMot',
+				'vehicleColor',
+				'paintType',
+				'paintCondition',
+				'generalCondition',
+				'bodyCondition',
+				'interiorCondition',
+				'drivingAbility',
+			),
+		},
+		...(diagramRules.length > 0 ? [{ id: SECTION.damageDiagram, rules: diagramRules }] : []),
+		tiresSection,
+		{ id: SECTION.priorDamage, rules: fields<ConditionValues>('previousDamageReported') },
+	]
+}
+
+// ── Calculation / Valuation ───────────────────────────────────────────────
+
+function calculationTab(reportType: ReportType): SectionSpec<CalculationValues>[] {
+	if (reportType === 'OT') {
+		return [
+			{
+				id: SECTION.oldtimerValue,
+				rules: fields<CalculationValues>(
+					'marketValue',
+					'replacementValue',
+					'restorationValue',
+					'baseVehicleValue',
+				),
+			},
+		]
+	}
+
+	if (reportType === 'BE') {
+		return [
+			{
+				id: SECTION.datValuation,
+				rules: fields<CalculationValues>('generalCondition', 'taxation'),
+			},
+			{
+				id: SECTION.manualValuation,
+				rules: fields<CalculationValues>(
+					'dataSource',
+					'valuationMax',
+					'valuationAvg',
+					'valuationMin',
+					'valuationDate',
+				),
+			},
+		]
+	}
+
+	const valueRules = fields<CalculationValues>(
+		'replacementValue',
+		'residualValue',
+		'taxRate',
+		'damageClass',
+	)
+	// KG drops the correction calculation, and with it the diminution in value.
+	if (reportType === 'HS') valueRules.push(field<CalculationValues>('diminutionInValue'))
+
+	return [
+		{ id: SECTION.value, rules: valueRules },
+		{ id: SECTION.repair, rules: fields<CalculationValues>('repairMethod') },
+		{
+			id: SECTION.loss,
+			rules: fields<CalculationValues>('dropoutGroup', 'costPerDay', 'repairTimeDays'),
+		},
+	]
+}
+
+// ── Invoice ───────────────────────────────────────────────────────────────
+
+const invoiceTab: SectionSpec<InvoiceValues>[] = [
+	{
+		id: SECTION.invoiceSettings,
+		rules: fields<InvoiceValues>('invoiceNumber', 'date', 'feeSchedule'),
+	},
+	{ id: SECTION.lineItems, rules: [{ kind: 'rows', path: 'lineItems' }] },
+]
+
+function manifestFor(reportType: ReportType) {
+	return {
+		accidentInfo: accidentInfoTab(reportType),
+		vehicle: vehicleTab(reportType),
+		condition: conditionTab(reportType),
+		calculation: calculationTab(reportType),
+		invoice: invoiceTab,
+	}
+}
+
+/** What each report type needs before its Gutachten is defensible. */
+const MANIFEST: Manifest = {
+	HS: manifestFor('HS'),
+	BE: manifestFor('BE'),
+	KG: manifestFor('KG'),
+	OT: manifestFor('OT'),
+}
+
+export { MANIFEST }

@@ -3,11 +3,13 @@
 import { Trash2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSectionBadge } from '@/components/report/missing-info'
 import { Button } from '@/components/ui/button'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
 import type { Marker } from '@/components/ui/vehicle-diagram'
 import { VehicleDiagram } from '@/components/ui/vehicle-diagram'
+import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
 import { getPaintColor } from '@/lib/validations/condition'
 import type { DamageMarkerData, PaintMarkerData } from './types'
@@ -38,6 +40,7 @@ function DamageDiagramSection({
 	className,
 }: DamageDiagramSectionProps) {
 	const t = useTranslations('report')
+	const badge = useSectionBadge(SECTION.damageDiagram)
 	const _tc = useTranslations('common')
 	const [activeTab, setActiveTab] = useState<DiagramTab>('damages')
 	const [editingMarkerId, setEditingMarkerId] = useState<string | null>(null)
@@ -85,6 +88,7 @@ function DamageDiagramSection({
 			info
 			defaultOpen={false}
 			className={className}
+			{...badge}
 		>
 			<div className="flex flex-col gap-4">
 				{/* Segmented tab control */}

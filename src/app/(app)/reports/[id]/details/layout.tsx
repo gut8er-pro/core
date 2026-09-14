@@ -2,18 +2,52 @@
 
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { type ReactNode, useState } from 'react'
+import type { ReactNode } from 'react'
+import { MissingInfoProvider, useMissingInfoToggle } from '@/components/report/missing-info'
 import { TabBar } from '@/components/ui/tab-bar'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
+import { useMissingInfo } from '@/hooks/use-missing-info'
 import { useReport } from '@/hooks/use-reports'
 import { useTabCompletion } from '@/hooks/use-tab-completion'
+
+/**
+ * Report-wide gap count plus the review toggle. The count covers the whole
+ * report, not the tab on screen, so the assessor knows whether they are done
+ * overall rather than merely done here.
+ */
+function MissingInfoBanner({ missingCount }: { missingCount: number }) {
+	const t = useTranslations('report')
+	const { showMissing, setShowMissing } = useMissingInfoToggle()
+
+	const description =
+		missingCount === 0
+			? t('details.allCompleted')
+			: showMissing
+				? t('details.highlightingMissing', { count: missingCount })
+				: t('details.fieldsMissing', { count: missingCount })
+
+	return (
+		<div className="flex items-center justify-between rounded-xl bg-white px-5 py-3.5">
+			<div className="flex flex-col gap-0.5">
+				<p className="text-body font-medium text-black">{t('details.showMissing')}</p>
+				<p className="text-body-sm text-grey-100">{description}</p>
+			</div>
+			<ToggleSwitch
+				id="show-missing-toggle"
+				aria-label={t('details.showMissing')}
+				label=""
+				checked={showMissing}
+				onCheckedChange={setShowMissing}
+			/>
+		</div>
+	)
+}
 
 function DetailsLayout({ children }: { children: ReactNode }) {
 	const t = useTranslations('report')
 	const params = useParams<{ id: string }>()
 	const pathname = usePathname()
 	const router = useRouter()
-	const [showMissing, setShowMissing] = useState(false)
 	const { data: report } = useReport(params.id)
 
 	const reportType = report?.reportType
@@ -23,6 +57,7 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 	const firstTabLabel = isOT ? t('accidentInfo.clientInformation') : t('accidentInfo.title')
 	const calcTabLabel = isBEorOT ? t('calculation.valuationTab') : t('calculation.title')
 
+	const missingInfo = useMissingInfo(params.id, reportType ?? undefined)
 	const completion = useTabCompletion(params.id, reportType ?? undefined)
 
 	const fmt = (c: { filled: number; total: number }) => `${c.filled}/${c.total}`
@@ -63,39 +98,21 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 	const activeTab =
 		DETAIL_TABS.find((tab) => pathname.endsWith(`/${tab.key}`))?.key ?? 'accident-info'
 
-	const totalMissing =
-		completion.accidentInfo.total -
-		completion.accidentInfo.filled +
-		(completion.vehicle.total - completion.vehicle.filled) +
-		(completion.condition.total - completion.condition.filled) +
-		(completion.calculation.total - completion.calculation.filled) +
-		(completion.invoice.total - completion.invoice.filled)
-
 	function handleTabChange(key: string) {
 		router.push(`/reports/${params.id}/details/${key}`)
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
-			<TabBar tabs={DETAIL_TABS} activeTab={activeTab} onTabChange={handleTabChange} />
+		<MissingInfoProvider>
+			<div className="flex flex-col gap-4">
+				<TabBar tabs={DETAIL_TABS} activeTab={activeTab} onTabChange={handleTabChange} />
 
-			{/* Show missing information banner */}
-			<div className="flex items-center justify-between rounded-xl bg-white px-5 py-3.5">
-				<div className="flex flex-col gap-0.5">
-					<p className="text-body font-medium text-black">{t('details.showMissing')}</p>
-					<p className="text-body-sm text-grey-100">
-						{showMissing
-							? t('details.highlightingEmpty')
-							: totalMissing > 0
-								? t('details.sectionsNeedAttention', { count: totalMissing })
-								: t('details.allCompleted')}
-					</p>
-				</div>
-				<ToggleSwitch label="" checked={showMissing} onCheckedChange={setShowMissing} />
+				{/* Hidden on a sent report — gaps nobody can edit are just noise. */}
+				{!report?.isLocked && <MissingInfoBanner missingCount={missingInfo.missingCount} />}
+
+				{children}
 			</div>
-
-			{children}
-		</div>
+		</MissingInfoProvider>
 	)
 }
 
