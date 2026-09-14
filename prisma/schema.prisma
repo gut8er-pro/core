@@ -183,7 +183,8 @@ model ClaimantInfo {
   location                    String?
   email                       String?
   phone                       String?
-  vehicleMake                 String?
+  iban                        String?
+  vatId                       String?
   licensePlate                String?
   eligibleForInputTaxDeduction Boolean @default(false)
   isVehicleOwner              Boolean @default(true)
@@ -205,8 +206,10 @@ model OpponentInfo {
   location         String?
   email            String?
   phone            String?
+  iban             String?
   insuranceCompany String?
   insuranceNumber  String?
+  claimNumber      String?
 
   report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
 }

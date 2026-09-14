@@ -100,7 +100,7 @@ export async function fillClaimantFull(
 		email: string
 		phone: string
 		licensePlate: string
-		vehicleMake: string
+		iban: string
 		vatId: string
 		involvedLawyer: string
 	},
@@ -114,7 +114,7 @@ export async function fillClaimantFull(
 	await fillInput(page, 'claimantEmail', d.email)
 	await fillInput(page, 'claimantPhone', d.phone)
 	await fillInput(page, 'claimantLicensePlate', d.licensePlate)
-	await fillInput(page, 'claimantVehicleMake', d.vehicleMake)
+	await fillInput(page, 'claimantIban', d.iban)
 
 	// Tax-deduction checkbox unlocks claimantVatId (Radix → button#id)
 	await ensureChecked(page, '#claimant-eligible-input-tax')

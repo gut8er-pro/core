@@ -457,7 +457,7 @@
       "location": "Ort",
       "email": "E-Mail",
       "iban": "IBAN",
-      "firstNumber": "Erstes Kennzeichen (Geschädigter)",
+      "phoneNumber": "Telefonnummer",
       "licensePlate": "Kennzeichen",
       "inputTaxDeduction": "Vorsteuerabzugsberechtigt",
       "isVehicleOwner": "Ist Fahrzeughalter",
@@ -468,8 +468,7 @@
         "title": "Unfallgegner",
         "insuranceCompany": "Versicherungsgesellschaft",
         "insuranceNumber": "Versicherungsnummer",
-        "claimNumber": "Schadennummer",
-        "phoneNumber": "Telefonnummer"
+        "claimNumber": "Schadennummer"
       },
       "visits": {
         "title": "Besichtigungen",

@@ -20,6 +20,10 @@ const emailOrEmpty = z
 	.transform((v) => (v === '' ? null : v))
 	.pipe(z.string().nullable())
 
+// ISO 13616 caps an IBAN at 34 characters; assessors type them in groups of
+// four, so the field leaves room for the separating spaces.
+const iban = z.string().max(50)
+
 const accidentInfoSchema = z.object({
 	accidentDay: dateString.nullable().optional(),
 	accidentScene: z.string().max(500).nullable().optional(),
@@ -35,7 +39,8 @@ const claimantInfoSchema = z.object({
 	location: z.string().max(200).nullable().optional(),
 	email: emailOrEmpty.nullable().optional(),
 	phone: z.string().max(50).nullable().optional(),
-	vehicleMake: z.string().max(100).nullable().optional(),
+	iban: iban.nullable().optional(),
+	vatId: z.string().max(50).nullable().optional(),
 	licensePlate: z.string().max(20).nullable().optional(),
 	eligibleForInputTaxDeduction: z.boolean().optional(),
 	isVehicleOwner: z.boolean().optional(),
@@ -53,8 +58,10 @@ const opponentInfoSchema = z.object({
 	location: z.string().max(200).nullable().optional(),
 	email: emailOrEmpty.nullable().optional(),
 	phone: z.string().max(50).nullable().optional(),
+	iban: iban.nullable().optional(),
 	insuranceCompany: z.string().max(200).nullable().optional(),
 	insuranceNumber: z.string().max(100).nullable().optional(),
+	claimNumber: z.string().max(100).nullable().optional(),
 })
 
 const visitTypeEnum = z.enum(['claimant_residence', 'claimant_office', 'other'])

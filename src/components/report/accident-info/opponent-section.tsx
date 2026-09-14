@@ -84,7 +84,7 @@ function OpponentSection({
 					/>
 				</div>
 
-				{/* Email / BAN / Phone — 3 columns */}
+				{/* Email / IBAN / Phone Number — 3 columns */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<TextField
 						label={t('accidentInfo.email')}
@@ -94,11 +94,11 @@ function OpponentSection({
 					/>
 					<TextField
 						label={t('accidentInfo.iban')}
-						placeholder="123/456/78901"
+						placeholder="DE89 3704 0044 0532 0130 00"
 						{...fieldProps('opponentIban')}
 					/>
 					<TextField
-						label={t('accidentInfo.opponent.phoneNumber')}
+						label={t('accidentInfo.phoneNumber')}
 						type="tel"
 						placeholder="+49523568410"
 						{...fieldProps('opponentPhone')}

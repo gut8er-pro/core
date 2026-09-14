@@ -457,7 +457,7 @@
       "location": "Location",
       "email": "Email",
       "iban": "IBAN",
-      "firstNumber": "First number (Claimant)",
+      "phoneNumber": "Phone Number",
       "licensePlate": "License Plate",
       "inputTaxDeduction": "Eligible for input tax deduction",
       "isVehicleOwner": "Is the vehicle owner",
@@ -468,8 +468,7 @@
         "title": "Opponent in Accident",
         "insuranceCompany": "Insurance company",
         "insuranceNumber": "Insurance number",
-        "claimNumber": "Claim number",
-        "phoneNumber": "Phone Number"
+        "claimNumber": "Claim number"
       },
       "visits": {
         "title": "Visits",

@@ -158,7 +158,8 @@ CREATE TABLE "ClaimantInfo" (
     "location" TEXT,
     "email" TEXT,
     "phone" TEXT,
-    "vehicleMake" TEXT,
+    "iban" TEXT,
+    "vatId" TEXT,
     "licensePlate" TEXT,
     "eligibleForInputTaxDeduction" BOOLEAN NOT NULL DEFAULT false,
     "isVehicleOwner" BOOLEAN NOT NULL DEFAULT true,
@@ -181,8 +182,10 @@ CREATE TABLE "OpponentInfo" (
     "location" TEXT,
     "email" TEXT,
     "phone" TEXT,
+    "iban" TEXT,
     "insuranceCompany" TEXT,
     "insuranceNumber" TEXT,
+    "claimNumber" TEXT,
 
     CONSTRAINT "OpponentInfo_pkey" PRIMARY KEY ("id")
 );

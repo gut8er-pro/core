@@ -118,7 +118,6 @@ async function generateReportPdfBuffer(
 					location: report.claimantInfo.location,
 					email: report.claimantInfo.email,
 					phone: report.claimantInfo.phone,
-					vehicleMake: report.claimantInfo.vehicleMake,
 					licensePlate: report.claimantInfo.licensePlate,
 					eligibleForInputTaxDeduction: report.claimantInfo.eligibleForInputTaxDeduction,
 					isVehicleOwner: report.claimantInfo.isVehicleOwner,

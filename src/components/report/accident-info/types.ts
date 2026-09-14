@@ -14,7 +14,8 @@ type AccidentInfoFormData = {
 	claimantLocation: string
 	claimantEmail: string
 	claimantPhone: string
-	claimantVehicleMake: string
+	claimantIban: string
+	claimantVatId: string
 	claimantLicensePlate: string
 	claimantEligibleForInputTaxDeduction: boolean
 	claimantIsVehicleOwner: boolean

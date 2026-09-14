@@ -26,7 +26,6 @@ type ReportData = {
 		location: string | null
 		email: string | null
 		phone: string | null
-		vehicleMake: string | null
 		licensePlate: string | null
 		eligibleForInputTaxDeduction: boolean
 		isVehicleOwner: boolean

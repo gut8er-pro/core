@@ -10,7 +10,7 @@ import { LicensePlate } from '@/components/ui/license-plate'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import { SECTION } from '@/lib/completeness'
-import type { AccidentInfoFormData, SectionProps } from './types'
+import type { SectionProps } from './types'
 
 function ClaimantSection({
 	register,
@@ -91,7 +91,7 @@ function ClaimantSection({
 					/>
 				</div>
 
-				{/* Email | IBAN | First number (Claimant) — 3-column per Figma */}
+				{/* Email | IBAN | Phone Number — 3-column per Figma */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 					<TextField
 						label={t('accidentInfo.email')}
@@ -101,13 +101,13 @@ function ClaimantSection({
 					/>
 					<TextField
 						label={t('accidentInfo.iban')}
-						placeholder="123/456/78901"
-						{...fieldProps('claimantVehicleMake')}
+						placeholder="DE89 3704 0044 0532 0130 00"
+						{...fieldProps('claimantIban')}
 					/>
 					<TextField
-						label={t('accidentInfo.firstNumber')}
+						label={t('accidentInfo.phoneNumber')}
 						type="tel"
-						placeholder="DE123456780"
+						placeholder="+49 152 3818411"
 						{...fieldProps('claimantPhone')}
 					/>
 				</div>
@@ -189,8 +189,8 @@ function ClaimantSection({
 						{eligibleForTax && (
 							<TextField
 								label={t('accidentInfo.vatId')}
-								placeholder="DE344/490424"
-								{...fieldProps('claimantVatId' as keyof AccidentInfoFormData)}
+								placeholder="DE123456789"
+								{...fieldProps('claimantVatId')}
 							/>
 						)}
 						{!isOT && representedByLawyer && (

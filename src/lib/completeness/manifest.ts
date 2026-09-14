@@ -39,7 +39,7 @@ function claimantSection(reportType: ReportType): SectionSpec<AccidentInfoValues
 		{ kind: 'either', paths: ['claimantLastName', 'claimantCompany'] },
 		...fields<AccidentInfoValues>('claimantStreet', 'claimantPostcode', 'claimantLocation'),
 		{ kind: 'either', paths: ['claimantEmail', 'claimantPhone'] },
-		...fields<AccidentInfoValues>('claimantVehicleMake', 'claimantLicensePlate'),
+		field<AccidentInfoValues>('claimantLicensePlate'),
 	]
 
 	// OT renders no "represented by a lawyer" checkbox, so the rule cannot apply.

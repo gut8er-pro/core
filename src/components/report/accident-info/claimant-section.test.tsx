@@ -2,49 +2,11 @@ import { useForm } from 'react-hook-form'
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@/test/test-utils'
 import { ClaimantSection } from './claimant-section'
+import { ACCIDENT_INFO_DEFAULTS } from './form-data'
 import type { AccidentInfoFormData } from './types'
 
 function TestWrapper({ onFieldBlur }: { onFieldBlur?: (f: string) => void }) {
-	const methods = useForm<AccidentInfoFormData>({
-		defaultValues: {
-			accidentDay: '',
-			accidentScene: '',
-			claimantCompany: '',
-			claimantSalutation: '',
-			claimantFirstName: '',
-			claimantLastName: '',
-			claimantStreet: '',
-			claimantPostcode: '',
-			claimantLocation: '',
-			claimantEmail: '',
-			claimantPhone: '',
-			claimantVehicleMake: '',
-			claimantLicensePlate: '',
-			claimantEligibleForInputTaxDeduction: false,
-			claimantIsVehicleOwner: false,
-			claimantRepresentedByLawyer: false,
-			claimantInvolvedLawyer: '',
-			opponentCompany: '',
-			opponentSalutation: '',
-			opponentFirstName: '',
-			opponentLastName: '',
-			opponentStreet: '',
-			opponentPostcode: '',
-			opponentLocation: '',
-			opponentEmail: '',
-			opponentPhone: '',
-			opponentInsuranceCompany: '',
-			opponentInsuranceNumber: '',
-			expertName: '',
-			fileNumber: '',
-			caseDate: '',
-			orderWasPlacement: '',
-			issuedDate: '',
-			orderByClaimant: false,
-			mediator: '',
-			visits: [],
-		},
-	})
+	const methods = useForm<AccidentInfoFormData>({ defaultValues: { ...ACCIDENT_INFO_DEFAULTS } })
 	return (
 		<ClaimantSection
 			register={methods.register}
@@ -77,6 +39,30 @@ describe('ClaimantSection', () => {
 		expect(screen.getByText('Eligible for input tax deduction')).toBeInTheDocument()
 		expect(screen.getByText('Is the vehicle owner')).toBeInTheDocument()
 		expect(screen.getByText('Represented by a lawyer')).toBeInTheDocument()
+	})
+
+	it('binds the IBAN input to the claimant IBAN column, not the vehicle make', () => {
+		render(<TestWrapper />)
+		expect(screen.getByLabelText('IBAN')).toHaveAttribute('name', 'claimantIban')
+	})
+
+	it('offers a phone number input bound to the claimant phone column', () => {
+		render(<TestWrapper />)
+		expect(screen.getByLabelText('Phone Number')).toHaveAttribute('name', 'claimantPhone')
+	})
+
+	it('renders no claimant vehicle make input — the make belongs to the Vehicle tab', () => {
+		const { container } = render(<TestWrapper />)
+		expect(container.querySelector('[name="claimantVehicleMake"]')).toBeNull()
+	})
+
+	it('placeholders match the field they sit in', () => {
+		render(<TestWrapper />)
+		expect(screen.getByLabelText('IBAN')).toHaveAttribute(
+			'placeholder',
+			'DE89 3704 0044 0532 0130 00',
+		)
+		expect(screen.getByLabelText('Phone Number')).toHaveAttribute('placeholder', '+49 152 3818411')
 	})
 
 	it('section is open by default', () => {

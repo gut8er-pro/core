@@ -472,7 +472,6 @@ describe('section roll-up', () => {
 				claimantPostcode: '28195',
 				claimantLocation: 'Bremen',
 				claimantEmail: 'hans@mueller.de',
-				claimantVehicleMake: 'Volkswagen',
 				claimantLicensePlate: 'HB AB 1234',
 				claimantRepresentedByLawyer: false,
 				opponentLastName: 'Schmidt',

@@ -97,7 +97,6 @@ async function fillAccidentInfo(page: Page, reportId: string, type: ReportType) 
 			postcode: '28195',
 			location: 'Bremen',
 			email: 'hans.mueller@example.test',
-			vehicleMake: 'Volkswagen',
 			licensePlate: 'HB AB 1234',
 		},
 		expertOpinion: {

@@ -27,7 +27,8 @@ type AccidentInfoResponse = {
 		location: string | null
 		email: string | null
 		phone: string | null
-		vehicleMake: string | null
+		iban: string | null
+		vatId: string | null
 		licensePlate: string | null
 		eligibleForInputTaxDeduction: boolean
 		isVehicleOwner: boolean
@@ -46,8 +47,10 @@ type AccidentInfoResponse = {
 		location: string | null
 		email: string | null
 		phone: string | null
+		iban: string | null
 		insuranceCompany: string | null
 		insuranceNumber: string | null
+		claimNumber: string | null
 	} | null
 	visits: Array<{
 		id: string

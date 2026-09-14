@@ -350,9 +350,9 @@ The app supports 4 report types. Each has distinct flows for the Accident Info, 
 | Street & house number or PO box | text input | Required |
 | Postcode | text input | Required |
 | Location | text input | Required |
-| Email | email input | Required |
-| BMW (vehicle make?) | text input | Auto-filled from vehicle |
-| First number (Claimant) | text input | Required |
+| Email | email input | Required (email or phone) |
+| IBAN | text input | Optional |
+| Phone Number | text input | Required (email or phone) |
 | License plate | display (styled plate: CE · N 668) | Auto-detected from photos |
 | Eligible for input tax deduction | checkbox | Optional |
 | Is the vehicle owner | checkbox | Optional |
@@ -1111,7 +1111,8 @@ interface ClaimantInfo {
   location: string;
   email: string;
   phone: string;
-  vehicleMake?: string;
+  iban?: string;
+  vatId?: string;              // Shown only when input-tax deduction is ticked
   licensePlate?: string;       // Auto-detected from photos
   eligibleForInputTaxDeduction: boolean;
   isVehicleOwner: boolean;
@@ -1130,8 +1131,10 @@ interface OpponentInfo {
   location?: string;
   email?: string;
   phone?: string;
+  iban?: string;
   insuranceCompany?: string;
   insuranceNumber?: string;
+  claimNumber?: string;
 }
 
 interface VisitInfo {

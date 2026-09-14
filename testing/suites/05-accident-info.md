@@ -28,7 +28,7 @@
 - [ ] **Company**: text input (full width)
 - [ ] Row: **Salutation** (dropdown: Mr/Mrs/Dr/Prof/Company), **First Name**, **Last Name**
 - [ ] Row: **Street & house number or PO box**, **Postcode**, **Location**
-- [ ] Row: **Email**, **IBAN**, **First number (Claimant)**
+- [ ] Row: **Email**, **IBAN**, **Phone Number**
 - [ ] **License Plate**: text input + formatted plate preview (blue badge: "CE : N 668")
 - [ ] 3 Checkboxes (green filled with white check):
   - **Eligible for input tax deduction** → toggling shows/hides VAT ID field

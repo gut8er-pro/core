@@ -171,7 +171,6 @@ describeWithDb('getMissingInfo', () => {
 				postcode: '28195',
 				location: 'Bremen',
 				email: 'hans@mueller.test',
-				vehicleMake: 'Volkswagen',
 				licensePlate: 'HB AB 1234',
 				representedByLawyer: false,
 			},
