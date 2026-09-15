@@ -1,10 +1,11 @@
 'use client'
 
-import { Palette, Trash2 } from 'lucide-react'
+import { Palette, Plus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback } from 'react'
 import type { Photo } from '@/hooks/use-photos'
 import { cn } from '@/lib/utils'
+import { MAX_PHOTOS_PER_REPORT } from '@/lib/validations/photos'
 
 type PhotoGridProps = {
 	photos: Photo[]
@@ -12,11 +13,22 @@ type PhotoGridProps = {
 	onDelete?: (photoId: string) => void
 	selectedId?: string
 	onSelect?: (photoId: string) => void
+	onAdd?: () => void
+	maxPhotos?: number
 	className?: string
 }
 
-function PhotoGrid({ photos, onEdit, onDelete, onSelect, className }: PhotoGridProps) {
+function PhotoGrid({
+	photos,
+	onEdit,
+	onDelete,
+	onSelect,
+	onAdd,
+	maxPhotos = MAX_PHOTOS_PER_REPORT,
+	className,
+}: PhotoGridProps) {
 	const t = useTranslations('report')
+	const isMaxReached = photos.length >= maxPhotos
 	const handleSelect = useCallback(
 		(photoId: string) => {
 			onSelect?.(photoId)
@@ -93,6 +105,19 @@ function PhotoGrid({ photos, onEdit, onDelete, onSelect, className }: PhotoGridP
 					</div>
 				</div>
 			))}
+
+			{onAdd && (
+				<button
+					type="button"
+					onClick={onAdd}
+					disabled={isMaxReached}
+					title={isMaxReached ? t('gallery.maxPhotosHint', { limit: maxPhotos }) : undefined}
+					className="flex aspect-4/3 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border-card text-grey-100 transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-border-card disabled:hover:text-grey-100"
+				>
+					<Plus className="h-8 w-8" />
+					<span className="text-body-sm font-medium">{t('gallery.addMorePhotos')}</span>
+				</button>
+			)}
 		</div>
 	)
 }

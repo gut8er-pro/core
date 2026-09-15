@@ -90,7 +90,7 @@ function ExpertOpinionSection({
 
 				<TextField
 					label={t('accidentInfo.expertOpinion.mediator')}
-					placeholder="Mark Cooper"
+					placeholder={t('accidentInfo.expertOpinion.mediatorPlaceholder')}
 					{...fieldProps('mediator')}
 				/>
 			</div>

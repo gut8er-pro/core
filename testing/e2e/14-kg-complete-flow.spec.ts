@@ -42,7 +42,7 @@ test.describe('KG Complete Flow', () => {
 		await page.goto(`/reports/${reportId}/details/accident-info`)
 		await page.waitForTimeout(1500)
 		const pageText = await page.locator('body').innerText()
-		expect(pageText).toMatch(/Calculation\s*\d+\/4/)
+		expect(pageText).toMatch(/Calculation\s*\d+\/3/)
 		expect(pageText).not.toMatch(/Valuation\s*\d+/)
 	})
 

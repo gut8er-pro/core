@@ -27,10 +27,10 @@ function IdentificationSection({
 		>
 			<div className="flex flex-col gap-4">
 				{/* Row 1: VIN / DATSCode / Market Index */}
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-end">
 					<TextField
 						label={t('vehicle.identification.vin')}
-						placeholder="e.g. WVWZZZ3CZWE123456"
+						placeholder={t('vehicle.identification.vinPlaceholder')}
 						maxLength={17}
 						{...fieldProps('vin')}
 					/>
@@ -47,29 +47,29 @@ function IdentificationSection({
 				</div>
 
 				{/* Row 2: Manufacturer / Main Type / Subtype */}
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-end">
 					<TextField
 						label={t('vehicle.identification.manufacturer')}
-						placeholder="e.g. Volkswagen AG"
+						placeholder={t('vehicle.identification.manufacturerPlaceholder')}
 						{...fieldProps('manufacturer')}
 					/>
 					<TextField
 						label={t('vehicle.identification.mainType')}
-						placeholder="e.g. Golf VII"
+						placeholder={t('vehicle.identification.mainTypePlaceholder')}
 						{...fieldProps('mainType')}
 					/>
 					<TextField
 						label={t('vehicle.identification.subtype')}
-						placeholder="e.g. Golf VII 2.0 TDI"
+						placeholder={t('vehicle.identification.subtypePlaceholder')}
 						{...fieldProps('subType')}
 					/>
 				</div>
 
 				{/* Row 3: KBA Number (standalone) */}
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-end">
 					<TextField
 						label={t('vehicle.identification.kbaNumber')}
-						placeholder="e.g. 0603 / BGH"
+						placeholder={t('vehicle.identification.kbaNumberPlaceholder')}
 						maxLength={10}
 						{...fieldProps('kbaNumber')}
 					/>

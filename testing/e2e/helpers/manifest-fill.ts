@@ -89,6 +89,11 @@ async function fillAccidentInfo(page: Page, reportId: string, type: ReportType) 
 	const hasDataPermission = signatures.some(
 		(signature) => (signature as Json).type === 'DATA_PERMISSION' && (signature as Json).imageUrl,
 	)
+	const hasLawyerSignature = signatures.some(
+		(signature) => (signature as Json).type === 'LAWYER' && (signature as Json).imageUrl,
+	)
+	const representedByLawyer =
+		(existing.claimantInfo as Json | null)?.representedByLawyer === true
 
 	const body: Json = {
 		claimantInfo: {
@@ -130,8 +135,16 @@ async function fillAccidentInfo(page: Page, reportId: string, type: ReportType) 
 		]
 	}
 
+	const neededSignatures: Json[] = []
 	if (!hasDataPermission) {
-		body.signatures = [{ type: 'DATA_PERMISSION', imageUrl: SIGNATURE_IMAGE }]
+		neededSignatures.push({ type: 'DATA_PERMISSION', imageUrl: SIGNATURE_IMAGE })
+	}
+	// A lawyer on the claim requires the lawyer's own signature (non-OT rule).
+	if (type !== 'OT' && representedByLawyer && !hasLawyerSignature) {
+		neededSignatures.push({ type: 'LAWYER', imageUrl: SIGNATURE_IMAGE })
+	}
+	if (neededSignatures.length > 0) {
+		body.signatures = neededSignatures
 	}
 
 	await apiPatch(page, `/api/reports/${reportId}/accident-info`, body)
@@ -188,19 +201,48 @@ async function fillCondition(page: Page, reportId: string, type: ReportType) {
 	if (marksPaint && paintMarkers.length === 0) {
 		body.paintMarkers = [{ x: 40, y: 55, thickness: 120, color: '#52D57B' }]
 	}
+	const POSITIONS = ['VL', 'VR', 'HL', 'HR']
 	if (tireSets.length === 0) {
 		body.tireSets = [
 			{
 				setNumber: 1,
 				matchAndAlloy: true,
-				tires: [
-					{ position: 'VL', size: '205/55 R16', profileLevel: '6' },
-					{ position: 'VR', size: '205/55 R16', profileLevel: '6' },
-					{ position: 'HL', size: '205/55 R16', profileLevel: '5' },
-					{ position: 'HR', size: '205/55 R16', profileLevel: '5' },
-				],
+				tires: POSITIONS.map((position, i) => ({
+					position,
+					size: '205/55 R16',
+					profileLevel: i < 2 ? '6' : '5',
+				})),
 			},
 		]
+	} else {
+		// The UI creates the set with empty tires; the manifest needs size and
+		// profile on every one, so complete the existing rows in place.
+		const set = tireSets[0] as {
+			id?: string
+			setNumber?: number
+			tires?: Array<{ id?: string; position?: string; size?: string; profileLevel?: string }>
+		}
+		const tires = Array.isArray(set.tires) ? set.tires : []
+		const needsFill = tires.length < 4 || tires.some((t) => !t.size || !t.profileLevel)
+		if (needsFill) {
+			const filled = POSITIONS.map((position, i) => {
+				const existingTire = tires.find((t) => t.position === position) ?? tires[i]
+				return {
+					...(existingTire?.id ? { id: existingTire.id } : {}),
+					position: existingTire?.position ?? position,
+					size: existingTire?.size || '205/55 R16',
+					profileLevel: existingTire?.profileLevel || (i < 2 ? '6' : '5'),
+				}
+			})
+			body.tireSets = [
+				{
+					...(set.id ? { id: set.id } : {}),
+					setNumber: set.setNumber ?? 1,
+					matchAndAlloy: true,
+					tires: filled,
+				},
+			]
+		}
 	}
 
 	if (type === 'OT') {

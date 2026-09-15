@@ -4,13 +4,11 @@ import {
 	AlignLeft,
 	AlignRight,
 	Bold,
-	Bookmark,
 	Italic,
 	List,
 	ListOrdered,
-	Type,
 } from 'lucide-react'
-import { useCallback, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
 
 type RichTextEditorProps = {
@@ -27,37 +25,37 @@ type ToolbarButton = {
 }
 
 const toolbarButtons: ToolbarButton[] = [
-	{ icon: Type, label: 'Font', command: 'font' },
 	{ icon: Bold, label: 'Bold', command: 'bold' },
 	{ icon: Italic, label: 'Italic', command: 'italic' },
-	{ icon: ListOrdered, label: 'Ordered list', command: 'orderedList' },
-	{ icon: List, label: 'Unordered list', command: 'unorderedList' },
-	{ icon: AlignLeft, label: 'Align left', command: 'alignLeft' },
-	{ icon: AlignCenter, label: 'Align center', command: 'alignCenter' },
-	{ icon: AlignRight, label: 'Align right', command: 'alignRight' },
-	{ icon: AlignJustify, label: 'Justify', command: 'justify' },
-	{ icon: Bookmark, label: 'Bookmark', command: 'bookmark' },
+	{ icon: ListOrdered, label: 'Ordered list', command: 'insertOrderedList' },
+	{ icon: List, label: 'Unordered list', command: 'insertUnorderedList' },
+	{ icon: AlignLeft, label: 'Align left', command: 'justifyLeft' },
+	{ icon: AlignCenter, label: 'Align center', command: 'justifyCenter' },
+	{ icon: AlignRight, label: 'Align right', command: 'justifyRight' },
+	{ icon: AlignJustify, label: 'Justify', command: 'justifyFull' },
 ]
 
 function RichTextEditor({ value, onChange, placeholder, className }: RichTextEditorProps) {
 	const editorRef = useRef<HTMLDivElement>(null)
-	const initializedRef = useRef(false)
 
-	// Set initial content only once (not on every render)
-	const setEditorRef = useCallback(
-		(node: HTMLDivElement | null) => {
-			editorRef.current = node
-			if (node && !initializedRef.current && value) {
-				node.innerHTML = value
-				initializedRef.current = true
-			}
-		},
-		[value],
-	)
+	useEffect(() => {
+		const node = editorRef.current
+		if (!node) return
+		const next = value ?? ''
+		if (next !== node.innerHTML && document.activeElement !== node) {
+			node.innerHTML = next
+		}
+	}, [value])
 
 	function handleInput() {
 		const html = editorRef.current?.innerHTML ?? ''
 		onChange?.(html)
+	}
+
+	function applyCommand(command: string) {
+		editorRef.current?.focus()
+		document.execCommand(command)
+		handleInput()
 	}
 
 	return (
@@ -76,6 +74,8 @@ function RichTextEditor({ value, onChange, placeholder, className }: RichTextEdi
 							className="flex h-8 w-8 cursor-pointer items-center justify-center rounded text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
 							aria-label={btn.label}
 							title={btn.label}
+							onMouseDown={(e) => e.preventDefault()}
+							onClick={() => applyCommand(btn.command)}
 						>
 							<Icon className="h-4 w-4" />
 						</button>
@@ -84,7 +84,7 @@ function RichTextEditor({ value, onChange, placeholder, className }: RichTextEdi
 			</div>
 
 			<div
-				ref={setEditorRef}
+				ref={editorRef}
 				contentEditable
 				suppressContentEditableWarning
 				onInput={handleInput}

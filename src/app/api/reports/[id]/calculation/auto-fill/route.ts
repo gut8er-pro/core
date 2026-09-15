@@ -5,6 +5,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { extractCalculationData } from '@/lib/ai/calculation-extractor'
 import { fetchImageAsBase64 } from '@/lib/ai/fetch-image'
 import { authErrorResponse, getEntitledUser } from '@/lib/api/auth'
+import { requestLocale } from '@/lib/api/locale'
 import { prisma } from '@/lib/prisma'
 
 type RouteContext = {
@@ -62,7 +63,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 		const images = await Promise.all(photos.map((p) => fetchImageAsBase64(p.aiUrl || p.url)))
 
 		// Extract calculation data
-		const result = await extractCalculationData(images)
+		const result = await extractCalculationData(images, await requestLocale())
 
 		// Auto-fill calculation record
 		const calcData: Record<string, unknown> = {}

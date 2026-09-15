@@ -147,6 +147,11 @@ function GalleryPage() {
 		setAnnotationPhotoId(photoId)
 	}, [])
 
+	const uploadErrors = useMemo(
+		() => (uploadState.error ? uploadState.error.split('\n') : []),
+		[uploadState.error],
+	)
+
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center py-16">
@@ -246,9 +251,11 @@ function GalleryPage() {
 				)}
 
 				{/* Upload errors */}
-				{uploadState.error && (
+				{uploadErrors.length > 0 && (
 					<div className="rounded-lg border border-error bg-error-light px-4 py-2 text-body-sm text-error">
-						{uploadState.error}
+						{uploadErrors.map((message) => (
+							<p key={message}>{message}</p>
+						))}
 					</div>
 				)}
 
@@ -291,6 +298,7 @@ function GalleryPage() {
 							selectedId={selectedPhoto?.id}
 							onSelect={setSelectedPhotoId}
 							onAdd={handleAddPhotos}
+							maxPhotos={MAX_PHOTOS_PER_REPORT}
 						/>
 					</div>
 				) : (
@@ -300,6 +308,8 @@ function GalleryPage() {
 						onSelect={(id) => setSelectedPhotoId(id)}
 						onEdit={handleAnnotate}
 						onDelete={handleDelete}
+						onAdd={handleAddPhotos}
+						maxPhotos={MAX_PHOTOS_PER_REPORT}
 					/>
 				)}
 

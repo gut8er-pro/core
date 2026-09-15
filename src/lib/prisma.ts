@@ -7,10 +7,16 @@ const createPrismaClient = () => {
 	if (!connectionString) {
 		throw new Error('DATABASE_URL environment variable is not set')
 	}
+	const sslDisabled = /[?&]sslmode=disable\b/.test(connectionString)
 	const pool = new pg.Pool({
 		connectionString,
-		ssl: { rejectUnauthorized: false },
+		ssl: sslDisabled ? false : { rejectUnauthorized: false },
 		max: 3,
+		connectionTimeoutMillis: 10_000,
+		idleTimeoutMillis: 30_000,
+	})
+	pool.on('error', (err) => {
+		console.error('[prisma] idle client error:', err.message)
 	})
 	const adapter = new PrismaPg(pool)
 	return new PrismaClient({ adapter })

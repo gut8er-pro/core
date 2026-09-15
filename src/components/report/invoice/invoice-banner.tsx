@@ -19,7 +19,7 @@ function InvoiceBanner({ control, className }: Pick<InvoiceSectionProps, 'contro
 	const lineItems = useWatch({ control, name: 'lineItems' })
 
 	const parsedItems = (lineItems ?? []).map((item) => ({
-		amount: parseFloat(item.amount) || 0,
+		amount: (parseFloat(String(item.rate)) || 0) * (parseInt(String(item.quantity), 10) || 1),
 	}))
 
 	const netTotal = calculateNetTotal(parsedItems)

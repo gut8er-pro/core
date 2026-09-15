@@ -20,6 +20,7 @@ function SpecificationSection({
 	className,
 }: VehicleSectionProps & { className?: string }) {
 	const t = useTranslations('report')
+	const tc = useTranslations('common')
 	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
 	const missing = useMissingProps()
 	const badge = useSectionBadge(SECTION.specification)
@@ -31,7 +32,7 @@ function SpecificationSection({
 		{ value: 'V-Type', label: t('vehicle.identification.engineDesignOptions.vType') },
 		{ value: 'Boxer', label: t('vehicle.identification.engineDesignOptions.boxer') },
 		{ value: 'Rotary', label: t('vehicle.identification.engineDesignOptions.rotary') },
-		{ value: 'Other', label: 'Other' },
+		{ value: 'Other', label: t('vehicle.identification.engineDesignOptions.other') },
 	]
 
 	const TRANSMISSION_OPTIONS = [
@@ -79,25 +80,25 @@ function SpecificationSection({
 		>
 			<div className="flex flex-col gap-4">
 				{/* Row 1: Power (kW) / Power (HP) / Engine Design */}
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-end">
 					<TextField
 						label={t('vehicle.identification.powerKw')}
 						type="number"
-						placeholder="e.g. 110 kW"
+						placeholder={t('vehicle.identification.powerKwPlaceholder')}
 						{...fieldProps('powerKw')}
 						onBlur={handleKwBlur}
 					/>
 					<TextField
 						label={t('vehicle.identification.powerHp')}
 						type="number"
-						placeholder="e.g. 150 HP"
+						placeholder={t('vehicle.identification.powerHpPlaceholder')}
 						{...fieldProps('powerHp')}
 						onBlur={handleHpBlur}
 					/>
 					<SelectField
 						label={t('vehicle.identification.engineDesign')}
 						options={ENGINE_DESIGN_OPTIONS}
-						placeholder="Select"
+						placeholder={tc('select')}
 						value={engineDesign || undefined}
 						onValueChange={(value) => {
 							setValue?.('engineDesign', value)
@@ -108,17 +109,17 @@ function SpecificationSection({
 				</div>
 
 				{/* Row 2: Cylinder / Transmission / Engine displacement */}
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-end">
 					<TextField
 						label={t('vehicle.identification.cylinder')}
 						type="number"
-						placeholder="e.g. 4"
+						placeholder={t('vehicle.identification.cylinderPlaceholder')}
 						{...fieldProps('cylinders')}
 					/>
 					<SelectField
 						label={t('vehicle.identification.transmission')}
 						options={TRANSMISSION_OPTIONS}
-						placeholder="Select"
+						placeholder={tc('select')}
 						value={transmission || undefined}
 						onValueChange={(value) => {
 							setValue?.('transmission', value)
@@ -130,13 +131,13 @@ function SpecificationSection({
 					<TextField
 						label={t('vehicle.identification.displacement')}
 						type="number"
-						placeholder="e.g. 1968 ccm"
+						placeholder={t('vehicle.identification.displacementPlaceholder')}
 						{...fieldProps('displacement')}
 					/>
 				</div>
 
 				{/* Row 3: First registration / Last registration / Source of technical data */}
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-end">
 					<TextField
 						label={t('vehicle.identification.firstRegistration')}
 						type="date"

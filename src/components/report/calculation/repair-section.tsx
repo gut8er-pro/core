@@ -5,7 +5,8 @@ import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
 import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { Checkbox } from '@/components/ui/checkbox'
-import { MissingBadge } from '@/components/ui/missing'
+import { Label } from '@/components/ui/label'
+import { MISSING_FIELD_CLASS, MissingBadge } from '@/components/ui/missing'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import { SECTION } from '@/lib/completeness'
@@ -20,8 +21,15 @@ function RepairSection({
 	className,
 }: CalculationSectionProps) {
 	const t = useTranslations('report.calculation')
+	const tc = useTranslations('common')
 	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
 	const badge = useSectionBadge(SECTION.repair)
+	const {
+		error: risksError,
+		isMissing: risksMissing,
+		missingLabel: risksMissingLabel,
+		...risks
+	} = fieldProps('risks')
 
 	const WHEEL_ALIGNMENT_OPTIONS = [
 		{ value: 'not_required', label: t('repair.wheelAlignmentOptions.notRequired') },
@@ -59,7 +67,7 @@ function RepairSection({
 						<SelectField
 							label={t('repair.wheelAlignment')}
 							options={WHEEL_ALIGNMENT_OPTIONS}
-							placeholder="Choose"
+							placeholder={tc('select')}
 							value={field.value}
 							onValueChange={(val) => {
 								field.onChange(val)
@@ -77,7 +85,7 @@ function RepairSection({
 						<SelectField
 							label={t('repair.bodyMeasurements')}
 							options={BODY_MEASUREMENTS_OPTIONS}
-							placeholder="Choose"
+							placeholder={tc('select')}
 							value={field.value}
 							onValueChange={(val) => {
 								field.onChange(val)
@@ -97,7 +105,7 @@ function RepairSection({
 					<SelectField
 						label={t('repair.bodyPaint')}
 						options={BODY_PAINT_OPTIONS}
-						placeholder="Choose"
+						placeholder={tc('select')}
 						value={field.value}
 						onValueChange={(val) => {
 							field.onChange(val)
@@ -134,11 +142,32 @@ function RepairSection({
 			/>
 
 			{/* Risks - full width */}
-			<TextField
-				label={t('repair.risks')}
-				placeholder={t('repair.addRisks')}
-				{...fieldProps('risks')}
-			/>
+			<div className="flex flex-col gap-3">
+				<Label htmlFor="risks">{t('repair.risks')}</Label>
+				<textarea
+					id="risks"
+					rows={4}
+					placeholder={t('repair.addRisks')}
+					data-missing={risksMissing && !risksError ? 'true' : undefined}
+					aria-describedby={risksError ? 'risks-error' : risksMissing ? 'risks-missing' : undefined}
+					className={cn(
+						'w-full resize-y rounded-md border border-border bg-white px-4 py-3 text-body-sm text-black placeholder:text-placeholder focus:border-border-focus focus:outline-none',
+						risksError && 'border-error focus:border-error',
+						risksMissing && !risksError && MISSING_FIELD_CLASS,
+					)}
+					{...risks}
+				/>
+				{risksError && (
+					<p id="risks-error" className="text-caption text-error" role="alert">
+						{risksError}
+					</p>
+				)}
+				{risksMissing && !risksError && (
+					<span id="risks-missing" className="sr-only">
+						{risksMissingLabel}
+					</span>
+				)}
+			</div>
 		</div>
 	)
 }

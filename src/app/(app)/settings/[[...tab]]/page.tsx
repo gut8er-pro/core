@@ -19,12 +19,20 @@ import {
 import { useParams, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
+import { SelectField } from '@/components/ui/select'
 import { Skeleton, SkeletonGroup } from '@/components/ui/skeleton'
 import { TextField } from '@/components/ui/text-field'
 import { useSaveSettings, useUserSettings } from '@/hooks/use-settings'
 import { useBilling, useCreateCheckout, useCreatePortal } from '@/hooks/use-subscription'
+import {
+	type EmailTemplate,
+	useCreateTemplate,
+	useDeleteTemplate,
+	useTemplates,
+	useUpdateTemplate,
+} from '@/hooks/use-templates'
 import { useToast } from '@/hooks/use-toast'
 import { marketingUrl } from '@/lib/urls'
 import { cn } from '@/lib/utils'
@@ -43,6 +51,14 @@ const SETTINGS_TABS: Array<{ key: SettingsTab; labelKey: string; icon: typeof Us
 	{ key: 'integrations', labelKey: 'tabs.integrations', icon: LinkIcon },
 	{ key: 'billing', labelKey: 'tabs.billing', icon: DollarSign },
 	{ key: 'templates', labelKey: 'tabs.templates', icon: Bookmark },
+]
+
+const SALUTATION_OPTIONS = [
+	{ value: 'mr', labelKey: 'mr' },
+	{ value: 'mrs', labelKey: 'mrs' },
+	{ value: 'dr', labelKey: 'dr' },
+	{ value: 'prof', labelKey: 'prof' },
+	{ value: 'prof_dr', labelKey: 'profDr' },
 ]
 
 function SettingsSidebar({
@@ -88,12 +104,14 @@ function ProfileSection() {
 	const t = useTranslations('settings')
 	const tt = useTranslations('toast')
 	const tc = useTranslations('common')
+	const ts = useTranslations('report.accidentInfo.salutationOptions')
 	const { data: settings, isLoading } = useUserSettings()
 	const saveMutation = useSaveSettings()
 	const toast = useToast()
 
 	const {
 		register,
+		control,
 		handleSubmit,
 		reset,
 		formState: { errors },
@@ -101,7 +119,13 @@ function ProfileSection() {
 		resolver: zodResolver(profileSettingsSchema),
 	})
 
+	const salutationOptions = SALUTATION_OPTIONS.map((option) => ({
+		value: option.value,
+		label: ts(option.labelKey),
+	}))
+
 	useEffect(() => {
+		console.log('[dbg] effect fired, settings.title =', JSON.stringify(settings?.title))
 		if (settings) {
 			reset({
 				title: settings.title ?? '',
@@ -150,36 +174,46 @@ function ProfileSection() {
 							<User className="h-10 w-10 text-grey-100" />
 						)}
 					</div>
-					<button
-						type="button"
-						className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-danger text-body font-medium text-danger"
-					>
-						{t('profile.remove')}
-					</button>
+					{settings?.avatarUrl && (
+						<button
+							type="button"
+							className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-danger text-body font-medium text-danger"
+						>
+							{t('profile.remove')}
+						</button>
+					)}
 				</div>
 
 				{/* First Name / Last Name */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField
 						label={t('profile.firstName')}
-						placeholder="Ketn"
+						placeholder={t('profile.firstNamePlaceholder')}
 						{...register('firstName')}
 						error={errors.firstName?.message}
 					/>
 					<TextField
 						label={t('profile.lastName')}
-						placeholder="Torres"
+						placeholder={t('profile.lastNamePlaceholder')}
 						{...register('lastName')}
 						error={errors.lastName?.message}
 					/>
 				</div>
 
-				{/* Title */}
-				<TextField
-					label={t('profile.title')}
-					placeholder="Kfz-Sachverst\u00e4ndiger"
-					{...register('title')}
-					error={errors.title?.message}
+				{/* Salutation */}
+				<Controller
+					name="title"
+					control={control}
+					render={({ field }) => (
+						<SelectField
+							label={t('profile.title')}
+							options={salutationOptions}
+							placeholder={t('profile.titlePlaceholder')}
+							value={field.value ?? ''}
+							onValueChange={field.onChange}
+							error={errors.title?.message}
+						/>
+					)}
 				/>
 
 				{/* Email / Phone */}
@@ -188,18 +222,18 @@ function ProfileSection() {
 						label={t('profile.email')}
 						value={settings?.email ?? ''}
 						disabled
-						placeholder="ketn.torres@example.com"
+						placeholder={t('profile.emailPlaceholder')}
 					/>
 					<TextField
 						label={t('profile.phoneNumber')}
-						placeholder="+49 151 23456789"
+						placeholder={t('profile.phonePlaceholder')}
 						{...register('phone')}
 						error={errors.phone?.message}
 					/>
 				</div>
 
 				{/* Social links */}
-				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 					<TextField
 						label={t('profile.instagram')}
 						placeholder={t('profile.instagramPlaceholder')}
@@ -444,7 +478,7 @@ function BusinessSection() {
 						type="button"
 						onClick={() => logoInputRef.current?.click()}
 						disabled={logoUploading}
-						className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-border-subtle bg-white px-[13px] text-body font-medium tracking-[0.16px] text-black opacity-45 hover:opacity-70 disabled:cursor-not-allowed"
+						className="flex h-[50px] shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-btn border-2 border-border-subtle bg-white px-5 text-body font-medium tracking-[0.16px] text-black transition-colors hover:border-black disabled:cursor-not-allowed disabled:opacity-60"
 					>
 						{logoUploading ? t('business.uploading') : t('business.uploadLogo')}
 					</button>
@@ -626,29 +660,25 @@ function IntegrationsSection() {
 					</div>
 					<div className="ml-auto flex gap-[14px]">
 						{datIntegration?.isActive ? (
-							<>
-								<button
-									type="button"
-									className="flex h-[50px] flex-1 cursor-pointer items-center justify-center rounded-btn border-2 border-border-subtle bg-white px-[13px] text-input font-medium tracking-[0.18px] text-black opacity-45 hover:opacity-70"
-								>
-									{t('integrations.configure')}
-								</button>
-								<button
-									type="button"
-									onClick={handleDisconnect}
-									disabled={saveMutation.isPending}
-									className="flex h-[50px] flex-1 cursor-pointer items-center justify-center rounded-btn border-2 border-danger px-[13px] text-input font-medium tracking-[0.18px] text-danger disabled:opacity-60"
-								>
-									{saveMutation.isPending ? '\u2026' : t('integrations.disconnect')}
-								</button>
-							</>
+							<button
+								type="button"
+								onClick={handleDisconnect}
+								disabled={saveMutation.isPending}
+								className="flex h-[50px] flex-1 cursor-pointer items-center justify-center rounded-btn border-2 border-danger px-[13px] text-input font-medium tracking-[0.18px] text-danger disabled:opacity-60"
+							>
+								{saveMutation.isPending ? '\u2026' : t('integrations.disconnect')}
+							</button>
 						) : (
 							<button
 								type="button"
 								onClick={() => setShowDatForm(!showDatForm)}
-								className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn bg-primary px-6 text-input font-medium tracking-[0.18px] text-white"
+								className={
+									showDatForm
+										? 'flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-border-subtle bg-white px-6 text-input font-medium tracking-[0.18px] text-black'
+										: 'flex h-[50px] cursor-pointer items-center justify-center rounded-btn bg-primary px-6 text-input font-medium tracking-[0.18px] text-white'
+								}
 							>
-								{t('integrations.connect')}
+								{showDatForm ? tc('cancel') : t('integrations.connect')}
 							</button>
 						)}
 					</div>
@@ -690,22 +720,6 @@ function IntegrationsSection() {
 						</div>
 					</form>
 				)}
-			</div>
-
-			{/* Action buttons — outside card */}
-			<div className="flex gap-[7px]">
-				<button
-					type="button"
-					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-white text-input font-medium tracking-[0.18px] text-black"
-				>
-					{tc('cancel')}
-				</button>
-				<button
-					type="button"
-					className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-input font-medium tracking-[0.18px] text-white"
-				>
-					{tc('update')}
-				</button>
 			</div>
 		</div>
 	)
@@ -804,7 +818,7 @@ function BillingSection() {
 								type="button"
 								onClick={() => portalMutation.mutate()}
 								disabled={portalMutation.isPending}
-								className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-white/25 text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
+								className="flex h-[50px] min-w-32.5 cursor-pointer items-center justify-center whitespace-nowrap rounded-btn border-2 border-white/25 px-5 text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 							>
 								{portalMutation.isPending ? '\u2026' : t('billing.managePlan')}
 							</button>
@@ -813,7 +827,7 @@ function BillingSection() {
 								type="button"
 								onClick={() => checkoutMutation.mutate()}
 								disabled={checkoutMutation.isPending}
-								className="flex h-[50px] w-[130px] cursor-pointer items-center justify-center rounded-btn border-2 border-white/25 text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
+								className="flex h-[50px] min-w-32.5 cursor-pointer items-center justify-center whitespace-nowrap rounded-btn border-2 border-white/25 px-5 text-input font-medium tracking-[0.18px] text-white disabled:opacity-60"
 							>
 								{checkoutMutation.isPending ? '\u2026' : t('billing.setupPayment')}
 							</button>
@@ -962,116 +976,142 @@ function BillingSection() {
 	)
 }
 
-type Template = {
-	id: string
-	title: string
-	date: string
-	subject: string
-	body: string
-}
-
-const MOCK_TEMPLATES: Template[] = [
-	{ id: '1', title: 'Random Title for This Template', date: '05/07/2026', subject: '', body: '' },
-	{ id: '2', title: 'Random Title for This Template', date: '05/07/2026', subject: '', body: '' },
-	{ id: '3', title: 'Random Title for This Template', date: '05/07/2026', subject: '', body: '' },
-	{ id: '4', title: 'Random Title for This Template', date: '05/07/2026', subject: '', body: '' },
-]
-
 function TemplatesSection() {
 	const t = useTranslations('settings')
+	const tt = useTranslations('toast')
 	const tc = useTranslations('common')
-	const [templates, setTemplates] = useState<Template[]>(MOCK_TEMPLATES)
-	const [editingTemplate, setEditingTemplate] = useState<Template | null>(null)
-	const [isNewTemplate, setIsNewTemplate] = useState(false)
+	const { data: templates, isLoading, isError } = useTemplates()
+	const createMutation = useCreateTemplate()
+	const updateMutation = useUpdateTemplate()
+	const deleteMutation = useDeleteTemplate()
+	const toast = useToast()
+	const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+	const [editingId, setEditingId] = useState<string | null>(null)
 	const [editSubject, setEditSubject] = useState('')
 	const [editBody, setEditBody] = useState('')
 
-	function handleEdit(template: Template) {
-		setEditingTemplate(template)
-		setIsNewTemplate(false)
+	const isNewTemplate = editingId === null
+	const isSaving = createMutation.isPending || updateMutation.isPending
+
+	function handleAdd() {
+		setEditingId(null)
+		setEditSubject('')
+		setEditBody('')
+		setIsDrawerOpen(true)
+	}
+
+	function handleEdit(template: EmailTemplate) {
+		setEditingId(template.id)
 		setEditSubject(template.subject)
 		setEditBody(template.body)
+		setIsDrawerOpen(true)
+	}
+
+	function closeDrawer() {
+		setIsDrawerOpen(false)
+		setEditingId(null)
 	}
 
 	function handleSave() {
-		if (!editingTemplate) return
-		setTemplates((prev) =>
-			prev.map((t) =>
-				t.id === editingTemplate.id ? { ...t, subject: editSubject, body: editBody } : t,
-			),
+		const subject = editSubject.trim()
+		if (!subject) return
+
+		if (editingId === null) {
+			createMutation.mutate(
+				{ subject, body: editBody },
+				{
+					onSuccess: () => {
+						closeDrawer()
+						toast.success(tt('templateCreated'))
+					},
+					onError: () => toast.error(tt('templateSaveError')),
+				},
+			)
+			return
+		}
+
+		updateMutation.mutate(
+			{ id: editingId, subject, body: editBody },
+			{
+				onSuccess: () => {
+					closeDrawer()
+					toast.success(tt('templateSaved'))
+				},
+				onError: () => toast.error(tt('templateSaveError')),
+			},
 		)
-		setEditingTemplate(null)
 	}
 
 	function handleRemove(id: string) {
-		setTemplates((prev) => prev.filter((t) => t.id !== id))
+		deleteMutation.mutate(id, {
+			onSuccess: () => toast.success(tt('templateDeleted')),
+			onError: () => toast.error(tt('templateDeleteError')),
+		})
 	}
 
-	function handleAdd() {
-		const newTemplate: Template = {
-			id: String(Date.now()),
-			title: t('templates.newTemplate'),
-			date: new Date().toLocaleDateString('en-GB', {
-				day: '2-digit',
-				month: '2-digit',
-				year: 'numeric',
-			}),
-			subject: '',
-			body: '',
-		}
-		setTemplates((prev) => [...prev, newTemplate])
-		setEditingTemplate(newTemplate)
-		setIsNewTemplate(true)
-		setEditSubject('')
-		setEditBody('')
+	if (isLoading) {
+		return <SkeletonGroup count={4} />
 	}
 
 	return (
 		<div className="relative flex flex-col items-end gap-6">
 			{/* Template list card */}
 			<div className="flex w-full flex-col gap-6 rounded-section bg-white p-8">
-				{templates.map((template) => (
-					<div
-						key={template.id}
-						className="flex cursor-pointer items-center justify-between rounded-card border-2 border-border-card px-[14px] py-3"
-						onClick={() => handleEdit(template)}
-					>
-						<div className="flex items-center gap-4">
-							<div className="flex items-center justify-center rounded-btn bg-primary/5 p-[14px]">
-								<FileText className="h-6 w-6 text-primary" />
-							</div>
-							<div>
-								<p className="text-body-sm font-medium leading-[18px] text-text-secondary">
-									{template.title}
-								</p>
-								<p className="text-body-sm leading-5 text-black opacity-70">{template.date}</p>
-							</div>
-						</div>
-						<button
-							type="button"
-							className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-danger px-[13px] text-input font-medium text-danger hover:bg-danger/5"
-							onClick={(e) => {
-								e.stopPropagation()
-								handleRemove(template.id)
-							}}
-						>
-							{tc('remove')}
-						</button>
+				{isError ? (
+					<div className="rounded-lg border border-error bg-error-light px-6 py-4 text-body-sm text-error">
+						{t('templates.loadError')}
 					</div>
-				))}
+				) : templates && templates.length > 0 ? (
+					templates.map((template) => (
+						<div
+							key={template.id}
+							className="flex items-center justify-between rounded-card border-2 border-border-card px-[14px] py-3"
+						>
+							<button
+								type="button"
+								className="flex flex-1 cursor-pointer items-center gap-4 text-left"
+								onClick={() => handleEdit(template)}
+							>
+								<div className="flex items-center justify-center rounded-btn bg-primary/5 p-[14px]">
+									<FileText className="h-6 w-6 text-primary" />
+								</div>
+								<div>
+									<p className="text-body-sm font-medium leading-[18px] text-text-secondary">
+										{template.subject}
+									</p>
+									<p className="text-body-sm leading-5 text-black opacity-70">
+										{formatDate(template.createdAt)}
+									</p>
+								</div>
+							</button>
+							<button
+								type="button"
+								disabled={deleteMutation.isPending}
+								className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-danger px-[13px] text-input font-medium text-danger hover:bg-danger/5 disabled:opacity-60"
+								onClick={() => handleRemove(template.id)}
+							>
+								{tc('remove')}
+							</button>
+						</div>
+					))
+				) : (
+					<div className="rounded-xl border-2 border-dashed border-border-card px-6 py-8 text-center">
+						<p className="text-body-sm text-grey-100">{t('templates.empty')}</p>
+					</div>
+				)}
 			</div>
 
 			{/* Add Template button */}
 			<button
 				type="button"
-				className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-input font-medium text-white hover:bg-primary-hover"
+				className="flex h-[50px] min-w-35.5 cursor-pointer items-center justify-center whitespace-nowrap rounded-btn bg-primary px-5 text-input font-medium text-white hover:bg-primary-hover"
 				onClick={handleAdd}
 			>
 				{t('templates.addTemplate')}
 			</button>
 
 			{/* Edit Template Panel */}
-			{editingTemplate && (
+			{isDrawerOpen && (
 				<div className="fixed inset-0 z-50 flex justify-end bg-overlay/50">
 					<div className="flex h-full w-[550px] flex-col gap-6 bg-white p-5">
 						{/* Header */}
@@ -1083,7 +1123,7 @@ function TemplatesSection() {
 							<button
 								type="button"
 								className="ml-auto cursor-pointer text-grey-100 hover:text-black"
-								onClick={() => setEditingTemplate(null)}
+								onClick={closeDrawer}
 							>
 								<X className="h-5 w-5" />
 							</button>
@@ -1092,18 +1132,24 @@ function TemplatesSection() {
 						{/* Body */}
 						<div className="flex flex-1 flex-col gap-6 overflow-y-auto">
 							<div className="flex flex-col gap-3">
-								<label className="text-body font-medium text-black">{t('templates.subject')}</label>
+								<label className="text-body font-medium text-black" htmlFor="template-subject">
+									{t('templates.subject')}
+								</label>
 								<input
+									id="template-subject"
 									type="text"
 									className="flex h-[53px] w-full rounded-xl border-[1.5px] border-border-card bg-white px-[14px] text-input text-black placeholder:text-grey-100 focus:border-primary focus:outline-none"
-									placeholder={t('templates.title')}
+									placeholder={t('templates.subjectPlaceholder')}
 									value={editSubject}
 									onChange={(e) => setEditSubject(e.target.value)}
 								/>
 							</div>
 							<div className="flex flex-1 flex-col gap-3">
-								<label className="text-body font-medium text-black">{t('templates.body')}</label>
+								<label className="text-body font-medium text-black" htmlFor="template-body">
+									{t('templates.body')}
+								</label>
 								<textarea
+									id="template-body"
 									className="flex-1 rounded-xl border-[1.5px] border-border-card bg-white px-[14px] py-[14px] text-input text-black placeholder:text-grey-100 focus:border-primary focus:outline-none"
 									placeholder={t('templates.placeholder')}
 									value={editBody}
@@ -1117,16 +1163,17 @@ function TemplatesSection() {
 							<button
 								type="button"
 								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn border-2 border-border text-body font-medium text-black hover:bg-grey-25"
-								onClick={() => setEditingTemplate(null)}
+								onClick={closeDrawer}
 							>
 								{tc('cancel')}
 							</button>
 							<button
 								type="button"
-								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-body font-medium text-white hover:bg-primary-hover"
+								disabled={isSaving || editSubject.trim().length === 0}
+								className="flex h-[50px] w-[142px] cursor-pointer items-center justify-center rounded-btn bg-primary text-body font-medium text-white hover:bg-primary-hover disabled:opacity-60"
 								onClick={handleSave}
 							>
-								{isNewTemplate ? t('templates.create') : tc('save')}
+								{isSaving ? tc('saving') : isNewTemplate ? t('templates.create') : tc('save')}
 							</button>
 						</div>
 					</div>

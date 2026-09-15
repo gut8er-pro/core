@@ -3,7 +3,7 @@
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
-import { Controller, useFieldArray } from 'react-hook-form'
+import { Controller, useFieldArray, useWatch } from 'react-hook-form'
 import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -20,6 +20,77 @@ function formatEUR(value: number): string {
 	}).format(value)
 }
 
+type LineItemRowProps = InvoiceSectionProps & {
+	index: number
+}
+
+function LineItemRow({ register, control, errors, onFieldBlur, index }: LineItemRowProps) {
+	const t = useTranslations('report.invoice')
+	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
+	const rate = useWatch({ control, name: `lineItems.${index}.rate` })
+	const qty = useWatch({ control, name: `lineItems.${index}.quantity` }) ?? 1
+	const amountVal = (parseFloat(String(rate)) || 0) * (parseInt(String(qty), 10) || 1)
+
+	return (
+		<div
+			className={cn(
+				'flex flex-col gap-2 border-b border-border pb-4 last:border-b-0',
+				'md:grid md:grid-cols-12 md:items-center md:gap-4 md:px-1',
+			)}
+		>
+			{/* Description */}
+			<div className="md:col-span-4">
+				<TextField
+					label={t('description')}
+					placeholder={t('serviceDescription')}
+					{...fieldProps(`lineItems.${index}.description`)}
+					className="md:[&>label]:hidden"
+				/>
+			</div>
+
+			{/* Special Feature with Lump Sum checkbox */}
+			<div className="md:col-span-2 flex items-center gap-2">
+				<Controller
+					name={`lineItems.${index}.isLumpSum`}
+					control={control}
+					render={({ field: checkboxField }) => (
+						<label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
+							<Checkbox
+								checked={checkboxField.value}
+								onCheckedChange={(checked) => {
+									checkboxField.onChange(checked)
+									onFieldBlur?.(`lineItems.${index}.isLumpSum`)
+								}}
+							/>
+							<span className="text-body-sm text-black">{t('lumpSum')}</span>
+						</label>
+					)}
+				/>
+			</div>
+
+			{/* Rate */}
+			<div className="md:col-span-1" />
+
+			<div className="md:col-span-2">
+				<TextField
+					label={t('rate')}
+					type="number"
+					prefix="€"
+					placeholder="0,00"
+					step="0.01"
+					{...fieldProps(`lineItems.${index}.rate`)}
+					className="md:[&>label]:hidden"
+				/>
+			</div>
+
+			{/* Amount */}
+			<div className="md:col-span-3 flex items-center justify-end">
+				<span className="text-body font-semibold text-black">{formatEUR(amountVal)}</span>
+			</div>
+		</div>
+	)
+}
+
 type LineItemsSectionProps = InvoiceSectionProps & {
 	bvskContent?: ReactNode
 }
@@ -33,7 +104,6 @@ function LineItemsSection({
 	bvskContent,
 }: LineItemsSectionProps) {
 	const t = useTranslations('report.invoice')
-	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
 	const badge = useSectionBadge(SECTION.lineItems)
 	const { fields, append } = useFieldArray({
 		control,
@@ -48,13 +118,13 @@ function LineItemsSection({
 
 				{/* Column headers */}
 				<div className="hidden border-b border-border pb-2 md:grid md:grid-cols-12 md:gap-4 md:px-1">
-					<span className="col-span-3 text-caption font-medium text-grey-100">
+					<span className="col-span-4 text-caption font-medium text-grey-100">
 						{t('description')}
 					</span>
 					<span className="col-span-2 text-caption font-medium text-grey-100">
 						{t('specialFeature')}
 					</span>
-					<span className="col-span-2 text-caption font-medium text-grey-100 text-center"></span>
+					<span className="col-span-1 text-caption font-medium text-grey-100 text-center"></span>
 					<span className="col-span-2 text-caption font-medium text-grey-100">{t('rate')}</span>
 					<span className="col-span-3 text-caption font-medium text-grey-100 text-right">
 						{t('amount')}
@@ -62,73 +132,16 @@ function LineItemsSection({
 				</div>
 
 				{/* Line item rows */}
-				{fields.map((row, index) => {
-					const amountVal =
-						parseFloat(
-							document.querySelector<HTMLInputElement>(`[name="lineItems.${index}.amount"]`)
-								?.value ?? '0',
-						) || 0
-
-					return (
-						<div
-							key={row.id}
-							className={cn(
-								'flex flex-col gap-2 border-b border-border pb-4 last:border-b-0',
-								'md:grid md:grid-cols-12 md:items-center md:gap-4 md:px-1',
-							)}
-						>
-							{/* Description */}
-							<div className="md:col-span-3">
-								<TextField
-									label={t('description')}
-									placeholder={t('serviceDescription')}
-									{...fieldProps(`lineItems.${index}.description`)}
-									className="md:[&>label]:hidden"
-								/>
-							</div>
-
-							{/* Special Feature with Lump Sum checkbox */}
-							<div className="md:col-span-2 flex items-center gap-2">
-								<Controller
-									name={`lineItems.${index}.isLumpSum`}
-									control={control}
-									render={({ field: checkboxField }) => (
-										<label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
-											<Checkbox
-												checked={checkboxField.value}
-												onCheckedChange={(checked) => {
-													checkboxField.onChange(checked)
-													onFieldBlur?.(`lineItems.${index}.isLumpSum`)
-												}}
-											/>
-											<span className="text-body-sm text-black">{t('lumpSum')}</span>
-										</label>
-									)}
-								/>
-							</div>
-
-							{/* Rate */}
-							<div className="md:col-span-2" />
-
-							<div className="md:col-span-2">
-								<TextField
-									label={t('rate')}
-									type="number"
-									prefix="€"
-									placeholder="0,00"
-									step="0.01"
-									{...fieldProps(`lineItems.${index}.rate`)}
-									className="md:[&>label]:hidden"
-								/>
-							</div>
-
-							{/* Amount */}
-							<div className="md:col-span-3 flex items-center justify-end">
-								<span className="text-body font-semibold text-black">{formatEUR(amountVal)}</span>
-							</div>
-						</div>
-					)
-				})}
+				{fields.map((row, index) => (
+					<LineItemRow
+						key={row.id}
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={onFieldBlur}
+						index={index}
+					/>
+				))}
 
 				{/* Add Row button */}
 				<Button

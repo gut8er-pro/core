@@ -13,3 +13,7 @@ if (dsn) {
 		replaysSessionSampleRate: 0,
 	})
 }
+
+const onRouterTransitionStart = Sentry.captureRouterTransitionStart
+
+export { onRouterTransitionStart }

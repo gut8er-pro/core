@@ -43,6 +43,6 @@ test.describe('Gallery', () => {
 
 	test('generate report button visible after upload', async ({ page }) => {
 		await page.goto(`/reports/${reportId}/gallery`)
-		await expect(page.getByText('Generate Report')).toBeVisible()
+		await expect(page.getByRole('button', { name: 'Generate Report' })).toBeVisible()
 	})
 })

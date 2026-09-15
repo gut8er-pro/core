@@ -26,7 +26,8 @@
     "saved": "Gespeichert",
     "failedToSave": "Speichern fehlgeschlagen",
     "complete": "Abgeschlossen",
-    "previous": "Zurück"
+    "previous": "Zurück",
+    "select": "Bitte wählen"
   },
   "nav": {
     "dashboard": "Übersicht",
@@ -285,10 +286,15 @@
     "profile": {
       "heading": "Persönliche Daten",
       "firstName": "Vorname",
+      "firstNamePlaceholder": "Max",
       "lastName": "Nachname",
+      "lastNamePlaceholder": "Mustermann",
       "title": "Anrede",
+      "titlePlaceholder": "Bitte wählen",
       "email": "E-Mail",
+      "emailPlaceholder": "max.mustermann@example.de",
       "phoneNumber": "Telefonnummer",
+      "phonePlaceholder": "+49 151 23456789",
       "remove": "Entfernen",
       "instagram": "Instagram",
       "facebook": "Facebook",
@@ -301,7 +307,7 @@
     },
     "business": {
       "heading": "Geschäftsdaten",
-      "empty": "Leer",
+      "empty": "Noch kein Logo hinterlegt",
       "uploadLogo": "Logo hochladen",
       "uploading": "Wird hochgeladen…",
       "companyName": "Firmenname",
@@ -340,7 +346,7 @@
     "billing": {
       "currentPlan": "Aktueller Tarif",
       "proPlan": "Pro-Tarif",
-      "trialActive": "Testphase aktiv · noch {days} Tag(e)",
+      "trialActive": "Testphase aktiv · noch {days, plural, one {# Tag} other {# Tage}}",
       "renewsOn": "€69,00 / Monat · Verlängerung am {date}",
       "cancelsOn": "Kündigung zum {date}",
       "subscriptionActive": "Abonnement aktiv",
@@ -373,7 +379,10 @@
       "body": "Inhalt",
       "placeholder": "Text eingeben",
       "addTemplate": "Vorlage hinzufügen",
-      "create": "Erstellen"
+      "create": "Erstellen",
+      "subjectPlaceholder": "Betreff eingeben",
+      "empty": "Noch keine Vorlagen vorhanden",
+      "loadError": "Vorlagen konnten nicht geladen werden. Bitte versuchen Sie es erneut."
     },
     "privacy": {
       "heading": "Datenschutz & Konto",
@@ -388,9 +397,37 @@
     }
   },
   "report": {
+    "ai": {
+      "progress": {
+        "skippingProcessed": "{skipped} bereits verarbeitete Fotos werden übersprungen, {remaining} neue Fotos werden analysiert …",
+        "classifying": "Fotos werden klassifiziert …",
+        "classified": "{current}/{total} Fotos klassifiziert …",
+        "analyzing": "Fotos werden analysiert …",
+        "analyzed": "{current}/{total} Fotos analysiert …",
+        "lookingUpVehicle": "Fahrzeugdaten werden abgerufen …",
+        "vehicleRetrieved": "Fahrzeugdaten abgerufen",
+        "extractingCalculation": "Kalkulationsdaten werden ermittelt …",
+        "calculationExtracted": "Kalkulationsdaten ermittelt",
+        "autoFilling": "Abschnitte werden automatisch ausgefüllt …",
+        "vehicleFilled": "Fahrzeugdaten ausgefüllt",
+        "accidentFilled": "Unfalldaten ausgefüllt",
+        "conditionFilled": "Zustandsdaten ausgefüllt",
+        "calculationFilled": "Kalkulationsdaten ausgefüllt",
+        "photosReordered": "Fotos neu sortiert"
+      },
+      "marker": {
+        "severity": "Schwere",
+        "repair": "Reparatur"
+      },
+      "severity": {
+        "minor": "gering",
+        "moderate": "mittel",
+        "severe": "schwer"
+      }
+    },
     "gallery": {
       "dropzoneText": "Hierher ziehen oder klicken zum Hochladen",
-      "fileTypes": "PDF PNG oder JPG",
+      "fileTypes": "JPG oder PNG",
       "maxPhotosReached": "Maximale Fotoanzahl erreicht",
       "uploadPhotos": "Fotos hochladen",
       "noPhotosYet": "Noch keine Fotos hochgeladen",
@@ -431,7 +468,34 @@
       "photoFilmstrip": "Foto-Filmstreifen",
       "addMorePhotos": "Weitere Fotos hinzufügen",
       "previousPhoto": "Vorheriges Foto",
-      "nextPhoto": "Nächstes Foto"
+      "nextPhoto": "Nächstes Foto",
+      "maxPhotosHint": "Maximal {limit} Fotos pro Gutachten – Grenze erreicht",
+      "maxPhotosError": "Maximal {limit} Fotos pro Gutachten.",
+      "uploadErrors": {
+        "invalidFileType": "Ungültiges Dateiformat. Es sind nur JPEG, PNG und WebP zulässig.",
+        "fileTooLarge": "Die Datei überschreitet das Limit von {limit} MB.",
+        "uploadFailed": "Das Foto konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut."
+      },
+      "classification": {
+        "damage": "Schaden",
+        "vin": "FIN",
+        "plate": "Kennzeichen",
+        "document": "Dokument",
+        "overview": "Übersicht",
+        "tire": "Reifen",
+        "interior": "Innenraum",
+        "other": "Sonstiges"
+      }
+    },
+    "signature": {
+      "draw": "Unterschrift zeichnen",
+      "upload": "Unterschrift hochladen",
+      "clear": "Löschen",
+      "canvas": "Unterschriftenfeld",
+      "uploadHint": "Unterschriftsbild hochladen (PNG, JPG)",
+      "chooseFile": "Datei auswählen",
+      "uploadedAlt": "Hochgeladene Unterschrift",
+      "disclaimer": "Mit Ihrer Unterschrift bestätigen Sie die Richtigkeit der gemachten Angaben."
     },
     "accidentInfo": {
       "title": "Unfallübersicht",
@@ -450,12 +514,15 @@
         "mr": "Herr",
         "mrs": "Frau",
         "dr": "Dr.",
-        "prof": "Prof."
+        "prof": "Prof.",
+        "profDr": "Prof. Dr."
       },
       "firstName": "Vorname",
       "lastName": "Nachname",
       "street": "Straße & Hausnummer oder Postfach",
+      "streetPlaceholder": "z.B. Musterstraße 123",
       "postcode": "Postleitzahl",
+      "postcodePlaceholder": "z.B. 10115",
       "location": "Ort",
       "email": "E-Mail",
       "iban": "IBAN",
@@ -466,6 +533,7 @@
       "representedByLawyer": "Anwaltlich vertreten",
       "vatId": "USt-IdNr.",
       "involvedLawyer": "Beteiligter Rechtsanwalt",
+      "involvedLawyerPlaceholder": "z.B. Kanzlei Müller & Partner",
       "opponent": {
         "title": "Unfallgegner",
         "insuranceCompany": "Versicherungsgesellschaft",
@@ -495,6 +563,8 @@
         },
         "present": "Anwesend",
         "presentOptions": {
+          "expert": "Sachverständiger",
+          "expertNamed": "Sachverständiger {name}",
           "client": "Auftraggeber",
           "workshopEmployee": "Werkstattmitarbeiter"
         },
@@ -513,7 +583,8 @@
         },
         "issuedDate": "Ausstellungsdatum",
         "orderByClaimant": "Auftrag durch Geschädigten",
-        "mediator": "Vermittler"
+        "mediator": "Vermittler",
+        "mediatorPlaceholder": "z.B. Max Mustermann"
       },
       "signatures": {
         "title": "Unterschriften",
@@ -534,25 +605,34 @@
       "identification": {
         "heading": "Fahrzeuginformationen",
         "vin": "Fahrzeug-Identifizierungsnummer (VIN)",
+        "vinPlaceholder": "z.B. WVWZZZ3CZWE123456",
         "datsCode": "DATSCode",
         "addCode": "Code hinzufügen",
         "marketIndex": "Marktindex",
         "findMarketIndex": "Marktindex suchen",
         "manufacturer": "Hersteller",
+        "manufacturerPlaceholder": "z.B. Volkswagen AG",
         "mainType": "Haupttyp",
+        "mainTypePlaceholder": "z.B. Golf VII",
         "subtype": "Untertyp",
+        "subtypePlaceholder": "z.B. Golf VII 2.0 TDI",
         "kbaNumber": "Schlüsselnummer (KBA)",
+        "kbaNumberPlaceholder": "z.B. 0603 / BGH",
         "specification": "Ausstattung",
         "powerKw": "Leistung (kW)",
+        "powerKwPlaceholder": "z.B. 110 kW",
         "powerHp": "Leistung (PS)",
+        "powerHpPlaceholder": "z.B. 150 PS",
         "engineDesign": "Motorbauart",
         "engineDesignOptions": {
           "inline": "Reihe",
           "vType": "V-Motor",
           "boxer": "Boxer",
-          "rotary": "Wankel"
+          "rotary": "Wankel",
+          "other": "Sonstige"
         },
         "cylinder": "Zylinder",
+        "cylinderPlaceholder": "z.B. 4",
         "transmission": "Getriebe",
         "transmissionOptions": {
           "manual5": "Schaltgetriebe (5-Gang)",
@@ -562,6 +642,7 @@
           "dct": "Doppelkupplung (DCT)"
         },
         "displacement": "Hubraum (ccm)",
+        "displacementPlaceholder": "z.B. 1968 ccm",
         "firstRegistration": "Erstzulassung",
         "lastRegistration": "Letzte Zulassung",
         "technicalDataSource": "Quelle der technischen Daten",
@@ -652,6 +733,7 @@
       "specialFeatures": "Sonderausstattung",
       "parkingSensors": "Einparkhilfe",
       "mileageRead": "Kilometerstand abgelesen",
+      "mileagePlaceholder": "z.B. 125.450 km",
       "estimationMileage": "Geschätzter Kilometerstand",
       "unitInKm": "Einheit in km",
       "unitOptions": {
@@ -660,6 +742,7 @@
         "miles": "Meilen"
       },
       "nextMot": "Nächste HU/AU",
+      "nextMotPlaceholder": "TT.MM.JJJJ",
       "fullServiceHistory": "Lückenlose Servicehistorie",
       "testDrivePerformed": "Probefahrt durchgeführt",
       "errorMemoryRead": "Fehlerspeicher ausgelesen",
@@ -808,9 +891,11 @@
         "title": "Nutzungsausfall",
         "dropoutGroup": "Ausfallgruppe",
         "groupOptions": "Gruppe A-N",
+        "groupLabel": "Gruppe",
         "costPerDay": "Kosten pro Tag (€)",
         "rentalCarClass": "Mietwagenklasse",
         "classOptions": "Klasse 1-7",
+        "classLabel": "Klasse",
         "repairTimeDays": "Reparaturdauer (Tage)",
         "addDays": "Tage hinzufügen",
         "replacementTimeDays": "Wiederbeschaffungsdauer (Tage)"
@@ -835,9 +920,9 @@
         "generalCondition": "Allgemeinzustand",
         "selectCondition": "Zustand auswählen",
         "taxation": "Besteuerung",
-        "natural": "Regulär",
-        "difference": "Differenz",
-        "standardRate": "Regelsteuersatz",
+        "natural": "Neutral",
+        "difference": "Differenzbesteuerung",
+        "standardRate": "Regelbesteuerung",
         "quickValuation": "Schnellbewertung",
         "detailValuation": "Detailbewertung",
         "dataSource": "Datenquelle",
@@ -855,6 +940,7 @@
         "marketValue": "Marktwert",
         "replacementValue": "Wiederbeschaffungswert",
         "restorationValue": "Restaurierungswert",
+        "addAdditionalValue": "Zusätzlichen Wert hinzufügen",
         "removeAdditionalValue": "Zusätzlichen Wert entfernen",
         "additionalValue": "Zusätzlicher Wert",
         "baseVehicleValue": "Fahrzeug-Grundwert",
@@ -903,7 +989,9 @@
       "previewInvoice": "Rechnungsvorschau",
       "amountOfDamage": "Schadenshöhe",
       "applyBvskRate": "BVSK-Satz anwenden",
-      "bvskAppraisalFee": "BVSK-Gutachterhonorar"
+      "bvskAppraisalFee": "BVSK-Gutachterhonorar",
+      "bvskRateTable": "BVSK-Honorartabelle, seitlich scrollbar",
+      "bvskRateWarning": "Der BVSK-Honorarsatz lässt sich erst zuordnen, wenn die Reparaturkosten feststehen."
     },
     "export": {
       "title": "Export und Versand",
@@ -916,6 +1004,7 @@
       "recipientPlaceholder": "E-Mail-Adresse eingeben und Enter drücken, um einen Empfänger hinzuzufügen",
       "removeEmail": "{email} entfernen",
       "subject": "Betreff",
+      "subjectPlaceholder": "z.B. Schadensgutachten zu Ihrem Fahrzeug",
       "messagePlaceholder": "Ihre Nachricht verfassen...",
       "addRecipientPlaceholder": "Empfänger-E-Mail hinzufügen...",
       "sendReport": "Gutachten senden",
@@ -939,7 +1028,8 @@
       "sendErrors": {
         "recipientRejected": "Die E-Mail-Adresse des Empfängers wurde abgelehnt. Bitte prüfen Sie die Adresse und senden Sie erneut.",
         "attachmentTooLarge": "Das Gutachten ist für den E-Mail-Versand zu groß. Bitte reduzieren Sie die Anzahl oder die Größe der Fotos und senden Sie erneut.",
-        "emailServiceUnavailable": "Das Gutachten konnte nicht versendet werden. Bitte versuchen Sie es später erneut — wir wurden benachrichtigt."
+        "emailServiceUnavailable": "Das Gutachten konnte nicht versendet werden. Bitte versuchen Sie es später erneut — wir wurden benachrichtigt.",
+        "pdfGenerationFailed": "Die Sprachfassung {languages} des Gutachtens konnte nicht erstellt werden. Es wurde nichts versendet — bitte versuchen Sie es erneut. Wir wurden benachrichtigt."
       }
     },
     "annotation": {
@@ -1208,6 +1298,11 @@
     "last6Months": "Letzte 6 Monate",
     "downloadReport": "Bericht herunterladen",
     "searchPlaceholder": "Suchen...",
+    "vsPreviousPeriod": "ggü. Vorperiode",
+    "noInvoices": "Noch keine Rechnungen vorhanden",
+    "noInvoicesFound": "Keine Rechnungen gefunden",
+    "unknownClient": "Kunde unbekannt",
+    "loadError": "Statistiken konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
     "weekly": "Wöchentlich",
     "monthly": "Monatlich",
     "yearly": "Jährlich",
@@ -1235,7 +1330,8 @@
     "status": {
       "completed": "Abgeschlossen",
       "pending": "Ausstehend",
-      "rejected": "Abgelehnt"
+      "rejected": "Abgelehnt",
+      "delayed": "Überfällig"
     }
   },
   "notifications": {
@@ -1244,7 +1340,30 @@
     "noNotifications": "Noch keine Benachrichtigungen",
     "noNotificationsSubtitle": "Benachrichtigungen erscheinen hier, sobald es Aktivitäten zu Ihren Gutachten gibt.",
     "viewAll": "Alle Benachrichtigungen anzeigen",
-    "failedToLoad": "Benachrichtigungen konnten nicht geladen werden. Bitte versuchen Sie es erneut."
+    "failedToLoad": "Benachrichtigungen konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "messages": {
+      "reportCompleted": {
+        "title": "Gutachten abgeschlossen",
+        "description": "Das Gutachten „{title}“ wurde als abgeschlossen markiert."
+      },
+      "reportFieldsComplete": {
+        "title": "Gutachten vollständig",
+        "description": "Im Gutachten „{title}“ sind jetzt alle erforderlichen Felder ausgefüllt."
+      },
+      "reportSent": {
+        "title": "Gutachten versendet",
+        "description": "Das Gutachten „{title}“ wurde an {recipient} gesendet."
+      },
+      "invoiceGenerated": {
+        "title": "Rechnung erstellt",
+        "description": "Die Rechnung {invoiceNumber} wurde erstellt."
+      }
+    },
+    "email": {
+      "greeting": "Hallo {name},",
+      "greetingFallback": "Hallo,",
+      "openApp": "Bei Gut8erPRO anmelden"
+    }
   },
   "validation": {
     "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
@@ -1362,7 +1481,12 @@
     "reportUpdated": "Gutachten aktualisiert",
     "reportSent": "Gutachten erfolgreich gesendet!",
     "reportsLoadError": "Gutachten konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
-    "notificationsLoadError": "Benachrichtigungen konnten nicht geladen werden. Bitte versuchen Sie es erneut."
+    "notificationsLoadError": "Benachrichtigungen konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "templateCreated": "Vorlage erstellt",
+    "templateSaved": "Vorlage gespeichert",
+    "templateDeleted": "Vorlage gelöscht",
+    "templateSaveError": "Vorlage konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+    "templateDeleteError": "Vorlage konnte nicht gelöscht werden. Bitte versuchen Sie es erneut."
   },
   "language": {
     "title": "Sprache",
@@ -1381,5 +1505,12 @@
     "datenschutz": "Datenschutz",
     "agb": "AGB",
     "widerruf": "Widerruf"
+  },
+  "email": {
+    "report": {
+      "greeting": "Guten Tag {name},",
+      "attached": "Anbei erhalten Sie das Gutachten:",
+      "sentVia": "Gesendet über {platform}"
+    }
   }
 }

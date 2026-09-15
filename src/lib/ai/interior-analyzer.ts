@@ -8,8 +8,8 @@ import type { InteriorAnalysisResult } from './types'
 function buildInteriorPrompt(locale: 'en' | 'de' = 'en'): string {
 	const localeSuffix =
 		locale === 'de'
-			? '\n\nDescription/free-text in German. Keep "condition" enum and "features" array items in English exactly as listed.'
-			: '\n\nDescription/free-text strictly in English. Keep "condition" enum and "features" array items in English exactly as listed.'
+			? '\n\nSchreiben Sie "description" und die Einträge in "features" auf Deutsch (z. B. "Panoramadach", "Ledersitze", "Sitzheizung", "Navigationssystem", "Head-up-Display"). Der Wert von "condition" bleibt exakt einer der oben genannten englischen Werte.'
+			: '\n\nWrite "description" and the "features" entries strictly in English, using the wording listed above. Keep the "condition" enum in English exactly as listed.'
 
 	return `Analyze this vehicle interior photo for a professional assessment report.
 

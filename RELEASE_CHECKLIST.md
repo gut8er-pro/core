@@ -69,7 +69,7 @@ Details in [`prisma/migrations/README.md`](prisma/migrations/README.md).
 ## ⚠ Strongly recommended before client handoff
 
 ### 4. Create the Sentry project and add the DSN to env
-SDK is wired ([`sentry.client.config.ts`](sentry.client.config.ts), etc.) but it's a no-op until you set:
+SDK is wired ([`instrumentation-client.ts`](instrumentation-client.ts), etc.) but it's a no-op until you set:
 
 ```env
 NEXT_PUBLIC_SENTRY_DSN=

@@ -52,8 +52,15 @@ async function POST(request: NextRequest, context: RouteContext) {
 
 	const photoCount = await prisma.photo.count({ where: { reportId: id } })
 	if (photoCount >= MAX_PHOTOS_PER_REPORT) {
+		// A code, not a sentence: the client paints whatever comes back into a
+		// banner, and the assessor reads German. `message` stays for anything
+		// reading the body outside the browser.
 		return NextResponse.json(
-			{ error: `Maximum ${MAX_PHOTOS_PER_REPORT} photos per report` },
+			{
+				error: 'max_photos_exceeded',
+				limit: MAX_PHOTOS_PER_REPORT,
+				message: `Maximum ${MAX_PHOTOS_PER_REPORT} photos per report`,
+			},
 			{ status: 400 },
 		)
 	}

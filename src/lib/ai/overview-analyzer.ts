@@ -16,8 +16,8 @@ const ALLOWED_DRIVING_ABILITY = ['Roadworthy', 'Limited', 'Not roadworthy'] as c
 function buildOverviewPrompt(locale: 'en' | 'de' = 'en'): string {
 	const localeSuffix =
 		locale === 'de'
-			? '\n\nDescription/free-text in German. Keep all enum values in English exactly as listed.'
-			: '\n\nDescription/free-text strictly in English. Keep all enum values in English exactly as listed.'
+			? '\n\nSchreiben Sie "description" und "color" auf Deutsch (z. B. "Hellgrün", "Silbermetallic", "Dunkelblau"). "make" und "model" behalten die Originalbezeichnung des Herstellers. Alle Enum-Werte bleiben exakt wie oben angegeben auf Englisch.'
+			: '\n\nWrite "description" and "color" strictly in English. Keep all enum values in English exactly as listed.'
 
 	return `Analyze this vehicle photo for a professional assessment report. Extract any visible information about the vehicle.
 

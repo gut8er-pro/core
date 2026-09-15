@@ -375,11 +375,13 @@ const PAINT_LEGEND = [
 ]
 
 function PaintView({ paintMarkers, onDiagramClick, onUpdatePaintMarker }: PaintViewProps) {
+	const t = useTranslations('report')
+
 	return (
 		<div className="flex flex-col gap-4">
 			{/* Paint thickness legend — matches Figma exactly */}
 			<div className="flex flex-wrap items-center gap-6 py-2.5">
-				<span className="text-body font-medium text-black">Standard View</span>
+				<span className="text-body font-medium text-black">{t('condition.standardView')}</span>
 				{PAINT_LEGEND.map((item) => (
 					<div key={item.label} className="flex items-center gap-1">
 						<div className="h-2 w-10 rounded-full" style={{ backgroundColor: item.color }} />
@@ -457,6 +459,7 @@ function PaintCallout({ position, side, top, value, onSubmit }: PaintCalloutProp
 			>
 				<input
 					ref={inputRef}
+					name={`paintThickness.${position}`}
 					type="text"
 					inputMode="numeric"
 					dir="ltr"

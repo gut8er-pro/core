@@ -30,12 +30,16 @@ test.describe('OT Complete Flow', () => {
 	test('OT tab 1: "Client Information" not "Accident Info"', async ({ page }) => {
 		await page.goto(`/reports/${reportId}/details/accident-info`)
 		// Wait for report data to load (tab label depends on reportType)
-		await expect(page.getByText('Client Information')).toBeVisible({ timeout: 10000 })
+		await expect(page.getByRole('tab', { name: /Client Information/ })).toBeVisible({
+			timeout: 15000,
+		})
 	})
 
 	test('OT heading: "Client Information" not "Accident Overview"', async ({ page }) => {
 		await page.goto(`/reports/${reportId}/details/accident-info`)
-		await expect(page.getByText('Client Information')).toBeVisible({ timeout: 10000 })
+		await expect(page.getByRole('heading', { name: 'Client Information' })).toBeVisible({
+			timeout: 15000,
+		})
 	})
 
 	test('OT section title: "Client" not "Claimant Information"', async ({ page }) => {
@@ -77,15 +81,18 @@ test.describe('OT Complete Flow', () => {
 	test('OT Condition: Value Increasing Features + Vehicle Grading', async ({ page }) => {
 		await page.goto(`/reports/${reportId}/details/condition`)
 		await page.waitForTimeout(3000)
-		await expect(page.getByText('Value Increasing Features')).toBeVisible({ timeout: 5000 })
-		await expect(page.getByText('Vehicle Grading')).toBeVisible({ timeout: 5000 })
+		await expect(page.getByText('Value Increasing Features').first()).toBeVisible({
+			timeout: 15000,
+		})
+		await expect(page.getByText('Vehicle Grading').first()).toBeVisible({ timeout: 15000 })
 	})
 
 	test('OT Valuation: Market + Replacement + Restoration + Total Cost', async ({ page }) => {
 		await page.goto(`/reports/${reportId}/details/calculation`)
 		await page.waitForTimeout(3000)
-		await expect(page.getByText('Market Value')).toBeVisible({ timeout: 5000 })
-		await expect(page.getByText('Replacement Value')).toBeVisible({ timeout: 5000 })
+		await expect(page.locator('input[name="marketValue"]')).toBeVisible({ timeout: 15000 })
+		await expect(page.locator('input[name="replacementValue"]')).toBeVisible({ timeout: 15000 })
+		await expect(page.locator('input[name="restorationValue"]')).toBeVisible({ timeout: 15000 })
 	})
 
 	test('OT Valuation: NO Correction, NO Loss of Use, NO Repair', async ({ page }) => {

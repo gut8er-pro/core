@@ -2,7 +2,7 @@
 
 import { Plus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useFieldArray } from 'react-hook-form'
+import { Controller, useFieldArray } from 'react-hook-form'
 import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -11,11 +11,22 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
+import { useUserSettings } from '@/hooks/use-settings'
 import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
-import type { SectionProps } from './types'
+import type { AccidentInfoFormData, SectionProps } from './types'
 
 // Options are defined inside the component to access translations
+
+type PresentKey = 'expert' | 'client' | 'workshopEmployee'
+
+const PRESENT_KEYS: PresentKey[] = ['expert', 'client', 'workshopEmployee']
+
+const PRESENT_FIELDS = {
+	expert: 'presentExpert',
+	client: 'presentClient',
+	workshopEmployee: 'presentWorkshopEmployee',
+} as const satisfies Record<PresentKey, keyof AccidentInfoFormData>
 
 const DEFAULT_VISIT = {
 	type: 'other',
@@ -38,7 +49,18 @@ function VisitSection({
 	const t = useTranslations('report')
 	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
 	const badge = useSectionBadge(SECTION.visits)
+	const { data: settings } = useUserSettings()
 	const isOT = reportType === 'OT'
+
+	const expertName = [settings?.firstName, settings?.lastName].filter(Boolean).join(' ')
+
+	const PRESENT_LABELS: Record<PresentKey, string> = {
+		expert: expertName
+			? t('accidentInfo.visits.presentOptions.expertNamed', { name: expertName })
+			: t('accidentInfo.visits.presentOptions.expert'),
+		client: t('accidentInfo.visits.presentOptions.client'),
+		workshopEmployee: t('accidentInfo.visits.presentOptions.workshopEmployee'),
+	}
 
 	const VISIT_TYPE_OPTIONS = [
 		{ value: 'claimant_residence', label: t('accidentInfo.visits.typeOptions.claimantResidence') },
@@ -84,26 +106,32 @@ function VisitSection({
 						<div className="flex flex-col gap-4">
 							<div className="flex flex-col gap-1">
 								<Label>{t('accidentInfo.visits.type')}</Label>
-								<RadioGroup
-									className="flex flex-wrap gap-2"
-									onValueChange={(value) => {
-										const event = { target: { name: `visits.${index}.type`, value } }
-										register(`visits.${index}.type`).onChange(event)
-										onFieldBlur?.(`visits.${index}.type`)
-									}}
-								>
-									{VISIT_TYPE_OPTIONS.map((option) => (
-										<label
-											key={option.value}
-											className={cn(
-												'flex cursor-pointer items-center gap-2 rounded-md border border-border px-3 py-2 text-body-sm transition-colors hover:bg-grey-25',
-											)}
+								<Controller
+									control={control}
+									name={`visits.${index}.type`}
+									render={({ field: typeField }) => (
+										<RadioGroup
+											className="flex flex-wrap gap-2"
+											value={typeField.value || ''}
+											onValueChange={(value) => {
+												typeField.onChange(value)
+												onFieldBlur?.(`visits.${index}.type`)
+											}}
 										>
-											<RadioGroupItem value={option.value} />
-											<span>{option.label}</span>
-										</label>
-									))}
-								</RadioGroup>
+											{VISIT_TYPE_OPTIONS.map((option) => (
+												<label
+													key={option.value}
+													className={cn(
+														'flex cursor-pointer items-center gap-2 rounded-md border border-border px-3 py-2 text-body-sm transition-colors hover:bg-grey-25',
+													)}
+												>
+													<RadioGroupItem value={option.value} />
+													<span>{option.label}</span>
+												</label>
+											))}
+										</RadioGroup>
+									)}
+								/>
 								{errors.visits?.[index]?.type?.message && (
 									<p className="text-caption text-error" role="alert">
 										{errors.visits[index]?.type?.message}
@@ -115,12 +143,12 @@ function VisitSection({
 							<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 								<TextField
 									label={t('accidentInfo.street')}
-									placeholder="Street address or po box"
+									placeholder={t('accidentInfo.streetPlaceholder')}
 									{...fieldProps(`visits.${index}.street`)}
 								/>
 								<TextField
 									label={t('accidentInfo.postcode')}
-									placeholder="eg 006312"
+									placeholder={t('accidentInfo.postcodePlaceholder')}
 									{...fieldProps(`visits.${index}.postcode`)}
 								/>
 								<TextField
@@ -142,16 +170,22 @@ function VisitSection({
 									placeholder={t('accidentInfo.visits.expertName')}
 									{...fieldProps(`visits.${index}.expert`)}
 								/>
-								<SelectField
-									label={t('accidentInfo.visits.vehicleCondition')}
-									options={VEHICLE_CONDITION_OPTIONS}
-									placeholder={t('accidentInfo.visits.chooseCondition')}
-									error={errors.visits?.[index]?.vehicleCondition?.message}
-									onValueChange={(value) => {
-										const event = { target: { name: `visits.${index}.vehicleCondition`, value } }
-										register(`visits.${index}.vehicleCondition`).onChange(event)
-										onFieldBlur?.(`visits.${index}.vehicleCondition`)
-									}}
+								<Controller
+									control={control}
+									name={`visits.${index}.vehicleCondition`}
+									render={({ field: conditionField }) => (
+										<SelectField
+											label={t('accidentInfo.visits.vehicleCondition')}
+											options={VEHICLE_CONDITION_OPTIONS}
+											placeholder={t('accidentInfo.visits.chooseCondition')}
+											value={conditionField.value ?? ''}
+											error={errors.visits?.[index]?.vehicleCondition?.message}
+											onValueChange={(value) => {
+												conditionField.onChange(value)
+												onFieldBlur?.(`visits.${index}.vehicleCondition`)
+											}}
+										/>
+									)}
 								/>
 							</div>
 						</div>
@@ -163,24 +197,28 @@ function VisitSection({
 					<div className="flex flex-col gap-3">
 						<Label className="text-body-sm font-semibold">{t('accidentInfo.visits.present')}</Label>
 						<div className="flex flex-wrap items-center gap-4">
-							<div className="flex items-center gap-2">
-								<Checkbox id="present-expert" />
-								<Label htmlFor="present-expert" className="cursor-pointer font-normal">
-									Expert Ketn Torres
-								</Label>
-							</div>
-							<div className="flex items-center gap-2">
-								<Checkbox id="present-client" />
-								<Label htmlFor="present-client" className="cursor-pointer font-normal">
-									{t('accidentInfo.visits.presentOptions.client')}
-								</Label>
-							</div>
-							<div className="flex items-center gap-2">
-								<Checkbox id="present-workshop" />
-								<Label htmlFor="present-workshop" className="cursor-pointer font-normal">
-									{t('accidentInfo.visits.presentOptions.workshopEmployee')}
-								</Label>
-							</div>
+							{PRESENT_KEYS.map((key) => (
+								<Controller
+									key={key}
+									name={PRESENT_FIELDS[key]}
+									control={control}
+									render={({ field }) => (
+										<div className="flex items-center gap-2">
+											<Checkbox
+												id={`present-${key}`}
+												checked={!!field.value}
+												onCheckedChange={(checked) => {
+													field.onChange(checked === true)
+													onFieldBlur?.(PRESENT_FIELDS[key])
+												}}
+											/>
+											<Label htmlFor={`present-${key}`} className="cursor-pointer font-normal">
+												{PRESENT_LABELS[key]}
+											</Label>
+										</div>
+									)}
+								/>
+							))}
 						</div>
 					</div>
 				)}

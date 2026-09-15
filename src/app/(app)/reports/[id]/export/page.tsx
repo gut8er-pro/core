@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import {
 	IncompleteReportError,
+	PdfGenerationFailedError,
 	SendFailedError,
 	useExportConfig,
 	useSendReport,
@@ -67,6 +68,7 @@ function ExportPage() {
 		reset,
 		getValues,
 		setValue,
+		watch,
 	} = useForm<ExportFormData>({
 		defaultValues: {
 			includeValuation: true,
@@ -114,6 +116,12 @@ function ExportPage() {
 			// irreversible and must follow a deliberate click.
 			if (error instanceof IncompleteReportError) return t('notSavedYet')
 			if (error instanceof SendFailedError) return t(SEND_ERROR_KEYS[error.code])
+			if (error instanceof PdfGenerationFailedError) {
+				if (error.languages.length === 0) return t('sendFailed')
+				return t('sendErrors.pdfGenerationFailed', {
+					languages: error.languages.map((l) => l.toUpperCase()).join(', '),
+				})
+			}
 			return t('sendFailed')
 		},
 		[t],
@@ -227,6 +235,7 @@ function ExportPage() {
 						register={register}
 						setValue={setValue}
 						errors={errors}
+						body={watch('emailBody')}
 						onSend={handleSend}
 						isSending={sendMutation.isPending}
 					/>

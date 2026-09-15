@@ -1,6 +1,6 @@
 # 11 — A send with no Gutachten attached still succeeds, and still locks the report
 
-Status: ready-for-agent
+Status: resolved
 Type: bug
 Severity: blocker
 
@@ -86,3 +86,17 @@ created, and that the report is not locked.
 
 Domain vocabulary — *empty send*, *partial send* — is in
 [`CONTEXT.md`](../../../CONTEXT.md#send-failures).
+
+## Resolution (2026-09-15)
+
+`src/app/api/reports/[id]/send/route.ts` collects a cause per failed language and, when
+`pdfAttachments.length !== pdfLanguages.length`, answers `500 {error: 'pdf_generation_failed',
+languages}` before `sendReportEmail` — no mail, no status write, no notification, no lock. The
+refusal logs one `[send] report=… refused:` line carrying every underlying generation error and
+captures it to Sentry; the `exportConfig.update` above it is untouched.
+`sendErrors.pdfGenerationFailed` in `src/messages/{de,en}.json` is mapped in
+`src/app/(app)/reports/[id]/export/page.tsx`. Both branches, plus the send that does go out once
+every language rendered, are covered in `src/app/api/reports/[id]/send/route.test.ts`.
+
+The message does not yet name the failed languages: `src/hooks/use-export.ts` drops everything but
+`error` from the body, so the list reaches the server log and the response but not the screen.

@@ -74,9 +74,16 @@ test.describe('Condition Tab', () => {
 		await expect(fullService).toHaveClass(/border-primary/)
 		const testDrive = page.locator('text=Test drive performed')
 		await expect(testDrive).toHaveClass(/border-primary/)
-		// Airbags should still be inactive
-		const airbags = page.locator('text=Airbags deployed')
-		await expect(airbags).toHaveClass(/border-border/)
+		// Airbags is a yes/no answer now — still unanswered after the reload
+		const airbags = page.getByRole('radiogroup', { name: 'Airbags deployed' })
+		await expect(airbags.getByRole('radio', { name: 'Yes' })).toHaveAttribute(
+			'aria-checked',
+			'false',
+		)
+		await expect(airbags.getByRole('radio', { name: 'No' })).toHaveAttribute(
+			'aria-checked',
+			'false',
+		)
 	})
 
 	test('notes textarea saves', async ({ page }) => {

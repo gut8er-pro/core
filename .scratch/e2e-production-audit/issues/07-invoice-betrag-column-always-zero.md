@@ -1,6 +1,6 @@
 # 07 — Invoice line-item "Betrag" column always renders 0,00 €
 
-Status: ready-for-agent
+Status: resolved
 Type: bug
 Severity: medium
 
@@ -55,3 +55,14 @@ is exactly why the banner total is right while the row is not. Follow that patte
 I initially mis-read this as "line items never persist at all". That was wrong — they persist
 fine. `GET /api/reports/<id>/invoice` returns `lineItems` at the **top level** of the response,
 alongside `invoice`, not nested inside it. Only the per-row display is broken.
+
+## Resolution (2026-09-15)
+
+`src/components/report/invoice/line-items-section.tsx` — the row body moved into a `LineItemRow`
+component so the prescribed `useWatch` on `lineItems.N.rate` and `lineItems.N.quantity` can be
+called at a component's top level; a watch inside `fields.map()` would change the hook count on
+every appended row. The `document.querySelector` read is gone; `quantity` was confirmed against
+`InvoiceFormData` in `src/components/report/invoice/types.ts`.
+
+`src/components/report/invoice/line-items-section.test.tsx` (new) — 5 cases covering rate-only,
+rate × quantity, a missing quantity, an empty rate and two rows amounting independently.

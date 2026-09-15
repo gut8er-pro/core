@@ -3,7 +3,8 @@
 import type * as fabric from 'fabric'
 import { ChevronLeft, ChevronRight, Edit, Image as ImageIcon, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { Photo } from '@/hooks/use-photos'
 import { AnnotationCanvas } from './annotation-canvas'
 import { type AnnotationTool, AnnotationToolbar } from './annotation-toolbar'
@@ -32,8 +33,10 @@ function AnnotationModal({
 	const [description, setDescription] = useState<string | null>(null)
 	const [isEditingDescription, setIsEditingDescription] = useState(false)
 	const [editDescriptionValue, setEditDescriptionValue] = useState('')
+	const [portalHost, setPortalHost] = useState<HTMLElement | null>(null)
 	const canvasRef = useRef<fabric.Canvas | null>(null)
 	const exportFnRef = useRef<(() => string | null) | null>(null)
+	const containerRef = useRef<HTMLDivElement>(null)
 
 	const handleCanvasReady = useCallback((canvas: fabric.Canvas, exportFn: () => string | null) => {
 		canvasRef.current = canvas
@@ -71,6 +74,72 @@ function AnnotationModal({
 		onClose()
 	}, [onClose])
 
+	useEffect(() => {
+		if (!open) return
+
+		const host = document.createElement('div')
+		document.body.appendChild(host)
+		const behind = Array.from(document.body.children).filter((element) => element !== host)
+		const previousAriaHidden = behind.map((element) => element.getAttribute('aria-hidden'))
+		for (const element of behind) {
+			element.setAttribute('inert', '')
+			element.setAttribute('aria-hidden', 'true')
+		}
+		setPortalHost(host)
+
+		return () => {
+			behind.forEach((element, index) => {
+				element.removeAttribute('inert')
+				const restored = previousAriaHidden[index]
+				if (restored === null || restored === undefined) {
+					element.removeAttribute('aria-hidden')
+				} else {
+					element.setAttribute('aria-hidden', restored)
+				}
+			})
+			host.remove()
+			setPortalHost(null)
+		}
+	}, [open])
+
+	useEffect(() => {
+		const container = containerRef.current
+		if (!portalHost || !container) return
+
+		container.focus()
+
+		function trapFocus(event: KeyboardEvent) {
+			if (event.key === 'Escape') {
+				handleClose()
+				return
+			}
+			if (event.key !== 'Tab' || !container) return
+
+			const focusable = Array.from(
+				container.querySelectorAll<HTMLElement>(
+					'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+				),
+			).filter((element) => element.offsetParent !== null || element === document.activeElement)
+			const first = focusable[0]
+			const last = focusable[focusable.length - 1]
+			if (!first || !last) {
+				event.preventDefault()
+				return
+			}
+
+			if (event.shiftKey && document.activeElement === first) {
+				event.preventDefault()
+				last.focus()
+			} else if (!event.shiftKey && document.activeElement === last) {
+				event.preventDefault()
+				first.focus()
+			}
+		}
+
+		container.addEventListener('keydown', trapFocus)
+		return () => container.removeEventListener('keydown', trapFocus)
+	}, [portalHost, handleClose])
+
 	const handleStartEditDescription = useCallback(() => {
 		setEditDescriptionValue(description ?? photo?.aiDescription ?? '')
 		setIsEditingDescription(true)
@@ -98,7 +167,7 @@ function AnnotationModal({
 		if (nextPhoto) onNavigate(nextPhoto.id)
 	}, [photos, currentIndex, hasNext, onNavigate])
 
-	if (!photo || !open) return null
+	if (!photo || !open || !portalHost) return null
 
 	// Build initial annotations from the photo's annotation data
 	const initialAnnotations = getInitialAnnotations(photo)
@@ -118,8 +187,15 @@ function AnnotationModal({
 			})
 		: null
 
-	return (
-		<div className="fixed inset-0 z-50">
+	return createPortal(
+		<div
+			ref={containerRef}
+			role="dialog"
+			aria-modal="true"
+			aria-label={photo.filename}
+			tabIndex={-1}
+			className="fixed inset-0 z-50 focus:outline-none"
+		>
 			{/* Dark overlay */}
 			<div
 				className="absolute inset-0 bg-black/60"
@@ -273,7 +349,8 @@ function AnnotationModal({
 					/>
 				</div>
 			</div>
-		</div>
+		</div>,
+		portalHost,
 	)
 }
 

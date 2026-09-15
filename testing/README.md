@@ -68,6 +68,47 @@ testing/
     ├── 01-auth.md ... 11-edge-cases.md
 ```
 
+## Local test stack (full E2E without touching production)
+
+The suite runs against `localhost:3000` backed by a local Supabase (auth + storage + Postgres):
+
+```bash
+npx supabase start                      # full local stack (Docker)
+DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres" npx prisma migrate deploy
+docker exec -i supabase_db_core psql -U postgres < supabase/enable-rls.sql
+```
+
+Create the storage bucket and the test account (keys are printed by `supabase start`; the values
+below are the fixed local development keys):
+
+```bash
+SK=<SERVICE_ROLE_KEY from supabase start>
+curl -X POST http://127.0.0.1:54321/storage/v1/bucket -H "Authorization: Bearer $SK" \
+  -H "Content-Type: application/json" -d '{"id":"photos","name":"photos","public":true}'
+curl -X POST http://127.0.0.1:54321/auth/v1/admin/users -H "apikey: $SK" -H "Authorization: Bearer $SK" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"ivanvukasino+2@gmail.com","password":"Ivanivan1!","email_confirm":true}'
+# then INSERT the matching "User" row (plan PRO) and a "Business" row via
+# docker exec supabase_db_core psql -U postgres
+```
+
+Start the app against the local stack (note `sslmode=disable` — local Postgres speaks no TLS):
+
+```bash
+DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres?sslmode=disable" \
+NEXT_PUBLIC_SUPABASE_URL="http://127.0.0.1:54321" \
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<ANON_KEY> \
+SUPABASE_SERVICE_ROLE_KEY=<SERVICE_ROLE_KEY> \
+NEXT_PUBLIC_APP_URL="http://localhost:3000" \
+RESEND_SENDING_DOMAIN="gut8erpro.de" \
+npx next dev -p 3000
+```
+
+The send specs reach Resend for real; with a `RESEND_API_KEY` whose account has not verified
+`gut8erpro.de` the send is refused by the provider (the route classifies and translates that
+failure — everything up to the provider is still exercised). `npx supabase stop` shuts the stack
+down; volumes keep the data.
+
 ## Test Account
 
 ```

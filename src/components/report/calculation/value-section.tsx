@@ -39,6 +39,7 @@ function ValueSection({
 	className,
 }: CalculationSectionProps) {
 	const t = useTranslations('report.calculation')
+	const tc = useTranslations('common')
 	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
 	const controlled = useControlledFieldProps({ errors, onFieldBlur })
 	const badge = useSectionBadge(SECTION.value)
@@ -57,13 +58,14 @@ function ValueSection({
 			</div>
 
 			{/* Replacement value + Tax rate on same row */}
-			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
 				<TextField
 					label={t('replacementValue')}
 					type="number"
 					prefix="€"
 					placeholder={t('addValue')}
 					step="0.01"
+					className="min-w-0 flex-1"
 					{...fieldProps('replacementValue')}
 				/>
 
@@ -74,7 +76,8 @@ function ValueSection({
 						<SelectField
 							label={t('chooseTaxRate')}
 							options={TAX_RATE_OPTIONS}
-							placeholder="Choose"
+							placeholder={tc('select')}
+							className="gap-3 sm:w-32 sm:shrink-0 sm:border-l sm:border-border-subtle sm:pl-6"
 							{...controlled('taxRate', field)}
 						/>
 					)}

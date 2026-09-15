@@ -1,6 +1,6 @@
 # 10 — UI / layout issues (consolidated)
 
-Status: ready-for-agent
+Status: resolved
 Type: bug
 Severity: low–medium
 
@@ -186,3 +186,129 @@ Worth recording so nobody re-investigates:
 - The unread-count badge colour `#3B82F6` **is** a real design token (`--color-info-blue`).
 - Fabric.js annotation works: rectangle drew, saved and persisted to `annotatedUrl`.
 - "Leistung (PS) = 190" is correctly derived from 140 kW.
+
+---
+
+## Resolution (2026-09-15)
+
+### Fixed
+
+**A. Clipped text**
+
+- **A1 — Risiken** is now a `<textarea rows={4}>` with the same registration, blur auto-save and
+  missing/error affordances the `TextField` carried. `src/components/report/calculation/repair-section.tsx`
+- **A2 — Social fields** moved from a 3-column to a 2-column grid, so Instagram / Facebook / LinkedIn
+  are the same 409 px as every other field in the form. `src/app/(app)/settings/[[...tab]]/page.tsx`
+- **A4 — Wiederbeschaffungswert** row is a flex row instead of a 2-equal-column grid: the value field
+  takes the free space, the tax select is a fixed 128 px column. `src/components/report/calculation/value-section.tsx`
+- **A5 — Leistungsbeschreibung** description column widened from `col-span-3` to `col-span-4`, taken
+  from the empty `col-span-2` spacer beside it (header row follows).
+  `src/components/report/invoice/line-items-section.tsx`
+
+**B. Overflow**
+
+- **B1 — BVSK fee table** keeps `overflow-x: auto` and gains a right-edge fade plus a thin scrollbar;
+  the scroller is a labelled `<section>`. `src/components/report/invoice/bvsk-rate-table.tsx`
+- **B2 — Tab bar** trigger padding `px-4 → px-2.5`, list gap `gap-1 → gap-0.5`, label/counter gap
+  `gap-1.5 → gap-1` (≈78 px reclaimed against the measured 62 px overflow), and the label now sits in
+  its own `truncate` span inside a shrinkable trigger so a longer label ellipsises instead of being
+  cut. Check marks and `0/6`-style counters are `shrink-0`, so they stay visible in every state.
+  `src/components/ui/tab-bar.tsx` (its only consumer is `src/app/(app)/reports/[id]/details/layout.tsx`)
+
+**C. Alignment and sizing**
+
+- **C1 — VIN row** each Vehicle grid row is `md:items-end`, so a two-line label no longer pushes its
+  input below its row siblings. `src/components/report/vehicle/identification-section.tsx`,
+  `src/components/report/vehicle/specification-section.tsx`
+- **C2 — "Zahlung einrichten" / "Tarif verwalten" / "Vorlage hinzufügen"** fixed widths became
+  `min-w-*` + `px-5` + `whitespace-nowrap`. `src/app/(app)/settings/[[...tab]]/page.tsx`
+- **C4 — Signature canvas** the backing store is now sized from the rendered box ×
+  `devicePixelRatio` with the context scaled to match (re-synced on window resize, existing ink
+  redrawn), so ink lands under the cursor. `src/components/signature/signature-pad.tsx`
+- **C5 — "Neues Gutachten" menu** measures itself on open and flips to `bottom-full` when it would
+  overflow the viewport bottom and there is more room above; it stays hidden for the measuring frame
+  so there is no jump. `src/app/(app)/page.tsx`
+
+**D. Contrast and affordance**
+
+- **D1 — "Logo hochladen"** lost its `opacity-45`; full-strength `text-black` on white (≈16:1) with a
+  hover border, and `opacity` now only signals the real disabled state.
+  `src/app/(app)/settings/[[...tab]]/page.tsx`
+- **D2 — "+" at the 20-photo cap** disabled with a translated `title` naming the limit.
+  `src/components/report/gallery/filmstrip.tsx`
+- **D3 — BVSK warning triangle** it rendered unconditionally and warned about nothing. It now appears
+  only while no repair cost is known (so no fee bracket can be matched) and carries a translated
+  tooltip saying exactly that. `src/components/report/invoice/bvsk-rate-table.tsx`
+- **D6 — Annotation modal** renders through a portal on `document.body`; every other body child gets
+  `inert` + `aria-hidden` while it is open (restored on close), the dialog is `role="dialog"
+  aria-modal="true"`, focus moves into it on open, Tab/Shift+Tab cycle inside it and Escape closes it.
+  `src/components/report/gallery/annotation-modal.tsx`
+- **D7 — Innenraumzustand** the field holds an AI-written value (`Excellent`/`Good`/`Fair`/`Poor`)
+  that matches none of its three options, so Radix had nothing to print. `SelectField` now falls back
+  to its placeholder when the current value matches no option, and the placeholder itself is
+  translated. `src/components/ui/select.tsx`, `src/components/report/condition/condition-section.tsx`
+  — the underlying enum mismatch (`src/lib/ai/interior-analyzer.ts` vs the option list) is untouched
+  and worth its own ticket.
+
+**E. Copy and content**
+
+- **E1 — Dropzone copy** `report.gallery.fileTypes` is now "JPG oder PNG" / "JPG or PNG", matching the
+  guidance panel and `accept`. `src/messages/{de,en}.json`
+- **E2 — Add photos from grid view** the grid gains a dashed add tile as its last cell, disabled at
+  the cap with the same translated tooltip. `src/components/report/gallery/photo-grid.tsx`,
+  `src/app/(app)/reports/[id]/gallery/page.tsx`
+- **E3 — "Leer"** → "Noch kein Logo hinterlegt" / "No logo yet". `src/messages/{de,en}.json`
+- **E5 — Run-on labels** the tax select now sits in its own column with a left divider and a 24 px
+  inset, so "Wiederbeschaffungswert" and "Steuersatz wählen" read as two controls.
+  `src/components/report/calculation/value-section.tsx`
+- **E6 — Paint inputs** each µm call-out carries `name="paintThickness.<position>"`. They are not
+  form fields — they persist through the paint-marker API keyed by `position` — so the name now
+  mirrors how the value is actually stored. `src/components/report/condition/damage-diagram-section.tsx`
+
+### Localisation fixed in the same files (issue 08)
+
+- Signature modal (08.B1): "Draw Signature", "Upload Signature", "Clear", "Choose File" and the
+  consent line now come from a new `report.signature` namespace in both locales.
+- Besteuerung sublabels (08.B2): `Natural / Difference / Standard rate` → **Neutral /
+  Differenzbesteuerung / Regelbesteuerung** (EN: Neutral / Margin scheme / Standard rate).
+- Nutzungsausfall (08.B3): "Group A"…"Group N" → "Gruppe A"…, "Class 1"…"Class 7" → "Klasse 1"….
+- Dropdown placeholders (08.D): the three variants `"Select"` / `"Choose"` / empty collapse onto one
+  `common.select` key — Condition (7), Vehicle (2), Calculation (5).
+- Vehicle placeholders: all nine `e.g. …` → `z.B. …` keys; Motorbauart `Other` → `Sonstige`.
+- Condition: mileage `e.g. 125,450 km` → `z.B. 125.450 km`; Nächste HU/AU `MM/YY/YY` → `TT.MM.JJJJ`;
+  "Standard View" → "Standardansicht" (key already existed, now used).
+- Photo classification badges: raw enums → translated labels under `report.gallery.classification`.
+- Billing: `"7 day(s) remaining"` → ICU plural in both locales.
+- Upload errors: the route's `max_photos_exceeded` code is translated in `usePhotoUpload` (landed by
+  the parallel i18n stream); the gallery banner now renders one line per error instead of collapsing
+  them.
+
+### Skipped
+
+- **E7 — two completion metrics** — by design: the tab counter counts sections, the header counts
+  fields. No change made.
+
+### Not covered by this pass
+
+- **C3** (notifications page container), **D4** (duplicate Save/Cancel on Integrationen),
+  **D5** ("Verbinden" label while its form is open), **E4** (claimant/visits PLZ placeholders —
+  `accident-info`). C3 and E4 belong to the localisation/notifications stream; D4 and D5 were not
+  assigned in this pass.
+
+### Verification
+
+`npx tsc --noEmit` clean · `npx biome check src testing/e2e` clean · `npx vitest run` 940 passed,
+26 skipped, 0 failed. E2E selectors for the Risiken field updated from `input[name="risks"]` to
+`textarea[name="risks"]` in `testing/e2e/06-save-reload.spec.ts` and
+`testing/e2e/12-hs-complete-flow.spec.ts`.
+
+### Follow-up (2026-09-15, local verification pass)
+
+The D7 fallback in `src/components/ui/select.tsx` surfaced a latent Radix behaviour during the
+live local run: the hidden native select re-mounts while its options register and emits a
+`change` with an empty value, which wiped a freshly-reset form value (saved Anrede/salutation
+rendered as placeholder and the '' was even auto-saved back). Radix forbids '' as an item value,
+so SelectField now drops that emission (`if (v !== '') onValueChange?.(v)`), and the
+Controller-bound selects pass `?? ''` instead of `?? undefined` so they stay controlled from
+mount. Verified in the browser against a real database: saved salutation now renders after
+reload on Profile and claimant/opponent sections.

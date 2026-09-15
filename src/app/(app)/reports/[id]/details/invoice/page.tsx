@@ -79,7 +79,7 @@ function InvoicePage() {
 						specialFeature: li.specialFeature || '',
 						isLumpSum: li.isLumpSum ?? false,
 						rate: parseFloat(String(li.rate)) || 0,
-						amount: parseFloat(String(li.amount)) || parseFloat(String(li.rate)) || 0,
+						amount: (parseFloat(String(li.rate)) || 0) * (parseInt(String(li.quantity), 10) || 1),
 						quantity: parseInt(String(li.quantity), 10) || 1,
 						order: i,
 					}))
@@ -168,7 +168,7 @@ function InvoicePage() {
 			<InvoiceBanner control={control} />
 
 			{/* White card wrapping invoice details */}
-			<div className="flex flex-col gap-6 rounded-[20px] bg-white p-5">
+			<div className="flex flex-col gap-6 rounded-card bg-white p-5">
 				{/* Invoice Details heading */}
 				<h3 className="text-h3 font-semibold text-black">{t('title')}</h3>
 

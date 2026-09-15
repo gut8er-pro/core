@@ -120,8 +120,8 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 				await createNotification({
 					userId: user.id,
 					eventType: 'INVOICE_GENERATED',
-					title: 'Invoice Generated',
-					description: `Invoice ${data.invoice.invoiceNumber} has been generated.`,
+					messageKey: 'invoiceGenerated',
+					params: { invoiceNumber: data.invoice.invoiceNumber },
 					reportId: id,
 				})
 			}

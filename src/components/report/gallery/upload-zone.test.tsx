@@ -11,7 +11,7 @@ describe('UploadZone', () => {
 
 	it('shows file types hint', () => {
 		render(<UploadZone onFilesSelected={vi.fn()} />)
-		expect(screen.getByText('PDF PNG or JPG')).toBeInTheDocument()
+		expect(screen.getByText('JPG or PNG')).toBeInTheDocument()
 	})
 
 	it('shows "Maximum photos reached" when currentCount >= maxFiles', () => {

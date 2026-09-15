@@ -1,8 +1,15 @@
+import { getServerTranslations } from '@/i18n/translator'
+import { requestLocale } from '@/lib/api/locale'
 import { getResendClient } from '@/lib/email/client'
 import { escapeHtml } from '@/lib/email/html'
 import { notificationSender } from '@/lib/email/sender'
 import { prisma } from '@/lib/prisma'
 import { appUrl } from '@/lib/urls'
+import {
+	encodeNotificationParams,
+	type NotificationMessageKey,
+	type NotificationParams,
+} from './messages'
 
 type NotificationEventType =
 	| 'REPORT_COMPLETED'
@@ -23,14 +30,14 @@ const EMAIL_EVENTS = new Set<NotificationEventType>([
 async function createNotification({
 	userId,
 	eventType,
-	title,
-	description,
+	messageKey,
+	params,
 	reportId,
 }: {
 	userId: string
 	eventType: NotificationEventType
-	title: string
-	description: string
+	messageKey: NotificationMessageKey
+	params: NotificationParams
 	reportId?: string
 }) {
 	let notification = null
@@ -39,8 +46,8 @@ async function createNotification({
 			data: {
 				userId,
 				eventType,
-				title,
-				description,
+				title: messageKey,
+				description: encodeNotificationParams(params),
 				reportId: reportId ?? null,
 			},
 		})
@@ -63,13 +70,21 @@ async function createNotification({
 				select: { email: true, firstName: true },
 			})
 			if (user?.email) {
+				const locale = await requestLocale()
+				const t = await getServerTranslations(locale, 'notifications')
+				const subject = t(`messages.${messageKey}.title`)
+				const summary = escapeHtml(t(`messages.${messageKey}.description`, params))
+				const greeting = escapeHtml(
+					user.firstName
+						? t('email.greeting', { name: user.firstName })
+						: t('email.greetingFallback'),
+				)
 				const resend = getResendClient()
-				const greeting = user.firstName ? `Hi ${escapeHtml(user.firstName)},` : 'Hi,'
 				await resend.emails.send({
 					from: notificationSender(),
 					to: user.email,
-					subject: title,
-					html: `<p>${greeting}</p><p>${escapeHtml(description)}</p><p>Log in to <a href="${appUrl()}">Gut8erPRO</a> to view details.</p>`,
+					subject,
+					html: `<p>${greeting}</p><p>${summary}</p><p><a href="${appUrl()}">${escapeHtml(t('email.openApp'))}</a></p>`,
 				})
 				await prisma.notification.update({
 					where: { id: notification.id },

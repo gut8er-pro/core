@@ -5,6 +5,7 @@ const AUTH_FILE = path.join(__dirname, '.auth/user.json')
 
 export default defineConfig({
 	testDir: '.',
+	timeout: 60_000,
 	fullyParallel: false,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,

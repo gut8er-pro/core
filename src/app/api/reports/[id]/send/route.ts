@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
 import { type NextRequest, NextResponse } from 'next/server'
+import { defaultLocale } from '@/i18n/config'
+import { resolveLocale } from '@/i18n/translator'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { getMissingInfo, isDelivered } from '@/lib/completeness/server'
 import { sendReportEmail } from '@/lib/email/send-report'
@@ -89,6 +91,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	// Generate PDF attachment(s) — one per selected language
 	const pdfLanguages: string[] = Array.isArray(data.pdfLanguages) ? data.pdfLanguages : ['de']
 	const pdfAttachments: { filename: string; content: Buffer }[] = []
+	const pdfFailures: { language: string; cause: string }[] = []
 	for (const lang of pdfLanguages) {
 		try {
 			const pdfResult = await generateReportPdfBuffer(id, user.id, lang)
@@ -100,11 +103,30 @@ async function POST(request: NextRequest, context: RouteContext) {
 				})
 			} else {
 				console.error(`PDF generation error (${lang}):`, pdfResult.error)
+				pdfFailures.push({ language: lang, cause: pdfResult.error })
 			}
 		} catch (err) {
 			console.error(`PDF generation failed (${lang}):`, err)
+			pdfFailures.push({
+				language: lang,
+				cause: err instanceof Error ? err.message : String(err),
+			})
 		}
 	}
+
+	// Every requested language or none of them. A covering mail with a Gutachten
+	// missing is discovered by the client, not by the assessor — and a locked
+	// report cannot be sent a second time. See CONTEXT.md#send-failures.
+	if (pdfAttachments.length !== pdfLanguages.length) {
+		const languages = pdfFailures.map((failure) => failure.language)
+		const detail = pdfFailures.map((failure) => `${failure.language}: ${failure.cause}`).join('; ')
+		console.error(`[send] report=${id} refused: no PDF for ${languages.join(', ')} — ${detail}`)
+		Sentry.captureException(new Error(`Report PDF generation failed: ${detail}`), {
+			tags: { reportId: id, failedLanguages: languages.join(',') },
+		})
+		return NextResponse.json({ error: 'pdf_generation_failed', languages }, { status: 500 })
+	}
+
 	const pdfAttachment = pdfAttachments[0]
 
 	// Fetch sender details from DB
@@ -121,6 +143,11 @@ async function POST(request: NextRequest, context: RouteContext) {
 	const senderName = [dbUser?.firstName, dbUser?.lastName].filter(Boolean).join(' ')
 	const senderCompany = dbUser?.business?.companyName ?? undefined
 
+	// The chrome the app wraps around the assessor's composition follows the
+	// attached Gutachten. Asked for both languages, it falls back to German
+	// rather than picking one of the two for the recipient.
+	const emailLocale = pdfLanguages.length === 1 ? resolveLocale(pdfLanguages[0]) : defaultLocale
+
 	// Send email via Resend with PDF attachment(s)
 	const emailResult = await sendReportEmail({
 		to: data.recipientEmail,
@@ -130,6 +157,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 		reportTitle: report.title,
 		senderName,
 		senderCompany,
+		locale: emailLocale,
 		// The reply path. Without it a client pressing Reply reaches an address
 		// nobody reads — see CONTEXT.md#mail-senders.
 		replyTo: dbUser?.email ?? user.email,
@@ -179,8 +207,8 @@ async function POST(request: NextRequest, context: RouteContext) {
 	await createNotification({
 		userId: user.id,
 		eventType: 'REPORT_SENT',
-		title: 'Report Sent',
-		description: `Report "${report.title}" was sent to ${data.recipientEmail}.`,
+		messageKey: 'reportSent',
+		params: { title: report.title, recipient: data.recipientEmail },
 		reportId: id,
 	})
 

@@ -1,6 +1,5 @@
 'use client'
 
-import { formatDistanceToNow } from 'date-fns'
 import { Bell, CheckCircle2, CreditCard, FileText, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -73,7 +72,7 @@ function NotificationsPage() {
 
 	if (error) {
 		return (
-			<div className="mx-auto max-w-2xl">
+			<div>
 				<PageHeader unreadCount={0} onMarkAllRead={() => {}} />
 				<div className="mt-6 rounded-lg border border-error bg-error-light px-6 py-4 text-body-sm text-error">
 					{t('failedToLoad')}
@@ -83,7 +82,7 @@ function NotificationsPage() {
 	}
 
 	return (
-		<div className="mx-auto max-w-2xl">
+		<div>
 			<PageHeader unreadCount={unreadCount} onMarkAllRead={markAllRead} isLoading={isLoading} />
 
 			{isLoading ? (
@@ -96,9 +95,6 @@ function NotificationsPage() {
 						const iconConfig =
 							NOTIFICATION_ICON_MAP[notification.eventType] ?? NOTIFICATION_ICON_MAP.REPORT_CREATED
 						const Icon = iconConfig.icon
-						const relativeTime = formatDistanceToNow(new Date(notification.createdAt), {
-							addSuffix: true,
-						})
 
 						return (
 							<div
@@ -141,7 +137,7 @@ function NotificationsPage() {
 										{notification.title}
 									</p>
 									<p className="mt-0.5 text-body-sm text-grey-100">{notification.description}</p>
-									<p className="mt-1 text-caption text-grey-100">{relativeTime}</p>
+									<p className="mt-1 text-caption text-grey-100">{notification.relativeTime}</p>
 								</div>
 
 								{/* Unread indicator */}

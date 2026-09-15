@@ -57,7 +57,7 @@ async function fetchReports(params: Partial<ReportListParams> = {}): Promise<Rep
 }
 
 type CreateReportParams = {
-	title: string
+	title?: string
 	reportType?: 'HS' | 'BE' | 'KG' | 'OT'
 }
 

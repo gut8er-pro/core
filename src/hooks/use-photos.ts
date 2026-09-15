@@ -34,6 +34,32 @@ async function fetchPhotos(reportId: string): Promise<{ photos: Photo[] }> {
 	return response.json()
 }
 
+const UPLOAD_ERROR_CODES = ['max_photos_exceeded'] as const
+
+type UploadErrorCode = (typeof UPLOAD_ERROR_CODES)[number]
+
+function isUploadErrorCode(value: unknown): value is UploadErrorCode {
+	return (UPLOAD_ERROR_CODES as readonly unknown[]).includes(value)
+}
+
+/**
+ * The upload was refused for a reason the assessor can act on.
+ *
+ * Its own type because the server answers with a code: the wording belongs to
+ * the client, which is the only side that knows what language to use.
+ */
+class PhotoUploadError extends Error {
+	readonly code: UploadErrorCode
+	readonly limit?: number
+
+	constructor(code: UploadErrorCode, limit?: number) {
+		super(`Photo upload refused: ${code}`)
+		this.name = 'PhotoUploadError'
+		this.code = code
+		this.limit = limit
+	}
+}
+
 async function uploadPhoto(
 	reportId: string,
 	data: {
@@ -50,8 +76,14 @@ async function uploadPhoto(
 		body: JSON.stringify(data),
 	})
 	if (!response.ok) {
-		const error = await response.json()
-		throw new Error(error.error || 'Failed to upload photo')
+		const body = (await response.json().catch(() => ({}))) as {
+			error?: string
+			limit?: number
+		}
+		if (isUploadErrorCode(body.error)) {
+			throw new PhotoUploadError(body.error, body.limit)
+		}
+		throw new Error(body.error || 'Failed to upload photo')
 	}
 	return response.json()
 }
@@ -101,5 +133,5 @@ function useDeletePhoto(reportId: string) {
 	})
 }
 
-export type { Annotation, Photo }
-export { fetchPhotos, useDeletePhoto, usePhotos, useUploadPhoto }
+export type { Annotation, Photo, UploadErrorCode }
+export { fetchPhotos, PhotoUploadError, uploadPhoto, useDeletePhoto, usePhotos, useUploadPhoto }

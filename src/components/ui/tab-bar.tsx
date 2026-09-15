@@ -24,7 +24,7 @@ function TabBar({ tabs, activeTab, onTabChange, className }: TabBarProps) {
 		<TabsPrimitive.Root value={activeTab} onValueChange={onTabChange}>
 			<TabsPrimitive.List
 				className={cn(
-					'flex items-center gap-1 overflow-x-auto rounded-full bg-grey-25 p-1',
+					'flex items-center gap-0.5 overflow-x-auto rounded-full bg-grey-25 p-1',
 					className,
 				)}
 			>
@@ -34,20 +34,21 @@ function TabBar({ tabs, activeTab, onTabChange, className }: TabBarProps) {
 						<TabsPrimitive.Trigger
 							key={tab.key}
 							value={tab.key}
+							title={tab.label}
 							className={cn(
-								'inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2.5 text-body-sm font-medium transition-colors',
+								'inline-flex min-w-0 shrink cursor-pointer items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-2.5 text-body-sm font-medium transition-colors',
 								isActive
 									? 'bg-primary text-white shadow-sm'
 									: 'bg-transparent text-grey-100 hover:text-black',
 							)}
 						>
-							{tab.label}
-							{tab.isComplete && !isActive && <Check className="h-4 w-4 text-primary" />}
-							{tab.isComplete && isActive && <Check className="h-4 w-4 text-white" />}
+							<span className="truncate">{tab.label}</span>
+							{tab.isComplete && !isActive && <Check className="h-4 w-4 shrink-0 text-primary" />}
+							{tab.isComplete && isActive && <Check className="h-4 w-4 shrink-0 text-white" />}
 							{tab.completion && !tab.isComplete && (
 								<span
 									className={cn(
-										'text-caption font-medium',
+										'shrink-0 text-caption font-medium',
 										isActive ? 'text-white/70' : 'text-grey-100',
 									)}
 								>

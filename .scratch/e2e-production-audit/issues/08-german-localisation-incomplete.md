@@ -1,6 +1,6 @@
 # 08 — German localisation is incomplete across the app
 
-Status: ready-for-agent
+Status: resolved
 Type: bug
 Severity: medium
 
@@ -160,3 +160,90 @@ escaping work gets reverted by the merge.
 The template has no locale available today. The send route knows it — `route.ts:87` already reads
 `data.pdfLanguages` to decide which PDFs to attach — so the email locale should follow the same
 input rather than gaining a setting of its own.
+
+---
+
+## Resolution (2026-09-15)
+
+Split across two streams. Everything below marked **fixed** landed here; everything marked
+**ticket 10's stream** is the same defect in a file the layout work owns and is being fixed
+there. Do not close 08 until that stream confirms B1/B2/B3 and the rows named at the end.
+
+### A — server-generated strings — fixed
+
+- **A1.** `src/app/api/reports/[id]/photos/route.ts` answers `{ error: 'max_photos_exceeded',
+  limit, message }` at the same 400. `uploadPhoto` raises a `PhotoUploadError` carrying the code,
+  and `usePhotoUpload` — the hook the gallery banner reads its string from — puts it into words.
+  No gallery component changed: the banner already renders whatever the hook hands it. The hook's
+  own two English sentences (file type, file size) went through `t()` at the same time.
+- **A2.** Notifications no longer store prose. A row now carries its message key in `title` and
+  its parameters JSON-encoded in `description` — `eventType` alone could not carry it, because
+  two different routes both write `REPORT_COMPLETED` with different sentences. No migration: the
+  two existing columns hold the encoding. `useNotifications` translates at render, so both the
+  page and the top-bar dropdown are covered, and a row whose `title` is not a known key keeps its
+  stored prose — every row already in the database still reads correctly. The notification
+  **email** is rendered from the same catalogue rather than from the stored columns.
+- **A3.** Already resolved by issue 01. No change.
+
+### B — legally significant text — ticket 10's stream
+
+B1 (signature modal), B2 (Besteuerung sublabels), B3 (Gruppe A–L) all live in
+`src/components/signature/**` and `src/components/report/calculation/**`.
+
+### C — dates and numbers — fixed, except two rows
+
+- Dashboard list dates: `src/components/dashboard/report-list.tsx` had a hardcoded English
+  weekday array. Now `Intl.DateTimeFormat(locale, { weekday: 'short', … })` → `Mi., 14.02.2026`.
+- Statistics table dates: the weekday had been dropped in today's rewrite; restored, locale-driven.
+- Statistics amounts: the table now renders `268,00 €` (two decimals, locale-driven). The KPI
+  cards keep their rounded `268 €` — the ticket records that shape as correct.
+- Notifications relative time: `formatDistanceToNow` gets `date-fns/locale`'s `de` under the
+  German locale → *vor etwa 1 Stunde*. Done once in `useNotifications`, which covers both the
+  notifications page and the bell dropdown.
+- **Templates dates** and **billing history currency** are in `src/app/(app)/settings/**` —
+  ticket 10's stream. (The templates date there already reads `de-DE` + `dd.MM.yyyy`.)
+- **Nächste HU/AU** and **mileage** placeholders are in `condition/` and `vehicle/` —
+  ticket 10's stream.
+
+### D — untranslated UI strings — accident-info and the dashboard fixed
+
+- Placeholders in `src/components/report/accident-info/**`: `R0S312`, `eg 006312`,
+  `eg 0565012` → one `postcodePlaceholder` (`z.B. 10115`); `Street address or po box` /
+  `Street address or p.o. box` / `Musterstraße 123` → one `streetPlaceholder`;
+  `John Doe Lawyer Firm` and `Mark Cooper` → translated keys.
+- `Untitled Report` in the dashboard list is mapped to `dashboard.untitledReport` at render, so
+  rows already holding the database default read as German too.
+- Both salutation dropdowns (claimant, opponent) rendered without a `value`, so a saved salutation
+  never came back after a reload. Both are `Controller`-bound now.
+- **Select / Choose / empty dropdown placeholders**, **Motorbauart "Other"**, the five Vehicle
+  `e.g.` placeholders, **"Standard View"** and the **photo classification badges** are all in
+  `condition/`, `vehicle/`, `calculation/` and `gallery/` — ticket 10's stream.
+
+### E — AI output — fixed
+
+- `calculation-extractor` takes the locale and requires German for `repairMethod` and `risks`;
+  both the pipeline and `/calculation/auto-fill` pass it.
+- `overview-analyzer` asks for a German `color` (*Hellgrün*), `interior-analyzer` for German
+  `features` (*Panoramadach*). Enum values deliberately stay canonical English — the PDF and the
+  UI dropdowns translate them at render, and localising them at write time would break that.
+- Damage markers: `Severity:` / `Repair:` and the severity value itself are translated as the
+  marker comment is built. The comment is stored and rendered verbatim, so it is the only chance.
+- The AI progress sub-line ("Classified 16/20 photos…") is emitted from the pipeline in the user's
+  language, which fixes the mixed-language panel without touching the gallery component.
+- `overview-analysis` and `interior-analysis` prompt versions bumped to 3 — cached v2 rows answer
+  in English and would otherwise keep landing in German reports.
+
+### The report email (the section added 2026-09-15) — fixed
+
+Landed on top of issue 01's escaping, not instead of it. `sendReportEmail` takes a locale;
+greeting, the attachment line, the footer and `<html lang>` come from the catalogue. The send
+route derives it from `data.pdfLanguages`: one language → that language, both → German, so the
+recipient gets one covering note rather than a guess.
+
+### Not done, deliberately
+
+- The AI `summary.warnings` strings are still English. Nothing renders them today.
+- `wheelAlignment` / `bodyMeasurements` / `bodyPaint` still come back from the model as English
+  prose ("Required") where the form expects `required` / `not_required`, so the select stays on
+  its placeholder. No English reaches the screen, so it is not this ticket — but it is a live
+  auto-fill defect and wants its own.

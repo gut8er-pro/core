@@ -1,6 +1,5 @@
 'use client'
 
-import { formatDistanceToNow } from 'date-fns'
 import {
 	BarChart3,
 	Bell,
@@ -175,7 +174,6 @@ function TopNavBar({
 						) : (
 							recentNotifications.map((n) => {
 								const Icon = NOTIFICATION_ICON[n.eventType] ?? FileText
-								const timeAgo = formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })
 								return (
 									<div
 										key={n.id}
@@ -199,7 +197,7 @@ function TopNavBar({
 												{n.title}
 											</p>
 											<p className="text-body-sm leading-5 text-black/70">{n.description}</p>
-											<p className="text-caption text-black/45">{timeAgo}</p>
+											<p className="text-caption text-black/45">{n.relativeTime}</p>
 										</div>
 										{!n.isRead && (
 											<span className="mt-1 h-[9px] w-[9px] shrink-0 rounded-full bg-primary" />

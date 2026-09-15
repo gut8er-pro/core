@@ -1,6 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
+import { Controller } from 'react-hook-form'
 import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { SelectField } from '@/components/ui/select'
@@ -10,6 +11,7 @@ import type { SectionProps } from './types'
 
 function OpponentSection({
 	register,
+	control,
 	errors,
 	onFieldBlur,
 	className,
@@ -42,16 +44,22 @@ function OpponentSection({
 
 				{/* Salutation / First Name / Last Name — 3 columns */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-					<SelectField
-						label={t('accidentInfo.salutation')}
-						options={salutationOptions}
-						placeholder={t('accidentInfo.salutationPlaceholder')}
-						error={errors.opponentSalutation?.message}
-						onValueChange={(value) => {
-							const event = { target: { name: 'opponentSalutation', value } }
-							register('opponentSalutation').onChange(event)
-							onFieldBlur?.('opponentSalutation')
-						}}
+					<Controller
+						control={control}
+						name="opponentSalutation"
+						render={({ field }) => (
+							<SelectField
+								label={t('accidentInfo.salutation')}
+								options={salutationOptions}
+								placeholder={t('accidentInfo.salutationPlaceholder')}
+								value={field.value}
+								error={errors.opponentSalutation?.message}
+								onValueChange={(value) => {
+									field.onChange(value)
+									onFieldBlur?.('opponentSalutation')
+								}}
+							/>
+						)}
 					/>
 					<TextField
 						label={t('accidentInfo.firstName')}
@@ -69,12 +77,12 @@ function OpponentSection({
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<TextField
 						label={t('accidentInfo.street')}
-						placeholder="Street address or p.o. box"
+						placeholder={t('accidentInfo.streetPlaceholder')}
 						{...fieldProps('opponentStreet')}
 					/>
 					<TextField
 						label={t('accidentInfo.postcode')}
-						placeholder="eg 0565012"
+						placeholder={t('accidentInfo.postcodePlaceholder')}
 						{...fieldProps('opponentPostcode')}
 					/>
 					<TextField

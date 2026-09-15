@@ -74,10 +74,10 @@ function StepperSidebar({ steps, currentStep, completedSteps, className }: Stepp
 				{/* Car illustration — grows to fill remaining space, min-h-0 allows shrinking */}
 				<div className="mt-6 min-h-0 flex-1 -mx-10">
 					<Image
-						src="/images/login-car-illustration.webp"
+						src="/images/login-car-scene.webp"
 						alt=""
-						width={411}
-						height={300}
+						width={1400}
+						height={841}
 						className="h-full w-full object-contain object-bottom"
 					/>
 				</div>

@@ -43,8 +43,8 @@ async function syncReportCompletion(reportId: string, userId: string): Promise<v
 			await createNotification({
 				userId,
 				eventType: 'REPORT_COMPLETED',
-				title: 'Report Completed',
-				description: `Report "${report.title}" now has every required field filled in.`,
+				messageKey: 'reportFieldsComplete',
+				params: { title: report.title },
 				reportId,
 			})
 		}

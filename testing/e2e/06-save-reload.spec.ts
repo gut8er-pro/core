@@ -16,7 +16,7 @@ test.describe('Save & Reload Persistence', () => {
 
 		// Fill all claimant fields
 		for (const [name, value] of Object.entries(CLAIMANT_DATA)) {
-			await page.locator(`input[name="${name}"]`).fill(value)
+			await page.locator(`input[name="${name}"], textarea[name="${name}"]`).fill(value)
 		}
 		await page.locator(`input[name="claimantLicensePlate"]`).blur()
 		await page.waitForTimeout(2000)
@@ -27,7 +27,7 @@ test.describe('Save & Reload Persistence', () => {
 
 		// Verify
 		for (const [name, value] of Object.entries(CLAIMANT_DATA)) {
-			await expect(page.locator(`input[name="${name}"]`)).toHaveValue(value)
+			await expect(page.locator(`input[name="${name}"], textarea[name="${name}"]`)).toHaveValue(value)
 		}
 	})
 
@@ -37,7 +37,7 @@ test.describe('Save & Reload Persistence', () => {
 
 		// Fill identification
 		for (const name of ['vin', 'manufacturer', 'mainType', 'subType', 'kbaNumber']) {
-			await page.locator(`input[name="${name}"]`).fill(VEHICLE_DATA[name as keyof typeof VEHICLE_DATA])
+			await page.locator(`input[name="${name}"], textarea[name="${name}"]`).fill(VEHICLE_DATA[name as keyof typeof VEHICLE_DATA])
 		}
 		await page.locator('input[name="kbaNumber"]').blur()
 		await page.waitForTimeout(1000)
@@ -46,7 +46,7 @@ test.describe('Save & Reload Persistence', () => {
 		await page.locator('text=Specification').first().click()
 		await page.waitForTimeout(500)
 		for (const name of ['powerKw', 'displacement', 'cylinders']) {
-			await page.locator(`input[name="${name}"]`).fill(VEHICLE_DATA[name as keyof typeof VEHICLE_DATA])
+			await page.locator(`input[name="${name}"], textarea[name="${name}"]`).fill(VEHICLE_DATA[name as keyof typeof VEHICLE_DATA])
 		}
 		await page.locator('input[name="cylinders"]').blur()
 		await page.waitForTimeout(2000)
@@ -57,7 +57,7 @@ test.describe('Save & Reload Persistence', () => {
 
 		// Verify identification
 		for (const name of ['vin', 'manufacturer', 'mainType', 'subType', 'kbaNumber']) {
-			await expect(page.locator(`input[name="${name}"]`)).toHaveValue(VEHICLE_DATA[name as keyof typeof VEHICLE_DATA])
+			await expect(page.locator(`input[name="${name}"], textarea[name="${name}"]`)).toHaveValue(VEHICLE_DATA[name as keyof typeof VEHICLE_DATA])
 		}
 
 		// Expand and verify specification
@@ -74,7 +74,7 @@ test.describe('Save & Reload Persistence', () => {
 
 		// Fill all calculation fields
 		for (const [name, value] of Object.entries(CALCULATION_DATA)) {
-			await page.locator(`input[name="${name}"]`).fill(value)
+			await page.locator(`input[name="${name}"], textarea[name="${name}"]`).fill(value)
 		}
 		await page.locator('input[name="replacementTimeDays"]').blur()
 		await page.waitForTimeout(2000)
@@ -88,7 +88,7 @@ test.describe('Save & Reload Persistence', () => {
 		await expect(page.locator('input[name="residualValue"]')).toHaveValue('18000')
 		await expect(page.locator('input[name="diminutionInValue"]')).toHaveValue('3500')
 		await expect(page.locator('input[name="repairMethod"]')).toHaveValue('Instandsetzung')
-		await expect(page.locator('input[name="risks"]')).toHaveValue('Korrosionsgefahr')
+		await expect(page.locator('textarea[name="risks"]')).toHaveValue('Korrosionsgefahr')
 		await expect(page.locator('input[name="damageClass"]')).toHaveValue('III')
 		await expect(page.locator('input[name="repairTimeDays"]')).toHaveValue('7')
 		await expect(page.locator('input[name="replacementTimeDays"]')).toHaveValue('14')

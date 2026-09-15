@@ -74,7 +74,7 @@ test.describe('Report Type Differences', () => {
 
 	test('OT: Valuation tab with Market/Replacement/Restoration', async ({ page }) => {
 		await page.goto(`/reports/${reportIds.OT}/details/calculation`)
-		await expect(page.getByText('Vehicle Value')).toBeVisible()
+		await expect(page.getByRole('heading', { name: 'Valuation' })).toBeVisible()
 		await expect(page.getByText('Market value')).toBeVisible()
 		await expect(page.getByText('Replacement value')).toBeVisible()
 		await expect(page.getByText('Restoration Value')).toBeVisible()

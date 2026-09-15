@@ -1,6 +1,6 @@
 # 12 — Sentry is installed, configured, and captures nothing
 
-Status: ready-for-agent
+Status: resolved
 Type: bug
 Severity: high
 
@@ -77,3 +77,15 @@ unblocks it.
 
 - **Issue 01**, part 2 — its `Sentry.captureException` for provider failures is a no-op until this
   lands. Do this one first.
+
+## Resolution (2026-09-15)
+
+`instrumentation.ts` at the root imports `./sentry.server.config` or `./sentry.edge.config` off
+`NEXT_RUNTIME` in `register()`, and exports `onRequestError = Sentry.captureRequestError`.
+`sentry.client.config.ts` moved to `instrumentation-client.ts` — deleted rather than left beside it,
+since both would initialise twice — and now also exports
+`onRouterTransitionStart = Sentry.captureRouterTransitionStart`. The `next.config.ts` gate is
+untouched. Both hook names verified against the installed SDK (10.53.1) and against Next, which is
+**16.1.6 here, not 14**: it resolves `instrumentation-client.ts` itself, and builds with Turbopack,
+where the SDK's webpack search for `sentry.client.config.ts` no longer runs at all. Still owed: the
+Vercel auth token, and a thrown error from a deployed preview to prove an event arrives.

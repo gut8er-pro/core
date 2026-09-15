@@ -139,7 +139,7 @@ function ConditionSection({
 							<SelectField
 								label={t('condition.paintType')}
 								options={PAINT_TYPE_OPTIONS}
-								placeholder="Select"
+								placeholder={tc('select')}
 								{...controlled('paintType', field)}
 							/>
 						)}
@@ -152,7 +152,7 @@ function ConditionSection({
 							<SelectField
 								label={t('condition.paint')}
 								options={PAINT_OPTIONS}
-								placeholder="Select"
+								placeholder={tc('select')}
 								{...controlled('hard', field)}
 							/>
 						)}
@@ -165,7 +165,7 @@ function ConditionSection({
 							<SelectField
 								label={t('condition.paintCondition')}
 								options={PAINT_CONDITION_OPTIONS}
-								placeholder="Select"
+								placeholder={tc('select')}
 								{...controlled('paintCondition', field)}
 							/>
 						)}
@@ -181,7 +181,7 @@ function ConditionSection({
 							<SelectField
 								label={t('condition.generalCondition')}
 								options={GENERAL_CONDITION_OPTIONS}
-								placeholder="Select"
+								placeholder={tc('select')}
 								{...controlled('generalCondition', field)}
 							/>
 						)}
@@ -194,7 +194,7 @@ function ConditionSection({
 							<SelectField
 								label={t('condition.bodyCondition')}
 								options={BODY_CONDITION_OPTIONS}
-								placeholder="Select"
+								placeholder={tc('select')}
 								{...controlled('bodyCondition', field)}
 							/>
 						)}
@@ -207,7 +207,7 @@ function ConditionSection({
 							<SelectField
 								label={t('condition.interiorCondition')}
 								options={INTERIOR_CONDITION_OPTIONS}
-								placeholder="Select"
+								placeholder={tc('select')}
 								{...controlled('interiorCondition', field)}
 							/>
 						)}
@@ -223,7 +223,7 @@ function ConditionSection({
 							<SelectField
 								label={t('condition.drivingAbility')}
 								options={DRIVING_ABILITY_OPTIONS}
-								placeholder="Select"
+								placeholder={tc('select')}
 								{...controlled('drivingAbility', field)}
 							/>
 						)}
@@ -247,14 +247,14 @@ function ConditionSection({
 					<TextField
 						label={t('condition.mileageRead')}
 						type="number"
-						placeholder="e.g. 125,450 km"
+						placeholder={t('condition.mileagePlaceholder')}
 						{...fieldProps('mileageRead')}
 					/>
 
 					<TextField
 						label={t('condition.estimationMileage')}
 						type="number"
-						placeholder="e.g. 125,450 km"
+						placeholder={t('condition.mileagePlaceholder')}
 						{...fieldProps('estimateMileage')}
 					/>
 
@@ -282,7 +282,7 @@ function ConditionSection({
 						<TextField
 							label={t('condition.nextMot')}
 							type="date"
-							placeholder="MM/YY/YY"
+							placeholder={t('condition.nextMotPlaceholder')}
 							{...fieldProps('nextMot')}
 						/>
 					</div>

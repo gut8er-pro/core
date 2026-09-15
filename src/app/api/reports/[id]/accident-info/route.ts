@@ -80,6 +80,9 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 				reportId: id,
 				accidentDay: data.accidentInfo.accidentDay ? new Date(data.accidentInfo.accidentDay) : null,
 				accidentScene: data.accidentInfo.accidentScene ?? null,
+				presentExpert: data.accidentInfo.presentExpert ?? false,
+				presentClient: data.accidentInfo.presentClient ?? false,
+				presentWorkshopEmployee: data.accidentInfo.presentWorkshopEmployee ?? false,
 			},
 			update: {
 				...(data.accidentInfo.accidentDay !== undefined && {
@@ -89,6 +92,15 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 				}),
 				...(data.accidentInfo.accidentScene !== undefined && {
 					accidentScene: data.accidentInfo.accidentScene,
+				}),
+				...(data.accidentInfo.presentExpert !== undefined && {
+					presentExpert: data.accidentInfo.presentExpert,
+				}),
+				...(data.accidentInfo.presentClient !== undefined && {
+					presentClient: data.accidentInfo.presentClient,
+				}),
+				...(data.accidentInfo.presentWorkshopEmployee !== undefined && {
+					presentWorkshopEmployee: data.accidentInfo.presentWorkshopEmployee,
 				}),
 			},
 		})

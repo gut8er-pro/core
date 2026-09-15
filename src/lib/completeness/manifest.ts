@@ -236,12 +236,7 @@ function calculationTab(reportType: ReportType): SectionSpec<CalculationValues>[
 		return [
 			{
 				id: SECTION.oldtimerValue,
-				rules: fields<CalculationValues>(
-					'marketValue',
-					'replacementValue',
-					'restorationValue',
-					'baseVehicleValue',
-				),
+				rules: fields<CalculationValues>('marketValue', 'replacementValue', 'restorationValue'),
 			},
 		]
 	}

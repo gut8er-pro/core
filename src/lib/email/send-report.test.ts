@@ -52,10 +52,41 @@ describe('the envelope', () => {
 	})
 })
 
+describe('the wrapper language', () => {
+	it('is German for a German Gutachten', async () => {
+		await sendReportEmail({ ...BASE, locale: 'de' })
+		const html = sentPayload().html as string
+
+		expect(html).toContain('<html lang="de">')
+		expect(html).toContain('Guten Tag Herr Schmidt,')
+		expect(html).toContain('Anbei erhalten Sie das Gutachten:')
+		expect(html).toContain('Gesendet über Gut8erPRO')
+	})
+
+	it('is English for an English one', async () => {
+		await sendReportEmail({ ...BASE, locale: 'en' })
+		const html = sentPayload().html as string
+
+		expect(html).toContain('<html lang="en">')
+		expect(html).toContain('Dear Herr Schmidt,')
+		expect(html).toContain('Please find attached the report:')
+		expect(html).toContain('Sent via Gut8erPRO')
+	})
+
+	it('falls back to German rather than English when the caller says nothing', async () => {
+		await sendReportEmail({ ...BASE, locale: undefined })
+		const html = sentPayload().html as string
+
+		expect(html).toContain('<html lang="de">')
+		expect(html).not.toContain('Please find attached')
+	})
+})
+
 describe('interpolated fields', () => {
 	it('escapes the report title, recipient and footer', async () => {
 		await sendReportEmail({
 			...BASE,
+			locale: 'de',
 			recipientName: '<script>alert(1)</script>',
 			reportTitle: 'Gutachten "A" & <b>B</b>',
 			senderName: 'Anna <Berger>',

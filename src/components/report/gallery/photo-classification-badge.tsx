@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import type { PhotoClassificationType } from '@/lib/ai/types'
 import { cn } from '@/lib/utils'
 
@@ -6,29 +7,29 @@ type ClassificationBadgeProps = {
 	className?: string
 }
 
-const BADGE_CONFIG: Record<PhotoClassificationType, { label: string; color: string }> = {
-	damage: { label: 'Damage', color: 'bg-error text-white' },
-	vin: { label: 'VIN', color: 'bg-info text-white' },
-	plate: { label: 'Plate', color: 'bg-info text-white' },
-	document: { label: 'Document', color: 'bg-purple-500 text-white' },
-	overview: { label: 'Overview', color: 'bg-primary text-white' },
-	tire: { label: 'Tire', color: 'bg-orange-500 text-white' },
-	interior: { label: 'Interior', color: 'bg-grey-100 text-white' },
-	other: { label: 'Other', color: 'bg-grey-50 text-grey-100' },
+const BADGE_COLORS: Record<PhotoClassificationType, string> = {
+	damage: 'bg-error text-white',
+	vin: 'bg-info text-white',
+	plate: 'bg-info text-white',
+	document: 'bg-purple-500 text-white',
+	overview: 'bg-primary text-white',
+	tire: 'bg-orange-500 text-white',
+	interior: 'bg-grey-100 text-white',
+	other: 'bg-grey-50 text-grey-100',
 }
 
 function ClassificationBadge({ classification, className }: ClassificationBadgeProps) {
-	const config = BADGE_CONFIG[classification]
+	const t = useTranslations('report.gallery.classification')
 
 	return (
 		<span
 			className={cn(
 				'inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] font-bold uppercase leading-tight',
-				config.color,
+				BADGE_COLORS[classification],
 				className,
 			)}
 		>
-			{config.label}
+			{t(classification)}
 		</span>
 	)
 }

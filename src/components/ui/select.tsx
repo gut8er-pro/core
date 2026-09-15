@@ -44,6 +44,7 @@ function SelectField({
 	const selectId = id || label?.toLowerCase().replace(/\s+/g, '-')
 	// A wrong value is more urgent than an absent one.
 	const showMissing = !!isMissing && !error
+	const isUnmatched = !!value && !options.some((option) => option.value === value)
 
 	return (
 		<div className={cn('flex flex-col gap-1', className)}>
@@ -51,7 +52,10 @@ function SelectField({
 			<SelectPrimitive.Root
 				value={value}
 				defaultValue={defaultValue}
-				onValueChange={onValueChange}
+				onValueChange={(v) => {
+					// Radix's hidden native select emits '' while its options register; items can never be ''.
+					if (v !== '') onValueChange?.(v)
+				}}
 				disabled={disabled}
 			>
 				<SelectTrigger
@@ -65,7 +69,13 @@ function SelectField({
 					data-missing={showMissing ? 'true' : undefined}
 					aria-describedby={showMissing && missingLabel ? `${selectId}-missing` : undefined}
 				>
-					<SelectPrimitive.Value placeholder={placeholder} />
+					{isUnmatched ? (
+						<SelectPrimitive.Value placeholder={placeholder}>
+							<span className="text-placeholder">{placeholder}</span>
+						</SelectPrimitive.Value>
+					) : (
+						<SelectPrimitive.Value placeholder={placeholder} />
+					)}
 				</SelectTrigger>
 				<SelectContent>
 					{options.map((option) => (

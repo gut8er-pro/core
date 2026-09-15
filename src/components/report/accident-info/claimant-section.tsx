@@ -1,7 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { useWatch } from 'react-hook-form'
+import { Controller, useWatch } from 'react-hook-form'
 import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
@@ -49,16 +49,22 @@ function ClaimantSection({
 
 				{/* Salutation | First Name | Last Name — 3-column per Figma */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-					<SelectField
-						label={t('accidentInfo.salutation')}
-						options={salutationOptions}
-						placeholder={t('accidentInfo.salutationPlaceholder')}
-						error={errors.claimantSalutation?.message}
-						onValueChange={(value) => {
-							const event = { target: { name: 'claimantSalutation', value } }
-							register('claimantSalutation').onChange(event)
-							onFieldBlur?.('claimantSalutation')
-						}}
+					<Controller
+						control={control}
+						name="claimantSalutation"
+						render={({ field }) => (
+							<SelectField
+								label={t('accidentInfo.salutation')}
+								options={salutationOptions}
+								placeholder={t('accidentInfo.salutationPlaceholder')}
+								value={field.value}
+								error={errors.claimantSalutation?.message}
+								onValueChange={(value) => {
+									field.onChange(value)
+									onFieldBlur?.('claimantSalutation')
+								}}
+							/>
+						)}
 					/>
 					<TextField
 						label={t('accidentInfo.firstName')}
@@ -76,12 +82,12 @@ function ClaimantSection({
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 					<TextField
 						label={t('accidentInfo.street')}
-						placeholder="Musterstraße 123"
+						placeholder={t('accidentInfo.streetPlaceholder')}
 						{...fieldProps('claimantStreet')}
 					/>
 					<TextField
 						label={t('accidentInfo.postcode')}
-						placeholder="R0S312"
+						placeholder={t('accidentInfo.postcodePlaceholder')}
 						{...fieldProps('claimantPostcode')}
 					/>
 					<TextField
@@ -127,17 +133,19 @@ function ClaimantSection({
 				{/* Checkboxes — horizontal row per Figma */}
 				<div className="flex flex-wrap items-center gap-6 pt-2">
 					<div className="flex items-center gap-2">
-						<Checkbox
-							id="claimant-eligible-input-tax"
-							checked={undefined}
-							onCheckedChange={(checked) => {
-								const event = {
-									target: { name: 'claimantEligibleForInputTaxDeduction', value: !!checked },
-								}
-								register('claimantEligibleForInputTaxDeduction').onChange(event)
-								onFieldBlur?.('claimantEligibleForInputTaxDeduction')
-							}}
-							{...register('claimantEligibleForInputTaxDeduction')}
+						<Controller
+							control={control}
+							name="claimantEligibleForInputTaxDeduction"
+							render={({ field }) => (
+								<Checkbox
+									id="claimant-eligible-input-tax"
+									checked={!!field.value}
+									onCheckedChange={(checked) => {
+										field.onChange(!!checked)
+										onFieldBlur?.('claimantEligibleForInputTaxDeduction')
+									}}
+								/>
+							)}
 						/>
 						<Label htmlFor="claimant-eligible-input-tax" className="cursor-pointer font-normal">
 							{t('accidentInfo.inputTaxDeduction')}
@@ -145,15 +153,19 @@ function ClaimantSection({
 					</div>
 
 					<div className="flex items-center gap-2">
-						<Checkbox
-							id="claimant-is-vehicle-owner"
-							defaultChecked
-							onCheckedChange={(checked) => {
-								const event = { target: { name: 'claimantIsVehicleOwner', value: !!checked } }
-								register('claimantIsVehicleOwner').onChange(event)
-								onFieldBlur?.('claimantIsVehicleOwner')
-							}}
-							{...register('claimantIsVehicleOwner')}
+						<Controller
+							control={control}
+							name="claimantIsVehicleOwner"
+							render={({ field }) => (
+								<Checkbox
+									id="claimant-is-vehicle-owner"
+									checked={!!field.value}
+									onCheckedChange={(checked) => {
+										field.onChange(!!checked)
+										onFieldBlur?.('claimantIsVehicleOwner')
+									}}
+								/>
+							)}
 						/>
 						<Label htmlFor="claimant-is-vehicle-owner" className="cursor-pointer font-normal">
 							{t('accidentInfo.isVehicleOwner')}
@@ -162,16 +174,19 @@ function ClaimantSection({
 
 					{!isOT && (
 						<div className="flex items-center gap-2">
-							<Checkbox
-								id="claimant-represented-by-lawyer"
-								onCheckedChange={(checked) => {
-									const event = {
-										target: { name: 'claimantRepresentedByLawyer', value: !!checked },
-									}
-									register('claimantRepresentedByLawyer').onChange(event)
-									onFieldBlur?.('claimantRepresentedByLawyer')
-								}}
-								{...register('claimantRepresentedByLawyer')}
+							<Controller
+								control={control}
+								name="claimantRepresentedByLawyer"
+								render={({ field }) => (
+									<Checkbox
+										id="claimant-represented-by-lawyer"
+										checked={!!field.value}
+										onCheckedChange={(checked) => {
+											field.onChange(!!checked)
+											onFieldBlur?.('claimantRepresentedByLawyer')
+										}}
+									/>
+								)}
 							/>
 							<Label
 								htmlFor="claimant-represented-by-lawyer"
@@ -196,7 +211,7 @@ function ClaimantSection({
 						{!isOT && representedByLawyer && (
 							<TextField
 								label={t('accidentInfo.involvedLawyer')}
-								placeholder="John Doe Lawyer Firm"
+								placeholder={t('accidentInfo.involvedLawyerPlaceholder')}
 								{...fieldProps('claimantInvolvedLawyer')}
 							/>
 						)}

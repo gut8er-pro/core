@@ -5,17 +5,27 @@ import { useTranslations } from 'next-intl'
 import { useCallback } from 'react'
 import type { Photo } from '@/hooks/use-photos'
 import { cn } from '@/lib/utils'
+import { MAX_PHOTOS_PER_REPORT } from '@/lib/validations/photos'
 
 type FilmstripProps = {
 	photos: Photo[]
 	selectedId?: string
 	onSelect?: (photoId: string) => void
 	onAdd?: () => void
+	maxPhotos?: number
 	className?: string
 }
 
-function Filmstrip({ photos, selectedId, onSelect, onAdd, className }: FilmstripProps) {
+function Filmstrip({
+	photos,
+	selectedId,
+	onSelect,
+	onAdd,
+	maxPhotos = MAX_PHOTOS_PER_REPORT,
+	className,
+}: FilmstripProps) {
 	const t = useTranslations('report')
+	const isMaxReached = photos.length >= maxPhotos
 	const handleSelect = useCallback(
 		(photoId: string) => {
 			onSelect?.(photoId)
@@ -62,7 +72,9 @@ function Filmstrip({ photos, selectedId, onSelect, onAdd, className }: Filmstrip
 				<button
 					type="button"
 					onClick={onAdd}
-					className="flex h-[60px] w-[60px] shrink-0 cursor-pointer items-center justify-center rounded-xl bg-border-card transition-colors hover:bg-grey-50"
+					disabled={isMaxReached}
+					title={isMaxReached ? t('gallery.maxPhotosHint', { limit: maxPhotos }) : undefined}
+					className="flex h-[60px] w-[60px] shrink-0 cursor-pointer items-center justify-center rounded-xl bg-border-card transition-colors hover:bg-grey-50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-border-card"
 					aria-label={t('gallery.addMorePhotos')}
 				>
 					<Plus className="h-6 w-6 text-grey-100" />

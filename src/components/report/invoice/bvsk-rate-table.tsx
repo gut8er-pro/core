@@ -34,53 +34,68 @@ function BvskRateTable({ repairCost, onApplyRate, className }: BvskRateTableProp
 	return (
 		<div className={cn('flex flex-col gap-3', className)}>
 			{/* BVSK selector button and rate display */}
-			<div className="overflow-x-auto rounded-lg border border-border">
-				<div className="flex items-stretch min-w-150">
-					{/* BVSK dropdown trigger */}
-					<div className="flex items-center gap-2 border-r border-border bg-white px-4 py-3">
-						<TriangleAlert className="h-4 w-4 text-error" />
-						<span className="text-body-sm font-semibold text-black whitespace-nowrap">BVSK</span>
-						<ChevronDown className="h-4 w-4 text-grey-100" />
-					</div>
-
-					{/* Rate columns */}
-					<div className="flex flex-1">
-						{displayRates.map((rate, index) => {
-							const isActive =
-								repairCost !== undefined &&
-								repairCost >= rate.minRepairCost &&
-								repairCost <= rate.maxRepairCost
-
-							return (
-								<div
-									key={index}
-									className={cn(
-										'flex flex-col items-center justify-center border-r border-border px-3 py-2 last:border-r-0',
-										isActive && 'bg-primary/5',
-									)}
+			<div className="relative">
+				<section
+					aria-label={t('bvskRateTable')}
+					className="overflow-x-auto rounded-lg border border-border [scrollbar-width:thin]"
+				>
+					<div className="flex items-stretch min-w-150">
+						{/* BVSK dropdown trigger */}
+						<div className="flex items-center gap-2 border-r border-border bg-white px-4 py-3">
+							{repairCost === undefined && (
+								<span
+									title={t('bvskRateWarning')}
+									aria-label={t('bvskRateWarning')}
+									role="img"
+									className="flex items-center"
 								>
-									<span className="text-[10px] text-grey-100 whitespace-nowrap">
-										{t('amountOfDamage')}
-									</span>
-									<span className="text-caption font-medium text-black whitespace-nowrap">
-										{formatEUR(rate.minRepairCost)}
-									</span>
-									<span className="text-caption text-grey-100 whitespace-nowrap">
-										{formatEUR(rate.maxRepairCost)}
-									</span>
-									<div className="mt-1 flex gap-2">
-										<span className="text-caption font-medium text-black">
-											{formatEUR(rate.baseFee)}
+									<TriangleAlert className="h-4 w-4 text-error" />
+								</span>
+							)}
+							<span className="text-body-sm font-semibold text-black whitespace-nowrap">BVSK</span>
+							<ChevronDown className="h-4 w-4 text-grey-100" />
+						</div>
+
+						{/* Rate columns */}
+						<div className="flex flex-1">
+							{displayRates.map((rate, index) => {
+								const isActive =
+									repairCost !== undefined &&
+									repairCost >= rate.minRepairCost &&
+									repairCost <= rate.maxRepairCost
+
+								return (
+									<div
+										key={index}
+										className={cn(
+											'flex flex-col items-center justify-center border-r border-border px-3 py-2 last:border-r-0',
+											isActive && 'bg-primary/5',
+										)}
+									>
+										<span className="text-[10px] text-grey-100 whitespace-nowrap">
+											{t('amountOfDamage')}
 										</span>
-										<span className="text-caption text-grey-100">
-											{formatEUR(rate.additionalFee)}
+										<span className="text-caption font-medium text-black whitespace-nowrap">
+											{formatEUR(rate.minRepairCost)}
 										</span>
+										<span className="text-caption text-grey-100 whitespace-nowrap">
+											{formatEUR(rate.maxRepairCost)}
+										</span>
+										<div className="mt-1 flex gap-2">
+											<span className="text-caption font-medium text-black">
+												{formatEUR(rate.baseFee)}
+											</span>
+											<span className="text-caption text-grey-100">
+												{formatEUR(rate.additionalFee)}
+											</span>
+										</div>
 									</div>
-								</div>
-							)
-						})}
+								)
+							})}
+						</div>
 					</div>
-				</div>
+				</section>
+				<div className="pointer-events-none absolute inset-y-px right-px w-10 rounded-r-lg bg-linear-to-l from-white to-transparent" />
 			</div>
 
 			{onApplyRate && repairCost && (

@@ -1,6 +1,6 @@
 'use client'
 
-import { Info } from 'lucide-react'
+import { Info, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
@@ -17,7 +17,7 @@ function OldtimerValuationSection({
 	onFieldBlur,
 	className,
 }: CalculationSectionProps & { className?: string }) {
-	const [showRestoration, setShowRestoration] = useState(false)
+	const [showAdditionalValue, setShowAdditionalValue] = useState(false)
 	const t = useTranslations('report.calculation')
 	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
 	const badge = useSectionBadge(SECTION.oldtimerValue)
@@ -38,40 +38,48 @@ function OldtimerValuationSection({
 							placeholder="€"
 							{...fieldProps('replacementValue')}
 						/>
+						<TextField
+							label={`${t('oldtimer.restorationValue')} (€)`}
+							placeholder="€"
+							{...fieldProps('restorationValue')}
+						/>
 					</div>
 
-					{!showRestoration ? (
-						<Button type="button" variant="primary" onClick={() => setShowRestoration(true)}>
-							{t('oldtimer.restorationValue')}
+					{!showAdditionalValue ? (
+						<Button
+							type="button"
+							variant="outline"
+							icon={<Plus className="h-4 w-4" />}
+							onClick={() => setShowAdditionalValue(true)}
+							className="self-start"
+						>
+							{t('oldtimer.addAdditionalValue')}
 						</Button>
 					) : (
-						<>
-							<Button type="button" variant="outline" onClick={() => setShowRestoration(false)}>
+						/* Additional value subsection */
+						<div className="flex flex-col gap-4">
+							<div className="flex items-center gap-2">
+								<h4 className="text-body font-medium text-black">
+									{t('oldtimer.additionalValue')}
+								</h4>
+								<Info className="h-4 w-4 text-grey-100" />
+							</div>
+							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+								<TextField
+									label={`${t('oldtimer.baseVehicleValue')} (€)`}
+									placeholder="€"
+									{...fieldProps('baseVehicleValue')}
+								/>
+							</div>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setShowAdditionalValue(false)}
+								className="self-start"
+							>
 								{t('oldtimer.removeAdditionalValue')}
 							</Button>
-
-							{/* Additional value subsection */}
-							<div className="flex flex-col gap-4">
-								<div className="flex items-center gap-2">
-									<h4 className="text-body font-medium text-black">
-										{t('oldtimer.additionalValue')}
-									</h4>
-									<Info className="h-4 w-4 text-grey-100" />
-								</div>
-								<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-									<TextField
-										label={`${t('oldtimer.baseVehicleValue')} (€)`}
-										placeholder="€"
-										{...fieldProps('baseVehicleValue')}
-									/>
-									<TextField
-										label={`${t('oldtimer.restorationValue')} (€)`}
-										placeholder="€"
-										{...fieldProps('restorationValue')}
-									/>
-								</div>
-							</div>
-						</>
+						</div>
 					)}
 				</div>
 			</CollapsibleSection>

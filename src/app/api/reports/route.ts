@@ -103,7 +103,7 @@ async function POST(request: NextRequest) {
 	const report = await prisma.report.create({
 		data: {
 			userId: user.id,
-			title: parsed.data.title,
+			...(parsed.data.title !== undefined && { title: parsed.data.title }),
 			reportType: parsed.data.reportType,
 		},
 	})

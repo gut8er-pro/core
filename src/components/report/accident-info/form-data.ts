@@ -42,6 +42,9 @@ const ACCIDENT_INFO_DEFAULTS: AccidentInfoFormData = {
 	orderByClaimant: false,
 	mediator: '',
 	visits: [],
+	presentExpert: false,
+	presentClient: false,
+	presentWorkshopEmployee: false,
 }
 
 /**
@@ -61,6 +64,9 @@ function accidentInfoFromApi(data: AccidentInfoResponse | undefined | null): Acc
 		...ACCIDENT_INFO_DEFAULTS,
 		accidentDay: accident?.accidentDay?.split('T')[0] ?? '',
 		accidentScene: accident?.accidentScene ?? '',
+		presentExpert: accident?.presentExpert ?? false,
+		presentClient: accident?.presentClient ?? false,
+		presentWorkshopEmployee: accident?.presentWorkshopEmployee ?? false,
 		claimantCompany: claimant?.company ?? '',
 		claimantSalutation: claimant?.salutation ?? '',
 		claimantFirstName: claimant?.firstName ?? '',

@@ -18,12 +18,13 @@ type EmailComposerProps = {
 	register: UseFormRegister<ExportFormData>
 	setValue: UseFormSetValue<ExportFormData>
 	errors: FieldErrors<ExportFormData>
+	body: string
 	onSend: () => void
 	isSending?: boolean
 	className?: string
 }
 
-function EmailComposer({ register, setValue, errors, className }: EmailComposerProps) {
+function EmailComposer({ register, setValue, errors, body, className }: EmailComposerProps) {
 	const t = useTranslations('report.export')
 	const [recipients, setRecipients] = useState<Recipient[]>([])
 	const [recipientInput, setRecipientInput] = useState('')
@@ -147,7 +148,7 @@ function EmailComposer({ register, setValue, errors, className }: EmailComposerP
 			{/* Subject */}
 			<TextField
 				label={t('subject')}
-				placeholder="DD/MM/YYYY"
+				placeholder={t('subjectPlaceholder')}
 				error={errors.emailSubject?.message}
 				{...register('emailSubject')}
 			/>
@@ -155,8 +156,8 @@ function EmailComposer({ register, setValue, errors, className }: EmailComposerP
 			{/* Rich text email body */}
 			<div className="flex flex-col gap-1">
 				<RichTextEditor
-					value=""
-					onChange={() => {}}
+					value={body}
+					onChange={(html) => setValue('emailBody', html, { shouldDirty: true })}
 					placeholder={t('messagePlaceholder')}
 					className="min-h-64"
 				/>

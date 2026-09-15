@@ -26,7 +26,8 @@
     "saved": "Saved",
     "failedToSave": "Failed to save",
     "complete": "Complete",
-    "previous": "Previous"
+    "previous": "Previous",
+    "select": "Select"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -285,10 +286,15 @@
     "profile": {
       "heading": "Personal Information",
       "firstName": "First name",
+      "firstNamePlaceholder": "John",
       "lastName": "Last name",
+      "lastNamePlaceholder": "Miller",
       "title": "Title",
+      "titlePlaceholder": "Please select",
       "email": "Email",
+      "emailPlaceholder": "john.miller@example.com",
       "phoneNumber": "Phone number",
+      "phonePlaceholder": "+49 151 23456789",
       "remove": "Remove",
       "instagram": "Instagram",
       "facebook": "Facebook",
@@ -301,7 +307,7 @@
     },
     "business": {
       "heading": "Business Information",
-      "empty": "Empty",
+      "empty": "No logo yet",
       "uploadLogo": "Upload Logo",
       "uploading": "Uploading…",
       "companyName": "Company Name",
@@ -340,7 +346,7 @@
     "billing": {
       "currentPlan": "Current Plan",
       "proPlan": "Pro Plan",
-      "trialActive": "Trial active · {days} day(s) remaining",
+      "trialActive": "Trial active · {days, plural, one {# day} other {# days}} remaining",
       "renewsOn": "€69.00 / month · Renews on {date}",
       "cancelsOn": "Cancels on {date}",
       "subscriptionActive": "Subscription active",
@@ -373,7 +379,10 @@
       "body": "Body",
       "placeholder": "Write Something",
       "addTemplate": "Add Template",
-      "create": "Create"
+      "create": "Create",
+      "subjectPlaceholder": "Enter subject",
+      "empty": "No templates yet",
+      "loadError": "Failed to load templates. Please try again."
     },
     "privacy": {
       "heading": "Privacy & Account",
@@ -388,9 +397,37 @@
     }
   },
   "report": {
+    "ai": {
+      "progress": {
+        "skippingProcessed": "Skipping {skipped} already-processed photos, analysing {remaining} new photos …",
+        "classifying": "Classifying photos …",
+        "classified": "Classified {current}/{total} photos …",
+        "analyzing": "Analysing photos …",
+        "analyzed": "Analysed {current}/{total} photos …",
+        "lookingUpVehicle": "Looking up vehicle data …",
+        "vehicleRetrieved": "Vehicle data retrieved",
+        "extractingCalculation": "Extracting calculation data …",
+        "calculationExtracted": "Calculation data extracted",
+        "autoFilling": "Auto-filling report sections …",
+        "vehicleFilled": "Vehicle data filled",
+        "accidentFilled": "Accident info filled",
+        "conditionFilled": "Condition data filled",
+        "calculationFilled": "Calculation data filled",
+        "photosReordered": "Photos reordered"
+      },
+      "marker": {
+        "severity": "Severity",
+        "repair": "Repair"
+      },
+      "severity": {
+        "minor": "minor",
+        "moderate": "moderate",
+        "severe": "severe"
+      }
+    },
     "gallery": {
       "dropzoneText": "Drag and drop here or click to upload",
-      "fileTypes": "PDF PNG or JPG",
+      "fileTypes": "JPG or PNG",
       "maxPhotosReached": "Maximum photos reached",
       "uploadPhotos": "Upload photos",
       "noPhotosYet": "No photos uploaded yet",
@@ -431,7 +468,34 @@
       "photoFilmstrip": "Photo filmstrip",
       "addMorePhotos": "Add more photos",
       "previousPhoto": "Previous photo",
-      "nextPhoto": "Next photo"
+      "nextPhoto": "Next photo",
+      "maxPhotosHint": "Limit reached — {limit} photos per report",
+      "maxPhotosError": "A maximum of {limit} photos per report.",
+      "uploadErrors": {
+        "invalidFileType": "Invalid file type. Only JPEG, PNG and WebP are allowed.",
+        "fileTooLarge": "The file exceeds the {limit} MB limit.",
+        "uploadFailed": "The photo could not be uploaded. Please try again."
+      },
+      "classification": {
+        "damage": "Damage",
+        "vin": "VIN",
+        "plate": "Plate",
+        "document": "Document",
+        "overview": "Overview",
+        "tire": "Tire",
+        "interior": "Interior",
+        "other": "Other"
+      }
+    },
+    "signature": {
+      "draw": "Draw Signature",
+      "upload": "Upload Signature",
+      "clear": "Clear",
+      "canvas": "Signature canvas",
+      "uploadHint": "Upload a signature image (PNG, JPG)",
+      "chooseFile": "Choose File",
+      "uploadedAlt": "Uploaded signature",
+      "disclaimer": "By signing, you confirm the accuracy of the information provided."
     },
     "accidentInfo": {
       "title": "Accident Overview",
@@ -450,12 +514,15 @@
         "mr": "Mr",
         "mrs": "Mrs",
         "dr": "Dr",
-        "prof": "Prof"
+        "prof": "Prof",
+        "profDr": "Prof Dr"
       },
       "firstName": "First Name",
       "lastName": "Last Name",
       "street": "Street & house number or PO box",
+      "streetPlaceholder": "e.g. Musterstraße 123",
       "postcode": "Postcode",
+      "postcodePlaceholder": "e.g. 10115",
       "location": "Location",
       "email": "Email",
       "iban": "IBAN",
@@ -466,6 +533,7 @@
       "representedByLawyer": "Represented by a lawyer",
       "vatId": "VAT ID",
       "involvedLawyer": "Involved Lawyer",
+      "involvedLawyerPlaceholder": "e.g. Müller & Partner law firm",
       "opponent": {
         "title": "Opponent in Accident",
         "insuranceCompany": "Insurance company",
@@ -495,6 +563,8 @@
         },
         "present": "Present",
         "presentOptions": {
+          "expert": "Expert",
+          "expertNamed": "Expert {name}",
           "client": "Client",
           "workshopEmployee": "Workshop Employee"
         },
@@ -513,7 +583,8 @@
         },
         "issuedDate": "Issued date",
         "orderByClaimant": "Order by claimant",
-        "mediator": "Mediator"
+        "mediator": "Mediator",
+        "mediatorPlaceholder": "e.g. John Smith"
       },
       "signatures": {
         "title": "Signatures",
@@ -534,25 +605,34 @@
       "identification": {
         "heading": "Vehicle Informations",
         "vin": "Vehicle identification number (VIN)",
+        "vinPlaceholder": "e.g. WVWZZZ3CZWE123456",
         "datsCode": "DATSCode",
         "addCode": "Add Code",
         "marketIndex": "Market index",
         "findMarketIndex": "Find Market Index",
         "manufacturer": "Manufacturer",
+        "manufacturerPlaceholder": "e.g. Volkswagen AG",
         "mainType": "Main Type",
+        "mainTypePlaceholder": "e.g. Golf VII",
         "subtype": "Subtype",
+        "subtypePlaceholder": "e.g. Golf VII 2.0 TDI",
         "kbaNumber": "Key number (KBA)",
+        "kbaNumberPlaceholder": "e.g. 0603 / BGH",
         "specification": "Specification",
         "powerKw": "Power (kW)",
+        "powerKwPlaceholder": "e.g. 110 kW",
         "powerHp": "Power (HP)",
+        "powerHpPlaceholder": "e.g. 150 HP",
         "engineDesign": "Engine Design",
         "engineDesignOptions": {
           "inline": "Inline",
           "vType": "V-Type",
           "boxer": "Boxer",
-          "rotary": "Rotary"
+          "rotary": "Rotary",
+          "other": "Other"
         },
         "cylinder": "Cylinder",
+        "cylinderPlaceholder": "e.g. 4",
         "transmission": "Transmission",
         "transmissionOptions": {
           "manual5": "Manual (5-speed)",
@@ -562,6 +642,7 @@
           "dct": "DCT"
         },
         "displacement": "Engine displacement (ccm)",
+        "displacementPlaceholder": "e.g. 1968 ccm",
         "firstRegistration": "First registration",
         "lastRegistration": "Last registration",
         "technicalDataSource": "Source of technical data",
@@ -652,6 +733,7 @@
       "specialFeatures": "Special features",
       "parkingSensors": "Parking sensors",
       "mileageRead": "Mileage Read",
+      "mileagePlaceholder": "e.g. 125,450 km",
       "estimationMileage": "Estimation mileage",
       "unitInKm": "Unit in km",
       "unitOptions": {
@@ -660,6 +742,7 @@
         "miles": "miles"
       },
       "nextMot": "Next MOT",
+      "nextMotPlaceholder": "DD.MM.YYYY",
       "fullServiceHistory": "Full serviced history",
       "testDrivePerformed": "Test drive performed",
       "errorMemoryRead": "Error memory read",
@@ -808,9 +891,11 @@
         "title": "Loss of Use",
         "dropoutGroup": "Dropout group",
         "groupOptions": "Group A-N",
+        "groupLabel": "Group",
         "costPerDay": "Cost per Day (€)",
         "rentalCarClass": "Rental Car Class",
         "classOptions": "Class 1-7",
+        "classLabel": "Class",
         "repairTimeDays": "Repair time (days)",
         "addDays": "Add days",
         "replacementTimeDays": "Replacement time (days)"
@@ -835,8 +920,8 @@
         "generalCondition": "General condition",
         "selectCondition": "Select condition",
         "taxation": "Taxation",
-        "natural": "Natural",
-        "difference": "Difference",
+        "natural": "Neutral",
+        "difference": "Margin scheme",
         "standardRate": "Standard rate",
         "quickValuation": "Quick Valuation",
         "detailValuation": "Detail Valuation",
@@ -855,6 +940,7 @@
         "marketValue": "Market value",
         "replacementValue": "Replacement value",
         "restorationValue": "Restoration Value",
+        "addAdditionalValue": "Add Additional Value",
         "removeAdditionalValue": "Remove Additional Value",
         "additionalValue": "Additional value",
         "baseVehicleValue": "Base vehicle value",
@@ -903,7 +989,9 @@
       "previewInvoice": "Preview Invoice",
       "amountOfDamage": "Amount of damage",
       "applyBvskRate": "Apply BVSK Rate",
-      "bvskAppraisalFee": "BVSK Appraisal Fee"
+      "bvskAppraisalFee": "BVSK Appraisal Fee",
+      "bvskRateTable": "BVSK fee schedule, scrolls horizontally",
+      "bvskRateWarning": "The BVSK fee rate cannot be matched until the repair costs are known."
     },
     "export": {
       "title": "Export and Send",
@@ -916,6 +1004,7 @@
       "recipientPlaceholder": "Type an email address and press Enter to add a recipient",
       "removeEmail": "Remove {email}",
       "subject": "Subject",
+      "subjectPlaceholder": "e.g. Damage report for your vehicle",
       "messagePlaceholder": "Write your email message...",
       "addRecipientPlaceholder": "Add recipient email...",
       "sendReport": "Send Report",
@@ -939,7 +1028,8 @@
       "sendErrors": {
         "recipientRejected": "The recipient's email address was rejected. Please check the address and send again.",
         "attachmentTooLarge": "The report is too large to send by email. Please reduce the number or size of the photos and send again.",
-        "emailServiceUnavailable": "The report could not be sent. Please try again later — we have been notified."
+        "emailServiceUnavailable": "The report could not be sent. Please try again later — we have been notified.",
+        "pdfGenerationFailed": "The {languages} version of the report could not be generated. Nothing was sent — please try again. We have been notified."
       }
     },
     "annotation": {
@@ -1208,6 +1298,11 @@
     "last6Months": "Last 6 months",
     "downloadReport": "Download Report",
     "searchPlaceholder": "Search...",
+    "vsPreviousPeriod": "vs. previous period",
+    "noInvoices": "No invoices yet",
+    "noInvoicesFound": "No invoices found",
+    "unknownClient": "Unknown client",
+    "loadError": "Failed to load statistics. Please try again.",
     "weekly": "Weekly",
     "monthly": "Monthly",
     "yearly": "Yearly",
@@ -1235,7 +1330,8 @@
     "status": {
       "completed": "Completed",
       "pending": "Pending",
-      "rejected": "Rejected"
+      "rejected": "Rejected",
+      "delayed": "Overdue"
     }
   },
   "notifications": {
@@ -1244,7 +1340,30 @@
     "noNotifications": "No notifications yet",
     "noNotificationsSubtitle": "Notifications will appear here when there is activity on your reports.",
     "viewAll": "View all notifications",
-    "failedToLoad": "Failed to load notifications. Please try again."
+    "failedToLoad": "Failed to load notifications. Please try again.",
+    "messages": {
+      "reportCompleted": {
+        "title": "Report completed",
+        "description": "The report “{title}” has been marked as completed."
+      },
+      "reportFieldsComplete": {
+        "title": "Report complete",
+        "description": "The report “{title}” now has every required field filled in."
+      },
+      "reportSent": {
+        "title": "Report sent",
+        "description": "The report “{title}” was sent to {recipient}."
+      },
+      "invoiceGenerated": {
+        "title": "Invoice generated",
+        "description": "Invoice {invoiceNumber} has been generated."
+      }
+    },
+    "email": {
+      "greeting": "Hi {name},",
+      "greetingFallback": "Hi,",
+      "openApp": "Sign in to Gut8erPRO"
+    }
   },
   "validation": {
     "invalidEmail": "Please enter a valid email address",
@@ -1362,7 +1481,12 @@
     "reportUpdated": "Report updated",
     "reportSent": "Report sent successfully!",
     "reportsLoadError": "Failed to load reports. Please try again.",
-    "notificationsLoadError": "Failed to load notifications. Please try again."
+    "notificationsLoadError": "Failed to load notifications. Please try again.",
+    "templateCreated": "Template created",
+    "templateSaved": "Template saved",
+    "templateDeleted": "Template deleted",
+    "templateSaveError": "Failed to save template. Please try again.",
+    "templateDeleteError": "Failed to delete template. Please try again."
   },
   "language": {
     "title": "Language",
@@ -1381,5 +1505,12 @@
     "datenschutz": "Privacy Policy",
     "agb": "Terms & Conditions",
     "widerruf": "Right of Withdrawal"
+  },
+  "email": {
+    "report": {
+      "greeting": "Dear {name},",
+      "attached": "Please find attached the report:",
+      "sentVia": "Sent via {platform}"
+    }
   }
 }

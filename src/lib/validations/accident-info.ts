@@ -27,6 +27,9 @@ const iban = z.string().max(50)
 const accidentInfoSchema = z.object({
 	accidentDay: dateString.nullable().optional(),
 	accidentScene: z.string().max(500).nullable().optional(),
+	presentExpert: z.boolean().optional(),
+	presentClient: z.boolean().optional(),
+	presentWorkshopEmployee: z.boolean().optional(),
 })
 
 const claimantInfoSchema = z.object({

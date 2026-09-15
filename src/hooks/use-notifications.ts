@@ -1,5 +1,9 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useCallback } from 'react'
+import { formatDistanceToNow } from 'date-fns'
+import { de } from 'date-fns/locale'
+import { useLocale, useTranslations } from 'next-intl'
+import { useCallback, useMemo } from 'react'
+import { decodeNotificationParams, isNotificationMessageKey } from '@/lib/notifications/messages'
 
 type NotificationEventType =
 	| 'REPORT_COMPLETED'
@@ -24,6 +28,13 @@ type NotificationsResponse = {
 	unreadCount: number
 }
 
+/**
+ * A stored row put into words. Rows carry a message key and its parameters
+ * rather than prose, so the language is decided here rather than by whichever
+ * server route happened to write the row.
+ */
+type LocalizedNotification = Notification & { relativeTime: string }
+
 async function fetchNotifications(): Promise<NotificationsResponse> {
 	const res = await fetch('/api/notifications?limit=50')
 	if (!res.ok) throw new Error('Failed to fetch notifications')
@@ -32,12 +43,35 @@ async function fetchNotifications(): Promise<NotificationsResponse> {
 
 function useNotifications() {
 	const queryClient = useQueryClient()
+	const t = useTranslations('notifications')
+	const locale = useLocale()
 
 	const query = useQuery<NotificationsResponse>({
 		queryKey: ['notifications'],
 		queryFn: fetchNotifications,
 		staleTime: 30_000,
 	})
+
+	const rows = query.data?.notifications
+	const notifications = useMemo<LocalizedNotification[]>(() => {
+		const dateLocale = locale === 'de' ? de : undefined
+		return (rows ?? []).map((row) => {
+			const relativeTime = formatDistanceToNow(new Date(row.createdAt), {
+				addSuffix: true,
+				locale: dateLocale,
+			})
+			// Rows written before notifications carried a key keep their stored
+			// prose — it is all they have.
+			if (!isNotificationMessageKey(row.title)) return { ...row, relativeTime }
+			const params = decodeNotificationParams(row.description)
+			return {
+				...row,
+				title: t(`messages.${row.title}.title`),
+				description: t(`messages.${row.title}.description`, params),
+				relativeTime,
+			}
+		})
+	}, [rows, t, locale])
 
 	const markRead = useCallback(
 		async (id: string) => {
@@ -70,7 +104,7 @@ function useNotifications() {
 	}, [queryClient])
 
 	return {
-		notifications: query.data?.notifications ?? [],
+		notifications,
 		unreadCount: query.data?.unreadCount ?? 0,
 		markRead,
 		markAllRead,
@@ -79,5 +113,5 @@ function useNotifications() {
 	}
 }
 
-export type { Notification, NotificationEventType }
+export type { LocalizedNotification, Notification, NotificationEventType }
 export { useNotifications }

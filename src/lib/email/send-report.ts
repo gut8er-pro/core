@@ -1,3 +1,4 @@
+import { getServerTranslations, resolveLocale } from '@/i18n/translator'
 import { getResendClient } from './client'
 import { escapeHtml } from './html'
 import { classifyResendError, type SendFailureCode } from './send-failure'
@@ -11,6 +12,11 @@ interface SendReportEmailParams {
 	reportTitle: string
 	senderName: string
 	senderCompany?: string
+	/**
+	 * The language of everything the app wraps around the assessor's own
+	 * composition. Follows the attached PDFs rather than a setting of its own.
+	 */
+	locale?: string
 	/**
 	 * The assessor's own account email. Load-bearing: a Gutachten leaves from an
 	 * address nobody reads, so without it the document is one-way and a client
@@ -37,15 +43,18 @@ type SendReportEmailResult =
 			detail: string
 	  }
 
-function buildReportEmailHtml(params: {
+async function buildReportEmailHtml(params: {
 	recipientName: string
 	body: string
 	reportTitle: string
 	senderName: string
 	senderCompany?: string
-}): string {
+	locale?: string
+}): Promise<string> {
 	const { body } = params
-	const recipientName = escapeHtml(params.recipientName)
+	const locale = resolveLocale(params.locale)
+	const t = await getServerTranslations(locale, 'email.report')
+	const greeting = escapeHtml(t('greeting', { name: params.recipientName }))
 	const reportTitle = escapeHtml(params.reportTitle)
 	const senderName = escapeHtml(params.senderName)
 	const senderCompany = params.senderCompany ? escapeHtml(params.senderCompany) : undefined
@@ -53,7 +62,7 @@ function buildReportEmailHtml(params: {
 	const footerLine = [senderName, senderCompany].filter(Boolean).join(' &mdash; ') || PLATFORM_NAME
 
 	return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${locale}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -74,10 +83,10 @@ function buildReportEmailHtml(params: {
           <tr>
             <td style="padding:32px;">
               <p style="margin:0 0 16px;color:#18181b;font-size:15px;line-height:1.6;">
-                Dear ${recipientName},
+                ${greeting}
               </p>
               <p style="margin:0 0 24px;color:#3f3f46;font-size:14px;line-height:1.6;">
-                Please find attached the report: <strong>${reportTitle}</strong>
+                ${t('attached')} <strong>${reportTitle}</strong>
               </p>
               <!-- User-composed body (rich text HTML) -->
               <div style="margin:0 0 24px;color:#3f3f46;font-size:14px;line-height:1.6;">
@@ -95,7 +104,7 @@ function buildReportEmailHtml(params: {
           <tr>
             <td style="padding:24px 32px;">
               <p style="margin:0 0 4px;color:#71717a;font-size:13px;line-height:1.5;">
-                Sent via Gut8erPRO
+                ${t('sentVia', { platform: PLATFORM_NAME })}
               </p>
               <p style="margin:0;color:#71717a;font-size:13px;line-height:1.5;">
                 ${footerLine}
@@ -119,17 +128,19 @@ async function sendReportEmail(params: SendReportEmailParams): Promise<SendRepor
 		reportTitle,
 		senderName,
 		senderCompany,
+		locale,
 		replyTo,
 		pdfAttachment,
 		pdfAttachments,
 	} = params
 
-	const html = buildReportEmailHtml({
+	const html = await buildReportEmailHtml({
 		recipientName,
 		body,
 		reportTitle,
 		senderName,
 		senderCompany,
+		locale,
 	})
 
 	try {

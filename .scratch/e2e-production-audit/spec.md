@@ -71,6 +71,19 @@ field on every report type.
 | 10 | UI / layout issues (consolidated) | low–medium |
 | 11 | A send with no Gutachten attached still succeeds, and still locks the report | blocker |
 | 12 | Sentry is installed, configured, and captures nothing | high |
+| 13 | Stripe webhook has never delivered | high |
+| 14 | Billing page contradicts itself | medium |
+| 15 | Entitlement lifecycle | high |
+| 16 | Production API intermittently 500s / hangs on database access | high |
+| 17 | AI auto-fill writes values that match no select option | medium |
+
+**Updated 2026-09-15 (second pass).** Issues 04–12 fixed in the working tree and verified
+(tsc, biome, 940 unit tests, production build); 16 filed with the code half landed and the
+`DATABASE_URL` pooler switch owed by a human; 17 filed as ready-for-agent. Signup wizard and
+Stripe test checkout — the two paths the first audit skipped — were exercised live on
+`app.gut8erpro.de` and work end-to-end, including the entitlement gate and the completeness
+send-gate. Deploy order: run `pnpm db:migrate` against production before or with the next
+deploy (two new migrations: email templates, accident-info present flags).
 
 ## Method note
 

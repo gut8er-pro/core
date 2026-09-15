@@ -1,7 +1,13 @@
+import { useTranslations } from 'next-intl'
 import { useCallback, useState } from 'react'
 import { compressImage, getStoragePath, uploadToStorage } from '@/lib/storage/photos'
-import { MAX_PHOTOS_PER_REPORT, validateFileSize, validateFileType } from '@/lib/validations/photos'
-import { useUploadPhoto } from './use-photos'
+import {
+	MAX_FILE_SIZE,
+	MAX_PHOTOS_PER_REPORT,
+	validateFileSize,
+	validateFileType,
+} from '@/lib/validations/photos'
+import { PhotoUploadError, useUploadPhoto } from './use-photos'
 
 type UploadState = {
 	isUploading: boolean
@@ -48,12 +54,23 @@ async function processPhotoWithRetry(
 }
 
 function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
+	const t = useTranslations('report.gallery')
 	const [uploadState, setUploadState] = useState<UploadState>(INITIAL_STATE)
 	const uploadPhotoMutation = useUploadPhoto(reportId)
 
 	const reset = useCallback(() => {
 		setUploadState(INITIAL_STATE)
 	}, [])
+
+	const uploadErrorMessage = useCallback(
+		(err: unknown) => {
+			if (err instanceof PhotoUploadError && err.code === 'max_photos_exceeded') {
+				return t('maxPhotosError', { limit: err.limit ?? MAX_PHOTOS_PER_REPORT })
+			}
+			return t('uploadErrors.uploadFailed')
+		},
+		[t],
+	)
 
 	const uploadPhotos = useCallback(
 		async (targetReportId: string, files: File[]) => {
@@ -65,7 +82,7 @@ function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
 				setUploadState({
 					isUploading: false,
 					progress: 0,
-					error: `Maximum ${MAX_PHOTOS_PER_REPORT} photos allowed per report`,
+					error: t('maxPhotosError', { limit: MAX_PHOTOS_PER_REPORT }),
 				})
 				return
 			}
@@ -82,13 +99,15 @@ function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
 
 			for (const file of files) {
 				if (!validateFileType(file.type)) {
-					errors.push(`${file.name}: Invalid file type. Only JPEG, PNG, and WebP are allowed.`)
+					errors.push(`${file.name}: ${t('uploadErrors.invalidFileType')}`)
 					processedCount++
 					continue
 				}
 
 				if (!validateFileSize(file.size)) {
-					errors.push(`${file.name}: File size exceeds the 10MB limit.`)
+					errors.push(
+						`${file.name}: ${t('uploadErrors.fileTooLarge', { limit: MAX_FILE_SIZE / (1024 * 1024) })}`,
+					)
 					processedCount++
 					continue
 				}
@@ -118,8 +137,7 @@ function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
 						console.warn('[upload] photo variant generation failed:', err)
 					})
 				} catch (err) {
-					const message = err instanceof Error ? err.message : 'Unknown error'
-					errors.push(`${file.name}: ${message}`)
+					errors.push(`${file.name}: ${uploadErrorMessage(err)}`)
 				}
 
 				processedCount++
@@ -135,7 +153,7 @@ function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
 				error: errors.length > 0 ? errors.join('\n') : null,
 			}))
 		},
-		[uploadPhotoMutation],
+		[uploadPhotoMutation, t, uploadErrorMessage],
 	)
 
 	return {

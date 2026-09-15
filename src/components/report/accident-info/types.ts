@@ -56,6 +56,9 @@ type AccidentInfoFormData = {
 		expert: string
 		vehicleCondition: string
 	}>
+	presentExpert: boolean
+	presentClient: boolean
+	presentWorkshopEmployee: boolean
 }
 
 type SectionProps = {

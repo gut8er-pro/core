@@ -1,6 +1,6 @@
 # 06 — Dead controls across Dashboard and Statistics
 
-Status: ready-for-agent
+Status: resolved
 Type: bug
 Severity: medium
 
@@ -43,3 +43,17 @@ Same inert-toggle pattern as Statistics.
 For each: wire it up, or remove it. A disabled control with a tooltip is also acceptable — an
 enabled control that silently does nothing is not. The two chart-period toggles and the two filter
 buttons are duplicated logic across both pages and should be solved once.
+
+## Resolution (2026-09-15)
+
+Both period toggles are real: `/api/stats` now returns `revenueSeries.{weekly,monthly,yearly}`
+(12 weeks / 12 months / 5 years), `src/hooks/use-revenue-series.ts` turns the selected one into
+values plus locale-formatted labels, and both pages render it through the shared
+`src/components/ui/chart-period-toggle.tsx`. Default view is now `monthly`, which is the 12-month
+chart both pages showed before.
+Removed as unwireable: "Letzte 6 Monate", the two filter buttons, "Bericht herunterladen" and the
+per-row download icons (no invoice-PDF endpoint exists — the report PDF route is not the same
+document), and the dashboard's "2026 ▾" year selector.
+Y axis fixed in `src/app/(app)/statistics/page.tsx` — labels are the four quarters of a data-derived
+`niceCeiling()` maximum and the gridlines are drawn from the same fractions, so a point at half the
+maximum now sits on the label that says half.

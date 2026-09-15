@@ -59,12 +59,12 @@ function LoginPage() {
 					</div>
 
 					{/* Car illustration — anchored to bottom */}
-					<div className="absolute bottom-0 left-0 right-0">
+					<div className="absolute bottom-8 left-0 right-0">
 						<Image
-							src="/images/login-car-illustration.webp"
+							src="/images/login-car-scene.webp"
 							alt="Vehicle assessment illustration"
-							width={600}
-							height={642}
+							width={1400}
+							height={841}
 							className="w-full object-contain"
 							priority
 						/>

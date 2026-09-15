@@ -79,6 +79,16 @@ class SendFailedError extends Error {
 	}
 }
 
+class PdfGenerationFailedError extends Error {
+	readonly languages: string[]
+
+	constructor(languages: string[]) {
+		super('pdf_generation_failed')
+		this.name = 'PdfGenerationFailedError'
+		this.languages = languages
+	}
+}
+
 async function sendReport(
 	reportId: string,
 	data: Record<string, unknown>,
@@ -91,6 +101,7 @@ async function sendReport(
 	if (!response.ok) {
 		const errorBody = (await response.json().catch(() => ({}))) as {
 			error?: string
+			languages?: string[]
 			missingInfo?: MissingInfoReport
 		}
 		// The gate answers with the breakdown, not a message — the count means
@@ -100,6 +111,11 @@ async function sendReport(
 		}
 		if (isSendFailureCode(errorBody.error)) {
 			throw new SendFailedError(errorBody.error)
+		}
+		if (errorBody.error === 'pdf_generation_failed') {
+			throw new PdfGenerationFailedError(
+				Array.isArray(errorBody.languages) ? errorBody.languages : [],
+			)
 		}
 		throw new Error(errorBody.error ?? 'Failed to send report')
 	}
@@ -142,6 +158,7 @@ export type { ExportConfigResponse, SendReportResponse }
 export {
 	fetchExportConfig,
 	IncompleteReportError,
+	PdfGenerationFailedError,
 	SendFailedError,
 	useExportConfig,
 	useSaveExportConfig,

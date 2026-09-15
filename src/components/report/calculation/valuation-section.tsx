@@ -15,10 +15,10 @@ const CONDITION_OPTIONS = [
 ]
 
 const TAXATION_OPTIONS = [
-	{ value: '0', label: '0%', sublabel: 'Natural' },
-	{ value: '2.4', label: '2.4%', sublabel: 'Difference' },
-	{ value: '19', label: '19%', sublabel: 'Standard rate' },
-]
+	{ value: '0', label: '0%', sublabelKey: 'valuation.natural' },
+	{ value: '2.4', label: '2.4%', sublabelKey: 'valuation.difference' },
+	{ value: '19', label: '19%', sublabelKey: 'valuation.standardRate' },
+] as const
 
 const DATA_SOURCE_OPTIONS = [
 	{ value: 'mobile.de', label: 'mobile.de' },
@@ -123,7 +123,7 @@ function ValuationSection({
 											)}
 										>
 											<span className="font-medium">{opt.label}</span>
-											<span className="text-caption">{opt.sublabel}</span>
+											<span className="text-caption">{t(opt.sublabelKey)}</span>
 										</button>
 									))}
 								</div>

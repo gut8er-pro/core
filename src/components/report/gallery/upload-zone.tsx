@@ -160,7 +160,7 @@ function UploadZone({
 			<div
 				role="button"
 				tabIndex={isDisabled ? -1 : 0}
-				aria-label="Upload photos"
+				aria-label={t('gallery.uploadPhotos')}
 				aria-disabled={isDisabled}
 				onClick={handleClick}
 				onKeyDown={handleKeyDown}

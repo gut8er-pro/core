@@ -28,7 +28,21 @@ Based on the visible damage, determine:
 
 Return ONLY valid JSON. Use null for fields you cannot determine.`
 
-async function extractCalculationData(images: ImageData[]): Promise<CalculationAutoFillResult> {
+function buildCalculationPrompt(locale: 'en' | 'de'): string {
+	// The free text lands in the Gutachten unchanged — nothing downstream
+	// translates it — so the language has to be decided here.
+	const localeSuffix =
+		locale === 'de'
+			? '\n\nDie Freitextfelder "repairMethod" und "risks" müssen auf Deutsch verfasst sein (z. B. "Ausbeulen ohne Lackieren (PDR)", "Konventionelle Karosserieinstandsetzung", "Teileersatz"). Alle übrigen Feldwerte bleiben exakt wie oben angegeben auf Englisch.'
+			: '\n\nWrite "repairMethod" and "risks" strictly in English. Do not switch to German even though the vehicle context is German.'
+
+	return `${CALCULATION_PROMPT}${localeSuffix}`
+}
+
+async function extractCalculationData(
+	images: ImageData[],
+	locale: 'en' | 'de' = 'en',
+): Promise<CalculationAutoFillResult> {
 	const client = getAnthropicClient()
 
 	const imageContent = images.map((img) => ({
@@ -46,7 +60,7 @@ async function extractCalculationData(images: ImageData[]): Promise<CalculationA
 		messages: [
 			{
 				role: 'user',
-				content: [...imageContent, { type: 'text', text: CALCULATION_PROMPT }],
+				content: [...imageContent, { type: 'text', text: buildCalculationPrompt(locale) }],
 			},
 		],
 	})

@@ -14,6 +14,9 @@ type AccidentInfoResponse = {
 		reportId: string
 		accidentDay: string | null
 		accidentScene: string | null
+		presentExpert: boolean
+		presentClient: boolean
+		presentWorkshopEmployee: boolean
 	} | null
 	claimantInfo: {
 		id: string

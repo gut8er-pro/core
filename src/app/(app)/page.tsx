@@ -1,24 +1,16 @@
 'use client'
 
-import {
-	BarChart3,
-	Car,
-	ChevronDown,
-	FileText,
-	Info,
-	ListFilter,
-	Plus,
-	Search,
-	Shield,
-} from 'lucide-react'
+import { BarChart3, Car, FileText, Info, Plus, Search, Shield } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { EmptyState, Pagination, ReportTable } from '@/components/dashboard/report-list'
 import { Button } from '@/components/ui/button'
+import { ChartPeriodToggle } from '@/components/ui/chart-period-toggle'
 import { useCheckoutReturn } from '@/hooks/use-checkout-return'
 import { useCreateReport, useDeleteReport, useReports } from '@/hooks/use-reports'
-import { useStats } from '@/hooks/use-stats'
+import { useRevenueSeries } from '@/hooks/use-revenue-series'
+import { type ChartPeriod, useRevenueStats } from '@/hooks/use-revenue-stats'
 import { useToast } from '@/hooks/use-toast'
 import { SubscriptionRequiredError } from '@/lib/api/errors'
 import { consumeQueryParam, NEW_REPORT_PARAM } from '@/lib/navigation'
@@ -47,8 +39,6 @@ const CHART_MONTH_KEYS = [
 	'months.dec',
 ] as const
 
-type ChartPeriod = 'yearly' | 'monthly' | 'weekly'
-
 function formatRevenue(amount: number): string {
 	return new Intl.NumberFormat('de-DE', {
 		style: 'currency',
@@ -62,13 +52,15 @@ function DashboardPage() {
 	const tt = useTranslations('toast')
 	const [page, setPage] = useState(1)
 	const [search, setSearch] = useState('')
-	const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('yearly')
+	const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('monthly')
 	const [showReportTypeMenu, setShowReportTypeMenu] = useState(false)
 	const [newReportRequested, setNewReportRequested] = useState(false)
+	const [menuPlacement, setMenuPlacement] = useState<'down' | 'up' | null>(null)
 	const reportTypeRef = useRef<HTMLDivElement>(null)
+	const reportTypeMenuRef = useRef<HTMLDivElement>(null)
 	const router = useRouter()
 	const { data, isLoading, error } = useReports({ page, limit: 10 })
-	const { data: stats } = useStats()
+	const { data: stats } = useRevenueStats()
 	const createReport = useCreateReport()
 	const deleteReport = useDeleteReport()
 	const toast = useToast()
@@ -76,9 +68,13 @@ function DashboardPage() {
 	// the user on. Both may arrive ahead of the webhook that records what they bought.
 	const isAwaitingEntitlement = useCheckoutReturn()
 
-	const chartValues = stats?.monthlyRevenue ?? Array(12).fill(0)
+	const monthLabels = useMemo(() => CHART_MONTH_KEYS.map((key) => t(key)), [t])
+	const { values: chartValues, labels: chartLabels } = useRevenueSeries({
+		series: stats?.revenueSeries,
+		period: chartPeriod,
+		monthLabels,
+	})
 	const maxChartValue = Math.max(...chartValues, 1)
-	const currentYear = new Date().getFullYear()
 
 	// Arriving from "Create your first report" (signup complete) opens the report-type
 	// menu. Read from location rather than useSearchParams so this prerendered route
@@ -96,6 +92,23 @@ function DashboardPage() {
 		setNewReportRequested(false)
 	}, [newReportRequested, isAwaitingEntitlement])
 
+	useEffect(() => {
+		if (!showReportTypeMenu) {
+			setMenuPlacement(null)
+			return
+		}
+		const trigger = reportTypeRef.current
+		const menu = reportTypeMenuRef.current
+		if (!trigger || !menu) return
+
+		const triggerRect = trigger.getBoundingClientRect()
+		const menuHeight = menu.offsetHeight
+		const spaceBelow = window.innerHeight - triggerRect.bottom
+		const spaceAbove = triggerRect.top
+		const overflowsBelow = spaceBelow < menuHeight + 16
+		setMenuPlacement(overflowsBelow && spaceAbove > spaceBelow ? 'up' : 'down')
+	}, [showReportTypeMenu])
+
 	// Close dropdown on outside click
 	useEffect(() => {
 		function handleClickOutside(e: MouseEvent) {
@@ -112,7 +125,7 @@ function DashboardPage() {
 	function handleCreateReport(reportType: ReportType) {
 		setShowReportTypeMenu(false)
 		createReport.mutate(
-			{ title: t('untitledReport'), reportType },
+			{ reportType },
 			{
 				onSuccess: (data) => {
 					router.push(`/reports/${data.report.id}/gallery`)
@@ -152,11 +165,11 @@ function DashboardPage() {
 		)
 	})
 
-	const periodLabels: Record<ChartPeriod, string> = {
-		yearly: t('yearly'),
-		monthly: t('monthly'),
-		weekly: t('weekly'),
-	}
+	const periodOptions = [
+		{ value: 'yearly' as const, label: t('yearly') },
+		{ value: 'monthly' as const, label: t('monthly') },
+		{ value: 'weekly' as const, label: t('weekly') },
+	]
 
 	return (
 		<div>
@@ -172,32 +185,12 @@ function DashboardPage() {
 							{stats ? formatRevenue(stats.totalRevenue) : '\u20ac0,00'}
 						</p>
 					</div>
-					<div className="flex items-center gap-3">
-						<div className="flex items-center gap-1 rounded-none">
-							{(['yearly', 'monthly', 'weekly'] as const).map((period) => (
-								<button
-									key={period}
-									type="button"
-									onClick={() => setChartPeriod(period)}
-									className={cn(
-										'cursor-pointer rounded-lg px-3 py-2 text-body-sm font-medium capitalize transition-colors',
-										chartPeriod === period
-											? 'bg-white text-black shadow-sm'
-											: 'text-white/30 hover:text-white',
-									)}
-								>
-									{periodLabels[period]}
-								</button>
-							))}
-						</div>
-						<button
-							type="button"
-							className="flex cursor-pointer items-center gap-2 rounded-md border border-white px-3.5 py-2.5 text-body-sm text-surface-secondary"
-						>
-							{currentYear}
-							<ChevronDown className="h-5 w-5" />
-						</button>
-					</div>
+					<ChartPeriodToggle
+						value={chartPeriod}
+						options={periodOptions}
+						onChange={setChartPeriod}
+						variant="onDark"
+					/>
 				</div>
 
 				{/* Bar chart */}
@@ -206,7 +199,7 @@ function DashboardPage() {
 						const heightPct = maxChartValue > 0 ? (value / maxChartValue) * 100 : 2
 						return (
 							<div
-								key={CHART_MONTH_KEYS[i]}
+								key={chartLabels[i] ?? i}
 								className="relative flex-1"
 								style={{ height: `${Math.max(heightPct, 2)}%` }}
 							>
@@ -246,9 +239,9 @@ function DashboardPage() {
 						</div>
 					</div>
 					<div className="flex items-center gap-4 px-4">
-						{CHART_MONTH_KEYS.map((key) => (
-							<span key={key} className="text-body-sm text-white/50">
-								{t(key)}
+						{chartLabels.map((label) => (
+							<span key={label} className="text-body-sm text-white/50">
+								{label}
 							</span>
 						))}
 					</div>
@@ -267,13 +260,6 @@ function DashboardPage() {
 					)}
 				</div>
 				<div className="flex flex-wrap items-center gap-2 sm:gap-3">
-					<button
-						type="button"
-						className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 opacity-80 transition-colors hover:bg-grey-25 hover:text-black"
-						aria-label={t('filterReports')}
-					>
-						<ListFilter className="h-5 w-5" />
-					</button>
 					<div className="relative">
 						<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-grey-100" />
 						<input
@@ -295,7 +281,14 @@ function DashboardPage() {
 							{isAwaitingEntitlement ? t('activatingSubscription') : t('newReport')}
 						</Button>
 						{showReportTypeMenu && (
-							<div className="absolute right-0 top-full z-50 mt-2 w-54.5 overflow-hidden rounded-xl bg-white shadow-dropdown">
+							<div
+								ref={reportTypeMenuRef}
+								className={cn(
+									'absolute right-0 z-50 w-54.5 overflow-hidden rounded-xl bg-white shadow-dropdown',
+									menuPlacement === 'up' ? 'bottom-full mb-2' : 'top-full mt-2',
+									menuPlacement === null && 'invisible',
+								)}
+							>
 								{REPORT_TYPE_OPTIONS.map((option, idx) => {
 									const Icon = option.icon
 									return (

@@ -1,6 +1,6 @@
 # 09 — Report-type variants: headings and one control don't switch correctly
 
-Status: ready-for-agent
+Status: resolved
 Type: bug
 Severity: low
 
@@ -51,3 +51,17 @@ loudest element on the tab.
 - The BE tab is still called "Unfallübersicht" even though every accident-related section is
   removed for that type. Not in the spec as a rename, but worth a decision: a valuation report
   with an "accident overview" tab containing no accident fields is confusing.
+
+## Resolution (2026-09-15)
+
+Defect 1 — `src/components/report/calculation/heading.ts` (new) holds the one report-type → key
+mapping the tab label already used; `src/app/(app)/reports/[id]/details/calculation/page.tsx:181`
+now reads `t(calculationHeadingKey(toReportType(reportType)))`, so BE and OT head the card
+"Bewertung" exactly as their tab does. `calculation.vehicleValueOt` is now unused (left in place).
+
+Defect 2 — `src/components/report/calculation/oldtimer-valuation-section.tsx`: `restorationValue`
+is a `TextField` in the same grid as Marktwert/Wiederbeschaffungswert, saving through the same
+`fieldProps` → `handleFieldBlur` → `calculation.restorationValue` path. The green CTA became an
+outline "Zusätzlichen Wert hinzufügen" button that reveals only `baseVehicleValue`.
+
+"Also worth a look" — the Anwesend checkboxes are now bound; see issue 04's resolution notes.

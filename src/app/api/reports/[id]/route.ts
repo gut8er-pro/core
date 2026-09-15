@@ -66,8 +66,8 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		await createNotification({
 			userId: user.id,
 			eventType: 'REPORT_COMPLETED',
-			title: 'Report Completed',
-			description: `Report "${report.title}" has been marked as completed.`,
+			messageKey: 'reportCompleted',
+			params: { title: report.title },
 			reportId: id,
 		})
 	}

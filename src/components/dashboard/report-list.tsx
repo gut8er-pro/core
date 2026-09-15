@@ -2,7 +2,7 @@
 
 import { ChevronDown, Eye, FileText, MoreVertical, Pencil, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -44,14 +44,15 @@ function getInitials(name: string): string {
 		.slice(0, 2)
 }
 
-function formatDateGerman(dateStr: string): string {
-	const date = new Date(dateStr)
-	const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-	const day = days[date.getDay()]
-	const dd = String(date.getDate()).padStart(2, '0')
-	const mm = String(date.getMonth() + 1).padStart(2, '0')
-	const yyyy = date.getFullYear()
-	return `${day}, ${dd}.${mm}.${yyyy}`
+const UNTITLED_REPORT = 'Untitled Report'
+
+function formatReportDate(dateStr: string, locale: string): string {
+	return new Intl.DateTimeFormat(locale, {
+		weekday: 'short',
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric',
+	}).format(new Date(dateStr))
 }
 
 function generateReportNumber(id: string): string {
@@ -135,8 +136,10 @@ function ReportRow({
 	const menuRef = useRef<HTMLDivElement>(null)
 	const t = useTranslations('dashboard')
 	const tc = useTranslations('common')
+	const locale = useLocale()
 
-	const displayName = report.claimantName || report.title
+	const title = report.title === UNTITLED_REPORT ? t('untitledReport') : report.title
+	const displayName = report.claimantName || title
 	const reportNumber = generateReportNumber(report.id)
 	const plateNumber = report.plateNumber
 	const carModel = [report.vehicleMake, report.vehicleModel].filter(Boolean).join(' - ') || null
@@ -186,7 +189,9 @@ function ReportRow({
 
 			{/* Date Created */}
 			<td className="hidden px-6 py-3 md:table-cell">
-				<span className="text-body-sm text-grey-100">{formatDateGerman(report.createdAt)}</span>
+				<span className="text-body-sm text-grey-100">
+					{formatReportDate(report.createdAt, locale)}
+				</span>
 			</td>
 
 			{/* Car Model */}

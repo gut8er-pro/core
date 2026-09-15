@@ -1,6 +1,6 @@
 # 04 — Mock/placeholder data ships in production
 
-Status: ready-for-agent
+Status: resolved
 Type: bug
 Severity: high
 
@@ -67,3 +67,22 @@ Build the invoice-list endpoint the comment anticipates and delete `MOCK_INVOICE
 deltas from real period-over-period data or remove the indicators until they mean something;
 replace the hardcoded expert name with the session user; route all placeholders through `t()`;
 render Anrede as a select over the existing salutation options.
+
+## Resolution notes
+
+§3 fixed (2026-09-15) — `visit-section.tsx` now labels the checkbox from `useUserSettings()` via
+`visits.presentOptions.expertNamed`, and all three Anwesend boxes are `Controller`-bound to a new
+`present` group on the form; no DB column exists for them yet, so they do not survive a reload.
+
+## Resolution (2026-09-15)
+
+§1 `MOCK_INVOICES` deleted; `src/app/api/stats/route.ts` now returns the user's real invoice rows
+(number, claimant, date, gross, derived status) and `src/app/(app)/statistics/page.tsx` renders
+them through `src/hooks/use-revenue-stats.ts`, with translated empty/not-found/error rows.
+§2 the four literal percentages are gone — the route computes 30-day-over-30-day change for
+revenue, reports and average value (null when the prior window is empty, in which case no
+indicator renders at all) and the completion-rate indicator was removed as underivable.
+§4 every placeholder in `src/app/(app)/settings/[[...tab]]/page.tsx` now goes through `t()`, and
+Anrede is a `SelectField` over `report.accidentInfo.salutationOptions.*` storing the enum value.
+§5 "Gesamtgutachten" reads the new `totalReports` (a `report.count`), not the payment buckets.
+§3 was handled separately — see the note above.

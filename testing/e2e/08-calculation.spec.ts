@@ -26,7 +26,7 @@ test.describe('Calculation / Valuation Tab', () => {
 		await page.waitForTimeout(1000)
 
 		for (const [name, value] of Object.entries(CALCULATION_DATA)) {
-			await page.locator(`input[name="${name}"]`).fill(value)
+			await page.locator(`input[name="${name}"], textarea[name="${name}"]`).fill(value)
 		}
 		await page.locator('input[name="replacementTimeDays"]').blur()
 		await page.waitForTimeout(2000)

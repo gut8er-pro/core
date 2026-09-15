@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 type SignaturePadProps = {
@@ -8,15 +9,56 @@ type SignaturePadProps = {
 	className?: string
 }
 
+function applyStrokeStyle(ctx: CanvasRenderingContext2D) {
+	ctx.lineWidth = 2
+	ctx.lineCap = 'round'
+	ctx.strokeStyle = '#000'
+}
+
 function SignaturePad({
 	mode: initialMode = 'draw',
 	value,
 	onChange,
 	className,
 }: SignaturePadProps) {
+	const t = useTranslations('report.signature')
 	const [mode, setMode] = useState(initialMode)
 	const canvasRef = useRef<HTMLCanvasElement>(null)
 	const [isDrawing, setIsDrawing] = useState(false)
+
+	const syncBackingStore = useCallback(() => {
+		const canvas = canvasRef.current
+		if (!canvas) return
+		const rect = canvas.getBoundingClientRect()
+		if (rect.width === 0 || rect.height === 0) return
+
+		const ratio = window.devicePixelRatio || 1
+		const width = Math.round(rect.width * ratio)
+		const height = Math.round(rect.height * ratio)
+		if (canvas.width === width && canvas.height === height) return
+
+		const previous = canvas.width > 0 && canvas.height > 0 ? canvas.toDataURL('image/png') : null
+		canvas.width = width
+		canvas.height = height
+
+		const ctx = canvas.getContext('2d')
+		if (!ctx) return
+		ctx.scale(ratio, ratio)
+		applyStrokeStyle(ctx)
+
+		if (previous) {
+			const image = new Image()
+			image.onload = () => ctx.drawImage(image, 0, 0, rect.width, rect.height)
+			image.src = previous
+		}
+	}, [])
+
+	useEffect(() => {
+		if (mode !== 'draw') return
+		syncBackingStore()
+		window.addEventListener('resize', syncBackingStore)
+		return () => window.removeEventListener('resize', syncBackingStore)
+	}, [mode, syncBackingStore])
 
 	function startDrawing(e: React.MouseEvent<HTMLCanvasElement>) {
 		const canvas = canvasRef.current
@@ -25,6 +67,7 @@ function SignaturePad({
 		if (!ctx) return
 		setIsDrawing(true)
 		const rect = canvas.getBoundingClientRect()
+		applyStrokeStyle(ctx)
 		ctx.beginPath()
 		ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top)
 	}
@@ -36,9 +79,6 @@ function SignaturePad({
 		const ctx = canvas.getContext('2d')
 		if (!ctx) return
 		const rect = canvas.getBoundingClientRect()
-		ctx.lineWidth = 2
-		ctx.lineCap = 'round'
-		ctx.strokeStyle = '#000'
 		ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top)
 		ctx.stroke()
 	}
@@ -56,7 +96,8 @@ function SignaturePad({
 		if (!canvas) return
 		const ctx = canvas.getContext('2d')
 		if (!ctx) return
-		ctx.clearRect(0, 0, canvas.width, canvas.height)
+		const rect = canvas.getBoundingClientRect()
+		ctx.clearRect(0, 0, rect.width, rect.height)
 		onChange?.('')
 	}
 
@@ -84,7 +125,7 @@ function SignaturePad({
 						mode === 'draw' ? 'bg-black text-white' : 'text-grey-100 hover:bg-grey-25',
 					)}
 				>
-					Draw Signature
+					{t('draw')}
 				</button>
 				<button
 					type="button"
@@ -96,7 +137,7 @@ function SignaturePad({
 						mode === 'upload' ? 'bg-black text-white' : 'text-grey-100 hover:bg-grey-25',
 					)}
 				>
-					Upload Signature
+					{t('upload')}
 				</button>
 			</div>
 
@@ -105,14 +146,12 @@ function SignaturePad({
 					<div className="rounded-lg border border-border bg-white">
 						<canvas
 							ref={canvasRef}
-							width={500}
-							height={200}
-							className="w-full cursor-crosshair"
+							className="h-50 w-full cursor-crosshair touch-none"
 							onMouseDown={startDrawing}
 							onMouseMove={draw}
 							onMouseUp={stopDrawing}
 							onMouseLeave={stopDrawing}
-							aria-label="Signature canvas"
+							aria-label={t('canvas')}
 						/>
 					</div>
 					<button
@@ -120,18 +159,18 @@ function SignaturePad({
 						onClick={clearCanvas}
 						className="cursor-pointer self-start text-body-sm font-medium text-grey-100 hover:text-black"
 					>
-						Clear
+						{t('clear')}
 					</button>
 				</div>
 			) : (
 				<div className="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed border-border p-8">
 					{value ? (
-						<img src={value} alt="Uploaded signature" className="max-h-32" />
+						<img src={value} alt={t('uploadedAlt')} className="max-h-32" />
 					) : (
-						<p className="text-body-sm text-grey-100">Upload a signature image (PNG, JPG)</p>
+						<p className="text-body-sm text-grey-100">{t('uploadHint')}</p>
 					)}
 					<label className="cursor-pointer rounded-lg bg-primary px-4 py-2 text-body-sm font-medium text-white hover:bg-primary-hover">
-						Choose File
+						{t('chooseFile')}
 						<input
 							type="file"
 							accept="image/png,image/jpeg"
@@ -142,9 +181,7 @@ function SignaturePad({
 				</div>
 			)}
 
-			<p className="text-caption text-grey-100">
-				By signing, you confirm the accuracy of the information provided.
-			</p>
+			<p className="text-caption text-grey-100">{t('disclaimer')}</p>
 		</div>
 	)
 }

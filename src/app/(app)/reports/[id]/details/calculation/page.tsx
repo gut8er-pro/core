@@ -11,6 +11,7 @@ import { CorrectionSection } from '@/components/report/calculation/correction-se
 import type { DatFormData } from '@/components/report/calculation/dat-modal'
 import { DatModal } from '@/components/report/calculation/dat-modal'
 import { CALCULATION_DEFAULTS, calculationFromApi } from '@/components/report/calculation/form-data'
+import { calculationHeadingKey } from '@/components/report/calculation/heading'
 import { LossSection } from '@/components/report/calculation/loss-section'
 import { OldtimerValuationSection } from '@/components/report/calculation/oldtimer-valuation-section'
 import { RepairSection } from '@/components/report/calculation/repair-section'
@@ -177,7 +178,7 @@ function CalculationPage() {
 		)
 	}
 
-	const sectionTitle = isOldtimerReport ? t('vehicleValueOt') : t('title')
+	const sectionTitle = t(calculationHeadingKey(toReportType(reportType)))
 
 	return (
 		<div className="flex flex-col gap-6">

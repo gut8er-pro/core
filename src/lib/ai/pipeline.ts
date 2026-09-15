@@ -1,5 +1,6 @@
 // Pipeline orchestrator — coordinates classification, processing, and auto-fill.
 
+import { getServerTranslations, type TranslateFn } from '@/i18n/translator'
 import { normalizeConditionValue } from '@/lib/pdf/translations'
 import { getAnthropicClient } from './anthropic'
 import {
@@ -55,8 +56,11 @@ const PROMPT_VERSIONS = {
 	// Talas-A real-photo PDFs). Bumping invalidates those entries so today's
 	// stricter prompt actually runs.
 	'damage-analysis': 2,
-	'overview-analysis': 2,
-	'interior-analysis': 2,
+	// v3 — bumped when the DE branch started asking for a German colour name
+	// and a German interior feature list. Cached v2 rows answer "Light Green"
+	// and "panoramic sunroof", which land in a German Gutachten verbatim.
+	'overview-analysis': 3,
+	'interior-analysis': 3,
 	'tire-analysis': 2,
 	'detect-vin': 1,
 	'detect-plate': 2, // bumped when plate retry+regex was added
@@ -154,6 +158,8 @@ async function runPipeline(
 		return summary
 	}
 
+	const t = await getServerTranslations(locale, 'report.ai')
+
 	// --- Incremental filtering ---
 	const { toProcess, skipped } = filterPhotosForProcessing(photos, options)
 
@@ -169,7 +175,10 @@ async function runPipeline(
 			step: 'filter',
 			current: skipped.length,
 			total: photos.length,
-			message: `Skipping ${skipped.length} already-processed photos, analyzing ${toProcess.length} new photos...`,
+			message: t('progress.skippingProcessed', {
+				skipped: skipped.length,
+				remaining: toProcess.length,
+			}),
 		})
 	}
 
@@ -179,7 +188,7 @@ async function runPipeline(
 		step: 'classify',
 		current: 0,
 		total: toProcess.length,
-		message: 'Classifying photos...',
+		message: t('progress.classifying'),
 	})
 
 	// Two image-data caches — one per variant. Most analyzers will pick the
@@ -291,7 +300,7 @@ async function runPipeline(
 				step: 'classify',
 				current: index + 1,
 				total: toProcess.length,
-				message: `Classified ${index + 1}/${toProcess.length} photos...`,
+				message: t('progress.classified', { current: index + 1, total: toProcess.length }),
 			})
 
 			return result
@@ -315,7 +324,7 @@ async function runPipeline(
 		step: 'process',
 		current: 0,
 		total: classifications.length,
-		message: 'Analyzing photos...',
+		message: t('progress.analyzing'),
 	})
 
 	const processedResults: PhotoProcessingResult[] = []
@@ -421,7 +430,10 @@ async function runPipeline(
 				step: 'process',
 				current: processedCount,
 				total: classifications.length,
-				message: `Analyzed ${processedCount}/${classifications.length} photos...`,
+				message: t('progress.analyzed', {
+					current: processedCount,
+					total: classifications.length,
+				}),
 			})
 		}
 	}
@@ -440,7 +452,7 @@ async function runPipeline(
 			step: 'lookup',
 			current: 0,
 			total: 1,
-			message: 'Looking up vehicle data...',
+			message: t('progress.lookingUpVehicle'),
 		})
 		vehicleLookup = await lookupVehicleByVin(extractedVin)
 		if (vehicleLookup.warnings.length > 0) {
@@ -451,7 +463,7 @@ async function runPipeline(
 			step: 'lookup',
 			current: 1,
 			total: 1,
-			message: 'Vehicle data retrieved',
+			message: t('progress.vehicleRetrieved'),
 		})
 	}
 
@@ -470,10 +482,10 @@ async function runPipeline(
 			step: 'calculation',
 			current: 0,
 			total: 1,
-			message: 'Extracting calculation data...',
+			message: t('progress.extractingCalculation'),
 		})
 		try {
-			calculationData = await extractCalculationData(damageImages)
+			calculationData = await extractCalculationData(damageImages, locale)
 		} catch (err) {
 			console.error('Calculation extraction failed:', err)
 			summary.warnings.push('Could not extract calculation data from damage photos')
@@ -483,7 +495,7 @@ async function runPipeline(
 			step: 'calculation',
 			current: 1,
 			total: 1,
-			message: 'Calculation data extracted',
+			message: t('progress.calculationExtracted'),
 		})
 	}
 
@@ -493,7 +505,7 @@ async function runPipeline(
 		step: 'autofill',
 		current: 0,
 		total: 5,
-		message: 'Auto-filling report sections...',
+		message: t('progress.autoFilling'),
 	})
 
 	// 4a: Vehicle tab
@@ -502,7 +514,13 @@ async function runPipeline(
 		summary.autoFilledFields.vehicle = Object.keys(vehicleData)
 		emit({ type: 'auto_fill', section: 'vehicle', fields: Object.keys(vehicleData) })
 	}
-	emit({ type: 'progress', step: 'autofill', current: 1, total: 5, message: 'Vehicle data filled' })
+	emit({
+		type: 'progress',
+		step: 'autofill',
+		current: 1,
+		total: 5,
+		message: t('progress.vehicleFilled'),
+	})
 
 	// 4b: Accident info (license plate + owner from registration document)
 	const accidentFields: string[] = []
@@ -523,11 +541,11 @@ async function runPipeline(
 		step: 'autofill',
 		current: 2,
 		total: 5,
-		message: 'Accident info filled',
+		message: t('progress.accidentFilled'),
 	})
 
 	// 4c: Condition tab (damage markers + tire data + overview/interior data)
-	const damageMarkers = collectDamageMarkers(processedResults)
+	const damageMarkers = collectDamageMarkers(processedResults, t)
 	const tireResults = collectTireResults(processedResults)
 	const overviewResults = collectOverviewResults(processedResults)
 	const interiorResults = collectInteriorResults(processedResults)
@@ -564,7 +582,7 @@ async function runPipeline(
 		step: 'autofill',
 		current: 3,
 		total: 5,
-		message: 'Condition data filled',
+		message: t('progress.conditionFilled'),
 	})
 
 	// 4d: Calculation tab
@@ -587,13 +605,19 @@ async function runPipeline(
 		step: 'autofill',
 		current: 4,
 		total: 5,
-		message: 'Calculation data filled',
+		message: t('progress.calculationFilled'),
 	})
 
 	// 4e: Photo descriptions and ordering
 	const photoOrder = buildPhotoOrder(classifications)
 	summary.photoOrder = photoOrder
-	emit({ type: 'progress', step: 'autofill', current: 5, total: 5, message: 'Photos reordered' })
+	emit({
+		type: 'progress',
+		step: 'autofill',
+		current: 5,
+		total: 5,
+		message: t('progress.photosReordered'),
+	})
 
 	// Calculate total fields filled
 	summary.totalFieldsFilled =
@@ -753,7 +777,7 @@ function findExtractedOcr(results: PhotoProcessingResult[]): OcrExtractionResult
 	return null
 }
 
-function collectDamageMarkers(results: PhotoProcessingResult[]): DiagramPosition[] {
+function collectDamageMarkers(results: PhotoProcessingResult[], t: TranslateFn): DiagramPosition[] {
 	const markers: DiagramPosition[] = []
 	for (const r of results) {
 		// Skip when the analyzer explicitly reported no visible damage, or
@@ -766,8 +790,8 @@ function collectDamageMarkers(results: PhotoProcessingResult[]): DiagramPosition
 		// Enrich marker comment with severity and repair approach
 		const enrichedComment = [
 			r.result.diagramPosition.comment,
-			r.result.severity ? `Severity: ${r.result.severity}` : null,
-			r.result.repairApproach ? `Repair: ${r.result.repairApproach}` : null,
+			r.result.severity ? `${t('marker.severity')}: ${t(`severity.${r.result.severity}`)}` : null,
+			r.result.repairApproach ? `${t('marker.repair')}: ${r.result.repairApproach}` : null,
 		]
 			.filter(Boolean)
 			.join(' | ')
@@ -915,7 +939,7 @@ function buildPhotoUpdates(
 }
 
 export type { EmitFn, PhotoInput, PhotoUpdate, PipelineOptions }
-export { hashUrl, runPipeline }
+export { collectDamageMarkers, hashUrl, runPipeline }
 
 // --- Inline VIN/Plate/OCR detection (reuses logic from existing routes) ---
 

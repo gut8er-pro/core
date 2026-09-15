@@ -363,7 +363,7 @@ describe('calculation requirements by report type', () => {
 		expect(paths).toContain('marketValue')
 		expect(paths).toContain('replacementValue')
 		expect(paths).toContain('restorationValue')
-		expect(paths).toContain('baseVehicleValue')
+		expect(paths).not.toContain('baseVehicleValue')
 		expect(paths).not.toContain('repairMethod')
 		expect(paths).not.toContain('costPerDay')
 		expect(paths).not.toContain('repairTimeDays')
