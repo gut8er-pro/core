@@ -1,6 +1,6 @@
 # 16 — Production API intermittently 500s / hangs on database access
 
-Status: ready-for-human
+Status: resolved
 Type: bug
 Severity: high
 
@@ -45,3 +45,13 @@ separate direct URL for `prisma migrate deploy` (migrations need a session conne
 from a machine, not from Vercel).
 
 After the next deploy, Sentry (issue 12) will capture any recurrence with a stack trace.
+
+## Resolution (2026-09-15)
+
+Reproduced deterministically on production after the deploy and pinned by the Vercel runtime log:
+`(EMAXCONNSESSION) max clients reached in session mode - pool_size: 15` — the runtime
+`DATABASE_URL` pointed at the Supavisor session pooler, whose 15 slots a handful of warm lambdas
+exhaust. Production env updated: `DATABASE_URL` now uses the transaction pooler (port 6543) and
+`MIGRATE_DATABASE_URL` carries the session URL for `prisma migrate deploy` in the build
+(`scripts/migrate-on-vercel.mjs` prefers it). Verified after redeploy: 10 sequential plus a
+20-parallel burst against the previously failing endpoints — 30/30 responses 200.
