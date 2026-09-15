@@ -64,24 +64,10 @@ async function POST(request: NextRequest) {
 				break
 			}
 
-			case 'invoice.payment_succeeded': {
-				const invoice = event.data.object as Stripe.Invoice
-				const customerId = invoice.customer as string
-
-				if (invoice.billing_reason === 'subscription_create') {
-					const subscriptionId =
-						(invoice as unknown as { subscription?: string }).subscription ?? null
-
-					await prisma.user.update({
-						where: { stripeCustomerId: customerId },
-						data: {
-							plan: 'PRO',
-							stripeSubscriptionId: subscriptionId,
-						},
-					})
-				}
-				break
-			}
+			// There is deliberately no `invoice.payment_succeeded` branch. It used to write
+			// `plan` and `stripeSubscriptionId` a second time on a new subscription, racing
+			// the `customer.subscription.created` above for the same columns and adding no
+			// coverage of its own. Per ADR-0003 there is one writer of entitlement.
 
 			case 'invoice.payment_failed': {
 				const invoice = event.data.object as Stripe.Invoice
