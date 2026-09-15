@@ -66,8 +66,9 @@ routes. Everything else stays on plain authentication.
 
 ## Comments
 
-**2026-09-15 — all five tasks done. Closed as `resolved` on the code; the deploy still
-waits on issue 13's human step, and that ordering matters — see the end.**
+**2026-09-15 — all five tasks done, shipped as `07ef17f` on `main`. Closed as `resolved`
+on the code; the deploy still waits on issue 13's human step, and that ordering matters —
+see the end.**
 
 Task 1 — `completeSignup` creates the row with `plan: 'FREE'` and no `trialEndsAt` at all.
 Not just the entitlement: the seven-day date it invented was a second opinion on a
