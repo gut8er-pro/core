@@ -1,30 +1,37 @@
 # Prisma migrations
 
-Production deploys must run `pnpm prisma migrate deploy` (not `db push`) so the
-migration history stays in sync.
+Production deploys apply migrations automatically: the Vercel build runs
+`scripts/migrate-on-vercel.mjs` (production environment only), which executes
+`prisma migrate deploy` before `next build`. If a migration fails, the build fails
+and the previous deploy stays live. When the runtime `DATABASE_URL` moves to the
+Supavisor pooler, set `MIGRATE_DATABASE_URL` to the direct (5432) connection —
+migrations need a session connection and the script prefers that variable.
 
-## One migration, regenerated
+## Incremental, additive migrations
 
-There is a single migration holding the whole schema — currently
-`20260915120000_init`, though regenerating it replaces that directory with a newly
-timestamped one, so the name is only ever that of the latest regeneration.
-The product is pre-launch with no production data, so schema changes are made by
-editing `prisma/schema.prisma` and regenerating this file rather than by stacking
-incremental migrations:
+`20260915120000_init` is the baseline; every schema change after it is its own
+timestamped migration created with:
 
 ```bash
-rm -rf prisma/migrations/2026*_init
-pnpm prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script \
-  -o prisma/migrations/<timestamp>_init/migration.sql
+pnpm prisma migrate dev --name <what_changed>
 ```
 
-A fresh database picks it up on the first `migrate deploy`.
+(or hand-written in the same style when no database is reachable — verify it with
+`migrate deploy` + `migrate diff` against a throwaway Postgres before committing).
+
+The earlier convention of regenerating a single `_init` does not survive contact
+with a database that has already recorded `init` in `_prisma_migrations`: a
+regenerated from-empty script fails on the first `CREATE TYPE ... already exists`.
+Production is such a database, so migrations stack from here on.
+
+Because old code keeps serving traffic while a deploy builds, keep migrations
+additive (new tables, new nullable-or-defaulted columns). Destructive changes need
+the expand-migrate-contract dance across two deploys.
 
 ## Existing development databases
 
-A database created before the current init was written has rows and a
-`_prisma_migrations` history that no longer match. Reset it — there is nothing to
-preserve:
+A database created before the baseline has rows and a `_prisma_migrations`
+history that no longer match. Reset it — there is nothing to preserve:
 
 ```bash
 pnpm prisma migrate reset
