@@ -5,7 +5,9 @@ migration history stays in sync.
 
 ## One migration, regenerated
 
-There is a single migration (`20260914120000_init`) holding the whole schema.
+There is a single migration holding the whole schema — currently
+`20260915120000_init`, though regenerating it replaces that directory with a newly
+timestamped one, so the name is only ever that of the latest regeneration.
 The product is pre-launch with no production data, so schema changes are made by
 editing `prisma/schema.prisma` and regenerating this file rather than by stacking
 incremental migrations:

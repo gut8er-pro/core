@@ -18,12 +18,14 @@ import { usePhotoUpload } from '@/hooks/use-photo-upload'
 import { useDeletePhoto, usePhotos } from '@/hooks/use-photos'
 import type { AiGenerationSummary } from '@/hooks/use-reports'
 import { useReport } from '@/hooks/use-reports'
+import { useSubscriptionNotice } from '@/hooks/use-subscription-notice'
 import type { PhotoClassificationType } from '@/lib/ai/types'
 import { getStoragePath, uploadToStorage } from '@/lib/storage/photos'
 import { MAX_PHOTOS_PER_REPORT } from '@/lib/validations/photos'
 
 function GalleryPage() {
 	const t = useTranslations('report')
+	const subscriptionNotice = useSubscriptionNotice()
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = usePhotos(reportId)
@@ -54,6 +56,13 @@ function GalleryPage() {
 			setSelectedPhotoId(photos[0]?.id ?? null)
 		}
 	}, [hasGenerated, photos, selectedPhotoId])
+
+	// A lapsed account gets a 402 from the generate route. The box below keeps saying
+	// why; this says it once, at the moment the user asked for it.
+	useEffect(() => {
+		if (!genStatus.subscriptionRequired) return
+		subscriptionNotice.notify()
+	}, [genStatus.subscriptionRequired, subscriptionNotice])
 
 	// Also auto-select when live generation finishes
 	useEffect(() => {
@@ -183,7 +192,9 @@ function GalleryPage() {
 				{genStatus.error && (
 					<div className="flex items-center gap-2 rounded-lg border border-error bg-error-light px-4 py-3">
 						<AlertCircle className="h-4 w-4 shrink-0 text-error" />
-						<p className="flex-1 text-body-sm text-error">{genStatus.error}</p>
+						<p className="flex-1 text-body-sm text-error">
+							{genStatus.subscriptionRequired ? subscriptionNotice.message : genStatus.error}
+						</p>
 						<button
 							type="button"
 							onClick={reset}

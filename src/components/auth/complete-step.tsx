@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { NEW_REPORT_PARAM } from '@/lib/navigation'
+import { NEW_REPORT_PARAM, PAYMENT_PARAM, PAYMENT_SUCCESS } from '@/lib/navigation'
 
 // Card icon positions within the shared sprite image
 const CARD_ICON_STYLE: Record<string, React.CSSProperties> = {
@@ -46,6 +46,19 @@ function CompleteStep() {
 	const t = useTranslations('auth.signup.complete')
 	const tSteps = useTranslations('auth.signup.steps.complete')
 
+	/**
+	 * Carried on to the dashboard, which is where the wait for the Stripe webhook
+	 * happens. Checkout redirected here, but nothing on this screen is gated; the first
+	 * gated thing is the report the buttons below lead to, one click away.
+	 */
+	const justPaid = searchParams.get(PAYMENT_PARAM) === PAYMENT_SUCCESS
+	const dashboardQuery = (extra?: string) => {
+		const params = new URLSearchParams(extra)
+		if (justPaid) params.set(PAYMENT_PARAM, PAYMENT_SUCCESS)
+		const query = params.toString()
+		return query ? `/?${query}` : '/'
+	}
+
 	return (
 		<div className="relative min-h-full bg-white">
 			<div className="relative flex flex-col items-center px-6 pt-20 pb-12">
@@ -75,7 +88,7 @@ function CompleteStep() {
 						</span>
 						<span className="text-[18px] text-black">&bull;</span>
 						<span className="text-[18px] tracking-[0.18px] text-black">
-							{searchParams.get('payment') === 'cancelled'
+							{searchParams.get(PAYMENT_PARAM) === 'cancelled'
 								? t('paymentNotCompleted')
 								: t('trialStarted')}
 						</span>
@@ -114,14 +127,14 @@ function CompleteStep() {
 						type="button"
 						// There is no standalone /reports/new route — a report is created from
 						// the dashboard's report-type menu, which this param opens on arrival.
-						onClick={() => router.push(`/?${NEW_REPORT_PARAM}=1`)}
+						onClick={() => router.push(dashboardQuery(`${NEW_REPORT_PARAM}=1`))}
 						className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] border-2 border-[#e5e7eb] bg-white px-[30px] text-[18px] font-medium text-black transition-colors hover:bg-grey-25"
 					>
 						{t('createFirstReport')}
 					</button>
 					<button
 						type="button"
-						onClick={() => router.push('/')}
+						onClick={() => router.push(dashboardQuery())}
 						className="flex h-[58px] flex-1 items-center justify-center rounded-[15px] bg-primary px-[30px] text-[18px] font-medium text-white transition-colors hover:bg-primary-hover"
 					>
 						{t('goToDashboard')}
@@ -129,7 +142,7 @@ function CompleteStep() {
 				</div>
 
 				{/* Payment cancelled nudge */}
-				{searchParams.get('payment') === 'cancelled' && (
+				{searchParams.get(PAYMENT_PARAM) === 'cancelled' && (
 					<p className="mt-4 text-center text-[16px] text-black/70">
 						{t('paymentSetupNote')}{' '}
 						<span className="font-medium text-primary">{t('settingsBilling')}</span>{' '}

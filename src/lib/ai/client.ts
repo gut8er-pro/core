@@ -1,5 +1,7 @@
 // AI client wrapper — calls our API routes which proxy to Claude API.
 
+import { isSubscriptionRequired, SubscriptionRequiredError } from '@/lib/api/errors'
+
 type PhotoAnalysisResult = {
 	description: string
 }
@@ -23,44 +25,38 @@ async function parseErrorResponse(response: Response, fallback: string): Promise
 	}
 }
 
-async function analyzePhoto(photoUrl: string): Promise<PhotoAnalysisResult> {
-	const response = await fetch('/api/ai/analyze-photo', {
+/**
+ * Every one of these routes sits behind `getEntitledUser`, so a lapsed subscriber gets a
+ * 402 from all four. That is the one failure worth distinguishing: it is not a bad photo
+ * and not a provider outage, and retrying cannot help. It leaves here as
+ * `SubscriptionRequiredError` so the caller can say so instead of showing "AI analysis
+ * failed" to someone whose photo was fine.
+ */
+async function postToAiRoute<T>(url: string, photoUrl: string, fallback: string): Promise<T> {
+	const response = await fetch(url, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ photoUrl }),
 	})
-	if (!response.ok) throw new Error(await parseErrorResponse(response, 'AI analysis failed'))
+	if (isSubscriptionRequired(response)) throw new SubscriptionRequiredError()
+	if (!response.ok) throw new Error(await parseErrorResponse(response, fallback))
 	return response.json()
+}
+
+async function analyzePhoto(photoUrl: string): Promise<PhotoAnalysisResult> {
+	return postToAiRoute('/api/ai/analyze-photo', photoUrl, 'AI analysis failed')
 }
 
 async function detectVin(photoUrl: string): Promise<VinDetectionResult> {
-	const response = await fetch('/api/ai/detect-vin', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ photoUrl }),
-	})
-	if (!response.ok) throw new Error(await parseErrorResponse(response, 'VIN detection failed'))
-	return response.json()
+	return postToAiRoute('/api/ai/detect-vin', photoUrl, 'VIN detection failed')
 }
 
 async function detectLicensePlate(photoUrl: string): Promise<PlateDetectionResult> {
-	const response = await fetch('/api/ai/detect-plate', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ photoUrl }),
-	})
-	if (!response.ok) throw new Error(await parseErrorResponse(response, 'Plate detection failed'))
-	return response.json()
+	return postToAiRoute('/api/ai/detect-plate', photoUrl, 'Plate detection failed')
 }
 
 async function ocrDocument(photoUrl: string): Promise<OcrResult> {
-	const response = await fetch('/api/ai/ocr', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ photoUrl }),
-	})
-	if (!response.ok) throw new Error(await parseErrorResponse(response, 'OCR failed'))
-	return response.json()
+	return postToAiRoute('/api/ai/ocr', photoUrl, 'OCR failed')
 }
 
 export type { OcrResult, PhotoAnalysisResult, PlateDetectionResult, VinDetectionResult }

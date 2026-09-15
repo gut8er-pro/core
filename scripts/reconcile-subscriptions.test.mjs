@@ -86,6 +86,26 @@ describe('reconcileUser', () => {
 		expect(proposed.trialEndsAt).toEqual(new Date(TRIAL_END * 1000))
 	})
 
+	// Must agree with the webhook, which keeps a `past_due` subscriber entitled while
+	// Stripe retries the card. Disagreeing would make this script the thing that lapses
+	// them — by hand, a fortnight early, and against ADR-0003's one-writer rule.
+	it('treats a past_due subscription as entitled', () => {
+		const row = user({ plan: 'PRO', stripeCustomerId: CUSTOMER, stripeSubscriptionId: SUBSCRIPTION })
+
+		const { proposed, diffs } = reconcileUser(row, [subscription({ status: 'past_due' })])
+
+		expect(proposed.plan).toBe('PRO')
+		expect(diffs).toEqual([])
+	})
+
+	it('prefers an active subscription over a past_due one', () => {
+		const pastDue = subscription({ id: 'sub_past_due', status: 'past_due' })
+
+		const { proposed } = reconcileUser(user(), [pastDue, subscription()])
+
+		expect(proposed.stripeSubscriptionId).toBe(SUBSCRIPTION)
+	})
+
 	it('lapses a row whose only subscription is cancelled, and keeps the customer id', () => {
 		const row = user({
 			plan: 'PRO',

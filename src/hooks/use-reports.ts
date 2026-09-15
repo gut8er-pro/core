@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { SubscriptionRequiredError } from '@/lib/api/errors'
+import { isSubscriptionRequired, SubscriptionRequiredError } from '@/lib/api/errors'
 import type { ReportListParams } from '@/lib/validations/reports'
 
 type AiGenerationSummary = {
@@ -67,7 +67,7 @@ async function createReport(params: CreateReportParams): Promise<{ report: Repor
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(params),
 	})
-	if (response.status === 402) {
+	if (isSubscriptionRequired(response)) {
 		throw new SubscriptionRequiredError()
 	}
 	if (!response.ok) {

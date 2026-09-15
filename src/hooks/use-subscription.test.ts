@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createCheckout, createPortal, fetchSubscription } from './use-subscription'
+import {
+	createCheckout,
+	createPortal,
+	fetchSubscription,
+	waitForEntitlement,
+} from './use-subscription'
 
 const mockFetch = vi.fn()
 globalThis.fetch = mockFetch
@@ -45,14 +50,16 @@ describe('fetchSubscription', () => {
 		expect(result.stripeSubscriptionId).toBe('sub_def456')
 	})
 
-	it('defaults plan to PRO when missing', async () => {
+	// Fails closed. A body with no `plan` is a shape we do not understand, and reading
+	// that as entitlement is how an unpaid account gets the product (ADR-0003).
+	it('defaults plan to FREE when missing', async () => {
 		mockFetch.mockResolvedValueOnce({
 			ok: true,
 			json: () => Promise.resolve({}),
 		})
 
 		const result = await fetchSubscription()
-		expect(result.plan).toBe('PRO')
+		expect(result.plan).toBe('FREE')
 	})
 
 	it('defaults nullable fields to null when missing', async () => {
@@ -143,5 +150,57 @@ describe('createPortal', () => {
 	it('throws on non-ok response', async () => {
 		mockFetch.mockResolvedValueOnce({ ok: false, status: 500 })
 		await expect(createPortal()).rejects.toThrow('Failed to create portal session')
+	})
+})
+
+/**
+ * The race the premature `plan: 'PRO'` used to paper over: Checkout redirects the user
+ * back to us the moment the card clears, and the webhook that writes entitlement arrives
+ * separately, a second or two later. Between those two the account is honestly lapsed,
+ * and showing it that way would be telling a paying customer they have not paid.
+ */
+describe('waitForEntitlement', () => {
+	const settings = (plan: 'FREE' | 'PRO') => ({
+		ok: true,
+		json: () => Promise.resolve({ plan }),
+	})
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it('answers on the first read when the webhook has already landed', async () => {
+		mockFetch.mockResolvedValueOnce(settings('PRO'))
+
+		await expect(waitForEntitlement({ timeoutMs: 10, intervalMs: 1 })).resolves.toBe(true)
+		expect(mockFetch).toHaveBeenCalledTimes(1)
+	})
+
+	it('keeps asking until the webhook lands', async () => {
+		mockFetch
+			.mockResolvedValueOnce(settings('FREE'))
+			.mockResolvedValueOnce(settings('FREE'))
+			.mockResolvedValueOnce(settings('PRO'))
+
+		await expect(waitForEntitlement({ timeoutMs: 10, intervalMs: 1 })).resolves.toBe(true)
+		expect(mockFetch).toHaveBeenCalledTimes(3)
+	})
+
+	// The webhook may genuinely never arrive — it had not, for a month. Then we stop
+	// waiting and the account is lapsed, which the next paid action says out loud.
+	it('gives up after its budget rather than waiting forever', async () => {
+		mockFetch.mockResolvedValue(settings('FREE'))
+
+		await expect(waitForEntitlement({ timeoutMs: 3, intervalMs: 1 })).resolves.toBe(false)
+		expect(mockFetch).toHaveBeenCalledTimes(3)
+	})
+
+	it('treats a failed settings read as no answer yet, not as an answer', async () => {
+		mockFetch
+			.mockRejectedValueOnce(new Error('NetworkError when attempting to fetch resource'))
+			.mockResolvedValueOnce(settings('PRO'))
+
+		await expect(waitForEntitlement({ timeoutMs: 10, intervalMs: 1 })).resolves.toBe(true)
+		expect(mockFetch).toHaveBeenCalledTimes(2)
 	})
 })

@@ -221,6 +221,7 @@
   "dashboard": {
     "title": "Übersicht",
     "newReport": "Neues Gutachten",
+    "activatingSubscription": "Abonnement wird aktiviert …",
     "createReport": "Gutachten erstellen",
     "reportTypes": {
       "liability": "Haftpflichtschaden",
@@ -1355,6 +1356,7 @@
     "datDisconnectError": "DAT-Integration konnte nicht getrennt werden. Bitte versuchen Sie es erneut.",
     "reportCreateError": "Gutachten konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
     "subscriptionRequired": "Für neue Gutachten wird ein aktives Abonnement benötigt. Ihre bestehenden Gutachten bleiben verfügbar.",
+    "aiSubscriptionRequired": "Für KI-Funktionen wird ein aktives Abonnement benötigt. Ihre bestehenden Gutachten bleiben unverändert verfügbar.",
     "reportDeleted": "Gutachten erfolgreich gelöscht",
     "reportDeleteError": "Gutachten konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
     "reportUpdated": "Gutachten aktualisiert",

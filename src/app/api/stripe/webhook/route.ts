@@ -24,10 +24,19 @@ async function POST(request: NextRequest) {
 		return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
 	}
 
-	// Subscription statuses where the user gets PRO access.
-	// `past_due` is intentionally excluded — Stripe is still retrying the card
-	// and the user should lose access until the invoice clears.
-	const ACTIVE_STATUSES: Stripe.Subscription.Status[] = ['active', 'trialing']
+	/**
+	 * The subscription statuses that carry entitlement. Named as `ENTITLED_STATUSES` is in
+	 * `scripts/reconcile-subscriptions.mjs`, which must hold the same list: the script is
+	 * the only other thing allowed to write `plan`, and a disagreement between them lapses
+	 * by hand the customer this keeps.
+	 *
+	 * `past_due` is one of them. Stripe retries a failed card over roughly two weeks and
+	 * the subscription is still standing throughout; revoking on the first failure takes
+	 * the product away from a customer who is about to pay, in a tool they bill their own
+	 * clients from, and does it silently — there is no dunning mail. `customer.subscription.deleted`
+	 * is what downgrades, once Stripe has given up. See ADR-0003.
+	 */
+	const ENTITLED_STATUSES: Stripe.Subscription.Status[] = ['active', 'trialing', 'past_due']
 
 	try {
 		switch (event.type) {
@@ -35,12 +44,12 @@ async function POST(request: NextRequest) {
 			case 'customer.subscription.updated': {
 				const subscription = event.data.object as Stripe.Subscription
 				const customerId = subscription.customer as string
-				const isActive = ACTIVE_STATUSES.includes(subscription.status)
+				const isEntitled = ENTITLED_STATUSES.includes(subscription.status)
 
 				await prisma.user.update({
 					where: { stripeCustomerId: customerId },
 					data: {
-						plan: isActive ? 'PRO' : 'FREE',
+						plan: isEntitled ? 'PRO' : 'FREE',
 						stripeSubscriptionId: subscription.id,
 						trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
 					},
@@ -73,16 +82,10 @@ async function POST(request: NextRequest) {
 				const invoice = event.data.object as Stripe.Invoice
 				const customerId = invoice.customer as string
 
-				// After all retries fail Stripe will fire subscription.deleted, which is
-				// where we downgrade. But for the user's first failed retry attempt
-				// after the trial we revoke access immediately — they should not
-				// keep generating reports while we're chasing payment.
-				if (invoice.billing_reason === 'subscription_cycle' && invoice.attempt_count >= 2) {
-					await prisma.user.update({
-						where: { stripeCustomerId: customerId },
-						data: { plan: 'FREE' },
-					})
-				}
+				// Reported, never acted on. This branch used to lapse the account on the
+				// second failed attempt, which is the same hard line `past_due` above
+				// rejects, reached by another route. When Stripe finishes retrying it
+				// fires `customer.subscription.deleted`, and that is where we downgrade.
 				console.error(
 					`Payment failed for customer ${customerId}, invoice ${invoice.id} (attempt ${invoice.attempt_count})`,
 				)

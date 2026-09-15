@@ -222,9 +222,13 @@ This lines up with the one check `cutover-wizard.sh` left SKIPPED: confirming
   `stripe/portal`, `stripe/billing` (otherwise they cannot subscribe), `settings` (the client
   learns its own plan there), and `account/export` + `account/delete` (GDPR rights should not
   sit behind a paywall).
-- **Client redirect in `(app)/layout.tsx`** to `/settings/billing` for a FREE user, skipping
-  `/help` and `/settings` so there is no loop and the billing page stays reachable. This is
-  UX only — the API refusal is the actual gate.
+- ~~**Client redirect in `(app)/layout.tsx`** to `/settings/billing` for a FREE user.~~
+  **Struck 2026-09-15 — this was never written.** `(app)/layout.tsx` has not been touched
+  since the marketing-site split (`df9eaf6`) and contains no such redirect; `11e3f96`, the
+  commit this note describes, does not modify the file. The only redirect that exists is
+  the `SubscriptionRequiredError` handler on the dashboard, which fires after a refused
+  create. Recorded so nobody goes looking for code that is not there — see
+  `.scratch/e2e-production-audit/issues/15-entitlement-lifecycle.md`.
 - **`src/lib/api/auth.test.ts`** — 7 cases, including "no row in our database" and the
   distinction between 401 and 402.
 
@@ -279,8 +283,10 @@ notifications; settings; the three Stripe routes; and `account/export` + `accoun
 `GET /api/reports` lists reports and is open; `POST` on the same file creates one and is
 gated — the gate is per-handler, not per-file.
 
-The blanket redirect in `(app)/layout.tsx` was removed for the same reason: an unsubscribed
-user now reaches the whole app normally. Instead `createReport` recognises the 402 and throws
+There is deliberately no blanket redirect in `(app)/layout.tsx` — an unsubscribed user
+reaches the whole app normally. (An earlier revision of this note claimed one had been
+added and then removed; neither happened. See the struck bullet above.) Instead
+`createReport` recognises the 402 and throws
 `SubscriptionRequiredError` (`src/lib/api/errors.ts`), and the dashboard routes that one case
 to `/settings/billing` with a message saying existing reports stay available
 (`subscriptionRequired`, added to both locales at full parity).

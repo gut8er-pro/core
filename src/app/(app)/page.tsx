@@ -16,11 +16,12 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { EmptyState, Pagination, ReportTable } from '@/components/dashboard/report-list'
 import { Button } from '@/components/ui/button'
+import { useCheckoutReturn } from '@/hooks/use-checkout-return'
 import { useCreateReport, useDeleteReport, useReports } from '@/hooks/use-reports'
 import { useStats } from '@/hooks/use-stats'
 import { useToast } from '@/hooks/use-toast'
 import { SubscriptionRequiredError } from '@/lib/api/errors'
-import { NEW_REPORT_PARAM } from '@/lib/navigation'
+import { consumeQueryParam, NEW_REPORT_PARAM } from '@/lib/navigation'
 import { cn } from '@/lib/utils'
 import type { ReportType } from '@/lib/validations/reports'
 
@@ -63,6 +64,7 @@ function DashboardPage() {
 	const [search, setSearch] = useState('')
 	const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('yearly')
 	const [showReportTypeMenu, setShowReportTypeMenu] = useState(false)
+	const [newReportRequested, setNewReportRequested] = useState(false)
 	const reportTypeRef = useRef<HTMLDivElement>(null)
 	const router = useRouter()
 	const { data, isLoading, error } = useReports({ page, limit: 10 })
@@ -70,23 +72,29 @@ function DashboardPage() {
 	const createReport = useCreateReport()
 	const deleteReport = useDeleteReport()
 	const toast = useToast()
+	// This is where Stripe Checkout lands, and where the signup's completion screen hands
+	// the user on. Both may arrive ahead of the webhook that records what they bought.
+	const isAwaitingEntitlement = useCheckoutReturn()
 
 	const chartValues = stats?.monthlyRevenue ?? Array(12).fill(0)
 	const maxChartValue = Math.max(...chartValues, 1)
 	const currentYear = new Date().getFullYear()
 
-	// Arriving from "Create your first report" (signup complete) opens the
-	// report-type menu straight away. Read from location rather than
-	// useSearchParams so this prerendered route needs no Suspense boundary.
+	// Arriving from "Create your first report" (signup complete) opens the report-type
+	// menu. Read from location rather than useSearchParams so this prerendered route
+	// needs no Suspense boundary, and consumed so a refresh does not reopen the menu.
 	useEffect(() => {
-		const params = new URLSearchParams(window.location.search)
-		if (!params.has(NEW_REPORT_PARAM)) return
-		setShowReportTypeMenu(true)
-		// Drop the param so a refresh doesn't reopen the menu.
-		params.delete(NEW_REPORT_PARAM)
-		const query = params.toString()
-		window.history.replaceState(null, '', query ? `/?${query}` : '/')
+		if (consumeQueryParam(NEW_REPORT_PARAM) === null) return
+		setNewReportRequested(true)
 	}, [])
+
+	// ...but not before the webhook has caught up. That request arrives one click after
+	// Checkout, and opening the menu into a refusal would be the whole race made visible.
+	useEffect(() => {
+		if (!newReportRequested || isAwaitingEntitlement) return
+		setShowReportTypeMenu(true)
+		setNewReportRequested(false)
+	}, [newReportRequested, isAwaitingEntitlement])
 
 	// Close dropdown on outside click
 	useEffect(() => {
@@ -279,12 +287,12 @@ function DashboardPage() {
 					<div className="relative" ref={reportTypeRef}>
 						<Button
 							onClick={() => setShowReportTypeMenu(!showReportTypeMenu)}
-							loading={createReport.isPending}
+							loading={createReport.isPending || isAwaitingEntitlement}
 							size="lg"
 							icon={<Plus className="h-3.5 w-3.5" />}
 							iconPosition="right"
 						>
-							{t('newReport')}
+							{isAwaitingEntitlement ? t('activatingSubscription') : t('newReport')}
 						</Button>
 						{showReportTypeMenu && (
 							<div className="absolute right-0 top-full z-50 mt-2 w-54.5 overflow-hidden rounded-xl bg-white shadow-dropdown">

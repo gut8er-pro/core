@@ -9,7 +9,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  * cancellation actually lapses the account, and nothing Stripe sends can make us ask it
  * to retry forever.
  *
- * `past_due` is deliberately untested — issue 15 settles it.
+ * `past_due` is settled here: it stays entitled, because Stripe retries a failed card for
+ * roughly two weeks and we have no dunning mail to warn anyone first (ADR-0003).
  */
 
 const update = vi.fn()
@@ -134,6 +135,48 @@ describe('POST /api/stripe/webhook', () => {
 			where: { stripeCustomerId: CUSTOMER },
 			data: { plan: 'FREE', stripeSubscriptionId: null, trialEndsAt: null },
 		})
+	})
+
+	/**
+	 * A failed renewal is not a cancellation. Stripe retries the card over roughly two
+	 * weeks, and revoking on day one would take the product away from a customer who is
+	 * about to pay — with no dunning mail to tell them why. `deleted` is what downgrades.
+	 */
+	it('keeps the user entitled when a subscription goes past_due', async () => {
+		subscriptionEvent('customer.subscription.updated', { status: 'past_due' })
+
+		const response = await POST(request())
+
+		expect(response.status).toBe(200)
+		expect(update).toHaveBeenCalledWith({
+			where: { stripeCustomerId: CUSTOMER },
+			data: {
+				plan: 'PRO',
+				stripeSubscriptionId: SUBSCRIPTION,
+				trialEndsAt: null,
+			},
+		})
+	})
+
+	// The same rule seen from the invoice side: a second failed attempt used to write
+	// `plan: 'FREE'` here, which is the hard line by another name.
+	it('does not downgrade on a repeatedly failed renewal invoice', async () => {
+		constructEvent.mockReturnValue({
+			type: 'invoice.payment_failed',
+			data: {
+				object: {
+					id: 'in_1U8MkTPX9t4iIbv4',
+					customer: CUSTOMER,
+					billing_reason: 'subscription_cycle',
+					attempt_count: 3,
+				},
+			},
+		})
+
+		const response = await POST(request())
+
+		expect(response.status).toBe(200)
+		expect(update).not.toHaveBeenCalled()
 	})
 
 	it('acknowledges an event type it does not handle without touching the user', async () => {

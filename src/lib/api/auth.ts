@@ -28,9 +28,9 @@ async function getAuthenticatedUser() {
  * and the AI routes call this; everything else stays on `getAuthenticatedUser`.
  *
  * `plan` is the entitlement flag: the Stripe webhook is its only writer after signup and
- * already encodes the nuance (`past_due` is not entitled, a cancelled or paused
- * subscription downgrades to FREE). So this asks the one question, and the billing rules
- * stay in the webhook rather than being restated here.
+ * already encodes the nuance (`past_due` stays entitled while Stripe retries the card, a
+ * cancelled or paused subscription downgrades to FREE). So this asks the one question,
+ * and the billing rules stay in the webhook rather than being restated here.
  */
 async function getEntitledUser() {
 	const { user, error } = await getAuthenticatedUser()

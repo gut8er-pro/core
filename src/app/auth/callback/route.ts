@@ -26,10 +26,10 @@ async function GET(request: Request) {
 						data: {
 							id: user.id,
 							email: user.email ?? '',
-							// Explicit, because the schema still defaults `plan` to PRO. An OAuth
-							// signup never passes through the wizard or Stripe Checkout, so this
-							// is the only thing standing between "signed in with Google" and a
-							// free Pro account. See `getEntitledUser` in `src/lib/api/auth.ts`.
+							// Explicit, though the schema now defaults to FREE as well. An OAuth
+							// signup never passes through the wizard or Stripe Checkout, so an
+							// entitlement written here would be one nobody has paid for. The
+							// webhook is the only writer of `plan` (ADR-0003); this is a signup.
 							plan: 'FREE',
 							firstName: (user.user_metadata?.full_name as string)?.split(' ')[0] ?? null,
 							lastName:

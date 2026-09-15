@@ -23,11 +23,14 @@ import { CompletionBadge } from '@/components/ui/completion-badge'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useCalculation } from '@/hooks/use-calculation'
 import { useReport } from '@/hooks/use-reports'
+import { useSubscriptionNotice } from '@/hooks/use-subscription-notice'
+import { isSubscriptionRequired } from '@/lib/api/errors'
 import { toReportType } from '@/lib/completeness'
 
 function CalculationPage() {
 	const t = useTranslations('report.calculation')
 	const tc = useTranslations('common')
+	const subscriptionNotice = useSubscriptionNotice()
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
 	const { data, isLoading } = useCalculation(reportId)
@@ -143,6 +146,14 @@ function CalculationPage() {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({}),
 			})
+			// The account is lapsed. Not a failure of the photos, and no retry helps — so it
+			// gets its own message, in the user's language, saying what is closed and what
+			// is not. The route's own English "Subscription required" never shows.
+			if (isSubscriptionRequired(response)) {
+				setAutoFillMessage(subscriptionNotice.message)
+				subscriptionNotice.notify()
+				return
+			}
 			if (!response.ok) {
 				const resData = await response.json().catch(() => ({ error: 'Auto-fill failed' }))
 				setAutoFillMessage(resData.error || t('autoFillFailed'))
@@ -156,7 +167,7 @@ function CalculationPage() {
 		} finally {
 			setIsAutoFilling(false)
 		}
-	}, [reportId, queryClient, t])
+	}, [reportId, queryClient, t, subscriptionNotice])
 
 	if (isLoading) {
 		return (

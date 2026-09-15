@@ -22,7 +22,7 @@ model User {
   facebook                  String?
   linkedin                  String?
   role                      UserRole      @default(USER)
-  plan                      Plan          @default(PRO)
+  plan                      Plan          @default(FREE)
   stripeCustomerId          String?       @unique
   stripeSubscriptionId      String?       @unique
   trialEndsAt               DateTime?

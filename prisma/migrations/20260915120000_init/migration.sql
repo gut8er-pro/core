@@ -36,7 +36,7 @@ CREATE TABLE "User" (
     "facebook" TEXT,
     "linkedin" TEXT,
     "role" "UserRole" NOT NULL DEFAULT 'USER',
-    "plan" "Plan" NOT NULL DEFAULT 'PRO',
+    "plan" "Plan" NOT NULL DEFAULT 'FREE',
     "stripeCustomerId" TEXT,
     "stripeSubscriptionId" TEXT,
     "trialEndsAt" TIMESTAMP(3),

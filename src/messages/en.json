@@ -221,6 +221,7 @@
   "dashboard": {
     "title": "Dashboard",
     "newReport": "New Report",
+    "activatingSubscription": "Activating subscription …",
     "createReport": "Create Report",
     "reportTypes": {
       "liability": "Liability",
@@ -1355,6 +1356,7 @@
     "datDisconnectError": "Failed to disconnect DAT integration. Please try again.",
     "reportCreateError": "Failed to create report. Please try again.",
     "subscriptionRequired": "Creating new reports requires an active subscription. Your existing reports stay available.",
+    "aiSubscriptionRequired": "AI features require an active subscription. Your existing reports are unaffected and stay available.",
     "reportDeleted": "Report deleted successfully",
     "reportDeleteError": "Failed to delete report. Please try again.",
     "reportUpdated": "Report updated",

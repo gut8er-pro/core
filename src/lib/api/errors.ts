@@ -10,4 +10,16 @@ class SubscriptionRequiredError extends Error {
 	}
 }
 
-export { SubscriptionRequiredError }
+/**
+ * Does this response mean "you are not subscribed"?
+ *
+ * Seven handlers can answer this way and three of them are read without an exception to
+ * throw — a manually-read SSE stream and two bare fetches — so the status is compared in
+ * more than one place. Comparing it against a name rather than a bare `402` is what
+ * keeps those places recognisably the same question.
+ */
+function isSubscriptionRequired(response: { status: number }): boolean {
+	return response.status === 402
+}
+
+export { isSubscriptionRequired, SubscriptionRequiredError }

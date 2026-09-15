@@ -3,6 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useRef, useState } from 'react'
 import type { ClassificationResult, GenerateEvent, GenerationSummary } from '@/lib/ai/types'
+import { isSubscriptionRequired } from '@/lib/api/errors'
 
 type GenerationStatus = {
 	isGenerating: boolean
@@ -13,6 +14,13 @@ type GenerationStatus = {
 	classifications: Map<string, ClassificationResult>
 	summary: GenerationSummary | null
 	error: string | null
+	/**
+	 * The route answered 402: the account is lapsed, so generation is closed until the
+	 * subscription is. Flagged rather than folded into `error` because it is the one
+	 * failure where retrying is pointless and the message has to be a translated one —
+	 * the strings in this hook are not.
+	 */
+	subscriptionRequired: boolean
 }
 
 const INITIAL_STATUS: GenerationStatus = {
@@ -24,6 +32,7 @@ const INITIAL_STATUS: GenerationStatus = {
 	classifications: new Map(),
 	summary: null,
 	error: null,
+	subscriptionRequired: false,
 }
 
 function useGenerateReport(reportId: string) {
@@ -60,6 +69,7 @@ function useGenerateReport(reportId: string) {
 						...prev,
 						isGenerating: false,
 						error: data.error || 'Generation failed',
+						subscriptionRequired: isSubscriptionRequired(response),
 					}))
 					return
 				}

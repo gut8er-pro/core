@@ -24,11 +24,12 @@ import Stripe from 'stripe'
 
 /**
  * Subscription statuses that carry entitlement, in the order we prefer them when a user
- * has more than one. Kept identical to `ACTIVE_STATUSES` in
- * `src/app/api/stripe/webhook/route.ts` — the two must move together, and issue 15
- * moves `past_due` into it.
+ * has more than one. Kept identical to `ENTITLED_STATUSES` in
+ * `src/app/api/stripe/webhook/route.ts` — the two must move together, or this script
+ * lapses by hand the customer the webhook is deliberately keeping. `past_due` is in the
+ * set because Stripe is still retrying the card; `deleted` is what downgrades (ADR-0003).
  */
-const ENTITLED_STATUSES = ['active', 'trialing']
+const ENTITLED_STATUSES = ['active', 'trialing', 'past_due']
 
 function customerIdOf(subscription) {
 	return typeof subscription.customer === 'string'

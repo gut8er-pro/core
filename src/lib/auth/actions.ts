@@ -113,9 +113,6 @@ async function completeSignup(
 	// 2. Create User record in our database
 	let checkoutUrl: string | undefined
 	try {
-		const planValue = 'PRO' as const
-		const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-
 		// Filter out "$undefined" strings from Next.js server action serialization
 		const cleanStr = (val: string | undefined) => (val && val !== '$undefined' ? val : null)
 		const hasBusinessData = !!cleanStr(business.companyName)
@@ -132,8 +129,12 @@ async function completeSignup(
 				lastName: cleanStr(personal.lastName),
 				phone: cleanStr(personal.phone),
 				professionalQualification: cleanStr(personal.professionalQualification),
-				plan: planValue,
-				trialEndsAt,
+				// Lapsed until Stripe says otherwise. This used to be `PRO` with a
+				// seven-day `trialEndsAt` invented here, granted before Checkout had
+				// even been opened — so abandoning it left a fully entitled account.
+				// The webhook is the only writer of entitlement, and it caches Stripe's
+				// own `trial_end` into `trialEndsAt`. See ADR-0003.
+				plan: 'FREE',
 				...(hasBusinessData
 					? {
 							business: {
