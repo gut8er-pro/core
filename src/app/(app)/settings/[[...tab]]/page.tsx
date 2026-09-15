@@ -756,6 +756,12 @@ function BillingSection() {
 		if (nextBillingDate) {
 			return t('billing.renewsOn', { date: formatDate(nextBillingDate) })
 		}
+		// A subscription with no period to show is still a subscription. Falling through to
+		// the denial here would print "Kein aktives Abonnement" beside the "Tarif verwalten"
+		// button that same subscription just put there — this page's own defect in miniature.
+		if (hasSubscription) {
+			return t('billing.subscriptionActive')
+		}
 		return t('billing.noActiveSubscription')
 	}
 

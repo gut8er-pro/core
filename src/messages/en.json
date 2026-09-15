@@ -342,6 +342,7 @@
       "trialActive": "Trial active · {days} day(s) remaining",
       "renewsOn": "€69.00 / month · Renews on {date}",
       "cancelsOn": "Cancels on {date}",
+      "subscriptionActive": "Subscription active",
       "noActiveSubscription": "No active subscription",
       "managePlan": "Manage Plan",
       "setupPayment": "Set up payment",

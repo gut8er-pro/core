@@ -342,6 +342,7 @@
       "trialActive": "Testphase aktiv · noch {days} Tag(e)",
       "renewsOn": "€69,00 / Monat · Verlängerung am {date}",
       "cancelsOn": "Kündigung zum {date}",
+      "subscriptionActive": "Abonnement aktiv",
       "noActiveSubscription": "Kein aktives Abonnement",
       "managePlan": "Tarif verwalten",
       "setupPayment": "Zahlung einrichten",

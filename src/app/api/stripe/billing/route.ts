@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { prisma } from '@/lib/prisma'
 import { getStripeClient } from '@/lib/stripe/client'
+import { getSubscription } from '@/lib/stripe/subscription'
 
 async function GET() {
 	const { user, error } = await getAuthenticatedUser()
@@ -12,7 +13,6 @@ async function GET() {
 		select: {
 			plan: true,
 			stripeCustomerId: true,
-			stripeSubscriptionId: true,
 			trialEndsAt: true,
 		},
 	})
@@ -37,26 +37,20 @@ async function GET() {
 	const stripe = getStripeClient()
 
 	try {
-		// Fetch active subscription
-		if (dbUser.stripeSubscriptionId) {
-			const subscription = await stripe.subscriptions.retrieve(dbUser.stripeSubscriptionId)
-			// In Stripe v20+, current_period is on the subscription item
-			const item = subscription.items?.data?.[0]
-			const periodEnd = item?.current_period_end
-			const periodStart = item?.current_period_start
-			response.subscription = {
-				id: subscription.id,
-				status: subscription.status,
-				currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
-				currentPeriodStart: periodStart ? new Date(periodStart * 1000).toISOString() : null,
-				trialEnd: subscription.trial_end
-					? new Date(subscription.trial_end * 1000).toISOString()
-					: null,
-				cancelAtPeriodEnd: subscription.cancel_at_period_end,
-				cancelAt: subscription.cancel_at
-					? new Date(subscription.cancel_at * 1000).toISOString()
-					: null,
-			}
+		// Asked of Stripe by customer, not read back from `User.stripeSubscriptionId`. That
+		// column is written only by the webhook, so while delivery was down it was NULL for
+		// paying accounts and this page announced "Kein aktives Abonnement" above the very
+		// invoices it fetched below. `plan` stays untouched here — ADR-0003.
+		const subscription = await getSubscription(dbUser.stripeCustomerId)
+		response.subscription = subscription
+
+		// `trialEndsAt` is a cache of Stripe's `trial_end` and has no vote (CONTEXT.md), so
+		// the moment the subscription itself is in hand it stops voting. It has the same
+		// sole writer as the id above and was NULL for the same accounts; left to decide,
+		// it shows a customer in the middle of their trial a renewal date instead of the
+		// days they have left. With no subscription to defer to, the cache is all there is.
+		if (subscription) {
+			response.trialEndsAt = subscription.trialEnd
 		}
 
 		// Fetch default payment method

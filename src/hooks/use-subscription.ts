@@ -86,11 +86,12 @@ type BillingPaymentMethod = {
 	expYear: number
 }
 
+/** Mirrors what `GET /api/stripe/billing` reads off Stripe — see `SubscriptionInfo`. */
 type BillingSubscription = {
 	id: string
 	status: string
-	currentPeriodEnd: string
-	currentPeriodStart: string
+	currentPeriodEnd: string | null
+	currentPeriodStart: string | null
 	trialEnd: string | null
 	cancelAtPeriodEnd: boolean
 	cancelAt: string | null
