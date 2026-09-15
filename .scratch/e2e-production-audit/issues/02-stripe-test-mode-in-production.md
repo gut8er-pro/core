@@ -1,73 +1,66 @@
-# 02 — Stripe runs in test mode in production, and subscription state contradicts itself
+# 02 — Stripe live-mode cutover
 
 Status: ready-for-human
 Type: bug
 Severity: blocker
+Blocked: external — the client has not completed Stripe business verification, so live
+mode is unavailable. Nothing in this ticket can start until that clears.
 
-No real payment can be collected. Settings → Abrechnung also shows a self-contradictory state.
+Production runs against Stripe test keys, so no real payment can be collected. The
+7-day trial → €69/month flow works end to end, but in sandbox
+(`acct_1U0s6ZPX9t4iIbv4`, name "Gut8er Pro sandbox" — the only account the API exposes).
 
 ## Evidence
 
-`GET /api/stripe/billing` on the live app returns three invoices whose links are all **test-mode**
-URLs:
+`GET /api/stripe/billing` returns invoices whose links all carry a `test_` path segment:
 
 ```
 https://pay.stripe.com/invoice/acct_1U0s6ZPX9t4iIbv4/test_YWNjdF8xVTBzNlpQWDl0NGlJYnY0...
 https://invoice.stripe.com/i/acct_1U0s6ZPX9t4iIbv4/test_...
 ```
 
-Note the `test_` path segment. The card on file is `visa •4242` — Stripe's canonical test card.
+The card on file is `visa •4242` — Stripe's canonical test card.
 
-So production is running against Stripe test keys. The 7-day trial → €69/month Pro flow described
-in `CLAUDE.md` cannot charge anyone.
+## Scope note
 
-**Fix (human, in the Vercel + Stripe dashboards):** swap the production environment to live Stripe
-keys, recreate the product/price in live mode, and re-point the webhook endpoint at the live
-signing secret. Then redeploy.
+This ticket was originally four defects in one. The other three did not depend on live
+mode and have been split out; two of them turned out to be the same root cause.
 
-## Second defect — subscription state is internally inconsistent
+- **13** — the webhook has never delivered. This is what made the billing page contradict
+  itself and what left entitlement unenforced. Not blocked; do it first, in sandbox.
+- **14** — the billing page reads a stale local column instead of Stripe.
+- **15** — entitlement lifecycle: premature `PRO` at signup, schema default, AI 402s.
+- **08** — the English invoice descriptions and the `€69.00` / `0 €` formatting split.
 
-The same API response says:
+## Runbook — when verification clears
 
-```json
-{ "plan": "PRO", "trialEndsAt": "2026-08-12T…", "subscription": null,
-  "paymentMethod": { "brand": "visa", "last4": "4242" },
-  "invoices": [ …three, all status "paid"… ] }
-```
+Do these in order. Step 2 is the one that is easy to miss and breaks Checkout for every
+existing user if skipped.
 
-`subscription` is `null`, so `settings/[[...tab]]/page.tsx:741` (`hasSubscription = !!billing?.subscription`)
-renders **"Kein aktives Abonnement"** — directly above a payment-history table showing three paid
-invoices and a card on file. The UI tells the user they have no subscription while showing them
-their subscription payments.
+1. **Recreate the product and price in live mode.** The sandbox price is
+   `price_1U0sBUPX9t4iIbv4Bfkl6qui` (EUR 6900, monthly, product `prod_V0tzOlQpRVmUYl`).
+   Set the new live price id as `STRIPE_PRO_PRICE_ID` in Vercel.
+2. **Null the stale sandbox customer ids.** Every existing user holds a *test-mode*
+   `stripeCustomerId`. `checkout/route.ts:36` treats any non-null value as reusable and
+   passes it to `checkout.sessions.create({ customer })`; against live keys Stripe answers
+   `No such customer` and — unlike `billing/route.ts` — there is no try/catch, so it is a
+   500. The first click on "Zahlung einrichten" after the cutover fails without this.
 
-## Third defect — access is not gated on subscription state
+   ```sql
+   UPDATE "User" SET "stripeCustomerId" = NULL, "stripeSubscriptionId" = NULL;
+   ```
 
-`trialEndsAt` is `2026-08-12`, which is in the past (today is 2026-09-14), and `subscription` is
-`null` — yet the account has full access to every Pro feature. Whatever the intended paywall is,
-it is not being enforced. Worth deciding explicitly whether that is intentional for now, but it
-should not ship unexamined.
+   Harden `checkout/route.ts` to catch `resource_missing` and re-create the customer, as
+   defence in depth for the general case of a deleted Stripe customer.
+3. **Swap `STRIPE_SECRET_KEY` and `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`** to the live pair.
+4. **Create the live webhook endpoint** at `https://app.gut8erpro.de/api/stripe/webhook`
+   with the same six events as the sandbox one, and paste its signing secret into Vercel
+   as `STRIPE_WEBHOOK_SECRET`. A live endpoint has its own secret; the sandbox value will
+   not work.
+5. **Redeploy**, then run the acceptance check from issue 13 against live mode.
 
-## Also in this area
+## Acceptance criteria
 
-- Invoice descriptions come back from Stripe in English ("1 × Gut8erPRO Pro (at €69.00 / month)",
-  "Free trial for 1 × Gut8erPRO Pro") and render untranslated in the German UI. Fix in the Stripe
-  product configuration, or map to local strings. See issue 08.
-- Amounts render as `€69.00` here but `0 €` on the plan card — see issue 08.
-
----
-
-## Updated 2026-09-15
-
-This issue was filed alongside issue 01 as one story — "production is wired to a sandbox" — on the
-assumption both were the same missed go-live step and would be fixed together.
-
-They have separated. `gut8erpro.de` is now verified in Resend, so issue 01's configuration half is
-closed and the rest of it is code. This one is unchanged: the live-mode switch is blocked on the
-client's company paperwork, which is not yet in order.
-
-A go-live wizard covering both was specified and then dropped — with the Resend half done, what
-remains here is a Stripe dashboard visit plus environment variables, which does not warrant one.
-The steps in **Fix (human…)** above stand as the checklist.
-
-One environment variable to carry across from issue 01's work while you are in the Vercel settings:
-`SENTRY_AUTH_TOKEN` — see issue 12.
+- A real card completes Checkout and the resulting invoice URL has no `test_` segment.
+- The user's `stripeSubscriptionId` is written within seconds of Checkout completing.
+- Cancelling that subscription in Stripe flips the same user to `FREE`.

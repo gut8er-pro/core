@@ -115,3 +115,32 @@ every PDF failed to generate and the covering mail went out regardless. Distingu
 failed send by being invisible to everyone until the client asks where the report is, and by
 leaving the report locked against a second attempt.
 _Avoid_: partial send (a partial send has some of the PDFs; it is refused for the same reason)
+
+## Billing and entitlement
+
+The September 2026 audit reported three defects here. They were one missing database
+write, described in four different vocabularies. These are the words that stop that
+happening again.
+
+**Entitlement**:
+The single yes-or-no question "may this account create reports and use AI". There is one
+paid plan, so there is nothing else to ask. `User.plan` stores it and the client mirrors
+it as `isPro`; both are older names for this one concept.
+_Avoid_: plan, tier, pro status, access level
+
+**Lapsed**:
+An account that has lost entitlement but kept its data. Everything it has ever produced
+stays readable, editable, exportable and sendable; only report creation and the AI
+features close.
+_Avoid_: free tier, free plan, downgraded, cancelled — a cancellation is one of three
+ways to become lapsed, alongside a failed card and an abandoned trial
+
+**Trial**:
+The seven days of entitlement that begin at Checkout. Stripe's `trial_end` is
+authoritative; the `trialEndsAt` we store is a cache of it and has no vote.
+_Avoid_: trial period, grace period
+
+**Subscription**:
+The Stripe object. It is what the billing page displays, and the only thing permitted to
+change entitlement — through the webhook that reports its lifecycle.
+_Avoid_: plan, membership, billing status
