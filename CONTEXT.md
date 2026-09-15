@@ -2,8 +2,8 @@
 
 The appraisal domain — Gutachten, Sachverständiger, BVSK, the four report types — is
 glossed in [CLAUDE.md](./CLAUDE.md#key-domain-concepts) and stays there. This file holds
-the vocabulary that the two-origin deployment forced on us, which is a different subject
-and has its own history of being got wrong.
+the vocabulary that *deploying* the thing forced on us — the two-origin split, and the
+mail senders. A different subject, and the one with a history of being got wrong.
 
 ## Language
 
@@ -59,3 +59,59 @@ and is invisible to the server, because fragments are never transmitted.
 A link that carries a `?code=` to be exchanged against a verifier held by the browser that
 requested it. Visible to the server, and redeemable only in that one browser. Correct for
 OAuth, wrong for recovery.
+
+### Mail senders
+
+Every outbound mail leaves the same verified domain, but the product sends two quite
+different things from it, and conflating them is what produced `.scratch/e2e-production-audit/issues/01`:
+two independently-defaulting sender settings, one of them a sandbox address.
+
+**Sending domain**:
+The one Resend-verified domain all outbound mail leaves from — `gut8erpro.de`. Configured
+once, as a domain. The part before the `@` belongs to the stream and is never a setting.
+_Avoid_: from address, sender domain, mail domain
+
+**Gutachten stream**:
+Client-facing mail — the appraisal itself, from a Sachverständiger to their client. Carries
+the assessor's name in the display name and their own address in the reply path, so the
+platform reads as the carrier rather than the author.
+_Avoid_: report email, send email
+
+**Notification stream**:
+Platform-to-user mail — the app telling its own user that something happened. From the
+platform, in the platform's name. Shares the sending domain with the Gutachten stream but
+not the local part, so a bounce storm on one cannot cost the other its delivery.
+_Avoid_: system email, transactional email (both streams are transactional)
+
+**Reply path**:
+The address a recipient reaches by pressing Reply — the assessor's own account email, never
+the envelope sender. The only thing making a Gutachten a two-way document, given that it
+leaves from an address nobody reads.
+_Avoid_: reply-to, sender (the envelope sender is a different thing, and deliberately
+unreachable)
+
+**Sandbox sender**:
+A `*.resend.dev` address. Deliverable to the Resend account owner and to nobody else, and
+silently so — every other recipient is refused by the provider, never by us. It was the
+default, which is how production shipped unable to deliver its own deliverable.
+_Avoid_: test sender, default sender
+
+### Send failures
+
+**Assessor-correctable failure**:
+A send that failed for a reason the person who clicked it can fix — a mistyped recipient, an
+attachment past the provider's size cap. Earns a message naming the cause, in German.
+_Avoid_: user error, validation error (validation is what happens before we call the provider)
+
+**Service failure**:
+A send that failed for a reason only an operator can fix — an unverified domain, a rejected
+key, a rate limit. Earns one generic message. The provider's own words never reach the
+screen: they are in English, and they name our infrastructure and our account.
+_Avoid_: server error, internal error
+
+**Empty send**:
+A send the app reports as successful while the Gutachten it existed to carry is absent —
+every PDF failed to generate and the covering mail went out regardless. Distinguished from a
+failed send by being invisible to everyone until the client asks where the report is, and by
+leaving the report locked against a second attempt.
+_Avoid_: partial send (a partial send has some of the PDFs; it is refused for the same reason)

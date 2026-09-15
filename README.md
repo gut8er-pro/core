@@ -55,6 +55,7 @@ Required variables:
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
 | `ANTHROPIC_API_KEY` | Anthropic API key (for AI features) |
 | `RESEND_API_KEY` | Resend API key (for email) |
+| `RESEND_SENDING_DOMAIN` | The bare, Resend-verified domain all outbound mail leaves from (`gut8erpro.de` in production). Not an address — `src/lib/email/sender.ts` owns the local parts: `gutachten@` for client-facing reports, `noreply@` for platform notifications. Unset, no mail is sent at all. |
 | `NEXT_PUBLIC_APP_URL` | This app's own URL (default: `http://localhost:3000`; `https://app.gut8erpro.de` in production). Drives OAuth callbacks, password-reset links, Stripe redirects and email links. |
 | `NEXT_PUBLIC_MARKETING_URL` | The Astro marketing site's URL (`https://gut8erpro.de` in production). Used by `marketingUrl()` in `src/lib/urls.ts` for app→marketing links. |
 

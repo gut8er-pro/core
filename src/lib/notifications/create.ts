@@ -1,4 +1,6 @@
-import { Resend } from 'resend'
+import { getResendClient } from '@/lib/email/client'
+import { escapeHtml } from '@/lib/email/html'
+import { notificationSender } from '@/lib/email/sender'
 import { prisma } from '@/lib/prisma'
 import { appUrl } from '@/lib/urls'
 
@@ -47,21 +49,27 @@ async function createNotification({
 		return null
 	}
 
-	// Send email for important events (non-blocking)
-	if (EMAIL_EVENTS.has(eventType) && process.env.RESEND_API_KEY) {
+	// Send email for important events (non-blocking). Gated on both mail
+	// variables: `notificationSender()` throws without the domain, and this
+	// stream swallows its failures, so an unset domain would kill it silently.
+	if (
+		EMAIL_EVENTS.has(eventType) &&
+		process.env.RESEND_API_KEY &&
+		process.env.RESEND_SENDING_DOMAIN
+	) {
 		try {
 			const user = await prisma.user.findUnique({
 				where: { id: userId },
 				select: { email: true, firstName: true },
 			})
 			if (user?.email) {
-				const resend = new Resend(process.env.RESEND_API_KEY)
-				const greeting = user.firstName ? `Hi ${user.firstName},` : 'Hi,'
+				const resend = getResendClient()
+				const greeting = user.firstName ? `Hi ${escapeHtml(user.firstName)},` : 'Hi,'
 				await resend.emails.send({
-					from: process.env.EMAIL_FROM ?? 'Gut8erPRO <noreply@gut8erpro.de>',
+					from: notificationSender(),
 					to: user.email,
 					subject: title,
-					html: `<p>${greeting}</p><p>${description}</p><p>Log in to <a href="${appUrl()}">Gut8erPRO</a> to view details.</p>`,
+					html: `<p>${greeting}</p><p>${escapeHtml(description)}</p><p>Log in to <a href="${appUrl()}">Gut8erPRO</a> to view details.</p>`,
 				})
 				await prisma.notification.update({
 					where: { id: notification.id },
@@ -69,7 +77,7 @@ async function createNotification({
 				})
 			}
 		} catch (err) {
-			console.warn('[notifications] Email send failed (non-fatal):', err)
+			console.error('[notifications] Email send failed (non-fatal):', err)
 		}
 	}
 

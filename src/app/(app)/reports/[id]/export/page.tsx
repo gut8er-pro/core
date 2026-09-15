@@ -11,11 +11,27 @@ import { IncompleteNotice } from '@/components/report/export/incomplete-notice'
 import type { ExportFormData } from '@/components/report/export/types'
 import { Button } from '@/components/ui/button'
 import { useAutoSave } from '@/hooks/use-auto-save'
-import { IncompleteReportError, useExportConfig, useSendReport } from '@/hooks/use-export'
+import {
+	IncompleteReportError,
+	SendFailedError,
+	useExportConfig,
+	useSendReport,
+} from '@/hooks/use-export'
 import { useFreshMissingInfo } from '@/hooks/use-missing-info'
 import { useReport } from '@/hooks/use-reports'
 import { useToast } from '@/hooks/use-toast'
 import { isDelivered, toReportType } from '@/lib/completeness'
+import type { SendFailureCode } from '@/lib/email/send-failure'
+
+/**
+ * A `Record` rather than a switch: a new failure code is then a type error here
+ * rather than a silent fallthrough to the generic message.
+ */
+const SEND_ERROR_KEYS: Record<SendFailureCode, string> = {
+	recipient_rejected: 'sendErrors.recipientRejected',
+	attachment_too_large: 'sendErrors.attachmentTooLarge',
+	email_service_unavailable: 'sendErrors.emailServiceUnavailable',
+}
 
 function ExportPage() {
 	const t = useTranslations('report.export')
@@ -88,6 +104,21 @@ function ExportPage() {
 		[saveField],
 	)
 
+	// The only place a send failure is put into words. The server answers with a
+	// code — the provider's own prose is English and names our infrastructure, so
+	// it never leaves the server.
+	const sendErrorMessage = useCallback(
+		(error: Error) => {
+			// A 422 that reached a click means the browser was working from stale
+			// data. Say so and leave the retry to the assessor — sending is
+			// irreversible and must follow a deliberate click.
+			if (error instanceof IncompleteReportError) return t('notSavedYet')
+			if (error instanceof SendFailedError) return t(SEND_ERROR_KEYS[error.code])
+			return t('sendFailed')
+		},
+		[t],
+	)
+
 	const handleSend = useCallback(() => {
 		const values = getValues()
 
@@ -107,18 +138,11 @@ function ExportPage() {
 					toast.success(t('reportSentToast'))
 				},
 				onError: (error: Error) => {
-					// A 422 that reached a click means the browser was working from
-					// stale data. Say so and leave the retry to the assessor —
-					// sending is irreversible and must follow a deliberate click.
-					toast.error(
-						error instanceof IncompleteReportError
-							? t('notSavedYet')
-							: error.message || t('sendFailed'),
-					)
+					toast.error(sendErrorMessage(error))
 				},
 			},
 		)
-	}, [getValues, sendMutation, toast, locale, t])
+	}, [getValues, sendMutation, toast, locale, sendErrorMessage, t])
 
 	if (isLoading) {
 		return (
@@ -178,11 +202,7 @@ function ExportPage() {
 			{/* Send error message */}
 			{sendMutation.isError && (
 				<div className="rounded-md border border-error bg-error-light p-4">
-					<span className="text-body-sm text-error">
-						{sendMutation.error instanceof IncompleteReportError
-							? t('notSavedYet')
-							: sendMutation.error.message}
-					</span>
+					<span className="text-body-sm text-error">{sendErrorMessage(sendMutation.error)}</span>
 				</div>
 			)}
 

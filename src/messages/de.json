@@ -933,7 +933,12 @@
       "incompleteDescription": "{count} Pflichtfelder fehlen noch. Sobald sie ausgefüllt sind, kann das Gutachten versendet werden.",
       "incompleteTabCount": "{count} fehlen",
       "goToSection": "Zu {section}",
-      "notSavedYet": "Beim Versenden war noch nicht alles gespeichert. Prüfen Sie die markierten Bereiche und versuchen Sie es erneut."
+      "notSavedYet": "Beim Versenden war noch nicht alles gespeichert. Prüfen Sie die markierten Bereiche und versuchen Sie es erneut.",
+      "sendErrors": {
+        "recipientRejected": "Die E-Mail-Adresse des Empfängers wurde abgelehnt. Bitte prüfen Sie die Adresse und senden Sie erneut.",
+        "attachmentTooLarge": "Das Gutachten ist für den E-Mail-Versand zu groß. Bitte reduzieren Sie die Anzahl oder die Größe der Fotos und senden Sie erneut.",
+        "emailServiceUnavailable": "Das Gutachten konnte nicht versendet werden. Bitte versuchen Sie es später erneut — wir wurden benachrichtigt."
+      }
     },
     "annotation": {
       "draw": "Zeichnen",

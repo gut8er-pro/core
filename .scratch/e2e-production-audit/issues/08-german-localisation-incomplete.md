@@ -132,3 +132,31 @@ labels.
 
 PDF localisation *is* implemented properly — `src/lib/pdf/translations.ts` carries full `en:` and
 `de:` blocks, and both `?locale=de` and `?locale=en` produced valid PDFs.
+
+---
+
+## Added 2026-09-15 — the report email template is hardcoded English
+
+`src/lib/email/send-report.ts` builds the Gutachten email entirely in English, in a German product,
+and sends it to the assessor's German client:
+
+- `:59` — `Dear ${recipientName},`
+- `:62` — `Please find attached the report: <strong>${reportTitle}</strong>`
+- `:80` — `Sent via Gut8erPRO`
+- `:37` — `<html lang="en">`
+
+Only the assessor's own composed body is in their language. Everything the app wraps around it is
+not.
+
+Note on A3 above: the provider-error leak it refers to is now specified as part of
+**issue 01**, which resolved it into a translated two-class failure message rather than a
+translation of Resend's prose.
+
+**This collides with issue 01.** Both rewrite `send-report.ts` — 01 restructures the sender, the
+return type and the interpolation escaping; this changes the strings inside the same template.
+Land 01 first, then translate against the escaped template rather than the current one, or the
+escaping work gets reverted by the merge.
+
+The template has no locale available today. The send route knows it — `route.ts:87` already reads
+`data.pdfLanguages` to decide which PDFs to attach — so the email locale should follow the same
+input rather than gaining a setting of its own.

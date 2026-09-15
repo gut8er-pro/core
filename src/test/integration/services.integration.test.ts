@@ -11,6 +11,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { Resend } from 'resend'
 import Stripe from 'stripe'
 import { describe, expect, it } from 'vitest'
+import { notificationSender } from '@/lib/email/sender'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -125,13 +126,14 @@ describeWithEnv('ANTHROPIC_API_KEY')('Anthropic Integration', () => {
 
 // ─── 3. Resend — Send a test email ──────────────────────────────────────────
 
-describeWithEnv('RESEND_API_KEY')('Resend Integration', () => {
+describeWithEnv('RESEND_API_KEY', 'RESEND_SENDING_DOMAIN')('Resend Integration', () => {
 	it('sends a test email successfully', async () => {
 		const resend = new Resend(requireEnv('RESEND_API_KEY'))
 
-		// Resend sandbox allows sending to the onboarding@resend.dev address
+		// Through the helper, so no sandbox sender survives anywhere. The
+		// recipient is Resend's sink, which accepts and discards.
 		const { data, error } = await resend.emails.send({
-			from: 'Gut8erPRO <onboarding@resend.dev>',
+			from: notificationSender(),
 			to: ['delivered@resend.dev'],
 			subject: 'Gut8erPRO Integration Test',
 			html: '<h1>Test Email</h1><p>This is an integration test from Gut8erPRO.</p>',

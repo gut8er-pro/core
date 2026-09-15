@@ -933,7 +933,12 @@
       "incompleteDescription": "{count} required fields are still missing. Fill them in and the report can be sent.",
       "incompleteTabCount": "{count} missing",
       "goToSection": "Go to {section}",
-      "notSavedYet": "Not everything had saved yet when the report was sent. Check the highlighted sections and try again."
+      "notSavedYet": "Not everything had saved yet when the report was sent. Check the highlighted sections and try again.",
+      "sendErrors": {
+        "recipientRejected": "The recipient's email address was rejected. Please check the address and send again.",
+        "attachmentTooLarge": "The report is too large to send by email. Please reduce the number or size of the photos and send again.",
+        "emailServiceUnavailable": "The report could not be sent. Please try again later — we have been notified."
+      }
     },
     "annotation": {
       "draw": "Draw",

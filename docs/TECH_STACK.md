@@ -875,6 +875,7 @@ ANTHROPIC_API_KEY=
 
 # Resend
 RESEND_API_KEY=
+RESEND_SENDING_DOMAIN=gut8erpro.de
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000

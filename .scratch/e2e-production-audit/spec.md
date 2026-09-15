@@ -41,10 +41,16 @@ OT 8c32689e-db2c-4f25-adbf-11888103f852
 
 ## Headline result
 
-The app's **two revenue-critical integrations are both pointed at sandbox environments in
-production**: Resend has no verified domain (issue 01) and Stripe is in test mode (issue 02).
-Neither can be fixed in code — both need dashboard configuration. Until they are, the product
-cannot send a Gutachten to a client and cannot take a payment.
+The app's **two revenue-critical integrations were both pointed at sandbox environments in
+production**: Resend had no verified domain (issue 01) and Stripe is in test mode (issue 02).
+
+**Updated 2026-09-15.** `gut8erpro.de` is now verified in Resend, so issue 01's configuration half
+is closed and what remains there is code — a grilling session specified it in full. Issue 02 is
+unchanged and still blocks on the client's paperwork, so the product still cannot take a payment.
+
+That session also turned up two defects the audit could not have reached, both now filed: the send
+route will mark a report sent and lock it while carrying no PDF at all (issue 11), and Sentry —
+installed, configured, DSN set — has never captured anything (issue 12).
 
 Separately, issue 03 is a data-integrity defect that silently writes bank details into a vehicle
 field on every report type.
@@ -53,7 +59,7 @@ field on every report type.
 
 | # | Title | Severity |
 |---|-------|----------|
-| 01 | Report email sending is non-functional in production (Resend) | blocker |
+| 01 | Report email: sender identity unconfigured, provider errors leak to the user | blocker |
 | 02 | Stripe runs in test mode in production; subscription state contradicts itself | blocker |
 | 03 | Claimant "IBAN" and "Erstes Kennzeichen" write to the wrong database columns | critical |
 | 04 | Mock/placeholder data ships in production | high |
@@ -63,6 +69,8 @@ field on every report type.
 | 08 | German localisation is incomplete across the app | medium |
 | 09 | Report-type variants: headings and one control don't switch correctly | low |
 | 10 | UI / layout issues (consolidated) | low–medium |
+| 11 | A send with no Gutachten attached still succeeds, and still locks the report | blocker |
+| 12 | Sentry is installed, configured, and captures nothing | high |
 
 ## Method note
 

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { MissingInfoReport } from '@/lib/completeness'
+import { isSendFailureCode, type SendFailureCode } from '@/lib/email/send-failure'
 
 type ExportConfigResponse = {
 	id: string
@@ -60,6 +61,24 @@ class IncompleteReportError extends Error {
 	}
 }
 
+/**
+ * The provider refused the send.
+ *
+ * Its own type because the server answers with a code, not prose: the provider's
+ * own words are English, name our infrastructure, and are the assessor's
+ * problem in only two of the cases. The client owns the wording — see
+ * `CONTEXT.md#send-failures`.
+ */
+class SendFailedError extends Error {
+	readonly code: SendFailureCode
+
+	constructor(code: SendFailureCode) {
+		super(`Report email send failed: ${code}`)
+		this.name = 'SendFailedError'
+		this.code = code
+	}
+}
+
 async function sendReport(
 	reportId: string,
 	data: Record<string, unknown>,
@@ -78,6 +97,9 @@ async function sendReport(
 		// nothing to the assessor without the locations.
 		if (response.status === 422 && errorBody.missingInfo) {
 			throw new IncompleteReportError(errorBody.missingInfo)
+		}
+		if (isSendFailureCode(errorBody.error)) {
+			throw new SendFailedError(errorBody.error)
 		}
 		throw new Error(errorBody.error ?? 'Failed to send report')
 	}
@@ -120,6 +142,7 @@ export type { ExportConfigResponse, SendReportResponse }
 export {
 	fetchExportConfig,
 	IncompleteReportError,
+	SendFailedError,
 	useExportConfig,
 	useSaveExportConfig,
 	useSendReport,

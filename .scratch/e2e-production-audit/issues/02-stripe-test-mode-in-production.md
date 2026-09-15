@@ -53,3 +53,21 @@ should not ship unexamined.
   "Free trial for 1 × Gut8erPRO Pro") and render untranslated in the German UI. Fix in the Stripe
   product configuration, or map to local strings. See issue 08.
 - Amounts render as `€69.00` here but `0 €` on the plan card — see issue 08.
+
+---
+
+## Updated 2026-09-15
+
+This issue was filed alongside issue 01 as one story — "production is wired to a sandbox" — on the
+assumption both were the same missed go-live step and would be fixed together.
+
+They have separated. `gut8erpro.de` is now verified in Resend, so issue 01's configuration half is
+closed and the rest of it is code. This one is unchanged: the live-mode switch is blocked on the
+client's company paperwork, which is not yet in order.
+
+A go-live wizard covering both was specified and then dropped — with the Resend half done, what
+remains here is a Stripe dashboard visit plus environment variables, which does not warrant one.
+The steps in **Fix (human…)** above stand as the checklist.
+
+One environment variable to carry across from issue 01's work while you are in the Vercel settings:
+`SENTRY_AUTH_TOKEN` — see issue 12.

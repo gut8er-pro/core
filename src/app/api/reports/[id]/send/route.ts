@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { getMissingInfo, isDelivered } from '@/lib/completeness/server'
@@ -11,14 +12,16 @@ type RouteContext = {
 }
 
 async function POST(request: NextRequest, context: RouteContext) {
-	if (!process.env.RESEND_API_KEY) {
-		return NextResponse.json(
-			{
-				error:
-					'Email service is not configured. Please add RESEND_API_KEY to your environment variables.',
-			},
-			{ status: 503 },
-		)
+	// Both variables, and before anything expensive: without the domain the send
+	// throws only after every PDF has been rendered. A missing one is a service
+	// failure like any other — the assessor cannot fix it and must not be told
+	// which variable it is.
+	const missingConfig = ['RESEND_API_KEY', 'RESEND_SENDING_DOMAIN'].filter(
+		(name) => !process.env[name],
+	)
+	if (missingConfig.length > 0) {
+		console.error(`[send] refused: ${missingConfig.join(', ')} unset`)
+		return NextResponse.json({ error: 'email_service_unavailable' }, { status: 503 })
 	}
 
 	const { user, error } = await getAuthenticatedUser()
@@ -115,8 +118,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 		},
 	})
 
-	const senderName =
-		[dbUser?.firstName, dbUser?.lastName].filter(Boolean).join(' ') || 'Gut8erPRO User'
+	const senderName = [dbUser?.firstName, dbUser?.lastName].filter(Boolean).join(' ')
 	const senderCompany = dbUser?.business?.companyName ?? undefined
 
 	// Send email via Resend with PDF attachment(s)
@@ -128,15 +130,25 @@ async function POST(request: NextRequest, context: RouteContext) {
 		reportTitle: report.title,
 		senderName,
 		senderCompany,
+		// The reply path. Without it a client pressing Reply reaches an address
+		// nobody reads — see CONTEXT.md#mail-senders.
+		replyTo: dbUser?.email ?? user.email,
 		pdfAttachment,
 		pdfAttachments: pdfAttachments.length > 1 ? pdfAttachments : undefined,
 	})
 
 	if (!emailResult.success) {
-		return NextResponse.json(
-			{ error: `Failed to send email: ${emailResult.error}` },
-			{ status: 500 },
-		)
+		// The provider's own words stay server-side. They are in English, and they
+		// name our infrastructure and our account state.
+		console.error(`[send] report=${id} failed kind=${emailResult.code}: ${emailResult.detail}`)
+		Sentry.captureException(new Error(`Report email send failed: ${emailResult.detail}`), {
+			tags: { reportId: id, sendFailureCode: emailResult.code },
+		})
+		// Assessor-correctable failures earn a 400 — the request as sent will
+		// never succeed. Service failures earn a 502: nothing about the request
+		// was wrong.
+		const status = emailResult.code === 'email_service_unavailable' ? 502 : 400
+		return NextResponse.json({ error: emailResult.code }, { status })
 	}
 
 	// Only update report status after successful email send

@@ -1,4 +1,7 @@
 import { getResendClient } from './client'
+import { escapeHtml } from './html'
+import { classifyResendError, type SendFailureCode } from './send-failure'
+import { gutachtenSender, PLATFORM_NAME } from './sender'
 
 interface SendReportEmailParams {
 	to: string
@@ -8,6 +11,12 @@ interface SendReportEmailParams {
 	reportTitle: string
 	senderName: string
 	senderCompany?: string
+	/**
+	 * The assessor's own account email. Load-bearing: a Gutachten leaves from an
+	 * address nobody reads, so without it the document is one-way and a client
+	 * pressing Reply is silently lost.
+	 */
+	replyTo?: string
 	pdfAttachment?: {
 		filename: string
 		content: Buffer
@@ -18,10 +27,15 @@ interface SendReportEmailParams {
 	}[]
 }
 
-interface SendReportEmailResult {
-	success: boolean
-	error?: string
-}
+type SendReportEmailResult =
+	| { success: true }
+	| {
+			success: false
+			/** What the assessor is told. */
+			code: SendFailureCode
+			/** What the operator is told. Server-side only — never rendered. */
+			detail: string
+	  }
 
 function buildReportEmailHtml(params: {
 	recipientName: string
@@ -30,9 +44,13 @@ function buildReportEmailHtml(params: {
 	senderName: string
 	senderCompany?: string
 }): string {
-	const { recipientName, body, reportTitle, senderName, senderCompany } = params
+	const { body } = params
+	const recipientName = escapeHtml(params.recipientName)
+	const reportTitle = escapeHtml(params.reportTitle)
+	const senderName = escapeHtml(params.senderName)
+	const senderCompany = params.senderCompany ? escapeHtml(params.senderCompany) : undefined
 
-	const footerLine = senderCompany ? `${senderName} &mdash; ${senderCompany}` : senderName
+	const footerLine = [senderName, senderCompany].filter(Boolean).join(' &mdash; ') || PLATFORM_NAME
 
 	return `<!DOCTYPE html>
 <html lang="en">
@@ -101,6 +119,7 @@ async function sendReportEmail(params: SendReportEmailParams): Promise<SendRepor
 		reportTitle,
 		senderName,
 		senderCompany,
+		replyTo,
 		pdfAttachment,
 		pdfAttachments,
 	} = params
@@ -113,17 +132,17 @@ async function sendReportEmail(params: SendReportEmailParams): Promise<SendRepor
 		senderCompany,
 	})
 
-	const fromAddress = process.env.RESEND_FROM_ADDRESS ?? 'onboarding@resend.dev'
-
 	try {
 		const resend = getResendClient()
 
 		const emailPayload: Parameters<typeof resend.emails.send>[0] = {
-			from: `Gut8erPRO <${fromAddress}>`,
+			from: gutachtenSender({ assessorName: senderName, companyName: senderCompany }),
 			to: [to],
 			subject,
 			html,
 		}
+
+		if (replyTo) emailPayload.replyTo = replyTo
 
 		if (pdfAttachments && pdfAttachments.length > 0) {
 			emailPayload.attachments = pdfAttachments.map((a) => ({
@@ -142,13 +161,21 @@ async function sendReportEmail(params: SendReportEmailParams): Promise<SendRepor
 		const { error } = await resend.emails.send(emailPayload)
 
 		if (error) {
-			return { success: false, error: error.message }
+			return {
+				success: false,
+				code: classifyResendError(error),
+				detail: `${error.name}: ${error.message}`,
+			}
 		}
 
 		return { success: true }
 	} catch (err) {
-		const message = err instanceof Error ? err.message : 'Unknown email sending error'
-		return { success: false, error: message }
+		const thrown: { message?: string } = err instanceof Error ? err : {}
+		return {
+			success: false,
+			code: classifyResendError(thrown),
+			detail: thrown.message ?? 'Unknown email sending error',
+		}
 	}
 }
 
