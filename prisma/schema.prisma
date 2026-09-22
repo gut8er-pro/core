@@ -559,16 +559,18 @@ model InvoiceLineItem {
 // ─── Export ─────────────────────────────────────────────────
 
 model ExportConfig {
-  id                      String  @id @default(uuid())
-  reportId                String  @unique
+  id                      String   @id @default(uuid())
+  reportId                String   @unique
   recipientEmail          String?
   recipientName           String?
+  recipients              String[] @default([])
+  recipientMode           String?
   subject                 String?
   body                    String?
-  includeVehicleValuation Boolean @default(true)
-  includeCommission       Boolean @default(true)
-  includeInvoice          Boolean @default(true)
-  lockReport              Boolean @default(true)
+  includeVehicleValuation Boolean  @default(true)
+  includeCommission       Boolean  @default(true)
+  includeInvoice          Boolean  @default(true)
+  lockReport              Boolean  @default(true)
 
   report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
 }
