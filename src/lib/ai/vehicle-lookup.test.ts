@@ -62,6 +62,18 @@ describe('normalizeVehicleType', () => {
 		expect(normalizeVehicleType('mid-size coupe')).toBe('coupe')
 	})
 
+	it('resolves German compound body styles to the right option', () => {
+		// The demo KIA Ceed is a wagon and was detected as something else: the
+		// substring fallback iterated the map in insertion order, so
+		// "Kombilimousine" hit "limousine" (sedan) before "kombi" (wagon).
+		expect(normalizeVehicleType('Kombilimousine')).toBe('wagon')
+		expect(normalizeVehicleType('Sportswagon')).toBe('wagon')
+		expect(normalizeVehicleType('Schräghecklimousine')).toBe('compact')
+		expect(normalizeVehicleType('Limousine')).toBe('sedan')
+		expect(normalizeVehicleType('Geländewagen')).toBe('suv')
+		expect(normalizeVehicleType('Kleinbus')).toBe('van')
+	})
+
 	it('returns null for off-list types instead of raw text', () => {
 		// Bug: AI returned "motorcycle - cruiser" on the Honda VT750 photo set;
 		// without this, the literal value got persisted and the UI dropdown

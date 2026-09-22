@@ -28,10 +28,11 @@ import type {
 	OcrExtractionResult,
 	OverviewAnalysisResult,
 	PhotoProcessingResult,
+	PlateDetectionResult,
 	TireAnalysisResult,
 	VehicleLookupResult,
 } from './types'
-import { lookupVehicleByVin, mergeVehicleData } from './vehicle-lookup'
+import { lookupVehicleByVin, mergeVehicleData, normalizeVehicleType } from './vehicle-lookup'
 
 type PhotoInput = {
 	id: string
@@ -60,11 +61,20 @@ const PROMPT_VERSIONS = {
 	// and a German interior feature list. Cached v2 rows answer "Light Green"
 	// and "panoramic sunroof", which land in a German Gutachten verbatim.
 	'overview-analysis': 3,
-	'interior-analysis': 3,
+	// v4 — "condition" now answers with the Condition tab's own option values
+	// ("Minor wear") instead of the Excellent/Good/Fair/Poor grades, which
+	// matched no option. v3 rows hold the old vocabulary.
+	'interior-analysis': 4,
 	'tire-analysis': 2,
 	'detect-vin': 1,
-	'detect-plate': 2, // bumped when plate retry+regex was added
-	'ocr-document': 2, // bumped when owner fields were added
+	// v3 — the plate pass now also reads the HU-Plakette (next MOT) and the
+	// result shape gained `nextMot`. v2 rows have no such key.
+	'detect-plate': 3,
+	// v3 — the prompt now names the Zulassungsbescheinigung box labels (P.2
+	// kW, P.1 ccm, B Erstzulassung, D.1/D.2, E, HSN/TSN) instead of asking
+	// generically, and adds nextMot + a constrained vehicleType. v2 rows hold
+	// the values read from the wrong boxes on the demo car.
+	'ocr-document': 3,
 } as const
 
 type LocaleAwareOp = 'damage-analysis' | 'overview-analysis' | 'interior-analysis' | 'tire-analysis'
@@ -567,6 +577,10 @@ async function runPipeline(
 			'drivingAbility',
 		)
 	}
+	const nextMot = findNextMot(processedResults, extractedOcr)
+	if (nextMot) {
+		summary.autoFilledFields.condition.push('nextMot')
+	}
 	if (interiorResults.length > 0) {
 		summary.autoFilledFields.condition.push('interiorCondition', 'specialFeatures')
 		if (interiorResults.some((r) => r.mileage !== null))
@@ -650,6 +664,7 @@ async function runPipeline(
 			tireResults,
 			overviewResults,
 			interiorResults,
+			nextMot,
 		},
 		ownerData,
 		calculationData,
@@ -766,6 +781,21 @@ function findExtractedVin(results: PhotoProcessingResult[]): string | null {
 function findExtractedPlate(results: PhotoProcessingResult[]): string | null {
 	for (const r of results) {
 		if (r.type === 'plate' && r.result?.plate) return r.result.plate
+	}
+	return null
+}
+
+/**
+ * Next HU date. The registration document wins over the rear-plate Plakette:
+ * a printed date beats a sticker read at an angle.
+ */
+function findNextMot(
+	results: PhotoProcessingResult[],
+	ocr: OcrExtractionResult | null,
+): string | null {
+	if (ocr?.nextMot) return ocr.nextMot
+	for (const r of results) {
+		if (r.type === 'plate' && r.result?.nextMot) return r.result.nextMot
 	}
 	return null
 }
@@ -939,7 +969,15 @@ function buildPhotoUpdates(
 }
 
 export type { EmitFn, PhotoInput, PhotoUpdate, PipelineOptions }
-export { collectDamageMarkers, hashUrl, runPipeline }
+export {
+	collectDamageMarkers,
+	hashUrl,
+	normalizeKbaNumber,
+	normalizeOcrDate,
+	parseOcrResponse,
+	parsePlateResponse,
+	runPipeline,
+}
 
 // --- Inline VIN/Plate/OCR detection (reuses logic from existing routes) ---
 
@@ -993,14 +1031,45 @@ async function detectVinFromImage(
 // Examples: "FÜ BP 147", "B AB 1234", "M-XX-9999E", "HH-WK 1H".
 const GERMAN_PLATE_RE = /^[A-ZÄÖÜ]{1,3}[ -][A-Z]{1,2}[ -]\d{1,4}[EH]?$/
 
-const PLATE_PROMPT_BASIC =
-	'Extract the COMPLETE license plate from this vehicle photo. German plate format: 1-3 city letters (umlauts ok like Ü, Ä, Ö), space or dash, 1-2 letters, space or dash, 1-4 digits, optional E or H suffix. Examples: "FÜ BP 147", "B AB 1234", "M-XX-9999E". Read the ENTIRE plate including all letters and digits — do not abbreviate. Return ONLY the plate as written, or "null" if not visible.'
+const PLATE_PROMPT_BASIC = `Read this German vehicle plate photo and return ONLY valid JSON: {"plate":"","nextMot":""}.
 
-const PLATE_PROMPT_RETRY =
-	"The plate must match exactly this regex: ^[A-ZÄÖÜ]{1,3}[ -][A-Z]{1,2}[ -]\\d{1,4}[EH]?$. Re-read the plate carefully. Return ONLY the full plate string (e.g., 'FÜ BP 147') or 'null' if not visible. Do NOT truncate or abbreviate."
+"plate": the COMPLETE license plate. Format: 1-3 city letters (umlauts ok like Ü, Ä, Ö), space or dash, 1-2 letters, space or dash, 1-4 digits, optional E or H suffix. Examples: "FÜ BP 147", "B AB 1234", "M-XX-9999E". Read the ENTIRE plate including all letters and digits — do not abbreviate. Use "" if not visible.
+
+"nextMot": the date of the next Hauptuntersuchung, read from the round HU-Plakette sticker on the REAR plate. The sticker shows a two-digit year in its centre; the month is the number printed at the 12-o'clock position (the top), which is rotated so the due month sits at the top. Return YYYY-MM-01. Use "" for a front plate, a missing sticker, or whenever the digits are not sharp enough to read with certainty — a guessed inspection date is worse than none.`
+
+const PLATE_PROMPT_RETRY = `The plate must match exactly this regex: ^[A-ZÄÖÜ]{1,3}[ -][A-Z]{1,2}[ -]\\d{1,4}[EH]?$. Re-read the plate carefully — do NOT truncate or abbreviate. Return ONLY valid JSON: {"plate":"","nextMot":""}, with "nextMot" as YYYY-MM-01 from the HU-Plakette (year in the centre, month at the 12-o'clock position) or "" if unreadable.`
 
 function cleanPlate(raw: string): string {
 	return raw.replace(/['"`]/g, '').trim().toUpperCase()
+}
+
+/**
+ * The plate pass answers JSON, but older cached rows and the occasional
+ * conversational reply are bare strings — treat those as the plate.
+ */
+function parsePlateResponse(raw: string): { plate: string | null; nextMot: string | null } {
+	const trimmed = raw.trim()
+	if (!trimmed || trimmed.toLowerCase() === 'null') return { plate: null, nextMot: null }
+
+	const jsonString = trimmed
+		.replace(/^```(?:json)?\s*\n?/i, '')
+		.replace(/\n?```\s*$/i, '')
+		.trim()
+
+	let plateRaw = jsonString
+	let motRaw = ''
+	try {
+		const parsed = JSON.parse(jsonString) as Record<string, unknown>
+		plateRaw = typeof parsed.plate === 'string' ? parsed.plate : ''
+		motRaw = typeof parsed.nextMot === 'string' ? parsed.nextMot : ''
+	} catch {
+		// bare-string answer — plateRaw already holds it
+	}
+
+	const cleaned = cleanPlate(plateRaw)
+	const plate = cleaned && GERMAN_PLATE_RE.test(cleaned) ? cleaned : null
+	const nextMot = normalizeOcrDate(motRaw) || null
+	return { plate, nextMot }
 }
 
 async function callPlateModel(
@@ -1031,39 +1100,198 @@ async function callPlateModel(
 async function detectPlateFromImage(
 	photoId: string,
 	imageData: ImageData,
-): Promise<{ photoId: string; plate: string | null }> {
+): Promise<PlateDetectionResult> {
 	const cacheKey = getCacheKey(photoId, 'detect-plate')
-	const cached = getCachedResult<{ photoId: string; plate: string | null }>(cacheKey)
+	const cached = getCachedResult<PlateDetectionResult>(cacheKey)
 	if (cached) return cached
 
 	const client = getAnthropicClient()
 
 	// First attempt — generic prompt with format hints.
 	const firstRaw = await callPlateModel(client, imageData, PLATE_PROMPT_BASIC)
-	let plate: string | null = null
-	if (firstRaw && firstRaw.toLowerCase() !== 'null') {
-		const cleaned = cleanPlate(firstRaw)
-		if (cleaned && GERMAN_PLATE_RE.test(cleaned)) {
-			plate = cleaned
-		}
-	}
+	const first = parsePlateResponse(firstRaw)
+	let plate = first.plate
+	let nextMot = first.nextMot
 
 	// Retry once with stricter prompt if first attempt failed validation.
 	if (!plate && firstRaw && firstRaw.toLowerCase() !== 'null') {
-		const retryRaw = await callPlateModel(client, imageData, PLATE_PROMPT_RETRY)
-		if (retryRaw && retryRaw.toLowerCase() !== 'null') {
-			const cleaned = cleanPlate(retryRaw)
-			if (cleaned && GERMAN_PLATE_RE.test(cleaned)) {
-				plate = cleaned
-			}
-		}
+		const retry = parsePlateResponse(await callPlateModel(client, imageData, PLATE_PROMPT_RETRY))
+		if (retry.plate) plate = retry.plate
+		if (!nextMot) nextMot = retry.nextMot
 	}
 
 	// If still invalid, return null rather than a malformed plate. No plate
 	// is better than a wrong one — the user can fill it manually.
-	const result = { photoId, plate }
+	const result: PlateDetectionResult = { photoId, plate, nextMot }
 	setCachedResult(cacheKey, result)
 	return result
+}
+
+// The Zulassungsbescheinigung Teil I is a fixed form: every value sits in a
+// box carrying a letter/number code. Asking for "power" or "displacement"
+// generically made the model pick whichever nearby number looked plausible —
+// on the KIA Ceed demo document it read the wrong kW box and reported 1482 ccm
+// for a 1.6 CRDi. Naming the box is the whole fix.
+const OCR_DOCUMENT_PROMPT = `You are reading a German vehicle registration certificate (Zulassungsbescheinigung Teil I, or the older Fahrzeugschein). Every value sits in a numbered/lettered box. Read STRICTLY BY BOX LABEL — never infer a value from a nearby number.
+
+Box map:
+- B → Datum der Erstzulassung → "firstRegistration" (YYYY-MM-DD)
+- I → Datum der Zulassung auf den aktuellen Halter → "lastRegistration" (YYYY-MM-DD)
+- D.1 (older forms: 2.1) → Hersteller / Marke → "manufacturer"
+- D.2 (older forms: 2.2) → Typ / Handelsbezeichnung → "model"
+- D.3 → Handelsbezeichnung, use for "model" only if D.2 is unreadable
+- E → Fahrzeug-Identifizierungsnummer (17 characters) → "vin"
+- P.1 → Hubraum in cm³ → "engineDisplacement" (digits only, no unit)
+- P.2 → Nennleistung in kW → "power" (digits only, no unit). P.2 is the ONLY kW field. Do NOT read P.4 (Nenndrehzahl, rpm) or any other number.
+- P.3 → Kraftstoffart → "fuel"
+- S.1 → Anzahl der Sitzplätze → "seats"
+- R → Farbe → "color"
+- J → Fahrzeugklasse, and 4 / "zu 2" → Fahrzeug-/Aufbauart → source for "vehicleType"
+- "zu 2.1" + "zu 2.2" (HSN 4 digits + TSN 3 alphanumerics) → "kbaNumber", joined as "HSN/TSN"
+- Kennzeichen (top of the document) → "licensePlate"
+- Halter block (C.1.1 Vorname, C.1.2 Name oder Firma, C.1.3 Anschrift) → "ownerFirstName", "ownerLastName", "ownerStreet" (Straße + Hausnummer), "ownerPostcode" (5 digits), "ownerCity"
+
+Also extract, if the document shows it:
+- "nextMot": date of the next Hauptuntersuchung (HU / TÜV), printed as "Nächste HU" or on an inspection report attached to the certificate. Format YYYY-MM-DD; use the first day of the month when only month/year are given.
+- "previousOwners": Zahl der Vorhalter, if stated.
+- "transmission": Getriebeart, if stated.
+- "mileage": Kilometerstand, if stated.
+
+"vehicleType" must be EXACTLY one of: sedan | compact | suv | wagon | coupe | convertible | van. Map the German term: Limousine→sedan, Schräghecklimousine/Kleinwagen→compact, Geländewagen/SUV→suv, Kombi/Kombilimousine/Caravan/Variant/Estate/Sportswagon/Sportstourer→wagon, Coupé→coupe, Cabriolet/Roadster→convertible, Kleinbus/Van/Transporter/Hochdachkombi→van. Use "" if the document does not state the body style — do NOT guess from the photo of the car.
+
+Rules:
+- Return "" for any box you cannot read with certainty. An empty value is correct; a guessed value is a defect.
+- Never copy a value from one box into another.
+- Numeric fields ("power", "engineDisplacement", "seats", "previousOwners", "mileage") are digits only.
+
+Return ONLY valid JSON with exactly these keys: {"manufacturer":"","model":"","vin":"","licensePlate":"","firstRegistration":"","lastRegistration":"","nextMot":"","engineDisplacement":"","power":"","fuel":"","mileage":"","kbaNumber":"","previousOwners":"","vehicleType":"","color":"","seats":"","transmission":"","ownerFirstName":"","ownerLastName":"","ownerStreet":"","ownerPostcode":"","ownerCity":""}`
+
+function emptyOcrResult(photoId: string): OcrExtractionResult {
+	return {
+		photoId,
+		manufacturer: '',
+		model: '',
+		vin: '',
+		licensePlate: '',
+		firstRegistration: '',
+		engineDisplacement: '',
+		power: '',
+		fuel: '',
+		mileage: '',
+		kbaNumber: '',
+		previousOwners: '',
+		lastRegistration: '',
+		nextMot: '',
+		vehicleType: '',
+		color: '',
+		seats: '',
+		transmission: '',
+		ownerFirstName: '',
+		ownerLastName: '',
+		ownerStreet: '',
+		ownerPostcode: '',
+		ownerCity: '',
+	}
+}
+
+const NUMERIC_OCR_FIELDS = [
+	'power',
+	'engineDisplacement',
+	'seats',
+	'previousOwners',
+	'mileage',
+] as const
+
+const DATE_OCR_FIELDS = ['firstRegistration', 'lastRegistration', 'nextMot'] as const
+
+/**
+ * Strips the unit the model sometimes keeps despite the prompt ("1582 cm³",
+ * "94 kW"). Returns '' when the value carries no digits at all, so a box the
+ * model narrated instead of read ("nicht lesbar") does not reach the column.
+ */
+function digitsOnly(raw: string): string {
+	const match = raw.match(/\d[\d.,]*/)
+	if (!match) return ''
+	return match[0].replace(/[.,]/g, '')
+}
+
+/**
+ * Accepts YYYY-MM-DD, and normalizes the German forms the model falls back to
+ * (DD.MM.YYYY, MM/YYYY, MM.YYYY). Anything else is dropped — a malformed date
+ * becomes an Invalid Date in the route's `new Date(...)` and poisons the row.
+ */
+function normalizeOcrDate(raw: string): string {
+	const trimmed = raw.trim()
+	if (!trimmed) return ''
+
+	const pad = (part: string | undefined) => (part ?? '').padStart(2, '0')
+
+	if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed
+
+	const isoMonth = trimmed.match(/^(\d{4})-(\d{2})$/)
+	if (isoMonth) return `${isoMonth[1]}-${isoMonth[2]}-01`
+
+	const german = trimmed.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/)
+	if (german) return `${german[3]}-${pad(german[2])}-${pad(german[1])}`
+
+	const monthYear = trimmed.match(/^(\d{1,2})[./](\d{4})$/)
+	if (monthYear) return `${monthYear[2]}-${pad(monthYear[1])}-01`
+
+	return ''
+}
+
+const KBA_PATTERN = /^\d{4}\/?[A-Z0-9]{3}$/i
+
+/**
+ * HSN (4 digits) + TSN (3 alphanumerics). Anything that does not have that
+ * shape is not a KBA number — the model used to answer with the plain
+ * Fahrzeugklasse when the boxes were cropped off.
+ */
+function normalizeKbaNumber(raw: string): string {
+	const cleaned = raw.replace(/\s+/g, '').toUpperCase()
+	if (!cleaned) return ''
+	const compact = cleaned.replace(/\//g, '')
+	if (!/^\d{4}[A-Z0-9]{3}$/.test(compact)) {
+		return KBA_PATTERN.test(cleaned) ? cleaned : ''
+	}
+	return `${compact.slice(0, 4)}/${compact.slice(4)}`
+}
+
+function parseOcrResponse(photoId: string, rawResponse: string): OcrExtractionResult {
+	const empty = emptyOcrResult(photoId)
+
+	try {
+		const jsonString = rawResponse
+			.replace(/^```(?:json)?\s*\n?/i, '')
+			.replace(/\n?```\s*$/i, '')
+			.trim()
+		const parsed = JSON.parse(jsonString) as Record<string, unknown>
+
+		const result: OcrExtractionResult = { ...empty }
+		for (const key of Object.keys(empty) as (keyof OcrExtractionResult)[]) {
+			if (key === 'photoId') continue
+			const val = parsed[key]
+			if (typeof val === 'string') result[key] = val.trim()
+			else if (typeof val === 'number') result[key] = String(val)
+		}
+
+		for (const key of NUMERIC_OCR_FIELDS) {
+			result[key] = digitsOnly(result[key])
+		}
+		for (const key of DATE_OCR_FIELDS) {
+			result[key] = normalizeOcrDate(result[key])
+		}
+		result.kbaNumber = normalizeKbaNumber(result.kbaNumber)
+		result.vehicleType = normalizeVehicleType(result.vehicleType) ?? ''
+
+		const vinMatch = result.vin.toUpperCase().match(/[A-HJ-NPR-Z0-9]{17}/)
+		result.vin = vinMatch && VIN_PATTERN.test(vinMatch[0]) ? vinMatch[0] : ''
+
+		return result
+	} catch {
+		console.error('Failed to parse OCR response:', rawResponse)
+		return empty
+	}
 }
 
 async function ocrDocument(photoId: string, imageData: ImageData): Promise<OcrExtractionResult> {
@@ -1083,10 +1311,7 @@ async function ocrDocument(photoId: string, imageData: ImageData): Promise<OcrEx
 						type: 'image',
 						source: { type: 'base64', media_type: imageData.mediaType, data: imageData.base64 },
 					},
-					{
-						type: 'text',
-						text: 'Extract data from this German Zulassungsbescheinigung (vehicle registration certificate). Return JSON with: {"manufacturer":"","model":"","vin":"","licensePlate":"","firstRegistration":"YYYY-MM-DD","engineDisplacement":"ccm","power":"kW","fuel":"","mileage":"","kbaNumber":"","previousOwners":"","lastRegistration":"YYYY-MM-DD","vehicleType":"","color":"","seats":"","transmission":"","ownerFirstName":"","ownerLastName":"","ownerStreet":"","ownerPostcode":"","ownerCity":""}. The owner fields refer to the registered Halter (vehicle holder) printed on the document — Vorname (firstName), Nachname or Firma (lastName), Straße + Hausnummer (street), PLZ (postcode, 5 digits), Ort (city). Use empty string for fields not found.',
-					},
+					{ type: 'text', text: OCR_DOCUMENT_PROMPT },
 				],
 			},
 		],
@@ -1095,51 +1320,7 @@ async function ocrDocument(photoId: string, imageData: ImageData): Promise<OcrEx
 	const textBlock = message.content.find((b) => b.type === 'text')
 	const raw = textBlock ? textBlock.text.trim() : ''
 
-	const empty: OcrExtractionResult = {
-		photoId,
-		manufacturer: '',
-		model: '',
-		vin: '',
-		licensePlate: '',
-		firstRegistration: '',
-		engineDisplacement: '',
-		power: '',
-		fuel: '',
-		mileage: '',
-		kbaNumber: '',
-		previousOwners: '',
-		lastRegistration: '',
-		vehicleType: '',
-		color: '',
-		seats: '',
-		transmission: '',
-		ownerFirstName: '',
-		ownerLastName: '',
-		ownerStreet: '',
-		ownerPostcode: '',
-		ownerCity: '',
-	}
-
-	try {
-		const jsonString = raw
-			.replace(/^```(?:json)?\s*\n?/i, '')
-			.replace(/\n?```\s*$/i, '')
-			.trim()
-		const parsed = JSON.parse(jsonString) as Record<string, unknown>
-
-		const result: OcrExtractionResult = { ...empty }
-		for (const key of Object.keys(empty) as (keyof OcrExtractionResult)[]) {
-			if (key === 'photoId') continue
-			const val = parsed[key]
-			if (typeof val === 'string') result[key] = val
-			else if (typeof val === 'number') result[key] = String(val)
-		}
-
-		setCachedResult(cacheKey, result)
-		return result
-	} catch {
-		console.error('Failed to parse OCR response:', raw)
-		setCachedResult(cacheKey, empty)
-		return empty
-	}
+	const result = parseOcrResponse(photoId, raw)
+	setCachedResult(cacheKey, result)
+	return result
 }

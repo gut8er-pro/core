@@ -15,6 +15,7 @@ function PriorDamageSection({
 	register,
 	errors,
 	onFieldBlur,
+	disabled,
 	className,
 }: Omit<ConditionSectionProps, 'control'> & { className?: string }) {
 	const [activeTab, setActiveTab] = useState<PriorDamageTab>('damage-notes')
@@ -67,11 +68,13 @@ function PriorDamageSection({
 							<TextField
 								label={t('priorDamage.previousDamage')}
 								placeholder={t('priorDamage.addRepairedDamage')}
+								disabled={disabled}
 								{...fieldProps('previousDamageReported')}
 							/>
 							<TextField
 								label={t('priorDamage.existingDamage')}
 								placeholder={t('priorDamage.currentCarAge')}
+								disabled={disabled}
 								{...fieldProps('existingDamageNotReported')}
 							/>
 						</div>
@@ -80,6 +83,7 @@ function PriorDamageSection({
 						<TextField
 							label={t('priorDamage.subsequentDamage')}
 							placeholder={t('priorDamage.subsequentDamagePlaceholder')}
+							disabled={disabled}
 							{...fieldProps('subsequentDamage')}
 						/>
 					</div>
@@ -88,8 +92,10 @@ function PriorDamageSection({
 				{activeTab === 'damage-description' && (
 					<div className="flex flex-col gap-4">
 						<textarea
-							className="min-h-30 w-full rounded-md border border-border bg-white px-4 py-3 text-body-sm text-black placeholder:text-placeholder focus:border-border-focus focus:outline-none"
+							className="min-h-30 w-full rounded-md border border-border bg-white px-4 py-3 text-body-sm text-black placeholder:text-placeholder focus:border-border-focus focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 							placeholder={t('priorDamage.describeDamage')}
+							disabled={disabled}
+							{...fieldProps('damageDescription')}
 						/>
 					</div>
 				)}

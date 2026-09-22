@@ -1,5 +1,6 @@
 import type { AccidentInfoResponse } from '@/hooks/use-accident-info'
 import type { AccidentInfoValues } from '@/lib/completeness'
+import { formatIban } from '@/lib/utils/iban'
 import type { AccidentInfoFormData } from './types'
 
 const ACCIDENT_INFO_DEFAULTS: AccidentInfoFormData = {
@@ -21,6 +22,21 @@ const ACCIDENT_INFO_DEFAULTS: AccidentInfoFormData = {
 	claimantIsVehicleOwner: true,
 	claimantRepresentedByLawyer: false,
 	claimantInvolvedLawyer: '',
+	claimantLawyerFirm: '',
+	claimantLawyerStreet: '',
+	claimantLawyerPostcode: '',
+	claimantLawyerLocation: '',
+	claimantLawyerEmail: '',
+	claimantLawyerPhone: '',
+	ownerCompany: '',
+	ownerSalutation: '',
+	ownerFirstName: '',
+	ownerLastName: '',
+	ownerStreet: '',
+	ownerPostcode: '',
+	ownerLocation: '',
+	ownerEmail: '',
+	ownerPhone: '',
 	opponentCompany: '',
 	opponentSalutation: '',
 	opponentFirstName: '',
@@ -57,6 +73,7 @@ function accidentInfoFromApi(data: AccidentInfoResponse | undefined | null): Acc
 
 	const accident = data.accidentInfo
 	const claimant = data.claimantInfo
+	const owner = data.ownerInfo
 	const opponent = data.opponentInfo
 	const expert = data.expertOpinion
 
@@ -76,7 +93,7 @@ function accidentInfoFromApi(data: AccidentInfoResponse | undefined | null): Acc
 		claimantLocation: claimant?.location ?? '',
 		claimantEmail: claimant?.email ?? '',
 		claimantPhone: claimant?.phone ?? '',
-		claimantIban: claimant?.iban ?? '',
+		claimantIban: formatIban(claimant?.iban ?? ''),
 		claimantVatId: claimant?.vatId ?? '',
 		claimantLicensePlate: claimant?.licensePlate ?? '',
 		claimantEligibleForInputTaxDeduction:
@@ -87,6 +104,21 @@ function accidentInfoFromApi(data: AccidentInfoResponse | undefined | null): Acc
 		claimantRepresentedByLawyer:
 			claimant?.representedByLawyer ?? ACCIDENT_INFO_DEFAULTS.claimantRepresentedByLawyer,
 		claimantInvolvedLawyer: claimant?.involvedLawyer ?? '',
+		claimantLawyerFirm: claimant?.lawyerFirm ?? '',
+		claimantLawyerStreet: claimant?.lawyerStreet ?? '',
+		claimantLawyerPostcode: claimant?.lawyerPostcode ?? '',
+		claimantLawyerLocation: claimant?.lawyerLocation ?? '',
+		claimantLawyerEmail: claimant?.lawyerEmail ?? '',
+		claimantLawyerPhone: claimant?.lawyerPhone ?? '',
+		ownerCompany: owner?.company ?? '',
+		ownerSalutation: owner?.salutation ?? '',
+		ownerFirstName: owner?.firstName ?? '',
+		ownerLastName: owner?.lastName ?? '',
+		ownerStreet: owner?.street ?? '',
+		ownerPostcode: owner?.postcode ?? '',
+		ownerLocation: owner?.location ?? '',
+		ownerEmail: owner?.email ?? '',
+		ownerPhone: owner?.phone ?? '',
 		opponentCompany: opponent?.company ?? '',
 		opponentSalutation: opponent?.salutation ?? '',
 		opponentFirstName: opponent?.firstName ?? '',
@@ -95,7 +127,7 @@ function accidentInfoFromApi(data: AccidentInfoResponse | undefined | null): Acc
 		opponentPostcode: opponent?.postcode ?? '',
 		opponentLocation: opponent?.location ?? '',
 		opponentEmail: opponent?.email ?? '',
-		opponentIban: opponent?.iban ?? '',
+		opponentIban: formatIban(opponent?.iban ?? ''),
 		opponentPhone: opponent?.phone ?? '',
 		opponentInsuranceCompany: opponent?.insuranceCompany ?? '',
 		opponentInsuranceNumber: opponent?.insuranceNumber ?? '',

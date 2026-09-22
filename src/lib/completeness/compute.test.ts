@@ -109,6 +109,68 @@ describe('conditional requirements', () => {
 		expect(paths).toContain('claimantInvolvedLawyer')
 	})
 
+	it('requires the law firm and a lawyer email once the claimant is represented', () => {
+		const unrepresented = missingPaths('HS', 'accidentInfo', {
+			claimantRepresentedByLawyer: false,
+		})
+		const represented = missingPaths('HS', 'accidentInfo', { claimantRepresentedByLawyer: true })
+
+		expect(unrepresented).not.toContain('claimantLawyerFirm')
+		expect(unrepresented).not.toContain('claimantLawyerEmail')
+		expect(represented).toContain('claimantLawyerFirm')
+		expect(represented).toContain('claimantLawyerEmail')
+	})
+
+	it('asks for no lawyer contact details once they are filled in', () => {
+		const paths = missingPaths('HS', 'accidentInfo', {
+			claimantRepresentedByLawyer: true,
+			claimantInvolvedLawyer: 'RA Schulz',
+			claimantLawyerFirm: 'Kanzlei Müller & Partner',
+			claimantLawyerEmail: 'kanzlei@mueller.de',
+		})
+
+		expect(paths.some((path) => path.startsWith('claimantLawyer'))).toBe(false)
+	})
+
+	it('never asks an oldtimer valuation for lawyer contact details', () => {
+		const paths = missingPaths('OT', 'accidentInfo', { claimantRepresentedByLawyer: true })
+
+		expect(paths.some((path) => path.startsWith('claimantLawyer'))).toBe(false)
+	})
+
+	it('asks for no vehicle owner while the claimant owns the car', () => {
+		const paths = missingPaths('HS', 'accidentInfo', { claimantIsVehicleOwner: true })
+
+		expect(paths.some((path) => path.startsWith('owner'))).toBe(false)
+	})
+
+	it.each([
+		'HS',
+		'BE',
+		'KG',
+		'OT',
+	] as const)('asks %s for the vehicle owner once the claimant is not the owner', (reportType) => {
+		const paths = missingPaths(reportType, 'accidentInfo', { claimantIsVehicleOwner: false })
+
+		expect(paths).toContain('ownerLastName')
+		expect(paths).toContain('ownerCompany')
+		expect(paths).toContain('ownerStreet')
+		expect(paths).toContain('ownerPostcode')
+		expect(paths).toContain('ownerLocation')
+	})
+
+	it('accepts a vehicle owner identified by company alone', () => {
+		const paths = missingPaths('HS', 'accidentInfo', {
+			claimantIsVehicleOwner: false,
+			ownerCompany: 'Fuhrpark GmbH',
+			ownerStreet: 'Werksstraße 8',
+			ownerPostcode: '28199',
+			ownerLocation: 'Bremen',
+		})
+
+		expect(paths.some((path) => path.startsWith('owner'))).toBe(false)
+	})
+
 	it('requires a lawyer signature only while the claimant is represented', () => {
 		const unrepresented = missingPaths('HS', 'accidentInfo', {
 			claimantRepresentedByLawyer: false,
@@ -387,11 +449,10 @@ describe('vehicle requirements by report type', () => {
 		}
 	})
 
-	it('asks only the valuation types for the number of previous owners', () => {
-		expect(missingPaths('BE', 'vehicle', {})).toContain('previousOwners')
-		expect(missingPaths('OT', 'vehicle', {})).toContain('previousOwners')
-		expect(missingPaths('HS', 'vehicle', {})).not.toContain('previousOwners')
-		expect(missingPaths('KG', 'vehicle', {})).not.toContain('previousOwners')
+	it('never requires the number of previous owners — it is omitted when unknown', () => {
+		for (const reportType of ['HS', 'BE', 'KG', 'OT'] as const) {
+			expect(missingPaths(reportType, 'vehicle', {})).not.toContain('previousOwners')
+		}
 	})
 })
 

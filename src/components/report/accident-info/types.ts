@@ -1,4 +1,10 @@
-import type { Control, FieldErrors, UseFormRegister } from 'react-hook-form'
+import type {
+	Control,
+	FieldErrors,
+	UseFormGetValues,
+	UseFormRegister,
+	UseFormSetValue,
+} from 'react-hook-form'
 
 type AccidentInfoFormData = {
 	// Accident
@@ -21,6 +27,22 @@ type AccidentInfoFormData = {
 	claimantIsVehicleOwner: boolean
 	claimantRepresentedByLawyer: boolean
 	claimantInvolvedLawyer: string
+	claimantLawyerFirm: string
+	claimantLawyerStreet: string
+	claimantLawyerPostcode: string
+	claimantLawyerLocation: string
+	claimantLawyerEmail: string
+	claimantLawyerPhone: string
+	// Vehicle owner — filled only when the claimant is not the owner
+	ownerCompany: string
+	ownerSalutation: string
+	ownerFirstName: string
+	ownerLastName: string
+	ownerStreet: string
+	ownerPostcode: string
+	ownerLocation: string
+	ownerEmail: string
+	ownerPhone: string
 	// Opponent
 	opponentCompany: string
 	opponentSalutation: string
@@ -67,6 +89,10 @@ type SectionProps = {
 	errors: FieldErrors<AccidentInfoFormData>
 	onFieldBlur?: (field: string) => void
 	reportType?: 'HS' | 'BE' | 'KG' | 'OT'
+	/** The report is locked: every control is read-only. */
+	disabled?: boolean
+	getValues?: UseFormGetValues<AccidentInfoFormData>
+	setValue?: UseFormSetValue<AccidentInfoFormData>
 }
 
 type SignatureData = {
@@ -81,6 +107,7 @@ type SignatureSectionProps = {
 	onSignatureClick: (type: 'LAWYER' | 'DATA_PERMISSION' | 'CANCELLATION') => void
 	onSignatureRemove?: (signatureId: string) => void
 	className?: string
+	disabled?: boolean
 }
 
 export type { AccidentInfoFormData, SectionProps, SignatureData, SignatureSectionProps }

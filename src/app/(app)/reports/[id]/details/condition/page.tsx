@@ -48,10 +48,12 @@ function ConditionPage() {
 	const saveTireSet = useSaveTireSet(reportId)
 	const deleteTireSet = useDeleteTireSet(reportId)
 
+	const isLocked = !!report?.isLocked
+
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'condition',
-		disabled: report?.isLocked,
+		disabled: isLocked,
 	})
 
 	const {
@@ -295,6 +297,7 @@ function ConditionPage() {
 						control={control}
 						errors={errors}
 						onFieldBlur={handleFieldBlur}
+						disabled={isLocked}
 					/>
 
 					{/* OT-only sections */}
@@ -320,9 +323,15 @@ function ConditionPage() {
 						tireSets={data?.tireSets ?? []}
 						onSaveTireSet={handleSaveTireSet}
 						onDeleteTireSet={handleDeleteTireSet}
+						disabled={isLocked}
 					/>
 
-					<PriorDamageSection register={register} errors={errors} onFieldBlur={handleFieldBlur} />
+					<PriorDamageSection
+						register={register}
+						errors={errors}
+						onFieldBlur={handleFieldBlur}
+						disabled={isLocked}
+					/>
 				</div>
 			</MissingFieldsProvider>
 		</div>

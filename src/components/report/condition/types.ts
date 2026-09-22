@@ -1,5 +1,13 @@
 import type { Control, FieldErrors, UseFormRegister } from 'react-hook-form'
 
+/** The four Schadstoffgruppen; group 1 is the "keine Plakette" case. */
+const EMISSION_GROUPS = ['1', '2', '3', '4'] as const
+
+type EmissionGroup = (typeof EMISSION_GROUPS)[number]
+
+/** The odometer units, shared by the picker and the schema that stores them. */
+const MILEAGE_UNITS = ['km', 'miles'] as const
+
 type ConditionFormData = {
 	// Paint & condition
 	paintType: string
@@ -20,12 +28,15 @@ type ConditionFormData = {
 	testDrivePerformed: boolean
 	errorMemoryRead: boolean | null
 	airbagsDeployed: boolean | null
+	emissionGroup: EmissionGroup | null
 	notes: string
 	manualSetup: boolean
 	// Prior damage
 	previousDamageReported: string
 	existingDamageNotReported: string
 	subsequentDamage: string
+	/** Not yet a column — held in the form so a tab switch does not discard it. */
+	damageDescription: string
 }
 
 /**
@@ -87,6 +98,7 @@ type ConditionSectionProps = {
 	control: Control<ConditionFormData>
 	errors: FieldErrors<ConditionFormData>
 	onFieldBlur?: (field: string) => void
+	disabled?: boolean
 	className?: string
 }
 
@@ -146,9 +158,11 @@ type ConditionResponse = {
 		testDrivePerformed: boolean
 		errorMemoryRead: boolean | null
 		airbagsDeployed: boolean | null
+		emissionGroup: string | null
 		notes: string | null
 		manualSetup: boolean
 		previousDamageReported: string | null
+		damageDescription: string | null
 		existingDamageNotReported: string | null
 		subsequentDamage: string | null
 	} | null
@@ -172,6 +186,7 @@ export type {
 	ConditionResponse,
 	ConditionSectionProps,
 	DamageMarkerData,
+	EmissionGroup,
 	GradingCategory,
 	GradingField,
 	OldtimerDetailsApi,
@@ -180,4 +195,4 @@ export type {
 	TireData,
 	TireSetData,
 }
-export { GRADING_CATEGORIES, gradingKey }
+export { EMISSION_GROUPS, GRADING_CATEGORIES, gradingKey, MILEAGE_UNITS }

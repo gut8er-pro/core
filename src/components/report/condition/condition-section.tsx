@@ -2,7 +2,7 @@
 
 import { QrCode } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { Controller } from 'react-hook-form'
+import { Controller, type Path } from 'react-hook-form'
 import {
 	useControlledFieldProps,
 	useFieldProps,
@@ -10,35 +10,34 @@ import {
 	useSectionBadge,
 } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { ComboField } from '@/components/ui/combo-field'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import { YesNoField } from '@/components/ui/yes-no-field'
 import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
-import type { ConditionSectionProps } from './types'
+import { EmissionSticker } from './emission-sticker'
+import { formatMileage, toMileageDigits } from './mileage'
+import type { ConditionFormData, ConditionSectionProps } from './types'
+import { EMISSION_GROUPS, MILEAGE_UNITS } from './types'
 
 // Options are defined inside the component to access translations
-
-const MULTI_HIT_COLORS = [
-	{ value: 1, bg: 'bg-grey-50', border: 'border-grey-50', text: 'text-black' },
-	{ value: 2, bg: 'bg-error', border: 'border-error', text: 'text-white' },
-	{ value: 3, bg: 'bg-warning-orange', border: 'border-warning-orange', text: 'text-white' },
-	{ value: 4, bg: 'bg-primary', border: 'border-primary', text: 'text-white' },
-]
 
 type CheckboxPillProps = {
 	label: string
 	checked: boolean
+	disabled?: boolean
 	onChange: (checked: boolean) => void
 }
 
-function CheckboxPill({ label, checked, onChange }: CheckboxPillProps) {
+function CheckboxPill({ label, checked, disabled, onChange }: CheckboxPillProps) {
 	return (
 		<button
 			type="button"
 			onClick={() => onChange(!checked)}
+			disabled={disabled}
 			className={cn(
-				'inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-4 py-2 text-body-sm font-medium transition-colors',
+				'inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-4 py-2 text-body-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
 				checked
 					? 'border-primary bg-primary-light text-primary'
 					: 'border-border bg-white text-grey-100 hover:bg-grey-25',
@@ -58,11 +57,59 @@ function CheckboxPill({ label, checked, onChange }: CheckboxPillProps) {
 	)
 }
 
+type MileageFieldProps = {
+	label: string
+	placeholder: string
+	name: string
+	disabled?: boolean
+	error?: string
+	isMissing?: boolean
+	missingLabel?: string
+	field: { value: unknown; onChange: (value: unknown) => void }
+	onFieldBlur?: (field: string) => void
+}
+
+/**
+ * Mileage reads as a German number but stores plain digits. The mask runs on
+ * change so the grouping keeps up with typing; the caret stays put because
+ * every edit that matters here happens at the end of the value.
+ */
+function MileageField({
+	label,
+	placeholder,
+	name,
+	disabled,
+	error,
+	isMissing,
+	missingLabel,
+	field,
+	onFieldBlur,
+}: MileageFieldProps) {
+	return (
+		<TextField
+			label={label}
+			name={name}
+			type="text"
+			inputMode="numeric"
+			autoComplete="off"
+			placeholder={placeholder}
+			disabled={disabled}
+			error={error}
+			isMissing={isMissing}
+			missingLabel={missingLabel}
+			value={formatMileage(String(field.value ?? ''))}
+			onChange={(event) => field.onChange(toMileageDigits(event.target.value))}
+			onBlur={() => onFieldBlur?.(name)}
+		/>
+	)
+}
+
 function ConditionSection({
 	register,
 	control,
 	errors,
 	onFieldBlur,
+	disabled,
 	className,
 }: ConditionSectionProps) {
 	const t = useTranslations('report')
@@ -71,6 +118,24 @@ function ConditionSection({
 	const controlled = useControlledFieldProps({ errors, onFieldBlur })
 	const missing = useMissingProps()
 	const badge = useSectionBadge(SECTION.condition)
+
+	// Free typing means a keystroke is not a decision: the combos keep the
+	// shared value/error/missing wiring but defer the save to blur, where a
+	// select's single pick already lands.
+	const comboProps = (
+		name: Path<ConditionFormData>,
+		field: { value: unknown; onChange: (value: unknown) => void },
+	) => {
+		const { onValueChange: _saveOnChange, ...rest } = controlled(name, field)
+		return {
+			...rest,
+			name,
+			disabled,
+			value: rest.value ?? '',
+			onValueChange: (value: string) => field.onChange(value),
+			onBlur: () => onFieldBlur?.(name),
+		}
+	}
 
 	const PAINT_TYPE_OPTIONS = [
 		{ value: 'Uni (2 Schicht)', label: t('condition.paintTypeOptions.uni') },
@@ -115,11 +180,10 @@ function ConditionSection({
 		{ value: 'Not roadworthy', label: t('condition.drivingAbilityOptions.notRoadworthy') },
 	]
 
-	const UNIT_OPTIONS = [
-		{ value: 'km', label: t('condition.unitOptions.km') },
-		{ value: 'MKR', label: t('condition.unitOptions.mkr') },
-		{ value: 'miles', label: t('condition.unitOptions.miles') },
-	]
+	const UNIT_OPTIONS = MILEAGE_UNITS.map((unit) => ({
+		value: unit,
+		label: t(`condition.unitOptions.${unit}`),
+	}))
 
 	return (
 		<CollapsibleSection
@@ -136,11 +200,11 @@ function ConditionSection({
 						name="paintType"
 						control={control}
 						render={({ field }) => (
-							<SelectField
+							<ComboField
 								label={t('condition.paintType')}
 								options={PAINT_TYPE_OPTIONS}
 								placeholder={tc('select')}
-								{...controlled('paintType', field)}
+								{...comboProps('paintType', field)}
 							/>
 						)}
 					/>
@@ -149,11 +213,11 @@ function ConditionSection({
 						name="hard"
 						control={control}
 						render={({ field }) => (
-							<SelectField
+							<ComboField
 								label={t('condition.paint')}
 								options={PAINT_OPTIONS}
 								placeholder={tc('select')}
-								{...controlled('hard', field)}
+								{...comboProps('hard', field)}
 							/>
 						)}
 					/>
@@ -162,11 +226,11 @@ function ConditionSection({
 						name="paintCondition"
 						control={control}
 						render={({ field }) => (
-							<SelectField
+							<ComboField
 								label={t('condition.paintCondition')}
 								options={PAINT_CONDITION_OPTIONS}
 								placeholder={tc('select')}
-								{...controlled('paintCondition', field)}
+								{...comboProps('paintCondition', field)}
 							/>
 						)}
 					/>
@@ -178,11 +242,11 @@ function ConditionSection({
 						name="generalCondition"
 						control={control}
 						render={({ field }) => (
-							<SelectField
+							<ComboField
 								label={t('condition.generalCondition')}
 								options={GENERAL_CONDITION_OPTIONS}
 								placeholder={tc('select')}
-								{...controlled('generalCondition', field)}
+								{...comboProps('generalCondition', field)}
 							/>
 						)}
 					/>
@@ -191,11 +255,11 @@ function ConditionSection({
 						name="bodyCondition"
 						control={control}
 						render={({ field }) => (
-							<SelectField
+							<ComboField
 								label={t('condition.bodyCondition')}
 								options={BODY_CONDITION_OPTIONS}
 								placeholder={tc('select')}
-								{...controlled('bodyCondition', field)}
+								{...comboProps('bodyCondition', field)}
 							/>
 						)}
 					/>
@@ -204,11 +268,11 @@ function ConditionSection({
 						name="interiorCondition"
 						control={control}
 						render={({ field }) => (
-							<SelectField
+							<ComboField
 								label={t('condition.interiorCondition')}
 								options={INTERIOR_CONDITION_OPTIONS}
 								placeholder={tc('select')}
-								{...controlled('interiorCondition', field)}
+								{...comboProps('interiorCondition', field)}
 							/>
 						)}
 					/>
@@ -220,11 +284,11 @@ function ConditionSection({
 						name="drivingAbility"
 						control={control}
 						render={({ field }) => (
-							<SelectField
+							<ComboField
 								label={t('condition.drivingAbility')}
 								options={DRIVING_ABILITY_OPTIONS}
 								placeholder={tc('select')}
-								{...controlled('drivingAbility', field)}
+								{...comboProps('drivingAbility', field)}
 							/>
 						)}
 					/>
@@ -232,30 +296,52 @@ function ConditionSection({
 					<TextField
 						label={t('condition.vehicleColor')}
 						placeholder={t('condition.vehicleColorPlaceholder')}
+						disabled={disabled}
 						{...fieldProps('vehicleColor')}
 					/>
 
 					<TextField
 						label={t('condition.specialFeatures')}
 						placeholder={t('condition.parkingSensors')}
+						disabled={disabled}
 						{...fieldProps('specialFeatures')}
 					/>
 				</div>
 
 				{/* Row 4: Mileage Read / Estimation mileage / Unit in km */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-					<TextField
-						label={t('condition.mileageRead')}
-						type="number"
-						placeholder={t('condition.mileagePlaceholder')}
-						{...fieldProps('mileageRead')}
+					<Controller
+						name="mileageRead"
+						control={control}
+						render={({ field }) => (
+							<MileageField
+								label={t('condition.mileageRead')}
+								placeholder={t('condition.mileagePlaceholder')}
+								disabled={disabled}
+								field={field}
+								onFieldBlur={onFieldBlur}
+								name="mileageRead"
+								error={errors.mileageRead?.message}
+								{...missing('mileageRead')}
+							/>
+						)}
 					/>
 
-					<TextField
-						label={t('condition.estimationMileage')}
-						type="number"
-						placeholder={t('condition.mileagePlaceholder')}
-						{...fieldProps('estimateMileage')}
+					<Controller
+						name="estimateMileage"
+						control={control}
+						render={({ field }) => (
+							<MileageField
+								label={t('condition.estimationMileage')}
+								placeholder={t('condition.mileagePlaceholder')}
+								disabled={disabled}
+								field={field}
+								onFieldBlur={onFieldBlur}
+								name="estimateMileage"
+								error={errors.estimateMileage?.message}
+								{...missing('estimateMileage')}
+							/>
+						)}
 					/>
 
 					<Controller
@@ -266,6 +352,7 @@ function ConditionSection({
 								label={t('condition.unitInKm')}
 								options={UNIT_OPTIONS}
 								value={field.value || 'km'}
+								disabled={disabled}
 								onValueChange={(val) => {
 									field.onChange(val)
 									onFieldBlur?.('unit')
@@ -283,6 +370,7 @@ function ConditionSection({
 							label={t('condition.nextMot')}
 							type="date"
 							placeholder={t('condition.nextMotPlaceholder')}
+							disabled={disabled}
 							{...fieldProps('nextMot')}
 						/>
 					</div>
@@ -300,6 +388,7 @@ function ConditionSection({
 							<CheckboxPill
 								label={t('condition.fullServiceHistory')}
 								checked={field.value}
+								disabled={disabled}
 								onChange={(checked) => {
 									field.onChange(checked)
 									onFieldBlur?.('fullServiceHistory')
@@ -314,6 +403,7 @@ function ConditionSection({
 							<CheckboxPill
 								label={t('condition.testDrivePerformed')}
 								checked={field.value}
+								disabled={disabled}
 								onChange={(checked) => {
 									field.onChange(checked)
 									onFieldBlur?.('testDrivePerformed')
@@ -328,6 +418,7 @@ function ConditionSection({
 							<CheckboxPill
 								label={t('condition.parkingSensors')}
 								checked={field.value}
+								disabled={disabled}
 								onChange={(checked) => {
 									field.onChange(checked)
 									onFieldBlur?.('parkingSensors')
@@ -347,6 +438,7 @@ function ConditionSection({
 							<YesNoField
 								label={t('condition.airbagsDeployed')}
 								value={field.value}
+								disabled={disabled}
 								onChange={(answer) => {
 									field.onChange(answer)
 									onFieldBlur?.('airbagsDeployed')
@@ -364,6 +456,7 @@ function ConditionSection({
 							<YesNoField
 								label={t('condition.errorMemoryRead')}
 								value={field.value}
+								disabled={disabled}
 								onChange={(answer) => {
 									field.onChange(answer)
 									onFieldBlur?.('errorMemoryRead')
@@ -376,35 +469,49 @@ function ConditionSection({
 					/>
 				</div>
 
-				{/* Multi-hit Groups */}
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2">
-						<span className="text-body-sm font-medium text-black">
-							{t('condition.multiHitGroups')}
-						</span>
-					</div>
-					<div className="flex items-center gap-1">
-						{MULTI_HIT_COLORS.map((item) => (
-							<div
-								key={item.value}
-								className={cn(
-									'flex h-8 w-8 items-center justify-center rounded-full text-caption font-bold',
-									item.bg,
-									item.text,
-								)}
-							>
-								{item.value}
+				{/* Schadstoffplakette */}
+				<Controller
+					name="emissionGroup"
+					control={control}
+					render={({ field }) => (
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								<span className="text-body-sm font-medium text-black">
+									{t('condition.multiHitGroups')}
+								</span>
 							</div>
-						))}
-					</div>
-				</div>
+							<div className="flex items-center gap-1">
+								{EMISSION_GROUPS.map((group) => (
+									<EmissionSticker
+										key={group}
+										group={group}
+										selected={field.value === group}
+										disabled={disabled}
+										label={
+											group === '1'
+												? t('condition.emissionGroupNone')
+												: t('condition.emissionGroupLabel', { group })
+										}
+										onClick={() => {
+											// Clicking the active group clears it: unknown stays
+											// unknown, and the report omits it.
+											field.onChange(field.value === group ? null : group)
+											onFieldBlur?.('emissionGroup')
+										}}
+									/>
+								))}
+							</div>
+						</div>
+					)}
+				/>
 
 				{/* Notes */}
 				<div className="flex flex-col gap-1">
 					<span className="text-body-sm font-medium text-black">{t('condition.notes')}</span>
 					<textarea
-						className="min-h-30 w-full rounded-md border border-border bg-white px-4 py-3 text-body-sm text-black placeholder:text-placeholder focus:border-border-focus focus:outline-none"
+						className="min-h-30 w-full rounded-md border border-border bg-white px-4 py-3 text-body-sm text-black placeholder:text-placeholder focus:border-border-focus focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 						placeholder={t('condition.addNotes')}
+						disabled={disabled}
 						{...register('notes')}
 						onBlur={() => onFieldBlur?.('notes')}
 					/>

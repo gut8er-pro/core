@@ -1,78 +1,115 @@
 'use client'
 
 import type * as fabric from 'fabric'
-import { ChevronLeft, ChevronRight, Edit, Image as ImageIcon, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Edit, Image as ImageIcon, Trash2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { Photo } from '@/hooks/use-photos'
-import { AnnotationCanvas } from './annotation-canvas'
+import { AnnotationCanvas, type SelectionBox } from './annotation-canvas'
 import { type AnnotationTool, AnnotationToolbar } from './annotation-toolbar'
+import { useAnnotationSave } from './use-annotation-save'
 
 type AnnotationModalProps = {
 	photo: Photo | null
 	photos?: Photo[]
+	reportId: string
 	open: boolean
+	locked?: boolean
 	onClose: () => void
-	onSave?: (fabricJson: Record<string, unknown>, dataUrl: string | null) => void
 	onNavigate?: (photoId: string) => void
 }
 
 function AnnotationModal({
 	photo,
 	photos,
+	reportId,
 	open,
+	locked = false,
 	onClose,
-	onSave,
 	onNavigate,
 }: AnnotationModalProps) {
 	const t = useTranslations('report')
 	const tc = useTranslations('common')
-	const [activeTool, setActiveTool] = useState<AnnotationTool>('pen')
+	const [activeTool, setActiveTool] = useState<AnnotationTool>('select')
 	const [activeColor, setActiveColor] = useState('#FF0000')
 	const [description, setDescription] = useState<string | null>(null)
 	const [isEditingDescription, setIsEditingDescription] = useState(false)
 	const [editDescriptionValue, setEditDescriptionValue] = useState('')
 	const [portalHost, setPortalHost] = useState<HTMLElement | null>(null)
+	const [selection, setSelection] = useState<SelectionBox | null>(null)
+	const [canvasReady, setCanvasReady] = useState(false)
 	const canvasRef = useRef<fabric.Canvas | null>(null)
 	const exportFnRef = useRef<(() => string | null) | null>(null)
 	const containerRef = useRef<HTMLDivElement>(null)
+	const { status: saveStatus, save, reset: resetSaveStatus } = useAnnotationSave(reportId)
 
 	const handleCanvasReady = useCallback((canvas: fabric.Canvas, exportFn: () => string | null) => {
 		canvasRef.current = canvas
 		exportFnRef.current = exportFn
+		setCanvasReady(true)
 	}, [])
 
-	const handleClear = useCallback(() => {
+	const handleClearAll = useCallback(() => {
 		const canvas = canvasRef.current
 		if (!canvas) return
 
-		const objects = canvas.getObjects()
-		for (const obj of objects) {
+		canvas.discardActiveObject()
+		for (const obj of canvas.getObjects()) {
 			canvas.remove(obj)
 		}
 		canvas.renderAll()
+		setSelection(null)
 	}, [])
 
-	const handleSave = useCallback(() => {
+	const handleDeleteSelected = useCallback(() => {
 		const canvas = canvasRef.current
-		if (!canvas || !onSave) return
+		if (!canvas) return
 
-		const json = canvas.toJSON() as Record<string, unknown>
+		const active = canvas.getActiveObjects()
+		if (active.length === 0) return
+
+		for (const obj of active) {
+			canvas.remove(obj)
+		}
+		canvas.discardActiveObject()
+		canvas.renderAll()
+		setSelection(null)
+	}, [])
+
+	const handleSave = useCallback(async () => {
+		const canvas = canvasRef.current
+		if (!canvas || !photo || locked) return
+
+		canvas.discardActiveObject()
+		canvas.renderAll()
+
 		const hasObjects = canvas.getObjects().length > 0
-
-		// Use the composite export function for full-resolution output
 		const dataUrl = hasObjects ? (exportFnRef.current?.() ?? null) : null
+		const json = canvas.toJSON() as Record<string, unknown>
 
-		onSave(json, dataUrl)
-		onClose()
-	}, [onSave, onClose])
+		const succeeded = await save({ photoId: photo.id, fabricJson: json, dataUrl })
+		if (succeeded) {
+			onClose()
+		}
+	}, [locked, onClose, photo, save])
 
 	const handleClose = useCallback(() => {
 		canvasRef.current = null
 		exportFnRef.current = null
+		setSelection(null)
+		setCanvasReady(false)
+		resetSaveStatus()
 		onClose()
-	}, [onClose])
+	}, [onClose, resetSaveStatus])
+
+	// Navigating to another photo remounts the canvas, so the editor is not ready again
+	// until that canvas hands itself over.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the photo, not its fields
+	useEffect(() => {
+		setCanvasReady(false)
+		setSelection(null)
+	}, [photo?.id])
 
 	useEffect(() => {
 		if (!open) return
@@ -113,6 +150,20 @@ function AnnotationModal({
 				handleClose()
 				return
 			}
+
+			if (event.key === 'Delete' || event.key === 'Backspace') {
+				const target = event.target as HTMLElement | null
+				const isTextEntry =
+					target?.tagName === 'INPUT' ||
+					target?.tagName === 'TEXTAREA' ||
+					target?.isContentEditable === true
+				if (!isTextEntry && !locked) {
+					event.preventDefault()
+					handleDeleteSelected()
+				}
+				return
+			}
+
 			if (event.key !== 'Tab' || !container) return
 
 			const focusable = Array.from(
@@ -138,7 +189,7 @@ function AnnotationModal({
 
 		container.addEventListener('keydown', trapFocus)
 		return () => container.removeEventListener('keydown', trapFocus)
-	}, [portalHost, handleClose])
+	}, [portalHost, handleClose, handleDeleteSelected, locked])
 
 	const handleStartEditDescription = useCallback(() => {
 		setEditDescriptionValue(description ?? photo?.aiDescription ?? '')
@@ -261,12 +312,31 @@ function AnnotationModal({
 
 						{/* Canvas with image underneath */}
 						<AnnotationCanvas
+							key={photo.id}
 							photoUrl={photo.url}
 							activeTool={activeTool}
 							activeColor={activeColor}
 							initialAnnotations={initialAnnotations}
+							readOnly={locked}
 							onCanvasReady={handleCanvasReady}
+							onSelectionChange={setSelection}
 						/>
+
+						{/* Per-marking delete, pinned to the current selection */}
+						{selection && !locked && (
+							<button
+								type="button"
+								onClick={handleDeleteSelected}
+								aria-label={t('annotation.deleteSelected')}
+								style={{
+									left: `${selection.left + selection.width / 2}px`,
+									top: `${Math.max(selection.top - 40, 4)}px`,
+								}}
+								className="absolute z-20 flex h-9 w-9 -translate-x-1/2 cursor-pointer items-center justify-center rounded-lg bg-danger text-white shadow-lg transition-colors hover:bg-danger/90"
+							>
+								<Trash2 className="h-4 w-4" />
+							</button>
+						)}
 
 						{/* Watermark */}
 						<div className="pointer-events-none absolute bottom-4 left-4 z-10">
@@ -338,14 +408,17 @@ function AnnotationModal({
 				</div>
 
 				{/* Floating toolbar at bottom center */}
-				<div className="flex justify-center py-4">
+				<div className="relative z-30 flex flex-col items-center gap-2 py-4">
+					{locked && <p className="text-body-sm text-warning-dark">{t('annotation.lockedHint')}</p>}
 					<AnnotationToolbar
 						activeTool={activeTool}
 						activeColor={activeColor}
 						onToolChange={setActiveTool}
 						onColorChange={setActiveColor}
-						onClear={handleClear}
-						onSave={onSave ? handleSave : undefined}
+						onClearAll={handleClearAll}
+						onSave={handleSave}
+						saveState={saveStatus}
+						disabled={locked || !canvasReady}
 					/>
 				</div>
 			</div>

@@ -10,6 +10,10 @@ import { LicensePlate } from '@/components/ui/license-plate'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import { SECTION } from '@/lib/completeness'
+import { IbanField } from './iban-field'
+import { LawyerFields } from './lawyer-fields'
+import { LicensePlateField } from './license-plate-field'
+import { OwnerFields } from './owner-fields'
 import type { SectionProps } from './types'
 
 function ClaimantSection({
@@ -18,6 +22,7 @@ function ClaimantSection({
 	errors,
 	onFieldBlur,
 	reportType,
+	disabled,
 	className,
 }: SectionProps & { className?: string }) {
 	const t = useTranslations('report')
@@ -26,6 +31,7 @@ function ClaimantSection({
 	const representedByLawyer = useWatch({ control, name: 'claimantRepresentedByLawyer' })
 	const eligibleForTax = useWatch({ control, name: 'claimantEligibleForInputTaxDeduction' })
 	const licensePlate = useWatch({ control, name: 'claimantLicensePlate' })
+	const isVehicleOwner = useWatch({ control, name: 'claimantIsVehicleOwner' })
 
 	const isOT = reportType === 'OT'
 	const sectionTitle = isOT ? t('accidentInfo.client') : t('accidentInfo.claimantInformation')
@@ -44,6 +50,7 @@ function ClaimantSection({
 				<TextField
 					label={t('accidentInfo.company')}
 					placeholder={t('accidentInfo.companyPlaceholder')}
+					disabled={disabled}
 					{...fieldProps('claimantCompany')}
 				/>
 
@@ -57,8 +64,9 @@ function ClaimantSection({
 								label={t('accidentInfo.salutation')}
 								options={salutationOptions}
 								placeholder={t('accidentInfo.salutationPlaceholder')}
-								value={field.value}
+								value={field.value ?? ''}
 								error={errors.claimantSalutation?.message}
+								disabled={disabled}
 								onValueChange={(value) => {
 									field.onChange(value)
 									onFieldBlur?.('claimantSalutation')
@@ -69,11 +77,13 @@ function ClaimantSection({
 					<TextField
 						label={t('accidentInfo.firstName')}
 						placeholder={t('accidentInfo.firstName')}
+						disabled={disabled}
 						{...fieldProps('claimantFirstName')}
 					/>
 					<TextField
 						label={t('accidentInfo.lastName')}
 						placeholder={t('accidentInfo.lastName')}
+						disabled={disabled}
 						{...fieldProps('claimantLastName')}
 					/>
 				</div>
@@ -83,16 +93,19 @@ function ClaimantSection({
 					<TextField
 						label={t('accidentInfo.street')}
 						placeholder={t('accidentInfo.streetPlaceholder')}
+						disabled={disabled}
 						{...fieldProps('claimantStreet')}
 					/>
 					<TextField
 						label={t('accidentInfo.postcode')}
 						placeholder={t('accidentInfo.postcodePlaceholder')}
+						disabled={disabled}
 						{...fieldProps('claimantPostcode')}
 					/>
 					<TextField
 						label={t('accidentInfo.location')}
 						placeholder="Berlin"
+						disabled={disabled}
 						{...fieldProps('claimantLocation')}
 					/>
 				</div>
@@ -103,17 +116,20 @@ function ClaimantSection({
 						label={t('accidentInfo.email')}
 						type="email"
 						placeholder="markecooper@gmail.com"
+						disabled={disabled}
 						{...fieldProps('claimantEmail')}
 					/>
-					<TextField
+					<IbanField
 						label={t('accidentInfo.iban')}
-						placeholder="DE89 3704 0044 0532 0130 00"
+						invalidMessage={t('accidentInfo.ibanInvalid')}
+						disabled={disabled}
 						{...fieldProps('claimantIban')}
 					/>
 					<TextField
 						label={t('accidentInfo.phoneNumber')}
 						type="tel"
 						placeholder="+49 152 3818411"
+						disabled={disabled}
 						{...fieldProps('claimantPhone')}
 					/>
 				</div>
@@ -121,8 +137,9 @@ function ClaimantSection({
 				<div className="flex flex-col gap-1">
 					<Label>{t('accidentInfo.licensePlate')}</Label>
 					<div className="flex items-center gap-4">
-						<TextField
+						<LicensePlateField
 							placeholder="B AB 1234"
+							disabled={disabled}
 							{...fieldProps('claimantLicensePlate')}
 							className="flex-1"
 						/>
@@ -139,6 +156,7 @@ function ClaimantSection({
 							render={({ field }) => (
 								<Checkbox
 									id="claimant-eligible-input-tax"
+									disabled={disabled}
 									checked={!!field.value}
 									onCheckedChange={(checked) => {
 										field.onChange(!!checked)
@@ -159,6 +177,7 @@ function ClaimantSection({
 							render={({ field }) => (
 								<Checkbox
 									id="claimant-is-vehicle-owner"
+									disabled={disabled}
 									checked={!!field.value}
 									onCheckedChange={(checked) => {
 										field.onChange(!!checked)
@@ -180,6 +199,7 @@ function ClaimantSection({
 								render={({ field }) => (
 									<Checkbox
 										id="claimant-represented-by-lawyer"
+										disabled={disabled}
 										checked={!!field.value}
 										onCheckedChange={(checked) => {
 											field.onChange(!!checked)
@@ -198,24 +218,35 @@ function ClaimantSection({
 					)}
 				</div>
 
-				{/* Conditional fields based on checkboxes */}
-				{(eligibleForTax || (!isOT && representedByLawyer)) && (
+				{eligibleForTax && (
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-						{eligibleForTax && (
-							<TextField
-								label={t('accidentInfo.vatId')}
-								placeholder="DE123456789"
-								{...fieldProps('claimantVatId')}
-							/>
-						)}
-						{!isOT && representedByLawyer && (
-							<TextField
-								label={t('accidentInfo.involvedLawyer')}
-								placeholder={t('accidentInfo.involvedLawyerPlaceholder')}
-								{...fieldProps('claimantInvolvedLawyer')}
-							/>
-						)}
+						<TextField
+							label={t('accidentInfo.vatId')}
+							placeholder="DE123456789"
+							disabled={disabled}
+							{...fieldProps('claimantVatId')}
+						/>
 					</div>
+				)}
+
+				{!isOT && representedByLawyer && (
+					<LawyerFields
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={onFieldBlur}
+						disabled={disabled}
+					/>
+				)}
+
+				{!isVehicleOwner && (
+					<OwnerFields
+						register={register}
+						control={control}
+						errors={errors}
+						onFieldBlur={onFieldBlur}
+						disabled={disabled}
+					/>
 				)}
 			</div>
 		</CollapsibleSection>

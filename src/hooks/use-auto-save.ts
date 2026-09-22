@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { trackSectionSave } from '@/lib/api/section-saves'
 import { useToastStore } from '@/stores/toast-store'
 
 type UseAutoSaveOptions = {
@@ -10,7 +11,7 @@ type UseAutoSaveOptions = {
 }
 
 type AutoSaveState = {
-	status: 'idle' | 'saving' | 'saved' | 'error'
+	status: 'idle' | 'saving' | 'saved' | 'error' | 'locked'
 	error: string | null
 }
 
@@ -118,7 +119,11 @@ function useAutoSave({
 		inflightRef.current = true
 		if (mountedRef.current) setState({ status: 'saving', error: null })
 
-		patchSection(reportIdRef.current, sectionRef.current, data)
+		trackSectionSave(
+			reportIdRef.current,
+			sectionRef.current,
+			patchSection(reportIdRef.current, sectionRef.current, data),
+		)
 			.then(() => {
 				inflightRef.current = false
 				if (mountedRef.current) {
@@ -145,8 +150,12 @@ function useAutoSave({
 			.catch((error: Error) => {
 				inflightRef.current = false
 				if (mountedRef.current) {
-					setState({ status: 'error', error: error.message })
-					toast.error(`Save failed: ${error.message}`)
+					if (/locked/i.test(error.message)) {
+						setState({ status: 'locked', error: error.message })
+					} else {
+						setState({ status: 'error', error: error.message })
+						toast.error(`Save failed: ${error.message}`)
+					}
 				}
 				// Put data back so it can be retried
 				Object.assign(pendingRef.current, data)
@@ -213,12 +222,21 @@ function useAutoSave({
 
 			const data = { ...pendingRef.current }
 			pendingRef.current = {}
-			if (Object.keys(data).length > 0) {
-				// Fire-and-forget on unmount
-				patchSection(reportIdRef.current, sectionRef.current, data).catch(() => {})
-			}
+			if (Object.keys(data).length === 0) return
+
+			const reportId = reportIdRef.current
+			const section = sectionRef.current
+
+			// Tracked, not fire-and-forget: the next mount's fetcher waits on
+			// this PATCH, and the cache the remount would otherwise reset from
+			// is refetched once the write has landed.
+			trackSectionSave(reportId, section, patchSection(reportId, section, data))
+				.then(() => {
+					queryClient.invalidateQueries({ queryKey: ['report', reportId, section] })
+				})
+				.catch(() => {})
 		}
-	}, [])
+	}, [queryClient])
 
 	// Warn on page close with unsaved data
 	useEffect(() => {

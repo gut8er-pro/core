@@ -9,9 +9,10 @@ type LicensePlateProps = {
 function LicensePlate({ plate, className }: LicensePlateProps) {
 	// Split plate into city code and rest (e.g. "ES 1315" → "XX" + "ES 1315")
 	// German plates: "XX · ES 1315" format in Figma
-	const parts = plate.split(' ')
+	const normalized = plate.toUpperCase()
+	const parts = normalized.split(' ')
 	const cityCode = parts.length >= 2 ? parts[0] : 'XX'
-	const rest = parts.length >= 2 ? parts.slice(1).join(' ') : plate
+	const rest = parts.length >= 2 ? parts.slice(1).join(' ') : normalized
 
 	return (
 		<div

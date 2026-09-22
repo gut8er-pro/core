@@ -66,16 +66,13 @@ function UploadZone({
 	const isMaxReached = currentCount >= maxFiles
 	const isDisabled = disabled || isMaxReached
 
-	const filterValidFiles = useCallback(
-		(fileList: FileList | null): File[] => {
-			if (!fileList) return []
-			const remaining = maxFiles - currentCount
-			return Array.from(fileList)
-				.filter((file) => ACCEPTED_TYPES.includes(file.type))
-				.slice(0, Math.max(0, remaining))
-		},
-		[maxFiles, currentCount],
-	)
+	// Everything the assessor picked is handed on, including files over the cap
+	// and of the wrong type: the upload hook is the one place that names why a
+	// file was skipped, and slicing here is what used to lose them silently.
+	const collectFiles = useCallback((fileList: FileList | null): File[] => {
+		if (!fileList) return []
+		return Array.from(fileList)
+	}, [])
 
 	const handleDragEnter = useCallback(
 		(event: React.DragEvent<HTMLDivElement>) => {
@@ -113,12 +110,12 @@ function UploadZone({
 
 			if (isDisabled) return
 
-			const validFiles = filterValidFiles(event.dataTransfer.files)
-			if (validFiles.length > 0) {
-				onFilesSelected(validFiles)
+			const files = collectFiles(event.dataTransfer.files)
+			if (files.length > 0) {
+				onFilesSelected(files)
 			}
 		},
-		[isDisabled, filterValidFiles, onFilesSelected],
+		[isDisabled, collectFiles, onFilesSelected],
 	)
 
 	const handleClick = useCallback(() => {
@@ -129,15 +126,15 @@ function UploadZone({
 
 	const handleInputChange = useCallback(
 		(event: React.ChangeEvent<HTMLInputElement>) => {
-			const validFiles = filterValidFiles(event.target.files)
-			if (validFiles.length > 0) {
-				onFilesSelected(validFiles)
+			const files = collectFiles(event.target.files)
+			if (files.length > 0) {
+				onFilesSelected(files)
 			}
 			if (inputRef.current) {
 				inputRef.current.value = ''
 			}
 		},
-		[filterValidFiles, onFilesSelected],
+		[collectFiles, onFilesSelected],
 	)
 
 	const handleKeyDown = useCallback(

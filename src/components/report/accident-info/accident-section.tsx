@@ -11,6 +11,7 @@ function AccidentSection({
 	register,
 	errors,
 	onFieldBlur,
+	disabled,
 	className,
 }: SectionProps & { className?: string }) {
 	const t = useTranslations('report')
@@ -28,11 +29,13 @@ function AccidentSection({
 				<TextField
 					label={t('accidentInfo.accidentDay')}
 					type="date"
+					disabled={disabled}
 					{...fieldProps('accidentDay')}
 				/>
 				<TextField
 					label={t('accidentInfo.accidentScene')}
 					placeholder={t('accidentInfo.accidentScenePlaceholder')}
+					disabled={disabled}
 					{...fieldProps('accidentScene')}
 				/>
 			</div>

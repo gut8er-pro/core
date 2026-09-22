@@ -26,6 +26,9 @@ const calculationSchema = z.object({
 	valuationAvg: z.number().nonnegative().nullable().optional(),
 	valuationMin: z.number().nonnegative().nullable().optional(),
 	valuationDate: z.string().max(20).nullable().optional(),
+	// Correction calculation (manual entry)
+	correctionResultWithout: z.number().nonnegative().nullable().optional(),
+	correctionResultWith: z.number().nonnegative().nullable().optional(),
 	// OT valuation
 	marketValue: z.number().nonnegative().nullable().optional(),
 	baseVehicleValue: z.number().nonnegative().nullable().optional(),

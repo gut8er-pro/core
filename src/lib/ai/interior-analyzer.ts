@@ -16,7 +16,7 @@ function buildInteriorPrompt(locale: 'en' | 'de' = 'en'): string {
 Return JSON with:
 1. "description": Brief professional description of the interior visible in the photo (1-2 sentences)
 
-2. "condition": Overall interior condition. Use EXACTLY one of these values (title case): "Excellent", "Good", "Fair", "Poor". Use null if not assessable.
+2. "condition": Overall interior condition. Use EXACTLY one of these three phrases: "Clean, no structural damage." | "Minor wear" | "Significant wear". Use null if not assessable.
 
 3. "features": Array of OPTIONAL vehicle equipment visible. Include items like:
    "leather seats", "navigation system", "heated seats", "ventilated seats", "panoramic sunroof", "sliding sunroof", "adaptive cruise control", "head-up display", "parking assist", "360° camera", "premium audio system", "Apple CarPlay", "Android Auto", "automatic climate control"
@@ -72,6 +72,31 @@ async function analyzeInterior(
 	return result
 }
 
+// Preset values of INTERIOR_CONDITION_OPTIONS in
+// src/components/report/condition/condition-section.tsx. The control is an
+// editable combobox, so an off-list answer would display — but the presets
+// are the ones the PDF translator can localize, so the analyzer sticks to
+// them. The A–D grades are what the old prompt produced; cached rows and the
+// occasional slip still arrive that way.
+const INTERIOR_CONDITION_SYNONYMS: Record<string, string> = {
+	'clean, no structural damage.': 'Clean, no structural damage.',
+	'clean, no structural damage': 'Clean, no structural damage.',
+	clean: 'Clean, no structural damage.',
+	excellent: 'Clean, no structural damage.',
+	good: 'Clean, no structural damage.',
+	'minor wear': 'Minor wear',
+	fair: 'Minor wear',
+	'significant wear': 'Significant wear',
+	poor: 'Significant wear',
+}
+
+function normalizeInteriorCondition(raw: unknown): string | null {
+	if (typeof raw !== 'string') return null
+	const key = raw.trim().toLowerCase()
+	if (!key) return null
+	return INTERIOR_CONDITION_SYNONYMS[key] ?? null
+}
+
 function parseInteriorResponse(photoId: string, rawResponse: string): InteriorAnalysisResult {
 	const fallback: InteriorAnalysisResult = {
 		photoId,
@@ -90,17 +115,11 @@ function parseInteriorResponse(photoId: string, rawResponse: string): InteriorAn
 			.trim()
 		const parsed = JSON.parse(jsonString) as Record<string, unknown>
 
-		const conditionRaw = typeof parsed.condition === 'string' ? parsed.condition.trim() : ''
-		const allowedConditions = ['Excellent', 'Good', 'Fair', 'Poor']
-		const conditionMatch = allowedConditions.find(
-			(c) => c.toLowerCase() === conditionRaw.toLowerCase(),
-		)
-
 		return {
 			photoId,
 			description:
 				typeof parsed.description === 'string' ? parsed.description : fallback.description,
-			condition: conditionMatch ?? null,
+			condition: normalizeInteriorCondition(parsed.condition),
 			features: Array.isArray(parsed.features)
 				? parsed.features.filter((f): f is string => typeof f === 'string')
 				: [],

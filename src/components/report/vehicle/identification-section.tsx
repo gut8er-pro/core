@@ -11,6 +11,7 @@ function IdentificationSection({
 	register,
 	errors,
 	onFieldBlur,
+	disabled,
 	className,
 }: VehicleSectionProps & { className?: string }) {
 	const t = useTranslations('report')
@@ -25,7 +26,7 @@ function IdentificationSection({
 			className={className}
 			{...badge}
 		>
-			<div className="flex flex-col gap-4">
+			<fieldset disabled={disabled} className="flex flex-col gap-4">
 				{/* Row 1: VIN / DATSCode / Market Index */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-end">
 					<TextField
@@ -74,7 +75,7 @@ function IdentificationSection({
 						{...fieldProps('kbaNumber')}
 					/>
 				</div>
-			</div>
+			</fieldset>
 		</CollapsibleSection>
 	)
 }

@@ -13,11 +13,12 @@ type UploadState = {
 	isUploading: boolean
 	progress: number
 	error: string | null
+	summary: string | null
 }
 
 type UsePhotoUploadReturn = {
 	uploadState: UploadState
-	uploadPhotos: (reportId: string, files: File[]) => Promise<void>
+	uploadPhotos: (reportId: string, files: File[], currentCount?: number) => Promise<void>
 	reset: () => void
 }
 
@@ -25,6 +26,7 @@ const INITIAL_STATE: UploadState = {
 	isUploading: false,
 	progress: 0,
 	error: null,
+	summary: null,
 }
 
 async function processPhotoWithRetry(
@@ -73,17 +75,8 @@ function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
 	)
 
 	const uploadPhotos = useCallback(
-		async (targetReportId: string, files: File[]) => {
+		async (targetReportId: string, files: File[], currentCount = 0) => {
 			if (files.length === 0) {
-				return
-			}
-
-			if (files.length > MAX_PHOTOS_PER_REPORT) {
-				setUploadState({
-					isUploading: false,
-					progress: 0,
-					error: t('maxPhotosError', { limit: MAX_PHOTOS_PER_REPORT }),
-				})
 				return
 			}
 
@@ -91,13 +84,26 @@ function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
 				isUploading: true,
 				progress: 0,
 				error: null,
+				summary: null,
 			})
 
 			const errors: string[] = []
 			const totalFiles = files.length
 			let processedCount = 0
+			let uploadedCount = 0
 
-			for (const file of files) {
+			// The cap counts what the report already holds, not just this batch.
+			// Trimming here is what turns "some photos vanished" into a named
+			// refusal per file.
+			const remainingSlots = Math.max(0, MAX_PHOTOS_PER_REPORT - currentCount)
+			const accepted = files.slice(0, remainingSlots)
+			const overflow = files.slice(remainingSlots)
+
+			for (const file of overflow) {
+				errors.push(`${file.name}: ${t('maxPhotosError', { limit: MAX_PHOTOS_PER_REPORT })}`)
+			}
+
+			for (const file of accepted) {
 				if (!validateFileType(file.type)) {
 					errors.push(`${file.name}: ${t('uploadErrors.invalidFileType')}`)
 					processedCount++
@@ -112,8 +118,20 @@ function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
 					continue
 				}
 
+				let compressed: Blob
 				try {
-					const compressed = await compressImage(file)
+					compressed = await compressImage(file)
+				} catch {
+					errors.push(`${file.name}: ${t('uploadErrors.compressionFailed')}`)
+					processedCount++
+					setUploadState((prev) => ({
+						...prev,
+						progress: Math.round((processedCount / totalFiles) * 100),
+					}))
+					continue
+				}
+
+				try {
 					const photoId = crypto.randomUUID()
 					const storagePath = getStoragePath(targetReportId, photoId, 'original')
 					const url = await uploadToStorage(compressed, storagePath)
@@ -123,6 +141,7 @@ function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
 						filename: file.name,
 						type: undefined,
 					})
+					uploadedCount++
 
 					// Trigger server-side image processing (thumbnail, preview, ai variants).
 					// Fire and forget — variants generate in the background. Retry once on
@@ -147,11 +166,21 @@ function usePhotoUpload(reportId: string): UsePhotoUploadReturn {
 				}))
 			}
 
-			setUploadState((prev) => ({
-				...prev,
+			const failedCount = totalFiles - uploadedCount
+
+			setUploadState({
 				isUploading: false,
+				progress: 100,
 				error: errors.length > 0 ? errors.join('\n') : null,
-			}))
+				summary:
+					failedCount > 0
+						? t('uploadSummaryFailed', {
+								uploaded: uploadedCount,
+								total: totalFiles,
+								failed: failedCount,
+							})
+						: t('uploadSummary', { uploaded: uploadedCount, total: totalFiles }),
+			})
 		},
 		[uploadPhotoMutation, t, uploadErrorMessage],
 	)

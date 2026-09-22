@@ -53,6 +53,10 @@ function VehiclePage() {
 		(field: string) => {
 			const value = getValues(field as keyof VehicleFormData)
 			if (value === undefined) return
+			if (value === null) {
+				saveField(field, null)
+				return
+			}
 
 			const numericFields = [
 				'axles',
@@ -170,6 +174,7 @@ function VehiclePage() {
 						errors={errors}
 						onFieldBlur={handleFieldBlur}
 						setValue={setValue}
+						disabled={report?.isLocked}
 					/>
 
 					<SpecificationSection
@@ -178,6 +183,7 @@ function VehiclePage() {
 						errors={errors}
 						onFieldBlur={handleFieldBlur}
 						setValue={setValue}
+						disabled={report?.isLocked}
 					/>
 
 					<DetailsSection
@@ -186,6 +192,7 @@ function VehiclePage() {
 						errors={errors}
 						onFieldBlur={handleFieldBlur}
 						setValue={setValue}
+						disabled={report?.isLocked}
 					/>
 				</div>
 			</MissingFieldsProvider>

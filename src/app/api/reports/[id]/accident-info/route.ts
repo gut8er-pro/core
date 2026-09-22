@@ -22,10 +22,11 @@ async function GET(_request: NextRequest, context: RouteContext) {
 		return NextResponse.json({ error: 'Report not found' }, { status: 404 })
 	}
 
-	const [accidentInfo, claimantInfo, opponentInfo, visits, expertOpinion, signatures] =
+	const [accidentInfo, claimantInfo, ownerInfo, opponentInfo, visits, expertOpinion, signatures] =
 		await Promise.all([
 			prisma.accidentInfo.findUnique({ where: { reportId: id } }),
 			prisma.claimantInfo.findUnique({ where: { reportId: id } }),
+			prisma.ownerInfo.findUnique({ where: { reportId: id } }),
 			prisma.opponentInfo.findUnique({ where: { reportId: id } }),
 			prisma.visit.findMany({ where: { reportId: id }, orderBy: { id: 'asc' } }),
 			prisma.expertOpinion.findUnique({ where: { reportId: id } }),
@@ -35,6 +36,7 @@ async function GET(_request: NextRequest, context: RouteContext) {
 	return NextResponse.json({
 		accidentInfo,
 		claimantInfo,
+		ownerInfo,
 		opponentInfo,
 		visits,
 		expertOpinion,
@@ -114,6 +116,17 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 				...data.claimantInfo,
 			},
 			update: data.claimantInfo,
+		})
+	}
+
+	if (data.ownerInfo) {
+		results.ownerInfo = await prisma.ownerInfo.upsert({
+			where: { reportId: id },
+			create: {
+				reportId: id,
+				...data.ownerInfo,
+			},
+			update: data.ownerInfo,
 		})
 	}
 

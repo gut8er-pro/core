@@ -35,3 +35,17 @@ Lump sum = Pauschale. The client's invoicing model, dictated on the call:
 - BVSK auto-fee interplay: ticket 27; the BVSK apply-rate path writes the Grundhonorar row — it
   must target the default row rather than inserting a duplicate.
 - Both locales for the default row descriptions.
+
+## Addendum from the BVSK research (ticket 27, 2026-09-22)
+
+- Default-row starting prices anchor to JVEG (per BGH VI ZR 50/15 / VI ZR 280/22 practice):
+  Fotografien 2,00 €/Stück, Druck & Versand as Schreibkosten 1,80 €/Seite + Porto/Pauschale
+  15,00 €, Anfahrt 0,70 €/km. Use these as the seeded per-unit defaults (editable).
+- `handleApplyBvskRate` today blindly overwrites `lineItems.0` — with default rows it must
+  TARGET the Grundhonorar row explicitly.
+- The embedded BVSK_RATES table matches NO published survey (synthetic values, wrong brackets)
+  and BVSK's terms forbid in-software use without consent — do NOT extend or advertise the
+  table as "BVSK" beyond what already exists; the auto-fee feature waits on Ivan/client
+  (licensing) per ticket 27's findings. The invoice page also never passes repairCost to
+  BvskRateTable (invoice/page.tsx:195), so its highlight/Apply are dead today — leave the
+  table as-is in this ticket, note only.

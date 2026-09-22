@@ -135,9 +135,11 @@ describe('parseOverviewResponse', () => {
 })
 
 describe('parseInteriorResponse', () => {
-	it('normalizes lowercase condition to canonical title-case', () => {
+	it('maps a legacy grade onto a Condition-tab preset', () => {
 		// Bug: interiorCondition was stored as raw "good" so the German PDF
-		// printed "good" instead of "Gut". Parser now matches title-case.
+		// printed "good" instead of "Gut". The analyzer now answers with the
+		// section's own option values; the old grades still map (see
+		// option-values.test.ts for the full table).
 		const raw = JSON.stringify({
 			description: 'Black leather interior',
 			condition: 'good',
@@ -147,7 +149,7 @@ describe('parseInteriorResponse', () => {
 			airbagsDeployed: false,
 		})
 		const out = parseInteriorResponse('photo-1', raw)
-		expect(out.condition).toBe('Good')
+		expect(out.condition).toBe('Clean, no structural damage.')
 		expect(out.mileage).toBe(142000)
 		expect(out.features).toContain('leather seats')
 	})

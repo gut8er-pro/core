@@ -48,9 +48,27 @@ function claimantSection(reportType: ReportType): SectionSpec<AccidentInfoValues
 			kind: 'when',
 			path: 'claimantRepresentedByLawyer',
 			equals: true,
-			rules: [field<AccidentInfoValues>('claimantInvolvedLawyer')],
+			// A lawyer on the claim is a party the Gutachten is sent to, so the
+			// firm and an address to reach it at are what make the answer usable.
+			rules: fields<AccidentInfoValues>(
+				'claimantInvolvedLawyer',
+				'claimantLawyerFirm',
+				'claimantLawyerEmail',
+			),
 		})
 	}
+
+	// Unchecking "is the vehicle owner" claims a Fahrzeughalter exists, so the
+	// report has to say who. Every type renders the checkbox.
+	rules.push({
+		kind: 'when',
+		path: 'claimantIsVehicleOwner',
+		equals: false,
+		rules: [
+			{ kind: 'either', paths: ['ownerLastName', 'ownerCompany'] },
+			...fields<AccidentInfoValues>('ownerStreet', 'ownerPostcode', 'ownerLocation'),
+		],
+	})
 
 	return { id: SECTION.claimant, rules }
 }
@@ -126,14 +144,7 @@ function accidentInfoTab(reportType: ReportType): SectionSpec<AccidentInfoValues
 
 // ── Vehicle ───────────────────────────────────────────────────────────────
 
-function vehicleTab(reportType: ReportType): SectionSpec<VehicleValues>[] {
-	const detailRules = fields<VehicleValues>('vehicleType', 'motorType', 'doors', 'seats')
-
-	// Previous owners bears on valuation, so the valuation types require it.
-	if (reportType === 'BE' || reportType === 'OT') {
-		detailRules.push(field<VehicleValues>('previousOwners'))
-	}
-
+function vehicleTab(): SectionSpec<VehicleValues>[] {
 	return [
 		{
 			id: SECTION.identification,
@@ -149,7 +160,10 @@ function vehicleTab(reportType: ReportType): SectionSpec<VehicleValues>[] {
 				'sourceOfTechnicalData',
 			),
 		},
-		{ id: SECTION.vehicleDetails, rules: detailRules },
+		{
+			id: SECTION.vehicleDetails,
+			rules: fields<VehicleValues>('vehicleType', 'motorType', 'doors', 'seats'),
+		},
 	]
 }
 
@@ -298,7 +312,7 @@ function manifestFor(reportType: ReportType) {
 	return {
 		gallery: galleryTab,
 		accidentInfo: accidentInfoTab(reportType),
-		vehicle: vehicleTab(reportType),
+		vehicle: vehicleTab(),
 		condition: conditionTab(reportType),
 		calculation: calculationTab(reportType),
 		invoice: invoiceTab,

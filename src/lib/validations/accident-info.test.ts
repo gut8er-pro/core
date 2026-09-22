@@ -4,6 +4,7 @@ import {
 	claimantInfoSchema,
 	expertOpinionSchema,
 	opponentInfoSchema,
+	ownerInfoSchema,
 	signatureSchema,
 	visitSchema,
 } from './accident-info'
@@ -59,6 +60,81 @@ describe('claimantInfoSchema', () => {
 			email: 'not-an-email',
 		})
 		expect(result.success).toBe(true)
+	})
+
+	it('stores the IBAN without its grouping spaces', () => {
+		const result = claimantInfoSchema.safeParse({ iban: 'DE89 3704 0044 0532 0130 00' })
+		expect(result.success).toBe(true)
+		if (result.success) expect(result.data.iban).toBe('DE89370400440532013000')
+	})
+
+	it('rejects an IBAN whose check digits do not add up', () => {
+		const result = claimantInfoSchema.safeParse({ iban: 'DE89 3704 0044 0532 0130 01' })
+		expect(result.success).toBe(false)
+	})
+
+	it('accepts a non-German IBAN that passes the checksum', () => {
+		const result = claimantInfoSchema.safeParse({ iban: 'AT61 1904 3002 3457 3201' })
+		expect(result.success).toBe(true)
+		if (result.success) expect(result.data.iban).toBe('AT611904300234573201')
+	})
+
+	it('treats an empty IBAN as cleared rather than invalid', () => {
+		const result = claimantInfoSchema.safeParse({ iban: '' })
+		expect(result.success).toBe(true)
+		if (result.success) expect(result.data.iban).toBeNull()
+	})
+
+	it('uppercases the license plate', () => {
+		const result = claimantInfoSchema.safeParse({ licensePlate: 'hb ab 1234' })
+		expect(result.success).toBe(true)
+		if (result.success) expect(result.data.licensePlate).toBe('HB AB 1234')
+	})
+
+	it('accepts the lawyer contact columns', () => {
+		const result = claimantInfoSchema.safeParse({
+			representedByLawyer: true,
+			lawyerFirm: 'Kanzlei Müller & Partner',
+			lawyerStreet: 'Kanzleiweg 3',
+			lawyerPostcode: '28195',
+			lawyerLocation: 'Bremen',
+			lawyerEmail: 'kanzlei@mueller.de',
+			lawyerPhone: '+49 421 999888',
+		})
+		expect(result.success).toBe(true)
+	})
+})
+
+describe('ownerInfoSchema', () => {
+	it('passes with the claimant-shaped owner fields', () => {
+		const result = ownerInfoSchema.safeParse({
+			company: 'Fuhrpark GmbH',
+			salutation: 'Mr',
+			firstName: 'Jens',
+			lastName: 'Halter',
+			street: 'Werksstraße 8',
+			postcode: '28199',
+			location: 'Bremen',
+			email: 'jens@fuhrpark.de',
+			phone: '+49 421 112233',
+		})
+		expect(result.success).toBe(true)
+	})
+
+	it('passes with empty object (all fields optional)', () => {
+		expect(ownerInfoSchema.safeParse({}).success).toBe(true)
+	})
+})
+
+describe('opponentInfoSchema IBAN', () => {
+	it('normalises and validates the opponent IBAN the same way', () => {
+		const result = opponentInfoSchema.safeParse({ iban: 'DE02 1203 0000 0000 2020 51' })
+		expect(result.success).toBe(true)
+		if (result.success) expect(result.data.iban).toBe('DE02120300000000202051')
+	})
+
+	it('rejects a mistyped opponent IBAN', () => {
+		expect(opponentInfoSchema.safeParse({ iban: 'DE02120300000000202052' }).success).toBe(false)
 	})
 })
 

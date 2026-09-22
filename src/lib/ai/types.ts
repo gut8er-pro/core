@@ -124,6 +124,9 @@ type VinDetectionResult = {
 type PlateDetectionResult = {
 	photoId: string
 	plate: string | null
+	// HU-Plakette on the rear plate: year in the centre, month at the
+	// 12-o'clock position. Null unless the sticker is legible.
+	nextMot: string | null
 }
 
 type OcrExtractionResult = {
@@ -140,6 +143,7 @@ type OcrExtractionResult = {
 	kbaNumber: string
 	previousOwners: string
 	lastRegistration: string
+	nextMot: string
 	vehicleType: string
 	color: string
 	seats: string

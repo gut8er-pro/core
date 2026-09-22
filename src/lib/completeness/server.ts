@@ -17,6 +17,7 @@ const COMPLETENESS_INCLUDE = {
 	photos: { select: { id: true }, orderBy: { order: 'asc' } },
 	accidentInfo: true,
 	claimantInfo: true,
+	ownerInfo: true,
 	opponentInfo: true,
 	visits: { orderBy: { id: 'asc' } },
 	expertOpinion: true,
@@ -87,6 +88,7 @@ async function getMissingInfo(reportId: string, userId: string): Promise<Missing
 		photos: { id: string }[]
 		accidentInfo: AccidentInfoResponse['accidentInfo']
 		claimantInfo: AccidentInfoResponse['claimantInfo']
+		ownerInfo: AccidentInfoResponse['ownerInfo']
 		opponentInfo: AccidentInfoResponse['opponentInfo']
 		visits: AccidentInfoResponse['visits']
 		expertOpinion: AccidentInfoResponse['expertOpinion']
@@ -123,6 +125,7 @@ async function getMissingInfo(reportId: string, userId: string): Promise<Missing
 		accidentInfo: accidentInfoValuesFromApi({
 			accidentInfo: json.accidentInfo,
 			claimantInfo: json.claimantInfo,
+			ownerInfo: json.ownerInfo,
 			opponentInfo: json.opponentInfo,
 			visits: json.visits,
 			expertOpinion: json.expertOpinion,

@@ -2,6 +2,7 @@
 
 import { getAnthropicClient } from './anthropic'
 import type { ImageData } from './fetch-image'
+import { normalizeBodyPaint, normalizeRepairOperation } from './option-values'
 
 type CalculationAutoFillResult = {
 	damageClass: string | null
@@ -20,11 +21,13 @@ Based on the visible damage, determine:
 1. "damageClass": German damage classification (I = minor cosmetic, II = moderate, III = significant, IV = severe structural). Use Roman numerals.
 2. "repairMethod": Recommended repair method (e.g., "Conventional body repair", "PDR (Paintless Dent Repair)", "Part replacement")
 3. "risks": Any repair risks or hidden damage concerns
-4. "wheelAlignment": "Required" or "Not required" based on damage location
-5. "bodyMeasurements": "Required" or "Not required" based on structural damage indicators
-6. "bodyPaint": Paint repair scope (e.g., "Spot repair", "Panel repaint", "Full section repaint")
+4. "wheelAlignment": EXACTLY one of "required" | "not_required" | "completed", based on damage location
+5. "bodyMeasurements": EXACTLY one of "required" | "not_required" | "completed", based on structural damage indicators
+6. "bodyPaint": paint repair scope, EXACTLY one of "not_required" | "partial" (spot or single-panel repaint) | "full" (full section or full vehicle repaint)
 7. "plasticRepair": true if plastic parts need repair, false otherwise
 8. "estimatedRepairDays": Estimated repair duration in working days (integer)
+
+The values for "wheelAlignment", "bodyMeasurements" and "bodyPaint" are stored identifiers, not prose — emit them exactly as spelled above, in lowercase with the underscore, in every language.
 
 Return ONLY valid JSON. Use null for fields you cannot determine.`
 
@@ -33,7 +36,7 @@ function buildCalculationPrompt(locale: 'en' | 'de'): string {
 	// translates it — so the language has to be decided here.
 	const localeSuffix =
 		locale === 'de'
-			? '\n\nDie Freitextfelder "repairMethod" und "risks" müssen auf Deutsch verfasst sein (z. B. "Ausbeulen ohne Lackieren (PDR)", "Konventionelle Karosserieinstandsetzung", "Teileersatz"). Alle übrigen Feldwerte bleiben exakt wie oben angegeben auf Englisch.'
+			? '\n\nDie Freitextfelder "repairMethod" und "risks" müssen auf Deutsch verfasst sein (z. B. "Ausbeulen ohne Lackieren (PDR)", "Konventionelle Karosserieinstandsetzung", "Teileersatz"). Die Kennungen für "wheelAlignment", "bodyMeasurements" und "bodyPaint" bleiben exakt wie oben angegeben auf Englisch.'
 			: '\n\nWrite "repairMethod" and "risks" strictly in English. Do not switch to German even though the vehicle context is German.'
 
 	return `${CALCULATION_PROMPT}${localeSuffix}`
@@ -94,10 +97,9 @@ function parseCalculationResponse(rawResponse: string): CalculationAutoFillResul
 			damageClass: typeof parsed.damageClass === 'string' ? parsed.damageClass : null,
 			repairMethod: typeof parsed.repairMethod === 'string' ? parsed.repairMethod : null,
 			risks: typeof parsed.risks === 'string' ? parsed.risks : null,
-			wheelAlignment: typeof parsed.wheelAlignment === 'string' ? parsed.wheelAlignment : null,
-			bodyMeasurements:
-				typeof parsed.bodyMeasurements === 'string' ? parsed.bodyMeasurements : null,
-			bodyPaint: typeof parsed.bodyPaint === 'string' ? parsed.bodyPaint : null,
+			wheelAlignment: normalizeRepairOperation(parsed.wheelAlignment),
+			bodyMeasurements: normalizeRepairOperation(parsed.bodyMeasurements),
+			bodyPaint: normalizeBodyPaint(parsed.bodyPaint),
 			plasticRepair: typeof parsed.plasticRepair === 'boolean' ? parsed.plasticRepair : null,
 			estimatedRepairDays:
 				typeof parsed.estimatedRepairDays === 'number'
@@ -111,4 +113,4 @@ function parseCalculationResponse(rawResponse: string): CalculationAutoFillResul
 }
 
 export type { CalculationAutoFillResult }
-export { extractCalculationData }
+export { extractCalculationData, parseCalculationResponse }

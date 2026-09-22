@@ -274,12 +274,25 @@ function normalizeVehicleType(raw: string): string | null {
 		compact: 'compact',
 		hatchback: 'compact',
 		'compact car': 'compact',
+		kleinwagen: 'compact',
+		schrägheck: 'compact',
+		schraegheck: 'compact',
+		schräghecklimousine: 'compact',
 		suv: 'suv',
 		'sport utility vehicle': 'suv',
 		crossover: 'suv',
+		geländewagen: 'suv',
+		gelaendewagen: 'suv',
 		wagon: 'wagon',
 		estate: 'wagon',
 		kombi: 'wagon',
+		kombilimousine: 'wagon',
+		caravan: 'wagon',
+		variant: 'wagon',
+		avant: 'wagon',
+		touring: 'wagon',
+		sportstourer: 'wagon',
+		sportswagon: 'wagon',
 		'station wagon': 'wagon',
 		coupe: 'coupe',
 		coupé: 'coupe',
@@ -295,7 +308,10 @@ function normalizeVehicleType(raw: string): string | null {
 	}
 	if (map[lower]) return map[lower]
 	// Substring fallback: catches "luxury sedan" → sedan, "compact suv" → suv.
-	for (const key of Object.keys(map)) {
+	// Longest key first, otherwise a compound German body style resolves to
+	// whichever short key happens to sit earlier in the map —
+	// "Kombilimousine" (a wagon, the demo car) matched "limousine" → sedan.
+	for (const key of Object.keys(map).sort((a, b) => b.length - a.length)) {
 		if (lower.includes(key)) return map[key] ?? null
 	}
 	return null

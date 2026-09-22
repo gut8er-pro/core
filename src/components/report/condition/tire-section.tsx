@@ -28,11 +28,71 @@ const DEFAULT_TIRE: TireData = {
 	tireType: '',
 }
 
+const AXLE_PARTNER: Record<string, string> = { VL: 'VR', VR: 'VL', HL: 'HR', HR: 'HL' }
+
+const PLACEHOLDER_SET_ID = 'pending-set-1'
+
+/** Stands in for set 1 until the auto-create PATCH answers with its real id. */
+const PLACEHOLDER_TIRE_SET: TireSetData & { id: string } = {
+	id: PLACEHOLDER_SET_ID,
+	setNumber: 1,
+	matchAndAlloy: false,
+	tires: TIRE_POSITIONS.map((pos) => ({ ...DEFAULT_TIRE, position: pos.key })),
+}
+
+/** The placeholder's id is ours, not the server's — never send it back. */
+function withoutPlaceholderId(tireSet: TireSetData & { id?: string }) {
+	if (tireSet.id !== PLACEHOLDER_SET_ID) return tireSet
+	const { id: _id, ...rest } = tireSet
+	return rest
+}
+
+const MAX_USABILITY = 5
+
 type TireSectionProps = {
 	tireSets: (TireSetData & { id: string })[]
 	onSaveTireSet: (tireSet: TireSetData & { id?: string }) => void
 	onDeleteTireSet: (tireSetId: string) => void
+	disabled?: boolean
 	className?: string
+}
+
+/** The per-tire properties both copy actions carry over; identity stays put. */
+function tireProperties(tire: TireData) {
+	return {
+		size: tire.size,
+		profileLevel: tire.profileLevel,
+		manufacturer: tire.manufacturer,
+		usability: tire.usability,
+		dotCode: tire.dotCode,
+		tireType: tire.tireType,
+	}
+}
+
+/**
+ * Copies one tyre's properties onto the given positions, keeping each target's
+ * own id and position so the PATCH updates rows instead of replacing them.
+ */
+function applyTireToPositions(
+	tireSet: TireSetData & { id: string },
+	source: TireData,
+	targets: string[],
+): TireSetData & { id: string } {
+	const properties = tireProperties(source)
+	const tires = [...tireSet.tires]
+
+	for (const target of targets) {
+		const index = tires.findIndex((tire) => tire.position === target)
+		const existing = tires[index]
+		const copied: TireData = { ...DEFAULT_TIRE, ...properties, position: target }
+		if (existing) {
+			tires[index] = { ...copied, id: existing.id, position: existing.position }
+		} else {
+			tires.push(copied)
+		}
+	}
+
+	return { ...tireSet, tires }
 }
 
 /** Extracted component — uses local state so typing doesn't trigger API on every keystroke */
@@ -41,11 +101,13 @@ function TirePositionFields({
 	activeSetIndex,
 	activePosition,
 	onSaveTireSet,
+	disabled,
 }: {
 	activeTireSet: TireSetData & { id: string }
 	activeSetIndex: number
 	activePosition: string
 	onSaveTireSet: (tireSet: TireSetData & { id?: string }) => void
+	disabled?: boolean
 }) {
 	const t = useTranslations('report.condition')
 	const missing = useMissingProps()
@@ -101,6 +163,7 @@ function TirePositionFields({
 					label={t('tires.tireSize')}
 					placeholder={t('tires.tireSizePlaceholder')}
 					value={tire.size}
+					disabled={disabled}
 					onChange={(e) => handleLocalChange('size', e.target.value)}
 					onBlur={handleBlur}
 					{...missing(tirePath('size'))}
@@ -109,6 +172,7 @@ function TirePositionFields({
 					label={t('tires.profileMm')}
 					placeholder="0mm"
 					value={tire.profileLevel}
+					disabled={disabled}
 					onChange={(e) => handleLocalChange('profileLevel', e.target.value)}
 					onBlur={handleBlur}
 					{...missing(tirePath('profileLevel'))}
@@ -117,6 +181,7 @@ function TirePositionFields({
 					label={t('tires.manufacturer')}
 					placeholder={t('tires.manufacturerPlaceholder')}
 					value={tire.manufacturer}
+					disabled={disabled}
 					onChange={(e) => handleLocalChange('manufacturer', e.target.value)}
 					onBlur={handleBlur}
 				/>
@@ -134,6 +199,7 @@ function TirePositionFields({
 							key={level}
 							type="button"
 							onClick={() => handleImmediateChange('usability', level)}
+							disabled={disabled}
 							className={cn(
 								'flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn transition-colors',
 								level <= tire.usability
@@ -148,7 +214,12 @@ function TirePositionFields({
 					))}
 					<button
 						type="button"
-						className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn border border-border-card bg-white text-black transition-colors hover:border-grey-100"
+						onClick={() =>
+							handleImmediateChange('usability', Math.min(tire.usability + 1, MAX_USABILITY))
+						}
+						disabled={disabled || tire.usability >= MAX_USABILITY}
+						aria-label={t('tires.usabilityIncrease')}
+						className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-btn border border-border-card bg-white text-black transition-colors hover:border-grey-100 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						<Plus className="h-4 w-4" />
 					</button>
@@ -164,8 +235,9 @@ function TirePositionFields({
 							key={tt.value}
 							type="button"
 							onClick={() => handleImmediateChange('tireType', tt.value)}
+							disabled={disabled}
 							className={cn(
-								'cursor-pointer rounded-full border px-4 py-1.5 text-body-sm font-medium transition-colors',
+								'cursor-pointer rounded-full border px-4 py-1.5 text-body-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
 								tire.tireType === tt.value
 									? 'border-primary bg-primary text-white'
 									: 'border-border bg-white text-grey-100 hover:border-grey-100',
@@ -180,7 +252,16 @@ function TirePositionFields({
 	)
 }
 
-function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
+function TireSection({
+	tireSets,
+	onSaveTireSet: onSaveTireSetRaw,
+	disabled,
+	className,
+}: TireSectionProps) {
+	const onSaveTireSet = useCallback(
+		(tireSet: TireSetData & { id?: string }) => onSaveTireSetRaw(withoutPlaceholderId(tireSet)),
+		[onSaveTireSetRaw],
+	)
 	const t = useTranslations('report.condition')
 	const badge = useSectionBadge(SECTION.tires)
 	const [activeSetIndex, setActiveSetIndex] = useState(0)
@@ -203,7 +284,8 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 	}, [tireSets.length, onSaveTireSet])
 
 	const handleAddTireSet = useCallback(() => {
-		const nextSetNumber = tireSets.length + 1
+		// The placeholder already stands for set 1, so adding always means set 2.
+		const nextSetNumber = Math.max(tireSets.length, 1) + 1
 		onSaveTireSet({
 			setNumber: nextSetNumber,
 			matchAndAlloy: false,
@@ -212,10 +294,34 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 				position: pos.key,
 			})),
 		})
-		setActiveSetIndex(tireSets.length)
+		setActiveSetIndex(nextSetNumber - 1)
 	}, [tireSets.length, onSaveTireSet])
 
-	const activeTireSet = tireSets[activeSetIndex] ?? null
+	// The first set's fields show from the first render, before the auto-create
+	// round-trip returns an id — the assessor sees the four position tabs and an
+	// empty form, not an empty card. Typing saves onto this set the moment it
+	// lands, because the save path matches on position, not id.
+	const displayedTireSets = tireSets.length > 0 ? tireSets : [PLACEHOLDER_TIRE_SET]
+	const activeTireSet = displayedTireSets[activeSetIndex] ?? displayedTireSets[0] ?? null
+
+	const copyActiveTireTo = useCallback(
+		(targets: string[]) => {
+			if (!activeTireSet) return
+			const source = activeTireSet.tires.find((tire) => tire.position === activePosition)
+			if (!source) return
+			onSaveTireSet(applyTireToPositions(activeTireSet, source, targets))
+		},
+		[activeTireSet, activePosition, onSaveTireSet],
+	)
+
+	const handleAlignAxes = useCallback(() => {
+		const partner = AXLE_PARTNER[activePosition]
+		if (partner) copyActiveTireTo([partner])
+	}, [activePosition, copyActiveTireTo])
+
+	const handleMatchTheSet = useCallback(() => {
+		copyActiveTireTo(TIRE_POSITIONS.map((pos) => pos.key).filter((key) => key !== activePosition))
+	}, [activePosition, copyActiveTireTo])
 
 	return (
 		<CollapsibleSection
@@ -228,7 +334,7 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 			<div className="flex flex-col gap-6">
 				{/* Set selector tabs — black active per Figma */}
 				<div className="flex rounded-full bg-[rgba(224,225,229,0.6)] p-1.5">
-					{tireSets.map((tireSet, index) => (
+					{displayedTireSets.map((tireSet, index) => (
 						<button
 							key={tireSet.id}
 							type="button"
@@ -243,13 +349,14 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 							{index === 0 ? t('tires.firstSet') : t('tires.secondSet')}
 						</button>
 					))}
-					{tireSets.length < 2 && (
+					{displayedTireSets.length < 2 && (
 						<button
 							type="button"
 							onClick={handleAddTireSet}
-							className="flex-1 cursor-pointer rounded-full py-3 text-center text-body-sm font-medium text-grey-100 transition-colors hover:bg-white/50"
+							disabled={disabled}
+							className="flex-1 cursor-pointer rounded-full py-3 text-center text-body-sm font-medium text-grey-100 transition-colors hover:bg-white/50 disabled:cursor-not-allowed disabled:opacity-50"
 						>
-							{tireSets.length === 0 ? t('tires.firstSet') : t('tires.secondSet')}
+							{t('tires.secondSet')}
 						</button>
 					)}
 				</div>
@@ -281,6 +388,7 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 							activeSetIndex={activeSetIndex}
 							activePosition={activePosition}
 							onSaveTireSet={onSaveTireSet}
+							disabled={disabled}
 						/>
 
 						{/* Match and Align — icon + label left, buttons right (no checkbox per Figma) */}
@@ -292,16 +400,17 @@ function TireSection({ tireSets, onSaveTireSet, className }: TireSectionProps) {
 							<div className="flex items-center gap-4">
 								<button
 									type="button"
-									className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-grey-50 px-4 text-body-md font-medium text-black transition-colors hover:border-grey-100"
+									onClick={handleAlignAxes}
+									disabled={disabled}
+									className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn border-2 border-grey-50 px-4 text-body-md font-medium text-black transition-colors hover:border-grey-100 disabled:cursor-not-allowed disabled:opacity-50"
 								>
 									{t('tires.alignAxes')}
 								</button>
 								<button
 									type="button"
-									onClick={() => {
-										onSaveTireSet({ ...activeTireSet, matchAndAlloy: !activeTireSet.matchAndAlloy })
-									}}
-									className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn bg-primary px-4 text-body-md font-medium text-white transition-colors hover:bg-primary/90"
+									onClick={handleMatchTheSet}
+									disabled={disabled}
+									className="flex h-[50px] cursor-pointer items-center justify-center rounded-btn bg-primary px-4 text-body-md font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
 								>
 									{t('tires.matchTheSet')}
 								</button>

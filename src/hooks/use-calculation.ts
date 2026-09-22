@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { awaitSectionSave, trackSectionSave } from '@/lib/api/section-saves'
 import type { AdditionalCostInput, CalculationInput } from '@/lib/validations/calculation'
 
 type CalculationResponse = {
@@ -31,6 +32,7 @@ type CalculationResponse = {
 }
 
 async function fetchCalculation(reportId: string): Promise<CalculationResponse> {
+	await awaitSectionSave(reportId, 'calculation')
 	const response = await fetch(`/api/reports/${reportId}/calculation`)
 	if (!response.ok) {
 		throw new Error('Failed to fetch calculation data')
@@ -38,7 +40,7 @@ async function fetchCalculation(reportId: string): Promise<CalculationResponse> 
 	return response.json()
 }
 
-async function patchCalculationSection(
+async function patchCalculationSectionRequest(
 	reportId: string,
 	data: Record<string, unknown>,
 ): Promise<unknown> {
@@ -51,6 +53,13 @@ async function patchCalculationSection(
 		throw new Error('Failed to save calculation data')
 	}
 	return response.json()
+}
+
+function patchCalculationSection(
+	reportId: string,
+	data: Record<string, unknown>,
+): Promise<unknown> {
+	return trackSectionSave(reportId, 'calculation', patchCalculationSectionRequest(reportId, data))
 }
 
 function useCalculation(reportId: string) {
@@ -109,6 +118,7 @@ function useDeleteAdditionalCost(reportId: string) {
 export type { CalculationResponse }
 export {
 	fetchCalculation,
+	patchCalculationSection,
 	useCalculation,
 	useDeleteAdditionalCost,
 	useSaveAdditionalCost,

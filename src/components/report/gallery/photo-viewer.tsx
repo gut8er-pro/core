@@ -1,6 +1,6 @@
 'use client'
 
-import { ImageOff, Palette, Trash2 } from 'lucide-react'
+import { ImageOff, Palette, RotateCw, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { Photo } from '@/hooks/use-photos'
 import { cn } from '@/lib/utils'
@@ -10,10 +10,21 @@ type PhotoViewerProps = {
 	onEdit?: () => void
 	onDelete?: () => void
 	onAnnotate?: () => void
+	onRotate?: () => void
+	isRotating?: boolean
+	locked?: boolean
 	className?: string
 }
 
-function PhotoViewer({ photo, onDelete, onAnnotate, className }: PhotoViewerProps) {
+function PhotoViewer({
+	photo,
+	onDelete,
+	onAnnotate,
+	onRotate,
+	isRotating = false,
+	locked = false,
+	className,
+}: PhotoViewerProps) {
 	const t = useTranslations('report')
 	if (!photo) {
 		return (
@@ -57,7 +68,18 @@ function PhotoViewer({ photo, onDelete, onAnnotate, className }: PhotoViewerProp
 						<Palette className="h-6 w-6 text-white" />
 					</button>
 				)}
-				{onDelete && (
+				{onRotate && !locked && (
+					<button
+						type="button"
+						onClick={onRotate}
+						disabled={isRotating}
+						className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-lg bg-black/90 backdrop-blur-sm transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-60"
+						aria-label={t('gallery.rotatePhoto')}
+					>
+						<RotateCw className={cn('h-6 w-6 text-white', isRotating && 'animate-spin')} />
+					</button>
+				)}
+				{onDelete && !locked && (
 					<button
 						type="button"
 						onClick={onDelete}

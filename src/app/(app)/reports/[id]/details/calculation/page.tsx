@@ -5,7 +5,7 @@ import { CheckCircle2, ChevronRight, Loader2, Sparkles } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import type { CorrectionMode } from '@/components/report/calculation/correction-section'
 import { CorrectionSection } from '@/components/report/calculation/correction-section'
 import type { DatFormData } from '@/components/report/calculation/dat-modal'
@@ -22,11 +22,19 @@ import { MissingFieldsProvider } from '@/components/report/missing-info'
 import { Button } from '@/components/ui/button'
 import { CompletionBadge } from '@/components/ui/completion-badge'
 import { useAutoSave } from '@/hooks/use-auto-save'
-import { useCalculation } from '@/hooks/use-calculation'
+import { fetchCalculation, useCalculation, useSaveCalculation } from '@/hooks/use-calculation'
+import { usePhotos } from '@/hooks/use-photos'
 import { useReport } from '@/hooks/use-reports'
+import { useUserSettings } from '@/hooks/use-settings'
 import { useSubscriptionNotice } from '@/hooks/use-subscription-notice'
 import { isSubscriptionRequired } from '@/lib/api/errors'
 import { toReportType } from '@/lib/completeness'
+
+function formatCorrection(value: string | undefined): string {
+	const amount = parseFloat(String(value ?? ''))
+	if (Number.isNaN(amount)) return '—'
+	return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount)
+}
 
 function CalculationPage() {
 	const t = useTranslations('report.calculation')
@@ -36,6 +44,8 @@ function CalculationPage() {
 	const reportId = params.id
 	const { data, isLoading } = useCalculation(reportId)
 	const { data: report } = useReport(reportId)
+	const { data: photos } = usePhotos(reportId)
+	const { data: settings } = useUserSettings()
 
 	const queryClient = useQueryClient()
 	const [isAutoFilling, setIsAutoFilling] = useState(false)
@@ -47,6 +57,11 @@ function CalculationPage() {
 	const isValuationReport = reportType === 'BE'
 	const isOldtimerReport = reportType === 'OT'
 	const isShortReport = reportType === 'KG'
+	const isLocked = report?.isLocked === true
+	const datConnected =
+		settings?.integrations.some(
+			(integration) => integration.provider === 'DAT' && integration.isActive,
+		) === true
 
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
@@ -62,6 +77,15 @@ function CalculationPage() {
 		getValues,
 		watch,
 	} = useForm<CalculationFormData>({ defaultValues: { ...CALCULATION_DEFAULTS } })
+
+	// The result cards read the form, not the server, so a typed correction
+	// shows up immediately instead of after the auto-save round-trip.
+	const correctionValues = useWatch({
+		control,
+		name: ['correctionResultWithout', 'correctionResultWith'],
+	})
+	const correctionWithout = formatCorrection(correctionValues[0])
+	const correctionWith = formatCorrection(correctionValues[1])
 
 	const initializedRef = useRef(false)
 	useEffect(() => {
@@ -86,6 +110,8 @@ function CalculationPage() {
 				'marketValue',
 				'baseVehicleValue',
 				'restorationValue',
+				'correctionResultWithout',
+				'correctionResultWith',
 			]
 			const intFields = ['repairTimeDays', 'replacementTimeDays']
 
@@ -118,24 +144,13 @@ function CalculationPage() {
 		return () => sub.unsubscribe()
 	}, [watch, handleFieldBlur, dirtyFields])
 
+	const saveCalculation = useSaveCalculation(reportId)
+
 	const handleDatSave = useCallback(
-		async (datData: DatFormData) => {
-			try {
-				await fetch(`/api/reports/${reportId}/calculation`, {
-					method: 'PATCH',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						calculation: {
-							datCalculationResult: datData,
-						},
-					}),
-				})
-				queryClient.invalidateQueries({ queryKey: ['report', reportId, 'calculation'] })
-			} catch {
-				// silently fail — DAT settings are non-critical
-			}
+		(datData: DatFormData) => {
+			saveCalculation.mutate({ datCalculationResult: datData })
 		},
-		[reportId, queryClient],
+		[saveCalculation],
 	)
 
 	const handleAutoFill = useCallback(async () => {
@@ -162,13 +177,29 @@ function CalculationPage() {
 			}
 			const resData = (await response.json()) as { fieldsUpdated: string[] }
 			setAutoFillMessage(t('autoFilledFields', { count: resData.fieldsUpdated.length }))
-			queryClient.invalidateQueries({ queryKey: ['report', reportId, 'calculation'] })
+			// The form initialises once per mount, so a refetch alone would leave
+			// the fields the AI just wrote invisible until a reload.
+			const fresh = await queryClient.fetchQuery({
+				queryKey: ['report', reportId, 'calculation'],
+				queryFn: () => fetchCalculation(reportId),
+			})
+			reset(calculationFromApi(fresh), { keepDirtyValues: true })
 		} catch {
 			setAutoFillMessage(t('autoFillFailed'))
 		} finally {
 			setIsAutoFilling(false)
 		}
-	}, [reportId, queryClient, t, subscriptionNotice])
+	}, [reportId, queryClient, t, subscriptionNotice, reset])
+
+	// The AI card runs the same extractor as the toolbar button; it only has to
+	// say so itself rather than leaving the assessor watching a highlighted card.
+	const handleCorrectionAi = useCallback(async () => {
+		if (!photos || photos.photos.length === 0) {
+			setAutoFillMessage(t('correction.aiNeedsPhotos'))
+			return
+		}
+		await handleAutoFill()
+	}, [photos, handleAutoFill, t])
 
 	if (isLoading) {
 		return (
@@ -204,7 +235,12 @@ function CalculationPage() {
 						)}
 					</div>
 				</div>
-				<Button variant="primary" size="lg" onClick={handleAutoFill} disabled={isAutoFilling}>
+				<Button
+					variant="primary"
+					size="lg"
+					onClick={handleAutoFill}
+					disabled={isAutoFilling || isLocked}
+				>
 					{isAutoFilling ? (
 						<>
 							<Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -259,7 +295,10 @@ function CalculationPage() {
 					reportType={toReportType(reportType)}
 					control={control}
 				>
-					<div className="flex flex-col gap-5">
+					<fieldset
+						disabled={isLocked}
+						className="flex flex-col gap-5 border-0 p-0 disabled:opacity-60"
+					>
 						{isOldtimerReport ? (
 							/* OT — Simple Vehicle Value with Market/Replacement/Restoration */
 							<OldtimerValuationSection
@@ -308,20 +347,26 @@ function CalculationPage() {
 						{/* Correction Calculation — HS and BE only (not KG, not OT) */}
 						{!isShortReport && !isOldtimerReport && (
 							<CorrectionSection
+								control={control}
+								onFieldBlur={handleFieldBlur}
 								mode={correctionMode}
 								onModeChange={setCorrectionMode}
 								onOpenDat={() => setDatModalOpen(true)}
+								onRunAi={handleCorrectionAi}
+								isAiRunning={isAutoFilling}
+								aiMessage={autoFillMessage}
+								datConnected={datConnected}
 								resultWithoutLabel={
 									isValuationReport ? t('valuationResultsManual') : t('resultsWithoutRepair')
 								}
 								resultWithLabel={
 									isValuationReport ? t('valuationAfterCorrection') : t('resultsWithRepair')
 								}
-								resultWithoutValue="—"
-								resultWithValue="—"
+								resultWithoutValue={correctionWithout}
+								resultWithValue={correctionWith}
 							/>
 						)}
-					</div>
+					</fieldset>
 				</MissingFieldsProvider>
 			</div>
 		</div>

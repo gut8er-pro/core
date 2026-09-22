@@ -24,8 +24,8 @@ const vehicleInfoSchema = z.object({
 	motorType: z.string().max(100).nullable().optional(),
 	axles: z.number().int().min(0).max(10).nullable().optional(),
 	drivenAxles: z.number().int().min(0).max(10).nullable().optional(),
-	doors: z.number().int().min(0).max(10).nullable().optional(),
-	seats: z.number().int().min(0).max(20).nullable().optional(),
+	doors: z.number().int().min(1).max(10).nullable().optional(),
+	seats: z.number().int().min(1).max(20).nullable().optional(),
 	previousOwners: z.number().int().min(0).nullable().optional(),
 })
 

@@ -13,6 +13,7 @@ function SignatureSection({
 	signatures,
 	onSignatureClick,
 	onSignatureRemove,
+	disabled,
 	className,
 }: SignatureSectionProps) {
 	const t = useTranslations('report')
@@ -69,12 +70,14 @@ function SignatureSection({
 							<button
 								key={type}
 								type="button"
+								disabled={disabled}
 								onClick={() => onSignatureClick(type)}
 								className={cn(
-									'flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 bg-white px-6 py-5 text-center transition-colors',
-									isActive
-										? 'border-primary bg-primary-light'
-										: 'border-border hover:border-primary/50',
+									'flex flex-col items-center gap-3 rounded-xl border-2 bg-white px-6 py-5 text-center transition-colors',
+									disabled
+										? 'cursor-not-allowed opacity-50'
+										: 'cursor-pointer hover:border-primary/50',
+									isActive ? 'border-primary bg-primary-light' : 'border-border',
 								)}
 							>
 								<Icon className={cn('h-8 w-8', isActive ? 'text-primary' : 'text-primary/60')} />
@@ -97,13 +100,14 @@ function SignatureSection({
 									variant="outline"
 									size="sm"
 									onClick={() => onSignatureRemove?.(sig.id)}
-									disabled={!onSignatureRemove}
+									disabled={disabled || !onSignatureRemove}
 								>
 									{t('accidentInfo.signatures.remove')}
 								</Button>
 								<Button
 									variant="primary"
 									size="sm"
+									disabled={disabled}
 									onClick={() =>
 										onSignatureClick(sig.type as 'LAWYER' | 'DATA_PERMISSION' | 'CANCELLATION')
 									}

@@ -3,24 +3,16 @@ import { type NextRequest, NextResponse } from 'next/server'
 import sharp from 'sharp'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { prisma } from '@/lib/prisma'
-import { downloadFromUrl, getStoragePath, uploadBufferToStorage } from '@/lib/storage/photos-server'
+import {
+	downloadFromUrl,
+	getStoragePath,
+	renderVariants,
+	uploadBufferToStorage,
+} from '@/lib/storage/photos-server'
 
 type RouteContext = {
 	params: Promise<{ id: string }>
 }
-
-type VariantConfig = {
-	name: 'thumbnail' | 'preview' | 'ai'
-	width: number
-	height: number
-	quality: number
-}
-
-const VARIANT_CONFIGS: VariantConfig[] = [
-	{ name: 'thumbnail', width: 200, height: 150, quality: 80 },
-	{ name: 'preview', width: 800, height: 600, quality: 85 },
-	{ name: 'ai', width: 1568, height: 1176, quality: 90 },
-]
 
 async function POST(request: NextRequest, context: RouteContext) {
 	const { user, error: authError } = await getAuthenticatedUser()
@@ -64,38 +56,35 @@ async function POST(request: NextRequest, context: RouteContext) {
 		return NextResponse.json({ error: 'Photo not found' }, { status: 404 })
 	}
 
-	let originalBuffer: Buffer
+	let downloadedBuffer: Buffer
 	try {
-		originalBuffer = await downloadFromUrl(photoUrl)
+		downloadedBuffer = await downloadFromUrl(photoUrl)
 	} catch (err) {
 		const message = err instanceof Error ? err.message : 'Failed to download original image'
 		return NextResponse.json({ error: message }, { status: 502 })
 	}
 
-	// SHA-256 of the original bytes — used as the persistent AI cache key.
-	// Identical images uploaded to different reports share AI analysis results.
-	const contentHash = createHash('sha256').update(originalBuffer).digest('hex')
-
-	const urls: Record<string, string> = {}
+	let urls: Awaited<ReturnType<typeof renderVariants>>
+	let contentHash: string
+	let uprightUrl = photoUrl
 
 	try {
-		const results = await Promise.all(
-			VARIANT_CONFIGS.map(async (config) => {
-				const resizedBuffer = await sharp(originalBuffer)
-					.resize(config.width, config.height, { fit: 'inside', withoutEnlargement: true })
-					.jpeg({ quality: config.quality })
-					.toBuffer()
+		// Phone cameras store the sensor orientation in EXIF rather than in the
+		// pixels. Baking it in here is what keeps sideways photos out of the PDF.
+		const upright = await sharp(downloadedBuffer).rotate().jpeg({ quality: 90 }).toBuffer()
 
-				const storagePath = getStoragePath(reportId, photoId, config.name)
-				const publicUrl = await uploadBufferToStorage(resizedBuffer, storagePath)
+		// SHA-256 of the upright bytes — the persistent AI cache key. Identical
+		// images uploaded to different reports share AI analysis results.
+		contentHash = createHash('sha256').update(upright).digest('hex')
 
-				return { name: config.name, url: publicUrl }
-			}),
-		)
-
-		for (const result of results) {
-			urls[result.name] = result.url
+		if (!upright.equals(downloadedBuffer)) {
+			uprightUrl = await uploadBufferToStorage(
+				upright,
+				getStoragePath(reportId, photoId, 'original'),
+			)
 		}
+
+		urls = await renderVariants(reportId, photoId, upright)
 	} catch (err) {
 		const message = err instanceof Error ? err.message : 'Image processing failed'
 		return NextResponse.json({ error: message }, { status: 500 })
@@ -104,6 +93,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	await prisma.photo.update({
 		where: { id: photoId },
 		data: {
+			url: uprightUrl,
 			thumbnailUrl: urls.thumbnail,
 			previewUrl: urls.preview,
 			aiUrl: urls.ai,
@@ -113,6 +103,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 
 	return NextResponse.json({
 		photoId,
+		url: uprightUrl,
 		thumbnailUrl: urls.thumbnail,
 		previewUrl: urls.preview,
 		aiUrl: urls.ai,

@@ -37,10 +37,12 @@ function AccidentInfoPage() {
 	const saveSignature = useSaveSignature(reportId)
 	const deleteSignature = useDeleteSignature(reportId)
 
+	const isLocked = !!report?.isLocked
+
 	const { saveField, state: autoSaveState } = useAutoSave({
 		reportId,
 		section: 'accident-info',
-		disabled: report?.isLocked,
+		disabled: isLocked,
 	})
 
 	const [signatureModalType, setSignatureModalType] = useState<SignatureType | null>(null)
@@ -52,6 +54,7 @@ function AccidentInfoPage() {
 		formState: { errors, dirtyFields },
 		reset,
 		getValues,
+		setValue,
 		watch,
 	} = useForm<AccidentInfoFormData>({ defaultValues: { ...ACCIDENT_INFO_DEFAULTS } })
 
@@ -80,6 +83,9 @@ function AccidentInfoPage() {
 				const apiField = field.replace('claimant', '')
 				const key = apiField.charAt(0).toLowerCase() + apiField.slice(1)
 				saveField(`claimantInfo.${key}`, value)
+			} else if (field.startsWith('owner')) {
+				const key = field.charAt(5).toLowerCase() + field.slice(6)
+				saveField(`ownerInfo.${key}`, value)
 			} else if (field.startsWith('opponent')) {
 				const apiField = field.replace('opponent', '')
 				const key = apiField.charAt(0).toLowerCase() + apiField.slice(1)
@@ -202,6 +208,7 @@ function AccidentInfoPage() {
 							control={control}
 							errors={errors}
 							onFieldBlur={handleFieldBlur}
+							disabled={isLocked}
 						/>
 					)}
 
@@ -211,6 +218,7 @@ function AccidentInfoPage() {
 						errors={errors}
 						onFieldBlur={handleFieldBlur}
 						reportType={report?.reportType}
+						disabled={isLocked}
 					/>
 
 					{report?.reportType !== 'BE' && report?.reportType !== 'OT' && (
@@ -219,6 +227,7 @@ function AccidentInfoPage() {
 							control={control}
 							errors={errors}
 							onFieldBlur={handleFieldBlur}
+							disabled={isLocked}
 						/>
 					)}
 
@@ -228,6 +237,9 @@ function AccidentInfoPage() {
 						errors={errors}
 						onFieldBlur={handleFieldBlur}
 						reportType={report?.reportType}
+						disabled={isLocked}
+						getValues={getValues}
+						setValue={setValue}
 					/>
 
 					<ExpertOpinionSection
@@ -235,12 +247,14 @@ function AccidentInfoPage() {
 						control={control}
 						errors={errors}
 						onFieldBlur={handleFieldBlur}
+						disabled={isLocked}
 					/>
 
 					<SignatureSection
 						signatures={data?.signatures ?? []}
 						onSignatureClick={setSignatureModalType}
 						onSignatureRemove={(sigId) => deleteSignature.mutate(sigId)}
+						disabled={isLocked}
 					/>
 				</div>
 			</MissingFieldsProvider>

@@ -1,6 +1,6 @@
 'use client'
 
-import { Bus, Car, Fuel, Leaf, Plus, Truck, Zap } from 'lucide-react'
+import { Bus, Car, Fuel, Leaf, Truck, Zap } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useController } from 'react-hook-form'
 import { useMissingProps, useSectionBadge } from '@/components/report/missing-info'
@@ -9,45 +9,24 @@ import { IconSelector } from '@/components/ui/icon-selector'
 import { Label } from '@/components/ui/label'
 import { NumberChipSelector } from '@/components/ui/number-chip-selector'
 import { SECTION } from '@/lib/completeness'
+import { CustomValuePill } from './custom-value-pill'
 import type { VehicleSectionProps } from './types'
 
-// Options defined inside component to access translations
+const numberOptions = (from: number, to: number) =>
+	Array.from({ length: to - from + 1 }, (_, index) => {
+		const value = String(from + index)
+		return { value, label: value }
+	})
 
-const AXLE_OPTIONS = [
-	{ value: '1', label: '1' },
-	{ value: '2', label: '2' },
-	{ value: '3', label: '3' },
-	{ value: '4', label: '4' },
-	{ value: '5', label: '5' },
-]
-
-const DRIVEN_AXLE_OPTIONS = [
-	{ value: '1', label: '1' },
-	{ value: '2', label: '2' },
-	{ value: '3', label: '3' },
-	{ value: '4', label: '4' },
-	{ value: '5', label: '5' },
-]
-
-const DOOR_OPTIONS = [
-	{ value: '0', label: '0' },
-	{ value: '1', label: '1' },
-	{ value: '2', label: '2' },
-	{ value: '3', label: '3' },
-	{ value: '4', label: '4' },
-]
-
-const SEAT_OPTIONS = [
-	{ value: '0', label: '0' },
-	{ value: '1', label: '1' },
-	{ value: '2', label: '2' },
-	{ value: '3', label: '3' },
-	{ value: '4', label: '4' },
-]
+const AXLE_OPTIONS = numberOptions(1, 5)
+const DRIVEN_AXLE_OPTIONS = numberOptions(1, 5)
+const DOOR_OPTIONS = numberOptions(1, 4)
+const SEAT_OPTIONS = numberOptions(1, 5)
 
 function DetailsSection({
 	control,
 	onFieldBlur,
+	disabled,
 	className,
 }: VehicleSectionProps & { className?: string }) {
 	const t = useTranslations('report')
@@ -74,11 +53,13 @@ function DetailsSection({
 
 	const PREVIOUS_OWNER_OPTIONS = [
 		{ value: '0', label: t('vehicle.details.new') },
-		{ value: '1', label: '1' },
-		{ value: '2', label: '2' },
-		{ value: '3', label: '3' },
-		{ value: '4', label: '4' },
+		...numberOptions(1, 4),
 	]
+
+	const numberPlaceholder = t('vehicle.details.customNumberPlaceholder')
+	const labelPlaceholder = t('vehicle.details.customLabelPlaceholder')
+	const confirmLabel = t('vehicle.details.confirmCustomValue')
+
 	const vehicleType = useController({ control, name: 'vehicleType' })
 	const motorType = useController({ control, name: 'motorType' })
 	const axles = useController({ control, name: 'axles' })
@@ -87,15 +68,29 @@ function DetailsSection({
 	const seats = useController({ control, name: 'seats' })
 	const previousOwners = useController({ control, name: 'previousOwners' })
 
+	const chipValue = (value: number | null | undefined) => (value == null ? '' : String(value))
+
+	const isCustom = (value: number | null | undefined, options: { value: string }[]) =>
+		value != null && !options.some((option) => option.value === String(value))
+
+	const isCustomLabel = (value: string, options: { value: string }[]) =>
+		!!value && !options.some((option) => option.value === value)
+
 	return (
 		<CollapsibleSection title={t('vehicle.details.heading')} info className={className} {...badge}>
-			<div className="flex flex-col gap-6">
-				{/* Vehicle Type row */}
+			<fieldset disabled={disabled} className="flex flex-col gap-6">
 				<div className="flex items-center justify-between">
 					<Label className="min-w-35">{t('vehicle.details.vehicleType')}</Label>
 					<div className="flex items-center gap-2">
 						<IconSelector
-							options={VEHICLE_TYPE_OPTIONS}
+							options={
+								isCustomLabel(vehicleType.field.value, VEHICLE_TYPE_OPTIONS)
+									? [
+											...VEHICLE_TYPE_OPTIONS,
+											{ value: vehicleType.field.value, label: vehicleType.field.value, icon: Car },
+										]
+									: VEHICLE_TYPE_OPTIONS
+							}
 							selected={vehicleType.field.value}
 							onChange={(value) => {
 								vehicleType.field.onChange(value)
@@ -103,22 +98,34 @@ function DetailsSection({
 							}}
 							{...missing('vehicleType')}
 						/>
-						<button
-							type="button"
-							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label={t('vehicle.details.addVehicleType')}
-						>
-							<Plus className="h-4 w-4" />
-						</button>
+						<CustomValuePill
+							mode="label"
+							addLabel={t('vehicle.details.addVehicleType')}
+							confirmLabel={confirmLabel}
+							placeholder={labelPlaceholder}
+							value={vehicleType.field.value}
+							selected={false}
+							disabled={disabled}
+							onCommit={(value) => {
+								vehicleType.field.onChange(value)
+								onFieldBlur?.('vehicleType')
+							}}
+						/>
 					</div>
 				</div>
 
-				{/* Motor Type row */}
 				<div className="flex items-center justify-between">
 					<Label className="min-w-35">{t('vehicle.details.motorType')}</Label>
 					<div className="flex items-center gap-2">
 						<IconSelector
-							options={MOTOR_TYPE_OPTIONS}
+							options={
+								isCustomLabel(motorType.field.value, MOTOR_TYPE_OPTIONS)
+									? [
+											...MOTOR_TYPE_OPTIONS,
+											{ value: motorType.field.value, label: motorType.field.value, icon: Fuel },
+										]
+									: MOTOR_TYPE_OPTIONS
+							}
 							selected={motorType.field.value}
 							onChange={(value) => {
 								motorType.field.onChange(value)
@@ -126,126 +133,158 @@ function DetailsSection({
 							}}
 							{...missing('motorType')}
 						/>
-						<button
-							type="button"
-							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label={t('vehicle.details.addMotorType')}
-						>
-							<Plus className="h-4 w-4" />
-						</button>
+						<CustomValuePill
+							mode="label"
+							addLabel={t('vehicle.details.addMotorType')}
+							confirmLabel={confirmLabel}
+							placeholder={labelPlaceholder}
+							value={motorType.field.value}
+							selected={false}
+							disabled={disabled}
+							onCommit={(value) => {
+								motorType.field.onChange(value)
+								onFieldBlur?.('motorType')
+							}}
+						/>
 					</div>
 				</div>
 
-				{/* Axles row */}
 				<div className="flex items-center justify-between">
 					<Label className="min-w-35">{t('vehicle.details.axles')}</Label>
 					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={AXLE_OPTIONS}
-							selected={String(axles.field.value)}
+							selected={chipValue(axles.field.value)}
 							onChange={(value) => {
 								axles.field.onChange(Number(value))
 								onFieldBlur?.('axles')
 							}}
 						/>
-						<button
-							type="button"
-							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label={t('vehicle.details.addAxleOption')}
-						>
-							<Plus className="h-4 w-4" />
-						</button>
+						<CustomValuePill
+							mode="numeric"
+							addLabel={t('vehicle.details.addAxleOption')}
+							confirmLabel={confirmLabel}
+							placeholder={numberPlaceholder}
+							value={chipValue(axles.field.value)}
+							selected={isCustom(axles.field.value, AXLE_OPTIONS)}
+							disabled={disabled}
+							onCommit={(value) => {
+								axles.field.onChange(Number(value))
+								onFieldBlur?.('axles')
+							}}
+						/>
 					</div>
 				</div>
 
-				{/* Driven by this row */}
 				<div className="flex items-center justify-between">
 					<Label className="min-w-35">{t('vehicle.details.drivenBy')}</Label>
 					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={DRIVEN_AXLE_OPTIONS}
-							selected={String(drivenAxles.field.value)}
+							selected={chipValue(drivenAxles.field.value)}
 							onChange={(value) => {
 								drivenAxles.field.onChange(Number(value))
 								onFieldBlur?.('drivenAxles')
 							}}
 						/>
-						<button
-							type="button"
-							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label={t('vehicle.details.addDrivenOption')}
-						>
-							<Plus className="h-4 w-4" />
-						</button>
+						<CustomValuePill
+							mode="numeric"
+							addLabel={t('vehicle.details.addDrivenOption')}
+							confirmLabel={confirmLabel}
+							placeholder={numberPlaceholder}
+							value={chipValue(drivenAxles.field.value)}
+							selected={isCustom(drivenAxles.field.value, DRIVEN_AXLE_OPTIONS)}
+							disabled={disabled}
+							onCommit={(value) => {
+								drivenAxles.field.onChange(Number(value))
+								onFieldBlur?.('drivenAxles')
+							}}
+						/>
 					</div>
 				</div>
 
-				{/* Doors row */}
 				<div className="flex items-center justify-between">
 					<Label className="min-w-35">{t('vehicle.details.doors')}</Label>
 					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={DOOR_OPTIONS}
-							selected={String(doors.field.value)}
+							selected={chipValue(doors.field.value)}
 							onChange={(value) => {
 								doors.field.onChange(Number(value))
 								onFieldBlur?.('doors')
 							}}
 						/>
-						<button
-							type="button"
-							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label={t('vehicle.details.addDoorOption')}
-						>
-							<Plus className="h-4 w-4" />
-						</button>
+						<CustomValuePill
+							mode="numeric"
+							addLabel={t('vehicle.details.addDoorOption')}
+							confirmLabel={confirmLabel}
+							placeholder={numberPlaceholder}
+							value={chipValue(doors.field.value)}
+							selected={isCustom(doors.field.value, DOOR_OPTIONS)}
+							disabled={disabled}
+							onCommit={(value) => {
+								doors.field.onChange(Number(value))
+								onFieldBlur?.('doors')
+							}}
+						/>
 					</div>
 				</div>
 
-				{/* Seats row */}
 				<div className="flex items-center justify-between">
 					<Label className="min-w-35">{t('vehicle.details.seats')}</Label>
 					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={SEAT_OPTIONS}
-							selected={String(seats.field.value)}
+							selected={chipValue(seats.field.value)}
 							onChange={(value) => {
 								seats.field.onChange(Number(value))
 								onFieldBlur?.('seats')
 							}}
 						/>
-						<button
-							type="button"
-							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label={t('vehicle.details.addSeatOption')}
-						>
-							<Plus className="h-4 w-4" />
-						</button>
+						<CustomValuePill
+							mode="numeric"
+							addLabel={t('vehicle.details.addSeatOption')}
+							confirmLabel={confirmLabel}
+							placeholder={numberPlaceholder}
+							value={chipValue(seats.field.value)}
+							selected={isCustom(seats.field.value, SEAT_OPTIONS)}
+							disabled={disabled}
+							onCommit={(value) => {
+								seats.field.onChange(Number(value))
+								onFieldBlur?.('seats')
+							}}
+						/>
 					</div>
 				</div>
 
-				{/* Previous Owners row */}
 				<div className="flex items-center justify-between">
 					<Label className="min-w-35">{t('vehicle.details.previousOwners')}</Label>
 					<div className="flex items-center gap-2">
 						<NumberChipSelector
 							options={PREVIOUS_OWNER_OPTIONS}
-							selected={String(previousOwners.field.value)}
+							selected={chipValue(previousOwners.field.value)}
 							onChange={(value) => {
+								const next = previousOwners.field.value === Number(value) ? null : Number(value)
+								previousOwners.field.onChange(next)
+								onFieldBlur?.('previousOwners')
+							}}
+						/>
+						<CustomValuePill
+							mode="numeric"
+							addLabel={t('vehicle.details.addPreviousOwnerOption')}
+							confirmLabel={confirmLabel}
+							placeholder={numberPlaceholder}
+							value={chipValue(previousOwners.field.value)}
+							selected={isCustom(previousOwners.field.value, PREVIOUS_OWNER_OPTIONS)}
+							disabled={disabled}
+							onCommit={(value) => {
 								previousOwners.field.onChange(Number(value))
 								onFieldBlur?.('previousOwners')
 							}}
 						/>
-						<button
-							type="button"
-							className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-grey-100 transition-colors hover:bg-grey-25"
-							aria-label={t('vehicle.details.addPreviousOwnerOption')}
-						>
-							<Plus className="h-4 w-4" />
-						</button>
 					</div>
 				</div>
-			</div>
+			</fieldset>
 		</CollapsibleSection>
 	)
 }

@@ -10,6 +10,7 @@ type YesNoFieldProps = {
 	yesLabel: string
 	noLabel: string
 	className?: string
+	disabled?: boolean
 	/** Required but nothing chosen yet. */
 	isMissing?: boolean
 	/** Screen-reader text for the missing state. */
@@ -29,6 +30,7 @@ function YesNoField({
 	yesLabel,
 	noLabel,
 	className,
+	disabled,
 	isMissing,
 	missingLabel,
 }: YesNoFieldProps) {
@@ -58,9 +60,10 @@ function YesNoField({
 							type="button"
 							role="radio"
 							aria-checked={isSelected}
+							disabled={disabled}
 							onClick={() => onChange(option.answer)}
 							className={cn(
-								'inline-flex cursor-pointer items-center rounded-full border px-5 py-2 text-body-sm font-medium transition-colors',
+								'inline-flex cursor-pointer items-center rounded-full border px-5 py-2 text-body-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
 								isSelected
 									? 'border-primary bg-primary-light text-primary'
 									: 'border-border bg-white text-grey-100 hover:bg-grey-25',

@@ -120,7 +120,7 @@ function InstructionSidebar({
 						return (
 							<div
 								key={category.labelKey}
-								className="flex h-22 items-center gap-2.5 rounded-btn border-2 border-border-card p-3.5"
+								className="flex min-h-22 items-center gap-2.5 rounded-btn border-2 border-border-card p-3.5"
 							>
 								{/* Thumbnail — 60px rounded */}
 								<div className="relative h-15 w-15 shrink-0 overflow-hidden rounded-btn">
@@ -137,15 +137,17 @@ function InstructionSidebar({
 									)}
 								</div>
 								<div className="flex min-w-0 flex-1 flex-col gap-1">
-									<span className="text-body-sm font-medium tracking-[0.16px] text-black">
+									{/* German compounds like "Fahrzeug-Diagonalansichten" wrap at the
+									    hyphen; without this the second half escaped the card. */}
+									<span className="text-body-sm font-medium tracking-[0.16px] text-black break-words hyphens-none">
 										{t(category.labelKey)}
 									</span>
-									<span className="text-caption tracking-[0.14px] text-black leading-[1.2]">
+									<span className="text-caption tracking-[0.14px] text-black leading-[1.2] break-words">
 										{t(category.descriptionKey)}
 									</span>
 									{count > 0 && (
 										<span className="text-caption font-semibold text-primary">
-											{count} photo{count !== 1 ? 's' : ''}
+											{t('gallery.photoCount', { count })}
 										</span>
 									)}
 								</div>

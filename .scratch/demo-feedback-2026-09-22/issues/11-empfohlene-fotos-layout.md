@@ -19,3 +19,26 @@ other cards look fine.
   card (remove fixed heights / add `break-words` and let the row grow), and check the panel at
   both locales since EN titles are shorter and hid this.
 - Screenshot-verify all category cards after the fix, DE and EN.
+
+## Resolution (2026-09-22)
+
+Status: ready-for-human
+
+**Cause, as suspected in the ticket.** The category card in
+`src/components/report/gallery/instruction-sidebar.tsx` was a fixed-height `h-22` row. The German
+title "Fahrzeug-Diagonalansichten" wraps at the hyphen onto a second line, but the row reserved no
+space for it, so the text overflowed its card and rendered as a detached "Fahrzeug-" above the
+boundary. The EN titles are one short line each, which is why only German showed it.
+
+**Fix.** `h-22` → `min-h-22` so the row grows with its content, and `break-words` on both the title
+and the description. `hyphens-none` on the title keeps the browser from adding a second break point
+on top of the compound's own hyphen.
+
+Also replaced the hardcoded English `{count} photo{s}` string on the same card with a proper
+`gallery.photoCount` ICU plural in both locales — it violated the no-hardcoded-strings rule and
+would have rendered English inside the German panel.
+
+**Screenshot-verified in both locales** (all three cards, per the ticket):
+`testing/screenshots/suggested-de.png` and `testing/screenshots/suggested-en.png`. The German title
+now wraps onto two lines inside its card and the card grew to fit; Damage Overview and Document
+Shot are unchanged, and the English panel is unaffected.

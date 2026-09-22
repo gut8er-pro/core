@@ -21,3 +21,38 @@ The Condition tab renders a row labelled "Multi-hit Groups" with four coloured c
    upgrading the visuals after.
 
 Group 1 has no sticker in reality (grey = none/ineligible); render it as "keine Plakette".
+
+## Resolution
+
+Status: done
+
+All three parts done.
+
+1. **Selectable and persisted.** The four circles are buttons bound to
+   `VehicleCondition.emissionGroup` (the column and its migration already existed). Wired
+   through `ConditionFormData`, `CONDITION_DEFAULTS`, `conditionFromApi` (with a
+   `toEmissionGroup` narrowing helper so an unexpected stored string becomes `null` rather
+   than a bogus selection), `conditionSchema` (`z.enum(EMISSION_GROUPS).nullable().optional()`),
+   and the PATCH mapping plus the GET projection in `/api/reports/[id]/condition`.
+   Clicking the active group clears it to `null`, the same "unknown stays unknown" rule as
+   previous owners in ticket 16.
+2. **Label fixed.** `condition.multiHitGroups` is now "Schadstoffplakette" (DE) /
+   "Emission sticker" (EN). The key name was left alone so nothing else had to move.
+3. **Official look.** New `emission-sticker.tsx` draws each group as an inline SVG styled after
+   the real Plakette: round badge, large group number, white strip across the bottom. Group 1
+   is grey and labelled "keine Plakette" / "no sticker", since no sticker exists for it in
+   reality. Selection shows as a ring on the active badge; `aria-pressed` carries the state and
+   each badge has an `aria-label`.
+
+Completeness: **verified no change needed.** `conditionTab()` in `src/lib/completeness/manifest.ts`
+names its condition rules explicitly and `emissionGroup` is not among them, so it is never
+required. `ConditionValues` derives from `ConditionFormData`, so the new key flows through the
+type without touching the manifest.
+
+Not done — out of my file ownership: the PDF has no Schadstoffplakette line yet
+(`src/lib/pdf/report-template.tsx` + `translations.ts` are owned elsewhere). The value is
+stored and served by the API, so adding the row is a small follow-up. Ticket note: the report
+should omit the line entirely when the group is `null`.
+
+E2E: `07-condition.spec.ts` covers select → reload → still selected, then click-again →
+reload → deselected.

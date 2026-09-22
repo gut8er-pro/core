@@ -48,6 +48,9 @@ model Business {
   taxId       String
   vatId       String?
   logoUrl     String?
+  website     String?
+  email       String?
+  phone       String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -97,6 +100,7 @@ model Report {
   photos        Photo[]
   accidentInfo  AccidentInfo?
   claimantInfo  ClaimantInfo?
+  ownerInfo     OwnerInfo?
   opponentInfo  OpponentInfo?
   visits        Visit[]
   expertOpinion ExpertOpinion?
@@ -207,6 +211,28 @@ model ClaimantInfo {
   isVehicleOwner               Boolean @default(true)
   representedByLawyer          Boolean @default(false)
   involvedLawyer               String?
+  lawyerFirm                   String?
+  lawyerStreet                 String?
+  lawyerPostcode               String?
+  lawyerLocation               String?
+  lawyerEmail                  String?
+  lawyerPhone                  String?
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+model OwnerInfo {
+  id         String  @id @default(uuid())
+  reportId   String  @unique
+  company    String?
+  salutation String?
+  firstName  String?
+  lastName   String?
+  street     String?
+  postcode   String?
+  location   String?
+  email      String?
+  phone      String?
 
   report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
 }
@@ -313,6 +339,7 @@ model VehicleInfo {
 model VehicleCondition {
   id                        String    @id @default(uuid())
   reportId                  String    @unique
+  emissionGroup             String?
   // Paint & condition
   paintType                 String?
   hard                      String?
@@ -338,6 +365,7 @@ model VehicleCondition {
   manualSetup               Boolean   @default(false)
   // Prior damage
   previousDamageReported    String?
+  damageDescription         String?
   existingDamageNotReported String?
   subsequentDamage          String?
 
@@ -402,41 +430,43 @@ model Tire {
 // ─── Calculation ────────────────────────────────────────────
 
 model Calculation {
-  id                   String    @id @default(uuid())
-  reportId             String    @unique
+  id                      String    @id @default(uuid())
+  reportId                String    @unique
   // Vehicle value
-  replacementValue     Float?
-  taxRate              String?
-  residualValue        Float?
-  diminutionInValue    Float?
+  replacementValue        Float?
+  taxRate                 String?
+  residualValue           Float?
+  diminutionInValue       Float?
+  correctionResultWithout Float?
+  correctionResultWith    Float?
   // Repair
-  wheelAlignment       String?
-  bodyMeasurements     String?
-  bodyPaint            String?
-  plasticRepair        Boolean   @default(false)
-  repairMethod         String?
-  risks                String?
-  damageClass          String?
+  wheelAlignment          String?
+  bodyMeasurements        String?
+  bodyPaint               String?
+  plasticRepair           Boolean   @default(false)
+  repairMethod            String?
+  risks                   String?
+  damageClass             String?
   // Loss of use
-  dropoutGroup         String?
-  costPerDay           Float?
-  rentalCarClass       String?
-  repairTimeDays       Int?
-  replacementTimeDays  Int?
+  dropoutGroup            String?
+  costPerDay              Float?
+  rentalCarClass          String?
+  repairTimeDays          Int?
+  replacementTimeDays     Int?
   // DAT result
-  datCalculationResult Json?
+  datCalculationResult    Json?
   // BE valuation
-  generalCondition     String?
-  taxation             String?
-  dataSource           String?
-  valuationMax         Float?
-  valuationAvg         Float?
-  valuationMin         Float?
-  valuationDate        DateTime?
+  generalCondition        String?
+  taxation                String?
+  dataSource              String?
+  valuationMax            Float?
+  valuationAvg            Float?
+  valuationMin            Float?
+  valuationDate           DateTime?
   // OT valuation
-  marketValue          Float?
-  baseVehicleValue     Float?
-  restorationValue     Float?
+  marketValue             Float?
+  baseVehicleValue        Float?
+  restorationValue        Float?
 
   report          Report           @relation(fields: [reportId], references: [id], onDelete: Cascade)
   additionalCosts AdditionalCost[]
@@ -497,6 +527,7 @@ model Invoice {
   recipientId   String?
   date          DateTime?
   payoutDelay   Int?
+  paidAt        DateTime?
   eInvoice      Boolean   @default(true)
   feeSchedule   String    @default("bvsk")
   totalNet      Float     @default(0)

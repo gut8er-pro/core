@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ConditionResponse } from '@/components/report/condition/types'
+import { awaitSectionSave, trackSectionSave } from '@/lib/api/section-saves'
 import type {
 	ConditionInput,
 	DamageMarkerInput,
@@ -8,6 +9,7 @@ import type {
 } from '@/lib/validations/condition'
 
 async function fetchCondition(reportId: string): Promise<ConditionResponse> {
+	await awaitSectionSave(reportId, 'condition')
 	const response = await fetch(`/api/reports/${reportId}/condition`)
 	if (!response.ok) {
 		throw new Error('Failed to fetch condition data')
@@ -15,7 +17,7 @@ async function fetchCondition(reportId: string): Promise<ConditionResponse> {
 	return response.json()
 }
 
-async function patchConditionSection(
+async function patchConditionSectionRequest(
 	reportId: string,
 	data: Record<string, unknown>,
 ): Promise<unknown> {
@@ -28,6 +30,10 @@ async function patchConditionSection(
 		throw new Error('Failed to save condition data')
 	}
 	return response.json()
+}
+
+function patchConditionSection(reportId: string, data: Record<string, unknown>): Promise<unknown> {
+	return trackSectionSave(reportId, 'condition', patchConditionSectionRequest(reportId, data))
 }
 
 function useCondition(reportId: string) {
@@ -144,6 +150,7 @@ function useDeleteTireSet(reportId: string) {
 
 export {
 	fetchCondition,
+	patchConditionSection,
 	useCondition,
 	useDeleteDamageMarker,
 	useDeletePaintMarker,

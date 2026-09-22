@@ -1,23 +1,37 @@
 'use client'
 
-import { ArrowBigRight, Check, Circle, Crop, Paintbrush, Square, Trash2 } from 'lucide-react'
+import {
+	ArrowBigRight,
+	Check,
+	Circle,
+	Crop,
+	MousePointer2,
+	Paintbrush,
+	Square,
+	Trash2,
+} from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Fragment, type ReactNode, useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
-type AnnotationTool = 'pen' | 'crop' | 'circle' | 'rectangle' | 'arrow'
+type AnnotationTool = 'select' | 'pen' | 'crop' | 'circle' | 'rectangle' | 'arrow'
+
+type SaveState = 'idle' | 'saving' | 'saved' | 'error' | 'locked'
 
 type AnnotationToolbarProps = {
 	activeColor: string
 	activeTool: AnnotationTool
 	onColorChange: (color: string) => void
 	onToolChange: (tool: AnnotationTool) => void
-	onClear: () => void
+	onClearAll: () => void
 	onSave?: () => void
+	saveState?: SaveState
+	disabled?: boolean
 	className?: string
 }
 
 const TOOLS: { id: AnnotationTool; labelKey: string; icon: ReactNode }[] = [
+	{ id: 'select', labelKey: 'select', icon: <MousePointer2 className="h-5 w-5" /> },
 	{ id: 'pen', labelKey: 'draw', icon: <Paintbrush className="h-5 w-5" /> },
 	{ id: 'crop', labelKey: 'crop', icon: <Crop className="h-5 w-5" /> },
 	{ id: 'circle', labelKey: 'circle', icon: <Circle className="h-5 w-5" /> },
@@ -51,13 +65,16 @@ function AnnotationToolbar({
 	activeTool,
 	onColorChange,
 	onToolChange,
-	onClear,
+	onClearAll,
 	onSave,
+	saveState = 'idle',
+	disabled = false,
 	className,
 }: AnnotationToolbarProps) {
 	const t = useTranslations('report.annotation')
 	const tc = useTranslations('common')
 	const [showColorPicker, setShowColorPicker] = useState(false)
+	const [confirmingClear, setConfirmingClear] = useState(false)
 	const pickerRef = useRef<HTMLDivElement>(null)
 
 	// Close color picker on outside click
@@ -76,9 +93,38 @@ function AnnotationToolbar({
 
 	return (
 		<div className={cn('relative inline-flex', className)} ref={pickerRef}>
+			{confirmingClear && (
+				<div
+					role="alertdialog"
+					aria-label={t('clearAllConfirm')}
+					className="absolute bottom-full left-1/2 z-30 mb-3 w-64 -translate-x-1/2 rounded-xl border border-border bg-white p-3 shadow-lg"
+				>
+					<p className="text-body-sm text-black">{t('clearAllConfirm')}</p>
+					<div className="mt-3 flex gap-2">
+						<button
+							type="button"
+							onClick={() => setConfirmingClear(false)}
+							className="flex-1 cursor-pointer rounded-btn border border-border px-3 py-2 text-body-sm text-grey-100 hover:bg-grey-25"
+						>
+							{tc('cancel')}
+						</button>
+						<button
+							type="button"
+							onClick={() => {
+								setConfirmingClear(false)
+								onClearAll()
+							}}
+							className="flex-1 cursor-pointer rounded-btn bg-danger px-3 py-2 text-body-sm text-white hover:bg-danger/90"
+						>
+							{t('confirmClearAll')}
+						</button>
+					</div>
+				</div>
+			)}
+
 			{/* Color picker popup */}
 			{showColorPicker && (
-				<div className="absolute bottom-full left-0 mb-3 rounded-xl bg-white p-3 shadow-lg border border-border">
+				<div className="absolute bottom-full left-0 z-30 mb-3 rounded-xl bg-white p-3 shadow-lg border border-border">
 					<div className="grid grid-cols-5 gap-2">
 						{COLOR_PALETTE.map((color) => (
 							<button
@@ -114,6 +160,7 @@ function AnnotationToolbar({
 							type="button"
 							aria-label={t(tool.labelKey as 'draw')}
 							aria-pressed={activeTool === tool.id}
+							disabled={disabled}
 							onClick={() => {
 								onToolChange(tool.id)
 								if (tool.id === 'pen') {
@@ -123,7 +170,8 @@ function AnnotationToolbar({
 								}
 							}}
 							className={cn(
-								'flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl transition-colors',
+								'flex h-10 w-10 items-center justify-center rounded-xl transition-colors',
+								disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer',
 								activeTool === tool.id
 									? 'bg-primary/10 text-primary'
 									: 'text-grey-100 hover:bg-grey-25 hover:text-black',
@@ -137,12 +185,19 @@ function AnnotationToolbar({
 				{/* Divider before delete */}
 				<div className="mx-0.5 h-6 w-px bg-border" />
 
-				{/* Delete/clear */}
+				{/* Clear all */}
 				<button
 					type="button"
-					aria-label={t('deleteAnnotations')}
-					onClick={onClear}
-					className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-grey-100 transition-colors hover:bg-grey-25 hover:text-black"
+					aria-label={t('clearAll')}
+					aria-expanded={confirmingClear}
+					disabled={disabled}
+					onClick={() => setConfirmingClear(true)}
+					className={cn(
+						'flex h-10 w-10 items-center justify-center rounded-xl text-grey-100 transition-colors',
+						disabled
+							? 'cursor-not-allowed opacity-40'
+							: 'cursor-pointer hover:bg-grey-25 hover:text-black',
+					)}
 				>
 					<Trash2 className="h-5 w-5" />
 				</button>
@@ -154,18 +209,39 @@ function AnnotationToolbar({
 						<button
 							type="button"
 							aria-label={t('saveAnnotations')}
+							disabled={disabled || saveState === 'saving'}
 							onClick={onSave}
-							className="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-primary px-4 text-white transition-colors hover:bg-primary/90"
+							className={cn(
+								'flex h-10 items-center gap-1.5 rounded-xl px-4 text-white transition-colors',
+								disabled || saveState === 'saving'
+									? 'cursor-not-allowed bg-primary/60'
+									: 'cursor-pointer bg-primary hover:bg-primary/90',
+							)}
 						>
 							<Check className="h-4 w-4" />
-							<span className="text-body-sm font-medium">{tc('save')}</span>
+							<span className="text-body-sm font-medium">
+								{saveState === 'saving' ? t('saving') : tc('save')}
+							</span>
 						</button>
 					</>
 				)}
 			</div>
+
+			{saveState !== 'idle' && saveState !== 'saving' && (
+				<output
+					className={cn(
+						'absolute bottom-full left-1/2 z-30 mb-3 -translate-x-1/2 whitespace-nowrap rounded-btn px-3 py-2 text-body-sm shadow-lg',
+						saveState === 'saved' ? 'bg-primary text-white' : 'bg-danger text-white',
+					)}
+				>
+					{saveState === 'saved' && t('saveSucceeded')}
+					{saveState === 'error' && t('saveFailed')}
+					{saveState === 'locked' && t('saveLocked')}
+				</output>
+			)}
 		</div>
 	)
 }
 
-export type { AnnotationTool, AnnotationToolbarProps }
+export type { AnnotationTool, AnnotationToolbarProps, SaveState }
 export { AnnotationToolbar, COLOR_PALETTE, TOOLS }

@@ -25,3 +25,23 @@ Picking the visit type should prefill the visit's address fields instead of leav
   block on the claimant or an agreement that the single address means "company address whenever
   claimantCompany is filled". v1 ships with the single address feeding both presets; flag the
   ambiguity back to the client.
+
+## Resolution (2026-09-22)
+
+Status: done as v1. The open question above still needs Ivan.
+
+`src/components/report/accident-info/visit-section.tsx` — picking Claimant Residence or Claimant
+Office seeds that visit row's street / postcode / location from the claimant via
+`getValues`/`setValue` (both passed down from the details page, which already holds them from
+`useForm`). Three rules, all unit-tested in `visit-section.test.tsx`:
+
+- only fields that are still empty are written, so re-picking a type never clobbers an address
+  the assessor typed by hand;
+- "Other" seeds nothing;
+- a claimant with no address yet seeds nothing.
+
+A seeded row fires the existing blur-save path once, so the prefill persists like any manual
+edit, and every seeded field stays fully editable.
+
+v1 ships with the single claimant address feeding BOTH presets, exactly as the open question
+above anticipated — Residence and Office produce identical values until Ivan decides.

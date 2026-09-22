@@ -34,6 +34,14 @@ const updatePhotoSchema = z.object({
 		.optional(),
 })
 
+const rotatePhotoSchema = z.object({
+	degrees: z.union([z.literal(90), z.literal(180), z.literal(270)]),
+})
+
+const reorderPhotosSchema = z.object({
+	photoIds: z.array(z.string().uuid()).min(1).max(MAX_PHOTOS_PER_REPORT),
+})
+
 const saveAnnotationSchema = z.object({
 	type: z.string().min(1),
 	color: z.string().min(1),
@@ -53,13 +61,24 @@ type UploadPhotoInput = z.infer<typeof uploadPhotoSchema>
 type CreatePhotoInput = z.infer<typeof createPhotoSchema>
 type UpdatePhotoInput = z.infer<typeof updatePhotoSchema>
 type SaveAnnotationInput = z.infer<typeof saveAnnotationSchema>
+type RotatePhotoInput = z.infer<typeof rotatePhotoSchema>
+type ReorderPhotosInput = z.infer<typeof reorderPhotosSchema>
 
-export type { CreatePhotoInput, SaveAnnotationInput, UpdatePhotoInput, UploadPhotoInput }
+export type {
+	CreatePhotoInput,
+	ReorderPhotosInput,
+	RotatePhotoInput,
+	SaveAnnotationInput,
+	UpdatePhotoInput,
+	UploadPhotoInput,
+}
 export {
 	ALLOWED_TYPES,
 	createPhotoSchema,
 	MAX_FILE_SIZE,
 	MAX_PHOTOS_PER_REPORT,
+	reorderPhotosSchema,
+	rotatePhotoSchema,
 	saveAnnotationSchema,
 	updatePhotoSchema,
 	uploadPhotoSchema,

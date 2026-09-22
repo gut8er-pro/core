@@ -44,6 +44,9 @@ function VisitSection({
 	errors,
 	onFieldBlur,
 	reportType,
+	disabled,
+	getValues,
+	setValue,
 	className,
 }: SectionProps & { className?: string }) {
 	const t = useTranslations('report')
@@ -83,6 +86,35 @@ function VisitSection({
 		name: 'visits',
 	})
 
+	/**
+	 * Picking a visit type seeds the address from the claimant, who is where the
+	 * assessor goes. Only empty fields are written, so a type re-pick never
+	 * overwrites an address that was typed by hand.
+	 *
+	 * v1 has one claimant address serving both presets — the claimant block
+	 * stores a single one, so Residence and Office cannot yet differ.
+	 */
+	const seedAddressFromClaimant = (index: number, type: string) => {
+		if (!getValues || !setValue) return
+		if (type !== 'claimant_residence' && type !== 'claimant_office') return
+
+		const source = {
+			street: getValues('claimantStreet'),
+			postcode: getValues('claimantPostcode'),
+			location: getValues('claimantLocation'),
+		} as const
+
+		let seeded = false
+		for (const key of ['street', 'postcode', 'location'] as const) {
+			const current = getValues(`visits.${index}.${key}`)
+			if (current?.trim() || !source[key]?.trim()) continue
+			setValue(`visits.${index}.${key}`, source[key], { shouldDirty: true })
+			seeded = true
+		}
+
+		if (seeded) onFieldBlur?.(`visits.${index}.street`)
+	}
+
 	return (
 		<CollapsibleSection title={t('accidentInfo.visits.title')} className={className} {...badge}>
 			<div className="flex flex-col gap-6">
@@ -96,6 +128,7 @@ function VisitSection({
 								type="button"
 								variant="ghost"
 								size="icon"
+								disabled={disabled}
 								onClick={() => remove(index)}
 								aria-label={t('accidentInfo.visits.removeVisit')}
 							>
@@ -113,8 +146,10 @@ function VisitSection({
 										<RadioGroup
 											className="flex flex-wrap gap-2"
 											value={typeField.value || ''}
+											disabled={disabled}
 											onValueChange={(value) => {
 												typeField.onChange(value)
+												seedAddressFromClaimant(index, value)
 												onFieldBlur?.(`visits.${index}.type`)
 											}}
 										>
@@ -144,16 +179,19 @@ function VisitSection({
 								<TextField
 									label={t('accidentInfo.street')}
 									placeholder={t('accidentInfo.streetPlaceholder')}
+									disabled={disabled}
 									{...fieldProps(`visits.${index}.street`)}
 								/>
 								<TextField
 									label={t('accidentInfo.postcode')}
 									placeholder={t('accidentInfo.postcodePlaceholder')}
+									disabled={disabled}
 									{...fieldProps(`visits.${index}.postcode`)}
 								/>
 								<TextField
 									label={t('accidentInfo.location')}
 									placeholder="Berlin"
+									disabled={disabled}
 									{...fieldProps(`visits.${index}.location`)}
 								/>
 							</div>
@@ -163,11 +201,13 @@ function VisitSection({
 								<TextField
 									label={t('accidentInfo.visits.data')}
 									type="date"
+									disabled={disabled}
 									{...fieldProps(`visits.${index}.date`)}
 								/>
 								<TextField
 									label={t('accidentInfo.visits.expert')}
 									placeholder={t('accidentInfo.visits.expertName')}
+									disabled={disabled}
 									{...fieldProps(`visits.${index}.expert`)}
 								/>
 								<Controller
@@ -180,6 +220,7 @@ function VisitSection({
 											placeholder={t('accidentInfo.visits.chooseCondition')}
 											value={conditionField.value ?? ''}
 											error={errors.visits?.[index]?.vehicleCondition?.message}
+											disabled={disabled}
 											onValueChange={(value) => {
 												conditionField.onChange(value)
 												onFieldBlur?.(`visits.${index}.vehicleCondition`)
@@ -206,6 +247,7 @@ function VisitSection({
 										<div className="flex items-center gap-2">
 											<Checkbox
 												id={`present-${key}`}
+												disabled={disabled}
 												checked={!!field.value}
 												onCheckedChange={(checked) => {
 													field.onChange(checked === true)
@@ -226,6 +268,7 @@ function VisitSection({
 				<Button
 					type="button"
 					variant="outline"
+					disabled={disabled}
 					onClick={() => append(DEFAULT_VISIT)}
 					icon={<Plus className="h-4 w-4" />}
 				>

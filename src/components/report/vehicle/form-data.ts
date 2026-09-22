@@ -24,7 +24,7 @@ const VEHICLE_DEFAULTS: VehicleFormData = {
 	drivenAxles: 1,
 	doors: 4,
 	seats: 5,
-	previousOwners: 1,
+	previousOwners: null,
 }
 
 const numberToInput = (value: number | null | undefined): string =>
@@ -58,7 +58,7 @@ function vehicleFromApi(data: VehicleInfoResponse | undefined | null): VehicleFo
 		drivenAxles: data.drivenAxles ?? VEHICLE_DEFAULTS.drivenAxles,
 		doors: data.doors ?? VEHICLE_DEFAULTS.doors,
 		seats: data.seats ?? VEHICLE_DEFAULTS.seats,
-		previousOwners: data.previousOwners ?? VEHICLE_DEFAULTS.previousOwners,
+		previousOwners: data.previousOwners ?? null,
 	}
 }
 

@@ -59,6 +59,9 @@ async function GET(_request: NextRequest, context: RouteContext) {
 					valuationAvg: calculation.valuationAvg,
 					valuationMin: calculation.valuationMin,
 					valuationDate: calculation.valuationDate,
+					// Correction calculation
+					correctionResultWithout: calculation.correctionResultWithout,
+					correctionResultWith: calculation.correctionResultWith,
 					// OT valuation
 					marketValue: calculation.marketValue,
 					baseVehicleValue: calculation.baseVehicleValue,

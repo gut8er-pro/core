@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { EMISSION_GROUPS, MILEAGE_UNITS } from '@/components/report/condition/types'
 import { conditionSchema, damageMarkerSchema, getPaintColor, paintMarkerSchema } from './condition'
 
 describe('conditionSchema', () => {
@@ -56,6 +57,34 @@ describe('paintMarkerSchema', () => {
 			position: 'Hood center',
 		})
 		expect(result.success).toBe(true)
+	})
+})
+
+describe('unit', () => {
+	it('accepts every unit the picker offers', () => {
+		for (const unit of MILEAGE_UNITS) {
+			expect(conditionSchema.safeParse({ unit }).success).toBe(true)
+		}
+	})
+
+	it('rejects a unit the picker never offered', () => {
+		expect(conditionSchema.safeParse({ unit: 'MKR' }).success).toBe(false)
+	})
+})
+
+describe('emissionGroup', () => {
+	it('accepts every Schadstoffgruppe the stickers offer', () => {
+		for (const group of EMISSION_GROUPS) {
+			expect(conditionSchema.safeParse({ emissionGroup: group }).success).toBe(true)
+		}
+	})
+
+	it('accepts null — deselecting leaves the group unknown', () => {
+		expect(conditionSchema.safeParse({ emissionGroup: null }).success).toBe(true)
+	})
+
+	it('rejects a group outside the four', () => {
+		expect(conditionSchema.safeParse({ emissionGroup: '5' }).success).toBe(false)
 	})
 })
 

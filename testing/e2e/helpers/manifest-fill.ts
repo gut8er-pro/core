@@ -92,8 +92,10 @@ async function fillAccidentInfo(page: Page, reportId: string, type: ReportType) 
 	const hasLawyerSignature = signatures.some(
 		(signature) => (signature as Json).type === 'LAWYER' && (signature as Json).imageUrl,
 	)
-	const representedByLawyer =
-		(existing.claimantInfo as Json | null)?.representedByLawyer === true
+	const claimant = existing.claimantInfo as Json | null
+	const representedByLawyer = claimant?.representedByLawyer === true
+	// Unchecking "is the vehicle owner" makes the Fahrzeughalter block required.
+	const needsOwner = claimant?.isVehicleOwner === false
 
 	const body: Json = {
 		claimantInfo: {
@@ -103,6 +105,17 @@ async function fillAccidentInfo(page: Page, reportId: string, type: ReportType) 
 			location: 'Bremen',
 			email: 'hans.mueller@example.test',
 			licensePlate: 'HB AB 1234',
+			// A lawyer on the claim is a party the report is addressed to, so the
+			// manifest asks for the firm and a way to reach it.
+			...(representedByLawyer && {
+				involvedLawyer: 'RA Schulz',
+				lawyerFirm: 'Kanzlei Müller & Partner',
+				lawyerStreet: 'Kanzleiweg 3',
+				lawyerPostcode: '28195',
+				lawyerLocation: 'Bremen',
+				lawyerEmail: 'kanzlei@mueller.test',
+				lawyerPhone: '+49 421 999888',
+			}),
 		},
 		expertOpinion: {
 			expertName: 'Dr. Hans Turnes',
@@ -110,6 +123,17 @@ async function fillAccidentInfo(page: Page, reportId: string, type: ReportType) 
 			caseDate: '2026-03-16',
 			issuedDate: '2026-04-01',
 		},
+	}
+
+	if (needsOwner) {
+		body.ownerInfo = {
+			company: 'Fuhrpark GmbH',
+			lastName: 'Halter',
+			street: 'Werksstraße 8',
+			postcode: '28199',
+			location: 'Bremen',
+			email: 'halter@fuhrpark.test',
+		}
 	}
 
 	if (describesAccident) {

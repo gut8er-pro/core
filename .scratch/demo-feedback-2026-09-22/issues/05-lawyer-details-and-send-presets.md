@@ -36,3 +36,26 @@ renders the addressee from it).
 
 Open question for Ivan (non-blocking): should the lawyer also appear in the PDF's parties block
 or only as a recipient?
+
+## Resolution — Part A only (2026-09-22)
+
+Status: Part A done, Part B (export composer) still open for wave 2.
+
+Six columns on `ClaimantInfo` (`lawyerFirm`, `lawyerStreet`, `lawyerPostcode`, `lawyerLocation`,
+`lawyerEmail`, `lawyerPhone`) are now carried end to end:
+
+- `src/components/report/accident-info/lawyer-fields.tsx` (new) — the block that appears inside
+  the claimant section while `claimantRepresentedByLawyer` is checked. The old single
+  `involvedLawyer` free-text field moved in here beside the firm.
+- `src/lib/validations/accident-info.ts` — the six fields on `claimantInfoSchema`; `lawyerEmail`
+  reuses `emailOrEmpty`.
+- `form-data.ts` / `types.ts` — `claimantLawyer*` form fields, defaults and `*FromApi` mapping.
+  The page's existing `claimant` prefix-strip routes them to `claimantInfo.lawyer*` unchanged.
+- `use-accident-info.ts` — the six fields on the GET response type.
+- `src/lib/completeness/manifest.ts` — the existing `when claimantRepresentedByLawyer === true`
+  rule now also requires `claimantLawyerFirm` and `claimantLawyerEmail` (non-OT only, same as
+  the LAWYER signature rule it sits beside).
+- `testing/e2e/helpers/manifest-fill.ts` — fills the lawyer contact fields whenever the report
+  has the checkbox on, so `completeManifest` still reaches 0 missing.
+
+For wave 2 (PDF): the six new API fields arrive under `claimantInfo.lawyer*`.

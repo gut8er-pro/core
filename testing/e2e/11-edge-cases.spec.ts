@@ -22,15 +22,23 @@ test.describe('Edge Cases', () => {
 	test('numeric field rejects letters', async ({ page }) => {
 		await page.goto(`/reports/${reportId}/details/condition`)
 		await page.waitForTimeout(1000)
-		// type=number inputs reject fill('abc') entirely — use type() to simulate keyboard
+		// Mileage is a masked text input now: the mask drops anything non-digit.
 		const mileage = page.locator('input[name="mileageRead"]')
 		await mileage.click()
 		await mileage.pressSequentially('abc')
 		await mileage.blur()
 		await page.waitForTimeout(1000)
-		const value = await mileage.inputValue()
-		// type=number should reject letters — value should be empty
-		expect(value === '' || value === '0').toBeTruthy()
+		expect(await mileage.inputValue()).toBe('')
+	})
+
+	test('mileage groups thousands as it is typed', async ({ page }) => {
+		await page.goto(`/reports/${reportId}/details/condition`)
+		await page.waitForTimeout(1000)
+		const mileage = page.locator('input[name="mileageRead"]')
+		await mileage.click()
+		await mileage.pressSequentially('125450')
+		await page.waitForTimeout(300)
+		expect(await mileage.inputValue()).toBe('125.450')
 	})
 
 	test('tab completion badges are dynamic', async ({ page }) => {

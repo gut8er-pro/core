@@ -267,10 +267,20 @@ export async function fillConditionCore(
 		subsequentDamage: string
 	},
 ) {
-	// 7 dropdowns (paintType / hard / paintCondition / generalCondition / bodyCondition / interiorCondition / drivingAbility)
-	for (let i = 0; i < 7; i++) {
+	// The seven condition combos, by name — they are editable inputs now, so a
+	// positional [role=combobox] index would also catch the unit select.
+	const comboNames = [
+		'paintType',
+		'hard',
+		'paintCondition',
+		'generalCondition',
+		'bodyCondition',
+		'interiorCondition',
+		'drivingAbility',
+	]
+	for (const name of comboNames) {
 		try {
-			await page.locator('[role="combobox"]').nth(i).click()
+			await page.locator(`input[name="${name}"]`).click()
 			await page.waitForTimeout(250)
 			await page.locator('[role="option"]').first().click()
 			await page.waitForTimeout(200)

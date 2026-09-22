@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { EMISSION_GROUPS, MILEAGE_UNITS } from '@/components/report/condition/types'
 
 const conditionSchema = z.object({
 	paintType: z.string().max(100).nullable().optional(),
@@ -12,7 +13,7 @@ const conditionSchema = z.object({
 	parkingSensors: z.boolean().optional(),
 	mileageRead: z.number().int().nonnegative().nullable().optional(),
 	estimateMileage: z.number().int().nonnegative().nullable().optional(),
-	unit: z.enum(['km', 'miles']).optional(),
+	unit: z.enum(MILEAGE_UNITS).optional(),
 	nextMot: z.string().max(30).nullable().optional(),
 	fullServiceHistory: z.boolean().optional(),
 	testDrivePerformed: z.boolean().optional(),
@@ -21,9 +22,11 @@ const conditionSchema = z.object({
 	notes: z.string().max(2000).nullable().optional(),
 	manualSetup: z.boolean().optional(),
 	previousDamageReported: z.string().max(2000).nullable().optional(),
+	damageDescription: z.string().max(2000).nullable().optional(),
 	existingDamageNotReported: z.string().max(2000).nullable().optional(),
 	subsequentDamage: z.string().max(2000).nullable().optional(),
 	vehicleColor: z.string().max(50).nullable().optional(),
+	emissionGroup: z.enum(EMISSION_GROUPS).nullable().optional(),
 	produceGroups: z.array(z.string().max(50)).optional(),
 })
 

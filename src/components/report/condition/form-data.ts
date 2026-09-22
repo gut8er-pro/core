@@ -2,9 +2,15 @@ import type { ConditionValues } from '@/lib/completeness'
 import type {
 	ConditionFormData,
 	ConditionResponse,
+	EmissionGroup,
 	OldtimerDetailsApi,
 	OldtimerDetailsData,
 } from './types'
+import { EMISSION_GROUPS } from './types'
+
+function toEmissionGroup(value: string | null | undefined): EmissionGroup | null {
+	return EMISSION_GROUPS.find((group) => group === value) ?? null
+}
 
 const CONDITION_DEFAULTS: ConditionFormData = {
 	paintType: '',
@@ -26,11 +32,13 @@ const CONDITION_DEFAULTS: ConditionFormData = {
 	// Unanswered, not "no" — a report must not record a finding nobody made.
 	errorMemoryRead: null,
 	airbagsDeployed: null,
+	emissionGroup: null,
 	notes: '',
 	manualSetup: false,
 	previousDamageReported: '',
 	existingDamageNotReported: '',
 	subsequentDamage: '',
+	damageDescription: '',
 }
 
 /** The saved condition as the Condition form holds it. */
@@ -58,9 +66,11 @@ function conditionFromApi(data: ConditionResponse | undefined | null): Condition
 		testDrivePerformed: condition.testDrivePerformed ?? CONDITION_DEFAULTS.testDrivePerformed,
 		errorMemoryRead: condition.errorMemoryRead,
 		airbagsDeployed: condition.airbagsDeployed,
+		emissionGroup: toEmissionGroup(condition.emissionGroup),
 		notes: condition.notes ?? '',
 		manualSetup: condition.manualSetup ?? CONDITION_DEFAULTS.manualSetup,
 		previousDamageReported: condition.previousDamageReported ?? '',
+		damageDescription: condition.damageDescription ?? '',
 		existingDamageNotReported: condition.existingDamageNotReported ?? '',
 		subsequentDamage: condition.subsequentDamage ?? '',
 	}

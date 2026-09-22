@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { awaitSectionSave, trackSectionSave } from '@/lib/api/section-saves'
 import type { VehicleInfoInput } from '@/lib/validations/vehicle'
 
 type VehicleInfoResponse = {
@@ -30,6 +31,7 @@ type VehicleInfoResponse = {
 } | null
 
 async function fetchVehicleInfo(reportId: string): Promise<VehicleInfoResponse> {
+	await awaitSectionSave(reportId, 'vehicle')
 	const response = await fetch(`/api/reports/${reportId}/vehicle`)
 	if (!response.ok) {
 		throw new Error('Failed to fetch vehicle info')
@@ -37,7 +39,7 @@ async function fetchVehicleInfo(reportId: string): Promise<VehicleInfoResponse> 
 	return response.json()
 }
 
-async function patchVehicleInfo(
+async function patchVehicleInfoRequest(
 	reportId: string,
 	data: VehicleInfoInput,
 ): Promise<VehicleInfoResponse> {
@@ -50,6 +52,10 @@ async function patchVehicleInfo(
 		throw new Error('Failed to save vehicle info')
 	}
 	return response.json()
+}
+
+function patchVehicleInfo(reportId: string, data: VehicleInfoInput): Promise<VehicleInfoResponse> {
+	return trackSectionSave(reportId, 'vehicle', patchVehicleInfoRequest(reportId, data))
 }
 
 function useVehicleInfo(reportId: string) {
@@ -75,4 +81,4 @@ function useSaveVehicleInfo(reportId: string) {
 }
 
 export type { VehicleInfoResponse }
-export { fetchVehicleInfo, useSaveVehicleInfo, useVehicleInfo }
+export { fetchVehicleInfo, patchVehicleInfo, useSaveVehicleInfo, useVehicleInfo }

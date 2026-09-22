@@ -64,9 +64,11 @@ async function GET(_request: NextRequest, context: RouteContext) {
 					testDrivePerformed: condition.testDrivePerformed,
 					errorMemoryRead: condition.errorMemoryRead,
 					airbagsDeployed: condition.airbagsDeployed,
+					emissionGroup: condition.emissionGroup,
 					notes: condition.notes,
 					manualSetup: condition.manualSetup,
 					previousDamageReported: condition.previousDamageReported,
+					damageDescription: condition.damageDescription,
 					existingDamageNotReported: condition.existingDamageNotReported,
 					subsequentDamage: condition.subsequentDamage,
 				}
@@ -171,11 +173,15 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 			updateData.errorMemoryRead = data.condition.errorMemoryRead
 		if (data.condition.airbagsDeployed !== undefined)
 			updateData.airbagsDeployed = data.condition.airbagsDeployed
+		if (data.condition.emissionGroup !== undefined)
+			updateData.emissionGroup = data.condition.emissionGroup
 		if (data.condition.notes !== undefined) updateData.notes = data.condition.notes
 		if (data.condition.manualSetup !== undefined)
 			updateData.manualSetup = data.condition.manualSetup
 		if (data.condition.previousDamageReported !== undefined)
 			updateData.previousDamageReported = data.condition.previousDamageReported
+		if (data.condition.damageDescription !== undefined)
+			updateData.damageDescription = data.condition.damageDescription
 		if (data.condition.existingDamageNotReported !== undefined)
 			updateData.existingDamageNotReported = data.condition.existingDamageNotReported
 		if (data.condition.subsequentDamage !== undefined)

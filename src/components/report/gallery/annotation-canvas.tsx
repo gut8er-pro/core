@@ -3,15 +3,39 @@
 import * as fabric from 'fabric'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
+import {
+	createShape,
+	isDegenerate,
+	makeEditable,
+	makeInert,
+	type Point,
+	resizeShape,
+	type ShapeTool,
+	toArrowGroup,
+} from './annotation-shapes'
 import type { AnnotationTool } from './annotation-toolbar'
+
+type SelectionBox = { left: number; top: number; width: number; height: number }
 
 type AnnotationCanvasProps = {
 	photoUrl: string
 	activeTool: AnnotationTool
 	activeColor: string
 	initialAnnotations?: Record<string, unknown>
+	readOnly?: boolean
 	onCanvasReady?: (canvas: fabric.Canvas, exportFn: () => string | null) => void
+	onSelectionChange?: (box: SelectionBox | null) => void
 	className?: string
+}
+
+const SHAPE_TOOLS: ReadonlySet<AnnotationTool> = new Set<AnnotationTool>([
+	'circle',
+	'rectangle',
+	'arrow',
+])
+
+function isShapeTool(tool: AnnotationTool): tool is ShapeTool {
+	return SHAPE_TOOLS.has(tool)
 }
 
 /**
@@ -25,7 +49,9 @@ function AnnotationCanvas({
 	activeTool,
 	activeColor,
 	initialAnnotations,
+	readOnly = false,
 	onCanvasReady,
+	onSelectionChange,
 	className,
 }: AnnotationCanvasProps) {
 	const containerRef = useRef<HTMLDivElement>(null)
@@ -33,27 +59,36 @@ function AnnotationCanvas({
 	const imgElRef = useRef<HTMLImageElement>(null)
 	const fabricCanvasRef = useRef<fabric.Canvas | null>(null)
 	const isDrawingShapeRef = useRef(false)
-	const shapeStartRef = useRef<{ x: number; y: number } | null>(null)
+	const shapeStartRef = useRef<Point | null>(null)
 	const activeShapeRef = useRef<fabric.FabricObject | null>(null)
 	const activeToolRef = useRef<AnnotationTool>(activeTool)
 	const activeColorRef = useRef<string>(activeColor)
+	const initialAnnotationsRef = useRef(initialAnnotations)
+	const onCanvasReadyRef = useRef(onCanvasReady)
+	const onSelectionChangeRef = useRef(onSelectionChange)
 
 	const [ready, setReady] = useState(false)
 	const [imgLoaded, setImgLoaded] = useState(false)
 
 	activeToolRef.current = activeTool
 	activeColorRef.current = activeColor
-
-	// Reset imgLoaded when photo changes
-	useEffect(() => {
-		setImgLoaded(false)
-	}, [])
+	initialAnnotationsRef.current = initialAnnotations
+	onCanvasReadyRef.current = onCanvasReady
+	onSelectionChangeRef.current = onSelectionChange
 
 	const handleImgLoad = useCallback(() => {
 		setImgLoaded(true)
 	}, [])
 
-	// Export: composite image + annotations at full resolution
+	// A cached image can finish loading before this effect runs, so `onLoad` never
+	// fires and the canvas would wait forever.
+	useEffect(() => {
+		const img = imgElRef.current
+		if (img?.complete && img.naturalWidth > 0) {
+			setImgLoaded(true)
+		}
+	}, [])
+
 	const getExportDataUrl = useCallback((): string | null => {
 		const img = imgElRef.current
 		const canvas = fabricCanvasRef.current
@@ -69,15 +104,15 @@ function AnnotationCanvas({
 		const ctx = tempCanvas.getContext('2d')
 		if (!ctx) return null
 
-		// Draw original image at full resolution
 		ctx.drawImage(img, 0, 0, natW, natH)
 
-		// Draw annotations scaled up to match full resolution
 		const objects = canvas.getObjects()
-		if (objects.length > 0 && canvas.width) {
-			const multiplier = natW / canvas.width
-			const annotationCanvas = canvas.toCanvasElement(multiplier)
-			ctx.drawImage(annotationCanvas, 0, 0)
+		const cssWidth = canvas.getWidth()
+		if (objects.length > 0 && cssWidth) {
+			canvas.discardActiveObject()
+			canvas.renderAll()
+			const annotationCanvas = canvas.toCanvasElement(natW / cssWidth)
+			ctx.drawImage(annotationCanvas, 0, 0, natW, natH)
 		}
 
 		return tempCanvas.toDataURL('image/jpeg', 0.9)
@@ -98,6 +133,26 @@ function AnnotationCanvas({
 
 		let disposed = false
 		let initialized = false
+
+		function announceSelection(canvas: fabric.Canvas) {
+			const notify = onSelectionChangeRef.current
+			if (!notify) return
+			const active = canvas.getActiveObject()
+			if (!active) {
+				notify(null)
+				return
+			}
+			const rect = active.getBoundingRect()
+			const wrapper = canvasEl?.parentElement
+			const offsetX = wrapper ? Number.parseFloat(wrapper.style.left || '0') : 0
+			const offsetY = wrapper ? Number.parseFloat(wrapper.style.top || '0') : 0
+			notify({
+				left: rect.left + offsetX,
+				top: rect.top + offsetY,
+				width: rect.width,
+				height: rect.height,
+			})
+		}
 
 		function layout() {
 			if (disposed || !container || !canvasEl) return
@@ -125,10 +180,10 @@ function AnnotationCanvas({
 					width: canvasW,
 					height: canvasH,
 					selection: false,
+					preserveObjectStacking: true,
 				})
 				fabricCanvasRef.current = canvas
 
-				// Position Fabric wrapper exactly over the image
 				const wrapper = canvasEl.parentElement
 				if (wrapper) {
 					wrapper.style.position = 'absolute'
@@ -139,24 +194,44 @@ function AnnotationCanvas({
 					wrapper.style.zIndex = '2'
 				}
 
+				canvas.on('selection:created', () => announceSelection(canvas))
+				canvas.on('selection:updated', () => announceSelection(canvas))
+				canvas.on('selection:cleared', () => onSelectionChangeRef.current?.(null))
+				canvas.on('object:moving', () => announceSelection(canvas))
+				canvas.on('object:scaling', () => announceSelection(canvas))
+				canvas.on('object:modified', () => announceSelection(canvas))
+
 				canvas.renderAll()
 
-				// Restore saved annotations
-				if (initialAnnotations) {
-					const json = { ...initialAnnotations } as Record<string, unknown>
+				// The canvas is only handed over once the stored markings are back on
+				// it — a Save in that window would otherwise serialise an empty canvas
+				// and wipe them.
+				const stored = initialAnnotationsRef.current
+				if (stored) {
+					const json = { ...stored } as Record<string, unknown>
 					delete json.width
 					delete json.height
 					delete json.backgroundImage
 					delete json.background
 
-					canvas.loadFromJSON(JSON.stringify(json)).then(() => {
-						canvas.setDimensions({ width: canvasW, height: canvasH })
-						canvas.renderAll()
-					})
+					canvas
+						.loadFromJSON(JSON.stringify(json))
+						.then(() => {
+							if (disposed) return
+							canvas.setDimensions({ width: canvasW, height: canvasH })
+							canvas.renderAll()
+							onCanvasReadyRef.current?.(canvas, getExportDataUrl)
+							setReady(true)
+						})
+						.catch(() => {
+							if (disposed) return
+							onCanvasReadyRef.current?.(canvas, getExportDataUrl)
+							setReady(true)
+						})
+				} else {
+					onCanvasReadyRef.current?.(canvas, getExportDataUrl)
+					setReady(true)
 				}
-
-				onCanvasReady?.(canvas, getExportDataUrl)
-				setReady(true)
 			} else {
 				const c = fabricCanvasRef.current
 				if (!c) return
@@ -172,6 +247,7 @@ function AnnotationCanvas({
 				}
 
 				c.renderAll()
+				announceSelection(c)
 			}
 		}
 
@@ -189,8 +265,7 @@ function AnnotationCanvas({
 			}
 			setReady(false)
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [imgLoaded, getExportDataUrl, initialAnnotations, onCanvasReady])
+	}, [imgLoaded, getExportDataUrl])
 
 	// Tool handling
 	useEffect(() => {
@@ -205,129 +280,97 @@ function AnnotationCanvas({
 		canvas.off('mouse:move')
 		canvas.off('mouse:up')
 
+		if (readOnly) {
+			canvas.discardActiveObject()
+			canvas.forEachObject(makeInert)
+			canvas.renderAll()
+			return
+		}
+
 		if (activeTool === 'pen') {
+			canvas.discardActiveObject()
 			canvas.isDrawingMode = true
 			canvas.freeDrawingBrush = new fabric.PencilBrush(canvas)
 			canvas.freeDrawingBrush.color = activeColor
 			canvas.freeDrawingBrush.width = 3
-			canvas.forEachObject((obj) => {
-				obj.selectable = false
-				obj.evented = false
+			canvas.forEachObject(makeInert)
+			canvas.renderAll()
+
+			canvas.on('path:created', (opt) => {
+				const path = (opt as unknown as { path?: fabric.FabricObject }).path
+				if (path) makeEditable(path)
 			})
-		} else if (activeTool === 'crop') {
+		} else if (activeTool === 'select') {
 			canvas.selection = true
+			canvas.forEachObject(makeEditable)
+			canvas.renderAll()
+		} else if (activeTool === 'crop') {
+			canvas.discardActiveObject()
 			canvas.defaultCursor = 'crosshair'
-			canvas.forEachObject((obj) => {
-				obj.selectable = false
-				obj.evented = false
-			})
-		} else {
+			canvas.forEachObject(makeInert)
+			canvas.renderAll()
+		} else if (isShapeTool(activeTool)) {
+			canvas.discardActiveObject()
 			canvas.defaultCursor = 'crosshair'
-			canvas.forEachObject((obj) => {
-				obj.selectable = false
-				obj.evented = false
-			})
+			canvas.forEachObject(makeInert)
+			canvas.renderAll()
 
 			canvas.on('mouse:down', (opt) => {
 				if (isDrawingShapeRef.current) return
-				const pointer = canvas.getViewportPoint(opt.e)
+				const tool = activeToolRef.current
+				if (!isShapeTool(tool)) return
+
+				const pointer = canvas.getScenePoint(opt.e)
 				isDrawingShapeRef.current = true
 				shapeStartRef.current = { x: pointer.x, y: pointer.y }
 
-				const tool = activeToolRef.current
-				const color = activeColorRef.current
-
-				if (tool === 'circle') {
-					const ellipse = new fabric.Ellipse({
-						left: pointer.x,
-						top: pointer.y,
-						rx: 0,
-						ry: 0,
-						fill: 'transparent',
-						stroke: color,
-						strokeWidth: 3,
-						selectable: false,
-						evented: false,
-					})
-					canvas.add(ellipse)
-					activeShapeRef.current = ellipse
-				} else if (tool === 'rectangle') {
-					const rect = new fabric.Rect({
-						left: pointer.x,
-						top: pointer.y,
-						width: 0,
-						height: 0,
-						fill: 'transparent',
-						stroke: color,
-						strokeWidth: 3,
-						selectable: false,
-						evented: false,
-					})
-					canvas.add(rect)
-					activeShapeRef.current = rect
-				} else if (tool === 'arrow') {
-					const line = new fabric.Line([pointer.x, pointer.y, pointer.x, pointer.y], {
-						stroke: color,
-						strokeWidth: 3,
-						selectable: false,
-						evented: false,
-					})
-					canvas.add(line)
-					activeShapeRef.current = line
-				}
+				const shape = createShape(tool, shapeStartRef.current, activeColorRef.current)
+				makeInert(shape)
+				canvas.add(shape)
+				activeShapeRef.current = shape
 			})
 
 			canvas.on('mouse:move', (opt) => {
-				if (!isDrawingShapeRef.current || !shapeStartRef.current) return
-				const pointer = canvas.getViewportPoint(opt.e)
-				const startX = shapeStartRef.current.x
-				const startY = shapeStartRef.current.y
+				const start = shapeStartRef.current
 				const shape = activeShapeRef.current
-				const tool = activeToolRef.current
+				if (!isDrawingShapeRef.current || !start || !shape) return
 
-				if (!shape) return
-
-				if (tool === 'circle' && shape instanceof fabric.Ellipse) {
-					const rx = Math.abs(pointer.x - startX) / 2
-					const ry = Math.abs(pointer.y - startY) / 2
-					shape.set({
-						rx,
-						ry,
-						left: Math.min(startX, pointer.x),
-						top: Math.min(startY, pointer.y),
-					})
-				} else if (tool === 'rectangle' && shape instanceof fabric.Rect) {
-					shape.set({
-						left: Math.min(startX, pointer.x),
-						top: Math.min(startY, pointer.y),
-						width: Math.abs(pointer.x - startX),
-						height: Math.abs(pointer.y - startY),
-					})
-				} else if (tool === 'arrow' && shape instanceof fabric.Line) {
-					shape.set({ x2: pointer.x, y2: pointer.y })
-				}
-
+				const pointer = canvas.getScenePoint(opt.e)
+				resizeShape(shape, start, { x: pointer.x, y: pointer.y })
 				canvas.renderAll()
 			})
 
-			canvas.on('mouse:up', () => {
+			canvas.on('mouse:up', (opt) => {
 				if (!isDrawingShapeRef.current) return
 
 				const shape = activeShapeRef.current
-				const tool = activeToolRef.current
-
-				if (tool === 'arrow' && shape instanceof fabric.Line) {
-					addArrowhead(canvas, shape, activeColorRef.current)
-				}
-
-				if (shape) {
-					shape.set({ selectable: false, evented: false })
-					canvas.renderAll()
-				}
+				const start = shapeStartRef.current
+				const pointer = canvas.getScenePoint(opt.e)
+				const end = { x: pointer.x, y: pointer.y }
 
 				isDrawingShapeRef.current = false
 				shapeStartRef.current = null
 				activeShapeRef.current = null
+
+				if (!shape || !start) return
+
+				// A stray click leaves a zero-size ghost that can never be grabbed again.
+				if (isDegenerate(shape, start, end)) {
+					canvas.remove(shape)
+					canvas.renderAll()
+					return
+				}
+
+				if (shape instanceof fabric.Line) {
+					canvas.remove(shape)
+					const arrow = toArrowGroup(shape, activeColorRef.current)
+					makeInert(arrow)
+					canvas.add(arrow)
+				} else {
+					makeInert(shape)
+				}
+
+				canvas.renderAll()
 			})
 		}
 
@@ -335,10 +378,10 @@ function AnnotationCanvas({
 			canvas.off('mouse:down')
 			canvas.off('mouse:move')
 			canvas.off('mouse:up')
+			canvas.off('path:created')
 		}
-	}, [activeTool, activeColor, ready])
+	}, [activeTool, activeColor, ready, readOnly])
 
-	// Sync drawing brush color
 	useEffect(() => {
 		const canvas = fabricCanvasRef.current
 		if (!canvas) return
@@ -352,7 +395,6 @@ function AnnotationCanvas({
 			ref={containerRef}
 			className={cn('absolute inset-0 overflow-hidden rounded-xl', className)}
 		>
-			{/* Image layer: CSS object-contain handles display reliably */}
 			<img
 				ref={imgElRef}
 				src={photoUrl}
@@ -361,40 +403,10 @@ function AnnotationCanvas({
 				crossOrigin="anonymous"
 				onLoad={handleImgLoad}
 			/>
-			{/* Transparent Fabric.js canvas overlaid on image for annotations */}
 			<canvas ref={canvasElRef} />
 		</div>
 	)
 }
 
-function addArrowhead(canvas: fabric.Canvas, line: fabric.Line, color: string) {
-	const x1 = line.x1 ?? 0
-	const y1 = line.y1 ?? 0
-	const x2 = line.x2 ?? 0
-	const y2 = line.y2 ?? 0
-
-	const angle = Math.atan2(y2 - y1, x2 - x1)
-	const headLength = 15
-
-	const p1x = x2 - headLength * Math.cos(angle - Math.PI / 6)
-	const p1y = y2 - headLength * Math.sin(angle - Math.PI / 6)
-	const p2x = x2 - headLength * Math.cos(angle + Math.PI / 6)
-	const p2y = y2 - headLength * Math.sin(angle + Math.PI / 6)
-
-	const arrowHead = new fabric.Polygon(
-		[new fabric.Point(x2, y2), new fabric.Point(p1x, p1y), new fabric.Point(p2x, p2y)],
-		{
-			fill: color,
-			stroke: color,
-			strokeWidth: 1,
-			selectable: false,
-			evented: false,
-		},
-	)
-
-	canvas.add(arrowHead)
-	canvas.renderAll()
-}
-
-export type { AnnotationCanvasProps }
+export type { AnnotationCanvasProps, SelectionBox }
 export { AnnotationCanvas }

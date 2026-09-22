@@ -471,10 +471,21 @@
       "nextPhoto": "Nächstes Foto",
       "maxPhotosHint": "Maximal {limit} Fotos pro Gutachten – Grenze erreicht",
       "maxPhotosError": "Maximal {limit} Fotos pro Gutachten.",
+      "rotatePhoto": "Foto drehen",
+      "rotateFailed": "Das Foto konnte nicht gedreht werden. Bitte versuchen Sie es erneut.",
+      "rotateClearsAnnotations": "Durch das Drehen werden die Markierungen auf diesem Foto entfernt. Fortfahren?",
+      "reorderPhotoHint": "Ziehen zum Neuanordnen",
+      "reorderFailed": "Die Reihenfolge konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+      "dropToUpload": "Zum Hochladen hier ablegen",
+      "lockedHint": "Das Gutachten ist gesperrt — Fotos können nicht geändert werden.",
+      "uploadSummary": "{uploaded} von {total} hochgeladen",
+      "uploadSummaryFailed": "{uploaded} von {total} hochgeladen — {failed} fehlgeschlagen:",
+      "photoCount": "{count, plural, one {# Foto} other {# Fotos}}",
       "uploadErrors": {
         "invalidFileType": "Ungültiges Dateiformat. Es sind nur JPEG, PNG und WebP zulässig.",
         "fileTooLarge": "Die Datei überschreitet das Limit von {limit} MB.",
-        "uploadFailed": "Das Foto konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut."
+        "uploadFailed": "Das Foto konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.",
+        "compressionFailed": "Die Datei konnte nicht verarbeitet werden. Möglicherweise ist sie beschädigt."
       },
       "classification": {
         "damage": "Schaden",
@@ -526,6 +537,7 @@
       "location": "Ort",
       "email": "E-Mail",
       "iban": "IBAN",
+      "ibanInvalid": "Bitte eine gültige IBAN eingeben",
       "phoneNumber": "Telefonnummer",
       "licensePlate": "Kennzeichen",
       "inputTaxDeduction": "Vorsteuerabzugsberechtigt",
@@ -534,6 +546,14 @@
       "vatId": "USt-IdNr.",
       "involvedLawyer": "Beteiligter Rechtsanwalt",
       "involvedLawyerPlaceholder": "z.B. Kanzlei Müller & Partner",
+      "lawyer": {
+        "title": "Angaben zum Rechtsanwalt",
+        "firm": "Kanzlei",
+        "firmPlaceholder": "z.B. Kanzlei Müller & Partner"
+      },
+      "owner": {
+        "title": "Fahrzeughalter"
+      },
       "opponent": {
         "title": "Unfallgegner",
         "insuranceCompany": "Versicherungsgesellschaft",
@@ -646,6 +666,10 @@
         "firstRegistration": "Erstzulassung",
         "lastRegistration": "Letzte Zulassung",
         "technicalDataSource": "Quelle der technischen Daten",
+        "technicalDataSourceOptions": {
+          "documentsOriginal": "Dokumente im Original",
+          "documentCopy": "Dokumentenkopie"
+        },
         "kba": "KBA (Kraftfahrt-Bundesamt)"
       },
       "details": {
@@ -671,16 +695,19 @@
           "gas": "Gas"
         },
         "axles": "Achsen",
-        "addAxleOption": "Achsenoption hinzufügen",
+        "addAxleOption": "Abweichende Achsenzahl hinzufügen",
         "drivenBy": "Angetriebene Achse",
-        "addDrivenOption": "Antriebsoption hinzufügen",
+        "addDrivenOption": "Abweichende Zahl angetriebener Achsen hinzufügen",
         "doors": "Türen",
-        "addDoorOption": "Türenoption hinzufügen",
+        "addDoorOption": "Abweichende Türenzahl hinzufügen",
         "seats": "Sitze",
-        "addSeatOption": "Sitzeoption hinzufügen",
+        "addSeatOption": "Abweichende Sitzzahl hinzufügen",
         "previousOwners": "Vorbesitzer",
         "new": "Neu",
-        "addPreviousOwnerOption": "Vorbesitzer-Option hinzufügen"
+        "addPreviousOwnerOption": "Abweichende Vorbesitzerzahl hinzufügen",
+        "customNumberPlaceholder": "Anzahl",
+        "customLabelPlaceholder": "Bezeichnung",
+        "confirmCustomValue": "Eigenen Wert übernehmen"
       }
     },
     "condition": {
@@ -738,7 +765,6 @@
       "unitInKm": "Einheit in km",
       "unitOptions": {
         "km": "km",
-        "mkr": "MKR",
         "miles": "Meilen"
       },
       "nextMot": "Nächste HU/AU",
@@ -747,7 +773,9 @@
       "testDrivePerformed": "Probefahrt durchgeführt",
       "errorMemoryRead": "Fehlerspeicher ausgelesen",
       "airbagsDeployed": "Airbags ausgelöst",
-      "multiHitGroups": "Mehrfachanstoßgruppen",
+      "multiHitGroups": "Schadstoffplakette",
+      "emissionGroupNone": "keine Plakette",
+      "emissionGroupLabel": "Schadstoffgruppe {group}",
       "notes": "Bemerkungen",
       "addNotes": "Bemerkungen hinzufügen",
       "visualAccidentDetails": "Visuelle Unfalldetails",
@@ -773,6 +801,7 @@
         "manufacturer": "Hersteller",
         "manufacturerPlaceholder": "Hersteller eingeben",
         "tiresUsability": "Reifenzustand",
+        "usabilityIncrease": "Reifenzustand erhöhen",
         "tireType": "Reifenart",
         "tireTypeOptions": {
           "summer": "Sommer",
@@ -912,7 +941,10 @@
         "title": "Korrekturkalkulation",
         "dat": "Dat",
         "manual": "Manuell",
-        "aiCalculation": "KI-Kalkulation"
+        "aiCalculation": "KI-Kalkulation",
+        "manualEntry": "Manuelle Korrekturerfassung",
+        "datNotConnected": "Es ist kein DAT-Konto verbunden. Verbinden Sie DAT unter Einstellungen → Integrationen, um mit SilverDAT3 zu kalkulieren.",
+        "aiNeedsPhotos": "Laden Sie zuerst Fotos des Schadens hoch — die KI-Kalkulation wertet sie aus, um die Korrektur zu schätzen."
       },
       "valuation": {
         "datValuation": "DAT-Bewertung",
@@ -1033,13 +1065,23 @@
       }
     },
     "annotation": {
+      "select": "Auswählen",
       "draw": "Zeichnen",
       "crop": "Zuschneiden",
       "circle": "Kreis",
       "rectangle": "Rechteck",
       "arrow": "Pfeil",
       "deleteAnnotations": "Beschriftungen löschen",
+      "deleteSelected": "Markierung löschen",
+      "clearAll": "Alles löschen",
+      "clearAllConfirm": "Alle Markierungen auf diesem Foto löschen?",
+      "confirmClearAll": "Ja, alle löschen",
       "saveAnnotations": "Beschriftungen speichern",
+      "saving": "Speichern...",
+      "saveSucceeded": "Markierungen gespeichert",
+      "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
+      "saveLocked": "Gutachten ist gesperrt — Markierungen wurden nicht gespeichert.",
+      "lockedHint": "Dieses Gutachten ist gesperrt und schreibgeschützt.",
       "enterDescription": "Beschreibung für dieses Foto eingeben...",
       "noAiDescription": "Keine KI-Beschreibung verfügbar. Starten Sie «Gutachten generieren», um dieses Foto zu analysieren.",
       "saveDescription": "Beschreibung speichern"

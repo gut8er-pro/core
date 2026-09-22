@@ -7,6 +7,7 @@ import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import { SECTION } from '@/lib/completeness'
+import { IbanField } from './iban-field'
 import type { SectionProps } from './types'
 
 function OpponentSection({
@@ -14,6 +15,7 @@ function OpponentSection({
 	control,
 	errors,
 	onFieldBlur,
+	disabled,
 	className,
 }: SectionProps & { className?: string }) {
 	const t = useTranslations('report')
@@ -39,6 +41,7 @@ function OpponentSection({
 				<TextField
 					label={t('accidentInfo.company')}
 					placeholder={t('accidentInfo.companyPlaceholder')}
+					disabled={disabled}
 					{...fieldProps('opponentCompany')}
 				/>
 
@@ -52,8 +55,9 @@ function OpponentSection({
 								label={t('accidentInfo.salutation')}
 								options={salutationOptions}
 								placeholder={t('accidentInfo.salutationPlaceholder')}
-								value={field.value}
+								value={field.value ?? ''}
 								error={errors.opponentSalutation?.message}
+								disabled={disabled}
 								onValueChange={(value) => {
 									field.onChange(value)
 									onFieldBlur?.('opponentSalutation')
@@ -64,11 +68,13 @@ function OpponentSection({
 					<TextField
 						label={t('accidentInfo.firstName')}
 						placeholder={t('accidentInfo.firstName')}
+						disabled={disabled}
 						{...fieldProps('opponentFirstName')}
 					/>
 					<TextField
 						label={t('accidentInfo.lastName')}
 						placeholder={t('accidentInfo.lastName')}
+						disabled={disabled}
 						{...fieldProps('opponentLastName')}
 					/>
 				</div>
@@ -78,16 +84,19 @@ function OpponentSection({
 					<TextField
 						label={t('accidentInfo.street')}
 						placeholder={t('accidentInfo.streetPlaceholder')}
+						disabled={disabled}
 						{...fieldProps('opponentStreet')}
 					/>
 					<TextField
 						label={t('accidentInfo.postcode')}
 						placeholder={t('accidentInfo.postcodePlaceholder')}
+						disabled={disabled}
 						{...fieldProps('opponentPostcode')}
 					/>
 					<TextField
 						label={t('accidentInfo.location')}
 						placeholder="Berlin"
+						disabled={disabled}
 						{...fieldProps('opponentLocation')}
 					/>
 				</div>
@@ -98,17 +107,20 @@ function OpponentSection({
 						label={t('accidentInfo.email')}
 						type="email"
 						placeholder="email@example.com"
+						disabled={disabled}
 						{...fieldProps('opponentEmail')}
 					/>
-					<TextField
+					<IbanField
 						label={t('accidentInfo.iban')}
-						placeholder="DE89 3704 0044 0532 0130 00"
+						invalidMessage={t('accidentInfo.ibanInvalid')}
+						disabled={disabled}
 						{...fieldProps('opponentIban')}
 					/>
 					<TextField
 						label={t('accidentInfo.phoneNumber')}
 						type="tel"
 						placeholder="+49523568410"
+						disabled={disabled}
 						{...fieldProps('opponentPhone')}
 					/>
 				</div>
@@ -117,6 +129,7 @@ function OpponentSection({
 				<TextField
 					label={t('accidentInfo.opponent.insuranceCompany')}
 					placeholder={t('accidentInfo.opponent.insuranceCompany')}
+					disabled={disabled}
 					{...fieldProps('opponentInsuranceCompany')}
 				/>
 
@@ -125,11 +138,13 @@ function OpponentSection({
 					<TextField
 						label={t('accidentInfo.opponent.insuranceNumber')}
 						placeholder={t('accidentInfo.opponent.insuranceNumber')}
+						disabled={disabled}
 						{...fieldProps('opponentInsuranceNumber')}
 					/>
 					<TextField
 						label={t('accidentInfo.opponent.claimNumber')}
 						placeholder={t('accidentInfo.opponent.claimNumber')}
+						disabled={disabled}
 						{...fieldProps('opponentClaimNumber')}
 					/>
 				</div>

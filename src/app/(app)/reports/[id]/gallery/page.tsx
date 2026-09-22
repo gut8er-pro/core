@@ -13,14 +13,21 @@ import { ClassificationBadge } from '@/components/report/gallery/photo-classific
 import { PhotoGrid } from '@/components/report/gallery/photo-grid'
 import { PhotoViewer } from '@/components/report/gallery/photo-viewer'
 import { UploadZone } from '@/components/report/gallery/upload-zone'
+import { useFileDrop, usePageFileDropGuard } from '@/hooks/use-file-drop'
 import { useGenerateReport } from '@/hooks/use-generate-report'
 import { usePhotoUpload } from '@/hooks/use-photo-upload'
-import { useDeletePhoto, usePhotos } from '@/hooks/use-photos'
+import {
+	reorderPhotos,
+	useDeletePhoto,
+	usePhotos,
+	useReorderPhotos,
+	useRotatePhoto,
+} from '@/hooks/use-photos'
 import type { AiGenerationSummary } from '@/hooks/use-reports'
 import { useReport } from '@/hooks/use-reports'
 import { useSubscriptionNotice } from '@/hooks/use-subscription-notice'
 import type { PhotoClassificationType } from '@/lib/ai/types'
-import { getStoragePath, uploadToStorage } from '@/lib/storage/photos'
+import { cn } from '@/lib/utils'
 import { MAX_PHOTOS_PER_REPORT } from '@/lib/validations/photos'
 
 function GalleryPage() {
@@ -31,13 +38,18 @@ function GalleryPage() {
 	const { data, isLoading } = usePhotos(reportId)
 	const { data: report } = useReport(reportId)
 	const deletePhoto = useDeletePhoto(reportId)
+	const reorderMutation = useReorderPhotos(reportId)
+	const rotateMutation = useRotatePhoto(reportId)
 	const { uploadState, uploadPhotos } = usePhotoUpload(reportId)
-	const queryClient = useQueryClient()
+	const _queryClient = useQueryClient()
 	const { status: genStatus, generate, cancel, reset } = useGenerateReport(reportId)
 	const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null)
 	const [annotationPhotoId, setAnnotationPhotoId] = useState<string | null>(null)
 	const [summaryDismissed, setSummaryDismissed] = useState(false)
+	const [actionError, setActionError] = useState<string | null>(null)
 	const fileInputRef = useRef<HTMLInputElement>(null)
+
+	usePageFileDropGuard()
 	// Track which photo IDs were last generated to prevent duplicate runs
 	const lastGeneratedPhotoIdsRef = useRef<string | null>(null)
 
@@ -112,16 +124,52 @@ function GalleryPage() {
 	// Effective summary: live SSE summary takes priority, then persisted DB summary
 	const effectiveSummary = genStatus.summary || persistedSummary
 
+	const isLocked = report?.isLocked ?? false
+
 	const handleFilesSelected = useCallback(
 		(files: File[]) => {
-			void uploadPhotos(reportId, files)
+			if (isLocked) return
+			void uploadPhotos(reportId, files, photos.length)
 		},
-		[reportId, uploadPhotos],
+		[isLocked, photos.length, reportId, uploadPhotos],
+	)
+
+	const handleReorder = useCallback(
+		(fromId: string, toId: string) => {
+			const next = reorderPhotos(photos, fromId, toId)
+			if (next === photos) return
+			setActionError(null)
+			reorderMutation.mutate(
+				{ photoIds: next.map((photo) => photo.id), photos: next },
+				{ onError: () => setActionError(t('gallery.reorderFailed')) },
+			)
+		},
+		[photos, reorderMutation, t],
+	)
+
+	const handleRotate = useCallback(
+		(photoId: string) => {
+			const photo = photos.find((p) => p.id === photoId)
+			if (!photo) return
+
+			// The markings were drawn against the old orientation; v1 drops them
+			// rather than rotating the fabric JSON, so the assessor gets a say.
+			const hasAnnotations = photo.annotations.length > 0 || !!photo.annotatedUrl
+			if (hasAnnotations && !window.confirm(t('gallery.rotateClearsAnnotations'))) return
+
+			setActionError(null)
+			rotateMutation.mutate(
+				{ photoId, degrees: 90 },
+				{ onError: () => setActionError(t('gallery.rotateFailed')) },
+			)
+		},
+		[photos, rotateMutation, t],
 	)
 
 	const handleAddPhotos = useCallback(() => {
+		if (isLocked) return
 		fileInputRef.current?.click()
-	}, [])
+	}, [isLocked])
 
 	const handleFileInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,12 +183,13 @@ function GalleryPage() {
 
 	const handleDelete = useCallback(
 		(photoId: string) => {
+			if (isLocked) return
 			deletePhoto.mutate(photoId)
 			if (selectedPhotoId === photoId) {
 				setSelectedPhotoId(null)
 			}
 		},
-		[deletePhoto, selectedPhotoId],
+		[deletePhoto, isLocked, selectedPhotoId],
 	)
 
 	const handleAnnotate = useCallback((photoId: string) => {
@@ -151,6 +200,13 @@ function GalleryPage() {
 		() => (uploadState.error ? uploadState.error.split('\n') : []),
 		[uploadState.error],
 	)
+
+	// The single-photo view has no dropzone of its own, so without this a file
+	// dropped here reaches the document and navigates the tab away.
+	const singleViewDrop = useFileDrop({
+		onFiles: handleFilesSelected,
+		disabled: isLocked || uploadState.isUploading || photos.length >= MAX_PHOTOS_PER_REPORT,
+	})
 
 	if (isLoading) {
 		return (
@@ -250,12 +306,33 @@ function GalleryPage() {
 					</div>
 				)}
 
-				{/* Upload errors */}
-				{uploadErrors.length > 0 && (
-					<div className="rounded-lg border border-error bg-error-light px-4 py-2 text-body-sm text-error">
+				{/* Upload result — every skipped file is named, never silence */}
+				{!uploadState.isUploading && uploadState.summary && (
+					<div
+						data-testid="upload-summary"
+						className={cn(
+							'rounded-lg border px-4 py-2 text-body-sm',
+							uploadErrors.length > 0
+								? 'border-error bg-error-light text-error'
+								: 'border-primary bg-primary-light text-primary',
+						)}
+					>
+						<p className="font-semibold">{uploadState.summary}</p>
 						{uploadErrors.map((message) => (
 							<p key={message}>{message}</p>
 						))}
+					</div>
+				)}
+
+				{actionError && (
+					<div className="rounded-lg border border-error bg-error-light px-4 py-2 text-body-sm text-error">
+						{actionError}
+					</div>
+				)}
+
+				{isLocked && (
+					<div className="rounded-lg border border-warning-border bg-warning-border/10 px-4 py-2 text-body-sm text-warning-dark">
+						{t('gallery.lockedHint')}
 					</div>
 				)}
 
@@ -266,14 +343,24 @@ function GalleryPage() {
 						onFilesSelected={handleFilesSelected}
 						currentCount={photos.length}
 						maxFiles={MAX_PHOTOS_PER_REPORT}
-						disabled={uploadState.isUploading}
+						disabled={uploadState.isUploading || isLocked}
 					/>
 				) : showSingleView ? (
 					/* Single photo view with filmstrip */
-					<div className="flex flex-col gap-6">
+					<div
+						{...singleViewDrop.dropHandlers}
+						data-gallery-drop=""
+						className={cn(
+							'flex flex-col gap-6 rounded-card transition-colors',
+							singleViewDrop.isDragOver && !isLocked && 'outline-2 outline-dashed outline-primary',
+						)}
+					>
 						<div className="relative">
 							<PhotoViewer
 								photo={selectedPhoto}
+								locked={isLocked}
+								isRotating={rotateMutation.isPending}
+								onRotate={() => selectedPhoto && handleRotate(selectedPhoto.id)}
 								onDelete={() => selectedPhoto && handleDelete(selectedPhoto.id)}
 								onAnnotate={() => selectedPhoto && handleAnnotate(selectedPhoto.id)}
 							/>
@@ -298,6 +385,8 @@ function GalleryPage() {
 							selectedId={selectedPhoto?.id}
 							onSelect={setSelectedPhotoId}
 							onAdd={handleAddPhotos}
+							onReorder={handleReorder}
+							locked={isLocked}
 							maxPhotos={MAX_PHOTOS_PER_REPORT}
 						/>
 					</div>
@@ -309,6 +398,9 @@ function GalleryPage() {
 						onEdit={handleAnnotate}
 						onDelete={handleDelete}
 						onAdd={handleAddPhotos}
+						onFilesDropped={handleFilesSelected}
+						onReorder={handleReorder}
+						locked={isLocked}
 						maxPhotos={MAX_PHOTOS_PER_REPORT}
 					/>
 				)}
@@ -329,46 +421,11 @@ function GalleryPage() {
 			<AnnotationModal
 				photo={photos.find((p) => p.id === annotationPhotoId) ?? null}
 				photos={photos}
+				reportId={reportId}
+				locked={isLocked}
 				open={annotationPhotoId !== null}
 				onClose={() => setAnnotationPhotoId(null)}
 				onNavigate={setAnnotationPhotoId}
-				onSave={async (fabricJson, dataUrl) => {
-					if (!annotationPhotoId) return
-					try {
-						let annotatedUrl: string | null = null
-						if (dataUrl) {
-							const response = await fetch(dataUrl)
-							const blob = await response.blob()
-							const storagePath = getStoragePath(reportId, annotationPhotoId, 'annotated')
-							annotatedUrl = await uploadToStorage(blob, storagePath)
-						}
-
-						const hasAnnotations =
-							((fabricJson as { objects?: unknown[] }).objects?.length ?? 0) > 0
-
-						await fetch(`/api/reports/${reportId}/photos/${annotationPhotoId}`, {
-							method: 'PATCH',
-							headers: { 'Content-Type': 'application/json' },
-							body: JSON.stringify({
-								annotatedUrl,
-								annotations: hasAnnotations
-									? [
-											{
-												type: 'fabric',
-												color: '#ff0000',
-												coordinates: {},
-												fabricJson,
-											},
-										]
-									: [],
-							}),
-						})
-						queryClient.invalidateQueries({ queryKey: ['report', reportId, 'photos'] })
-						setAnnotationPhotoId(null)
-					} catch {
-						// Annotation save failed silently
-					}
-				}}
 			/>
 		</div>
 	)

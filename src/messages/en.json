@@ -471,10 +471,21 @@
       "nextPhoto": "Next photo",
       "maxPhotosHint": "Limit reached — {limit} photos per report",
       "maxPhotosError": "A maximum of {limit} photos per report.",
+      "rotatePhoto": "Rotate photo",
+      "rotateFailed": "The photo could not be rotated. Please try again.",
+      "rotateClearsAnnotations": "Rotating will remove the markings on this photo. Continue?",
+      "reorderPhotoHint": "Drag to reorder",
+      "reorderFailed": "The order could not be saved. Please try again.",
+      "dropToUpload": "Drop here to upload",
+      "lockedHint": "The report is locked — photos cannot be changed.",
+      "uploadSummary": "{uploaded} of {total} uploaded",
+      "uploadSummaryFailed": "{uploaded} of {total} uploaded — {failed} failed:",
+      "photoCount": "{count, plural, one {# photo} other {# photos}}",
       "uploadErrors": {
         "invalidFileType": "Invalid file type. Only JPEG, PNG and WebP are allowed.",
         "fileTooLarge": "The file exceeds the {limit} MB limit.",
-        "uploadFailed": "The photo could not be uploaded. Please try again."
+        "uploadFailed": "The photo could not be uploaded. Please try again.",
+        "compressionFailed": "The file could not be processed. It may be corrupted."
       },
       "classification": {
         "damage": "Damage",
@@ -526,6 +537,7 @@
       "location": "Location",
       "email": "Email",
       "iban": "IBAN",
+      "ibanInvalid": "Please enter a valid IBAN",
       "phoneNumber": "Phone Number",
       "licensePlate": "License Plate",
       "inputTaxDeduction": "Eligible for input tax deduction",
@@ -534,6 +546,14 @@
       "vatId": "VAT ID",
       "involvedLawyer": "Involved Lawyer",
       "involvedLawyerPlaceholder": "e.g. Müller & Partner law firm",
+      "lawyer": {
+        "title": "Lawyer Details",
+        "firm": "Law firm",
+        "firmPlaceholder": "e.g. Müller & Partner law firm"
+      },
+      "owner": {
+        "title": "Vehicle Owner"
+      },
       "opponent": {
         "title": "Opponent in Accident",
         "insuranceCompany": "Insurance company",
@@ -646,6 +666,10 @@
         "firstRegistration": "First registration",
         "lastRegistration": "Last registration",
         "technicalDataSource": "Source of technical data",
+        "technicalDataSourceOptions": {
+          "documentsOriginal": "Documents original",
+          "documentCopy": "Document copy"
+        },
         "kba": "KBA (Kraftfahrt-Bundesamt)"
       },
       "details": {
@@ -671,16 +695,19 @@
           "gas": "Gas"
         },
         "axles": "Axles",
-        "addAxleOption": "Add axle option",
+        "addAxleOption": "Add a different number of axles",
         "drivenBy": "Driven by this",
-        "addDrivenOption": "Add driven option",
+        "addDrivenOption": "Add a different number of driven axles",
         "doors": "Doors",
-        "addDoorOption": "Add door option",
+        "addDoorOption": "Add a different number of doors",
         "seats": "Seats",
-        "addSeatOption": "Add seat option",
+        "addSeatOption": "Add a different number of seats",
         "previousOwners": "Previous Owners",
         "new": "New",
-        "addPreviousOwnerOption": "Add previous owner option"
+        "addPreviousOwnerOption": "Add a different number of previous owners",
+        "customNumberPlaceholder": "Number",
+        "customLabelPlaceholder": "Label",
+        "confirmCustomValue": "Apply custom value"
       }
     },
     "condition": {
@@ -738,7 +765,6 @@
       "unitInKm": "Unit in km",
       "unitOptions": {
         "km": "km",
-        "mkr": "MKR",
         "miles": "miles"
       },
       "nextMot": "Next MOT",
@@ -747,7 +773,9 @@
       "testDrivePerformed": "Test drive performed",
       "errorMemoryRead": "Error memory read",
       "airbagsDeployed": "Airbags deployed",
-      "multiHitGroups": "Multi-hit Groups",
+      "multiHitGroups": "Emission sticker",
+      "emissionGroupNone": "no sticker",
+      "emissionGroupLabel": "Emission group {group}",
       "notes": "Notes",
       "addNotes": "Add notes",
       "visualAccidentDetails": "Visual Accident Details",
@@ -773,6 +801,7 @@
         "manufacturer": "Manufacturer",
         "manufacturerPlaceholder": "Add manufacturer",
         "tiresUsability": "Tires Usability",
+        "usabilityIncrease": "Increase tire usability",
         "tireType": "Tire Type",
         "tireTypeOptions": {
           "summer": "Summer",
@@ -912,7 +941,10 @@
         "title": "Correction Calculation",
         "dat": "Dat",
         "manual": "Manual",
-        "aiCalculation": "AI Calculation"
+        "aiCalculation": "AI Calculation",
+        "manualEntry": "Manual correction entry",
+        "datNotConnected": "No DAT account is connected. Connect DAT under Settings → Integrations to calculate with SilverDAT3.",
+        "aiNeedsPhotos": "Upload photos of the damage first — the AI calculation reads them to estimate the correction."
       },
       "valuation": {
         "datValuation": "DAT Valuation",
@@ -1033,13 +1065,23 @@
       }
     },
     "annotation": {
+      "select": "Select",
       "draw": "Draw",
       "crop": "Crop",
       "circle": "Circle",
       "rectangle": "Rectangle",
       "arrow": "Arrow",
       "deleteAnnotations": "Delete annotations",
+      "deleteSelected": "Delete marking",
+      "clearAll": "Clear all",
+      "clearAllConfirm": "Delete every marking on this photo?",
+      "confirmClearAll": "Yes, delete all",
       "saveAnnotations": "Save annotations",
+      "saving": "Saving...",
+      "saveSucceeded": "Markings saved",
+      "saveFailed": "Saving failed. Please try again.",
+      "saveLocked": "Report is locked — markings were not saved.",
+      "lockedHint": "This report is locked and read-only.",
       "enterDescription": "Enter a description for this photo...",
       "noAiDescription": "No AI description available. Run \"Generate Report\" to analyze this photo.",
       "saveDescription": "Save description"

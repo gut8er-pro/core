@@ -165,21 +165,26 @@ test.describe('HS Complete Flow', () => {
 		await page.goto(`/reports/${reportId}/details/condition`)
 		await page.waitForTimeout(1500)
 
-		// Select all 7 dropdowns
-		const options = ['Metallic', 'Original manufacturer paint', 'Good', 'Well maintained']
-		for (let i = 0; i < 4; i++) {
-			await page.locator('[role="combobox"]').nth(i).click()
+		// The seven condition combos, addressed by name rather than position
+		const picks: [string, string][] = [
+			['paintType', 'Metallic'],
+			['hard', 'Original manufacturer paint'],
+			['paintCondition', 'Good'],
+			['generalCondition', 'Well maintained'],
+		]
+		for (const [name, option] of picks) {
+			await page.locator(`input[name="${name}"]`).click()
 			await page.waitForTimeout(300)
 			try {
-				await page.locator(`[role="option"]:has-text("${options[i]}")`).click()
+				await page.locator(`[role="option"]:has-text("${option}")`).click()
 			} catch {
 				await page.locator('[role="option"]').first().click()
 			}
 			await page.waitForTimeout(200)
 		}
-		// Body, Interior, Driving — click first option
-		for (let i = 4; i < 7; i++) {
-			await page.locator('[role="combobox"]').nth(i).click()
+		// Body, Interior, Driving — take whatever the list offers first
+		for (const name of ['bodyCondition', 'interiorCondition', 'drivingAbility']) {
+			await page.locator(`input[name="${name}"]`).click()
 			await page.waitForTimeout(300)
 			await page.locator('[role="option"]').first().click()
 			await page.waitForTimeout(200)
@@ -207,8 +212,8 @@ test.describe('HS Complete Flow', () => {
 
 		await page.reload({ waitUntil: 'networkidle' })
 		await page.waitForTimeout(2000)
-		await expect(page.locator('[role="combobox"]').first()).toHaveText('Metallic')
-		await expect(page.locator('input[name="mileageRead"]')).toHaveValue('85420')
+		await expect(page.locator('input[name="paintType"]')).toHaveValue('Metallic')
+		await expect(page.locator('input[name="mileageRead"]')).toHaveValue('85.420')
 	})
 
 	test('fill calculation — value + repair + loss of use', async ({ page }) => {

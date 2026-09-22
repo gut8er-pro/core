@@ -14,6 +14,7 @@ function ExpertOpinionSection({
 	register,
 	errors,
 	onFieldBlur,
+	disabled,
 	className,
 }: SectionProps & { className?: string }) {
 	const t = useTranslations('report')
@@ -36,6 +37,7 @@ function ExpertOpinionSection({
 				<TextField
 					label={t('accidentInfo.visits.expertName')}
 					placeholder={t('accidentInfo.visits.expertName')}
+					disabled={disabled}
 					{...fieldProps('expertName')}
 				/>
 
@@ -44,11 +46,13 @@ function ExpertOpinionSection({
 					<TextField
 						label={t('accidentInfo.expertOpinion.fileNumber')}
 						placeholder="HB3351"
+						disabled={disabled}
 						{...fieldProps('fileNumber')}
 					/>
 					<TextField
 						label={t('accidentInfo.expertOpinion.caseDate')}
 						type="date"
+						disabled={disabled}
 						{...fieldProps('caseDate')}
 					/>
 				</div>
@@ -60,6 +64,7 @@ function ExpertOpinionSection({
 						options={ORDER_PLACEMENT_OPTIONS}
 						placeholder={t('accidentInfo.expertOpinion.orderOptions.personal')}
 						error={errors.orderWasPlacement?.message}
+						disabled={disabled}
 						onValueChange={(value) => {
 							const event = { target: { name: 'orderWasPlacement', value } }
 							register('orderWasPlacement').onChange(event)
@@ -69,6 +74,7 @@ function ExpertOpinionSection({
 					<TextField
 						label={t('accidentInfo.expertOpinion.issuedDate')}
 						type="date"
+						disabled={disabled}
 						{...fieldProps('issuedDate')}
 					/>
 				</div>
@@ -76,6 +82,7 @@ function ExpertOpinionSection({
 				<div className="flex items-center gap-2 pt-2">
 					<Checkbox
 						id="order-by-claimant"
+						disabled={disabled}
 						onCheckedChange={(checked) => {
 							const event = { target: { name: 'orderByClaimant', value: !!checked } }
 							register('orderByClaimant').onChange(event)
@@ -91,6 +98,7 @@ function ExpertOpinionSection({
 				<TextField
 					label={t('accidentInfo.expertOpinion.mediator')}
 					placeholder={t('accidentInfo.expertOpinion.mediatorPlaceholder')}
+					disabled={disabled}
 					{...fieldProps('mediator')}
 				/>
 			</div>

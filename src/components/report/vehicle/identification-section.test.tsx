@@ -1,36 +1,12 @@
 import { useForm } from 'react-hook-form'
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@/test/test-utils'
+import { VEHICLE_DEFAULTS } from './form-data'
 import { IdentificationSection } from './identification-section'
 import type { VehicleFormData } from './types'
 
 function TestWrapper({ onFieldBlur }: { onFieldBlur?: (f: string) => void }) {
-	const methods = useForm<VehicleFormData>({
-		defaultValues: {
-			vin: '',
-			datsCode: '',
-			marketIndex: '',
-			manufacturer: '',
-			mainType: '',
-			subType: '',
-			kbaNumber: '',
-			powerKw: '',
-			powerHp: '',
-			engineDesign: '',
-			cylinders: '',
-			transmission: '',
-			displacement: '',
-			firstRegistration: '',
-			lastRegistration: '',
-			vehicleType: '',
-			motorType: '',
-			axles: 0,
-			drivenAxles: 0,
-			doors: 0,
-			seats: 0,
-			previousOwners: 0,
-		},
-	})
+	const methods = useForm<VehicleFormData>({ defaultValues: { ...VEHICLE_DEFAULTS } })
 	return (
 		<IdentificationSection
 			register={methods.register}

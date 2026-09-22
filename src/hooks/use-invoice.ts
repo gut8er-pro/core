@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { awaitSectionSave, trackSectionSave } from '@/lib/api/section-saves'
 import type { InvoiceInput, LineItemInput } from '@/lib/validations/invoice'
 
 type InvoiceResponse = {
@@ -30,6 +31,7 @@ type InvoiceResponse = {
 }
 
 async function fetchInvoice(reportId: string): Promise<InvoiceResponse> {
+	await awaitSectionSave(reportId, 'invoice')
 	const response = await fetch(`/api/reports/${reportId}/invoice`)
 	if (!response.ok) {
 		throw new Error('Failed to fetch invoice data')
@@ -37,7 +39,7 @@ async function fetchInvoice(reportId: string): Promise<InvoiceResponse> {
 	return response.json()
 }
 
-async function patchInvoiceSection(
+async function patchInvoiceSectionRequest(
 	reportId: string,
 	data: Record<string, unknown>,
 ): Promise<unknown> {
@@ -50,6 +52,10 @@ async function patchInvoiceSection(
 		throw new Error('Failed to save invoice data')
 	}
 	return response.json()
+}
+
+function patchInvoiceSection(reportId: string, data: Record<string, unknown>): Promise<unknown> {
+	return trackSectionSave(reportId, 'invoice', patchInvoiceSectionRequest(reportId, data))
 }
 
 function useInvoice(reportId: string) {
@@ -105,4 +111,11 @@ function useDeleteLineItem(reportId: string) {
 }
 
 export type { InvoiceResponse }
-export { fetchInvoice, useDeleteLineItem, useInvoice, useSaveInvoice, useSaveLineItem }
+export {
+	fetchInvoice,
+	patchInvoiceSection,
+	useDeleteLineItem,
+	useInvoice,
+	useSaveInvoice,
+	useSaveLineItem,
+}

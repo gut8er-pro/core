@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { awaitSectionSave, trackSectionSave } from '@/lib/api/section-saves'
 import type {
 	AccidentInfoInput,
 	ClaimantInfoInput,
 	ExpertOpinionInput,
 	OpponentInfoInput,
+	OwnerInfoInput,
 	SignatureInput,
 	VisitInput,
 } from '@/lib/validations/accident-info'
@@ -37,6 +39,25 @@ type AccidentInfoResponse = {
 		isVehicleOwner: boolean
 		representedByLawyer: boolean
 		involvedLawyer: string | null
+		lawyerFirm: string | null
+		lawyerStreet: string | null
+		lawyerPostcode: string | null
+		lawyerLocation: string | null
+		lawyerEmail: string | null
+		lawyerPhone: string | null
+	} | null
+	ownerInfo: {
+		id: string
+		reportId: string
+		company: string | null
+		salutation: string | null
+		firstName: string | null
+		lastName: string | null
+		street: string | null
+		postcode: string | null
+		location: string | null
+		email: string | null
+		phone: string | null
 	} | null
 	opponentInfo: {
 		id: string
@@ -87,6 +108,7 @@ type AccidentInfoResponse = {
 }
 
 async function fetchAccidentInfo(reportId: string): Promise<AccidentInfoResponse> {
+	await awaitSectionSave(reportId, 'accident-info')
 	const response = await fetch(`/api/reports/${reportId}/accident-info`)
 	if (!response.ok) {
 		throw new Error('Failed to fetch accident info')
@@ -94,7 +116,7 @@ async function fetchAccidentInfo(reportId: string): Promise<AccidentInfoResponse
 	return response.json()
 }
 
-async function patchAccidentInfoSection(
+async function patchAccidentInfoSectionRequest(
 	reportId: string,
 	data: Record<string, unknown>,
 ): Promise<unknown> {
@@ -107,6 +129,17 @@ async function patchAccidentInfoSection(
 		throw new Error('Failed to save accident info')
 	}
 	return response.json()
+}
+
+function patchAccidentInfoSection(
+	reportId: string,
+	data: Record<string, unknown>,
+): Promise<unknown> {
+	return trackSectionSave(
+		reportId,
+		'accident-info',
+		patchAccidentInfoSectionRequest(reportId, data),
+	)
 }
 
 function useAccidentInfo(reportId: string) {
@@ -158,6 +191,18 @@ function useSaveOpponentInfo(reportId: string) {
 	})
 }
 
+function useSaveOwnerInfo(reportId: string) {
+	const queryClient = useQueryClient()
+	return useMutation({
+		mutationFn: (data: OwnerInfoInput) => patchAccidentInfoSection(reportId, { ownerInfo: data }),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['report', reportId, 'accident-info'],
+			})
+		},
+	})
+}
+
 function useSaveVisit(reportId: string) {
 	const queryClient = useQueryClient()
 	return useMutation({
@@ -196,19 +241,22 @@ function useSaveSignature(reportId: string) {
 	})
 }
 
+async function deleteSignatureRequest(reportId: string, signatureId: string): Promise<unknown> {
+	const res = await fetch(`/api/reports/${reportId}/signatures/${signatureId}`, {
+		method: 'DELETE',
+	})
+	if (!res.ok) {
+		const body = await res.json().catch(() => ({}))
+		throw new Error(body.error ?? 'Failed to delete signature')
+	}
+	return res.json()
+}
+
 function useDeleteSignature(reportId: string) {
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationFn: async (signatureId: string) => {
-			const res = await fetch(`/api/reports/${reportId}/signatures/${signatureId}`, {
-				method: 'DELETE',
-			})
-			if (!res.ok) {
-				const body = await res.json().catch(() => ({}))
-				throw new Error(body.error ?? 'Failed to delete signature')
-			}
-			return res.json()
-		},
+		mutationFn: (signatureId: string) =>
+			trackSectionSave(reportId, 'accident-info', deleteSignatureRequest(reportId, signatureId)),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ['report', reportId, 'accident-info'],
@@ -220,12 +268,14 @@ function useDeleteSignature(reportId: string) {
 export type { AccidentInfoResponse }
 export {
 	fetchAccidentInfo,
+	patchAccidentInfoSection,
 	useAccidentInfo,
 	useDeleteSignature,
 	useSaveAccidentInfo,
 	useSaveClaimantInfo,
 	useSaveExpertOpinion,
 	useSaveOpponentInfo,
+	useSaveOwnerInfo,
 	useSaveSignature,
 	useSaveVisit,
 }

@@ -26,7 +26,7 @@ type VehicleFormData = {
 	drivenAxles: number
 	doors: number
 	seats: number
-	previousOwners: number
+	previousOwners: number | null
 }
 
 type VehicleSectionProps = {
@@ -35,6 +35,7 @@ type VehicleSectionProps = {
 	errors: FieldErrors<VehicleFormData>
 	onFieldBlur?: (field: string) => void
 	setValue?: UseFormSetValue<VehicleFormData>
+	disabled?: boolean
 }
 
 export type { VehicleFormData, VehicleSectionProps }

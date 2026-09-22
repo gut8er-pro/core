@@ -74,6 +74,8 @@ function calculationFromApi(data: CalculationResponse | undefined | null): Calcu
 		valuationAvg: text(rest.valuationAvg),
 		valuationMin: text(rest.valuationMin),
 		valuationDate: text(rest.valuationDate).split('T')[0] ?? '',
+		correctionResultWithout: text(rest.correctionResultWithout),
+		correctionResultWith: text(rest.correctionResultWith),
 		marketValue: text(rest.marketValue),
 		baseVehicleValue: text(rest.baseVehicleValue),
 		restorationValue: text(rest.restorationValue),

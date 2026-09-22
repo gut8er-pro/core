@@ -49,6 +49,10 @@ annotation, accident info and export.
 | 36 | Multi-upload silently drops photos | bug | high |
 | 37 | Updating Business Information breaks sending | bug | high |
 | 38 | OT Vehicle Grading rework (own tab, auto-grade, no duplicate paint) | feature | medium-high |
+| 39 | Condition unit "MKR" fails validation, silently loses the save batch | bug | medium |
+| 40 | Prior-damage "Damage description" textarea has no column — typed text never persisted | bug | medium |
+| 41 | BE Valuation: Quick/Detail Valuation buttons have no onClick | bug | medium |
+| 42 | CollapsibleSection unmounts collapsed children — effects never run | bug | medium |
 
 ## Suggested order of attack
 

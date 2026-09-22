@@ -77,7 +77,7 @@ function ValueSection({
 							label={t('chooseTaxRate')}
 							options={TAX_RATE_OPTIONS}
 							placeholder={tc('select')}
-							className="gap-3 sm:w-32 sm:shrink-0 sm:border-l sm:border-border-subtle sm:pl-6"
+							className="gap-3 sm:w-52 sm:shrink-0 sm:border-l sm:border-border-subtle sm:pl-6"
 							{...controlled('taxRate', field)}
 						/>
 					)}
@@ -87,14 +87,20 @@ function ValueSection({
 			{/* Residual value - full width */}
 			<TextField
 				label={t('residualValue')}
+				type="number"
+				prefix="€"
 				placeholder={t('addValue')}
+				step="0.01"
 				{...fieldProps('residualValue')}
 			/>
 
 			{/* Diminution in value - full width */}
 			<TextField
 				label={t('diminutionInValue')}
+				type="number"
+				prefix="€"
 				placeholder={t('addValue')}
+				step="0.01"
 				{...fieldProps('diminutionInValue')}
 			/>
 

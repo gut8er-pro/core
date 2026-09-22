@@ -5,6 +5,7 @@ import { useCallback } from 'react'
 import { useWatch } from 'react-hook-form'
 import { useFieldProps, useMissingProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { ComboField } from '@/components/ui/combo-field'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import { SECTION } from '@/lib/completeness'
@@ -17,6 +18,7 @@ function SpecificationSection({
 	errors,
 	onFieldBlur,
 	setValue,
+	disabled,
 	className,
 }: VehicleSectionProps & { className?: string }) {
 	const t = useTranslations('report')
@@ -26,6 +28,18 @@ function SpecificationSection({
 	const badge = useSectionBadge(SECTION.specification)
 	const engineDesign = useWatch({ control, name: 'engineDesign' })
 	const transmission = useWatch({ control, name: 'transmission' })
+	const sourceOfTechnicalData = useWatch({ control, name: 'sourceOfTechnicalData' })
+
+	const TECHNICAL_DATA_SOURCE_OPTIONS = [
+		{
+			value: t('vehicle.identification.technicalDataSourceOptions.documentsOriginal'),
+			label: t('vehicle.identification.technicalDataSourceOptions.documentsOriginal'),
+		},
+		{
+			value: t('vehicle.identification.technicalDataSourceOptions.documentCopy'),
+			label: t('vehicle.identification.technicalDataSourceOptions.documentCopy'),
+		},
+	]
 
 	const ENGINE_DESIGN_OPTIONS = [
 		{ value: 'Inline', label: t('vehicle.identification.engineDesignOptions.inline') },
@@ -78,7 +92,7 @@ function SpecificationSection({
 			className={className}
 			{...badge}
 		>
-			<div className="flex flex-col gap-4">
+			<fieldset disabled={disabled} className="flex flex-col gap-4">
 				{/* Row 1: Power (kW) / Power (HP) / Engine Design */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-end">
 					<TextField
@@ -105,6 +119,7 @@ function SpecificationSection({
 							onFieldBlur?.('engineDesign')
 						}}
 						error={errors.engineDesign?.message}
+						disabled={disabled}
 					/>
 				</div>
 
@@ -126,6 +141,7 @@ function SpecificationSection({
 							onFieldBlur?.('transmission')
 						}}
 						error={errors.transmission?.message}
+						disabled={disabled}
 						{...missing('transmission')}
 					/>
 					<TextField
@@ -148,13 +164,22 @@ function SpecificationSection({
 						type="date"
 						{...fieldProps('lastRegistration')}
 					/>
-					<TextField
+					<ComboField
 						label={t('vehicle.identification.technicalDataSource')}
+						name="sourceOfTechnicalData"
+						options={TECHNICAL_DATA_SOURCE_OPTIONS}
 						placeholder={t('vehicle.identification.kba')}
-						{...fieldProps('sourceOfTechnicalData')}
+						value={sourceOfTechnicalData || ''}
+						onValueChange={(value) =>
+							setValue?.('sourceOfTechnicalData', value, { shouldDirty: true })
+						}
+						onBlur={() => onFieldBlur?.('sourceOfTechnicalData')}
+						error={errors.sourceOfTechnicalData?.message}
+						disabled={disabled}
+						{...missing('sourceOfTechnicalData')}
 					/>
 				</div>
-			</div>
+			</fieldset>
 		</CollapsibleSection>
 	)
 }

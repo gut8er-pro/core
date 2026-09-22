@@ -1,6 +1,11 @@
-import { Edit, PenLine, Sparkles } from 'lucide-react'
+'use client'
+
+import { AlertCircle, Edit, Loader2, PenLine, Sparkles } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { type Control, Controller } from 'react-hook-form'
+import { TextField } from '@/components/ui/text-field'
 import { cn } from '@/lib/utils'
+import type { CalculationFormData } from './types'
 
 type CorrectionMode = 'dat' | 'manual' | 'ai'
 
@@ -8,6 +13,12 @@ type CorrectionSectionProps = {
 	mode?: CorrectionMode
 	onModeChange?: (mode: CorrectionMode) => void
 	onOpenDat?: () => void
+	onRunAi?: () => void
+	isAiRunning?: boolean
+	aiMessage?: string | null
+	datConnected?: boolean
+	control?: Control<CalculationFormData>
+	onFieldBlur?: (field: string) => void
 	resultWithoutLabel?: string
 	resultWithLabel?: string
 	resultWithoutValue?: string
@@ -21,6 +32,12 @@ function CorrectionSection({
 	mode = 'dat',
 	onModeChange,
 	onOpenDat,
+	onRunAi,
+	isAiRunning = false,
+	aiMessage,
+	datConnected = false,
+	control,
+	onFieldBlur,
 	resultWithoutLabel = 'Results without repair',
 	resultWithLabel = 'Results with repair',
 	resultWithoutValue = '—',
@@ -33,7 +50,8 @@ function CorrectionSection({
 
 	function handleTabClick(selected: CorrectionMode) {
 		onModeChange?.(selected)
-		if (selected === 'dat') onOpenDat?.()
+		if (selected === 'dat' && datConnected) onOpenDat?.()
+		if (selected === 'ai') onRunAi?.()
 	}
 
 	return (
@@ -79,23 +97,83 @@ function CorrectionSection({
 				<button
 					type="button"
 					onClick={() => handleTabClick('ai')}
+					disabled={isAiRunning}
 					className={cn(
-						'flex flex-col items-center justify-center gap-3.5 rounded-xl border p-6 transition-colors',
+						'flex flex-col items-center justify-center gap-3.5 rounded-xl border p-6 transition-colors disabled:cursor-not-allowed disabled:opacity-60',
 						mode === 'ai' ? 'border-black' : 'border-border hover:bg-grey-25',
 					)}
 				>
-					<Sparkles className="h-8 w-8 text-black" />
+					{isAiRunning ? (
+						<Loader2 className="h-8 w-8 animate-spin text-black" />
+					) : (
+						<Sparkles className="h-8 w-8 text-black" />
+					)}
 					<span className="text-body-sm font-medium text-black">
-						{t('correction.aiCalculation')}
+						{isAiRunning ? t('autoFilling') : t('correction.aiCalculation')}
 					</span>
 				</button>
 			</div>
+
+			{mode === 'dat' && !datConnected && (
+				<CorrectionHint message={t('correction.datNotConnected')} />
+			)}
+
+			{mode === 'manual' && control && (
+				<div className="flex flex-col gap-4 rounded-xl border border-border p-5">
+					<span className="text-body-sm font-medium text-black">{t('correction.manualEntry')}</span>
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+						<Controller
+							name="correctionResultWithout"
+							control={control}
+							render={({ field }) => (
+								<TextField
+									label={resultWithoutLabel}
+									type="number"
+									prefix="€"
+									step="0.01"
+									placeholder="0.00"
+									value={field.value ?? ''}
+									onChange={field.onChange}
+									onBlur={() => onFieldBlur?.('correctionResultWithout')}
+								/>
+							)}
+						/>
+						<Controller
+							name="correctionResultWith"
+							control={control}
+							render={({ field }) => (
+								<TextField
+									label={resultWithLabel}
+									type="number"
+									prefix="€"
+									step="0.01"
+									placeholder="0.00"
+									value={field.value ?? ''}
+									onChange={field.onChange}
+									onBlur={() => onFieldBlur?.('correctionResultWith')}
+								/>
+							)}
+						/>
+					</div>
+				</div>
+			)}
+
+			{mode === 'ai' && aiMessage && <CorrectionHint message={aiMessage} />}
 
 			{/* Result cards */}
 			<div className="grid grid-cols-2 gap-5">
 				<ResultCard label={resultWithoutLabel} value={resultWithoutValue} onEdit={onEditWithout} />
 				<ResultCard label={resultWithLabel} value={resultWithValue} onEdit={onEditWith} />
 			</div>
+		</div>
+	)
+}
+
+function CorrectionHint({ message }: { message: string }) {
+	return (
+		<div className="flex items-start gap-2 rounded-xl border border-warning-border bg-warning-border/10 px-4 py-3">
+			<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning-dark" />
+			<span className="text-body-sm text-warning-dark">{message}</span>
 		</div>
 	)
 }

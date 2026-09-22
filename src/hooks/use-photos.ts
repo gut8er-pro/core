@@ -88,6 +88,54 @@ async function uploadPhoto(
 	return response.json()
 }
 
+/**
+ * Moves one photo to a new index, keeping every other photo's relative position.
+ * The result is the id order the server persists, so the drop and the write agree
+ * on what the gallery looks like before the refetch lands.
+ */
+function reorderPhotos(photos: Photo[], fromId: string, toId: string): Photo[] {
+	const fromIndex = photos.findIndex((photo) => photo.id === fromId)
+	const toIndex = photos.findIndex((photo) => photo.id === toId)
+
+	if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
+		return photos
+	}
+
+	const next = [...photos]
+	const [moved] = next.splice(fromIndex, 1)
+	if (!moved) return photos
+	next.splice(toIndex, 0, moved)
+
+	return next.map((photo, index) => ({ ...photo, order: index }))
+}
+
+async function reorderPhotoRequest(reportId: string, photoIds: string[]): Promise<void> {
+	const response = await fetch(`/api/reports/${reportId}/photos/reorder`, {
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ photoIds }),
+	})
+	if (!response.ok) {
+		throw new Error('Failed to reorder photos')
+	}
+}
+
+async function rotatePhoto(
+	reportId: string,
+	photoId: string,
+	degrees: number,
+): Promise<{ photo: Photo }> {
+	const response = await fetch(`/api/reports/${reportId}/photos/${photoId}/rotate`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ degrees }),
+	})
+	if (!response.ok) {
+		throw new Error('Failed to rotate photo')
+	}
+	return response.json()
+}
+
 async function deletePhoto(reportId: string, photoId: string): Promise<void> {
 	const response = await fetch(`/api/reports/${reportId}/photos/${photoId}`, {
 		method: 'DELETE',
@@ -133,5 +181,50 @@ function useDeletePhoto(reportId: string) {
 	})
 }
 
+function useReorderPhotos(reportId: string) {
+	const queryClient = useQueryClient()
+	const queryKey = ['report', reportId, 'photos']
+
+	return useMutation({
+		mutationFn: ({ photoIds }: { photoIds: string[]; photos: Photo[] }) =>
+			reorderPhotoRequest(reportId, photoIds),
+		onMutate: async ({ photos }) => {
+			await queryClient.cancelQueries({ queryKey })
+			const previous = queryClient.getQueryData<{ photos: Photo[] }>(queryKey)
+			queryClient.setQueryData(queryKey, { photos })
+			return { previous }
+		},
+		onError: (_err, _vars, context) => {
+			if (context?.previous) {
+				queryClient.setQueryData(queryKey, context.previous)
+			}
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey })
+		},
+	})
+}
+
+function useRotatePhoto(reportId: string) {
+	const queryClient = useQueryClient()
+	return useMutation({
+		mutationFn: ({ photoId, degrees }: { photoId: string; degrees: number }) =>
+			rotatePhoto(reportId, photoId, degrees),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['report', reportId, 'photos'] })
+		},
+	})
+}
+
 export type { Annotation, Photo, UploadErrorCode }
-export { fetchPhotos, PhotoUploadError, uploadPhoto, useDeletePhoto, usePhotos, useUploadPhoto }
+export {
+	fetchPhotos,
+	PhotoUploadError,
+	reorderPhotos,
+	uploadPhoto,
+	useDeletePhoto,
+	usePhotos,
+	useReorderPhotos,
+	useRotatePhoto,
+	useUploadPhoto,
+}

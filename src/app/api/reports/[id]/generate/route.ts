@@ -14,6 +14,7 @@ import type {
 	TireAnalysisResult,
 } from '@/lib/ai/types'
 import { normalizeVehicleType } from '@/lib/ai/vehicle-lookup'
+import { pickFillable } from '@/lib/ai/write-guard'
 import { authErrorResponse, getEntitledUser } from '@/lib/api/auth'
 import { prisma } from '@/lib/prisma'
 
@@ -169,6 +170,7 @@ type PipelinePayloads = {
 		tireResults: TireAnalysisResult[]
 		overviewResults: OverviewAnalysisResult[]
 		interiorResults: InteriorAnalysisResult[]
+		nextMot: string | null
 	}
 	ownerData: {
 		firstName: string | null
@@ -284,10 +286,12 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 
 		if (Object.keys(dbData).length > 0) {
 			try {
+				const existing = await prisma.vehicleInfo.findUnique({ where: { reportId } })
+				const fillable = pickFillable(existing, dbData)
 				await prisma.vehicleInfo.upsert({
 					where: { reportId },
 					create: { reportId, ...dbData },
-					update: dbData,
+					update: fillable,
 				})
 			} catch (err) {
 				console.error('Failed to update vehicle info:', err)
@@ -307,41 +311,20 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 			try {
 				const existing = await prisma.claimantInfo.findUnique({ where: { reportId } })
 
-				const createData: Record<string, unknown> = { reportId }
-				const updateData: Record<string, unknown> = {}
-
-				if (plate) {
-					createData.licensePlate = plate
-					// Only fill on create; never overwrite a value the user has typed.
-					if (!existing?.licensePlate) updateData.licensePlate = plate
+				const candidates = {
+					licensePlate: plate,
+					firstName: owner?.firstName ?? null,
+					lastName: owner?.lastName ?? null,
+					street: owner?.street ?? null,
+					postcode: owner?.postcode ?? null,
+					location: owner?.location ?? null,
 				}
-				if (owner) {
-					if (owner.firstName) {
-						createData.firstName = owner.firstName
-						if (!existing?.firstName) updateData.firstName = owner.firstName
-					}
-					if (owner.lastName) {
-						createData.lastName = owner.lastName
-						if (!existing?.lastName) updateData.lastName = owner.lastName
-					}
-					if (owner.street) {
-						createData.street = owner.street
-						if (!existing?.street) updateData.street = owner.street
-					}
-					if (owner.postcode) {
-						createData.postcode = owner.postcode
-						if (!existing?.postcode) updateData.postcode = owner.postcode
-					}
-					if (owner.location) {
-						createData.location = owner.location
-						if (!existing?.location) updateData.location = owner.location
-					}
-				}
+				const createData = { reportId, ...pickFillable(null, candidates) }
 
 				await prisma.claimantInfo.upsert({
 					where: { reportId },
 					create: createData as Parameters<typeof prisma.claimantInfo.create>[0]['data'],
-					update: updateData,
+					update: pickFillable(existing, candidates),
 				})
 			} catch (err) {
 				console.error('Failed to update claimant info:', err)
@@ -353,7 +336,8 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 	const hasConditionData =
 		payloads.conditionData.damageMarkers.length > 0 ||
 		payloads.conditionData.overviewResults.length > 0 ||
-		payloads.conditionData.interiorResults.length > 0
+		payloads.conditionData.interiorResults.length > 0 ||
+		payloads.conditionData.nextMot !== null
 
 	if (hasConditionData) {
 		try {
@@ -383,14 +367,28 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 					conditionUpdateData.airbagsDeployed = interior.airbagsDeployed
 			}
 
+			if (payloads.conditionData.nextMot) {
+				const parsed = new Date(payloads.conditionData.nextMot)
+				if (!Number.isNaN(parsed.getTime())) conditionUpdateData.nextMot = parsed
+			}
+
+			const existingCondition = await prisma.vehicleCondition.findUnique({ where: { reportId } })
+			const conditionFillable: Record<string, unknown> = pickFillable(
+				existingCondition,
+				conditionUpdateData,
+			)
+
+			// manualSetup is the pipeline's own flag, not a field the assessor
+			// owns — the diagram has to render the markers we are about to add.
 			if (payloads.conditionData.damageMarkers.length > 0) {
 				conditionUpdateData.manualSetup = true
+				conditionFillable.manualSetup = true
 			}
 
 			const condition = await prisma.vehicleCondition.upsert({
 				where: { reportId },
 				create: { reportId, ...conditionUpdateData },
-				update: conditionUpdateData,
+				update: conditionFillable,
 			})
 
 			// Create new damage markers (additive — don't delete existing)
@@ -475,7 +473,10 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 						tireType: tire.tireType || undefined,
 					}
 					if (existingTire) {
-						await prisma.tire.update({ where: { id: existingTire.id }, data: tireData })
+						await prisma.tire.update({
+							where: { id: existingTire.id },
+							data: pickFillable(existingTire, tireData),
+						})
 					} else {
 						await prisma.tire.create({
 							data: {
@@ -531,7 +532,10 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 						tireType: tire.tireType || undefined,
 					}
 					if (existingTire) {
-						await prisma.tire.update({ where: { id: existingTire.id }, data: tireData })
+						await prisma.tire.update({
+							where: { id: existingTire.id },
+							data: pickFillable(existingTire, tireData),
+						})
 					} else {
 						await prisma.tire.create({
 							data: {
@@ -565,7 +569,10 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 						tireType: bestTire.tireType || undefined,
 					}
 					if (existingTire) {
-						await prisma.tire.update({ where: { id: existingTire.id }, data: fillData })
+						await prisma.tire.update({
+							where: { id: existingTire.id },
+							data: pickFillable(existingTire, fillData),
+						})
 					} else {
 						await prisma.tire.create({
 							data: {
@@ -597,15 +604,24 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 		if (calc.wheelAlignment) calcData.wheelAlignment = calc.wheelAlignment
 		if (calc.bodyMeasurements) calcData.bodyMeasurements = calc.bodyMeasurements
 		if (calc.bodyPaint) calcData.bodyPaint = calc.bodyPaint
-		if (calc.plasticRepair !== null) calcData.plasticRepair = calc.plasticRepair
 		if (calc.estimatedRepairDays) calcData.repairTimeDays = calc.estimatedRepairDays
 
-		if (Object.keys(calcData).length > 0) {
+		if (Object.keys(calcData).length > 0 || calc.plasticRepair !== null) {
 			try {
+				const existing = await prisma.calculation.findUnique({ where: { reportId } })
+				const fillable: Record<string, unknown> = pickFillable(existing, calcData)
+
+				// plasticRepair is a non-null boolean with a `false` default, so it
+				// always reads as user-owned. It can only be pre-filled on create.
+				if (calc.plasticRepair !== null) {
+					calcData.plasticRepair = calc.plasticRepair
+					if (!existing) fillable.plasticRepair = calc.plasticRepair
+				}
+
 				await prisma.calculation.upsert({
 					where: { reportId },
 					create: { reportId, ...calcData },
-					update: calcData,
+					update: fillable,
 				})
 			} catch (err) {
 				console.error('Failed to update calculation data:', err)
