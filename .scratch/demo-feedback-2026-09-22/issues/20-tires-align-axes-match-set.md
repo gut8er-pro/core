@@ -22,3 +22,10 @@ The Tires card renders both buttons but neither works. Expected behaviour (clien
 - Copies are prefills, not locks — editing an individual tire afterwards must stay possible.
 - While in there: the per-tire "usability" dots row also ends in a dead "+" (same as ticket 16's
   rows) — wire or remove it in the same pass.
+
+## Addendum from the meeting-notes PDFs
+
+- German labels confirmed: "Achsen ausrichten" / "Satz abgleichen" — both reported dead.
+- Also from the KG notes: tire DATA "not saved when changed" — coordinate with ticket 22 (the
+  autosave data-loss class); verify tire edits persist through a quick tab switch after the 22
+  fix lands, don't fix it twice.

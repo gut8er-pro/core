@@ -1,21 +1,36 @@
-# 22 — Loss of Use values don't reflect immediately
+# 22 — Data loss on tab switch: calculation, invoice and tire values vanish or never save
 
-Status: needs-info
+Status: ready-for-agent
 Type: bug
-Severity: medium
+Severity: high
 
-Client impression on the call: entering Loss of Use values "lags" — what you type doesn't show
-up in the dependent output right away ("kao da se ne reflektuje odmah").
+REWRITTEN after reading the meeting-notes PDFs — this is not a display lag, it is data loss.
+Three first-hand reports of the same class:
+
+- KG: "I filled out every field, the bar showed 1/3, I switched to Invoice and came back —
+  Vehicle Value data, Repair data and Loss of Use data WERE MISSING."
+- HS: "loss of use changes didn't get saved."
+- KG Invoice: "filled out fields — changes not saved." Tires: "data not saved when changed."
 
 ## Direction
 
-- First establish WHAT lags: the computed loss-of-use total / result cards, the tab completion
-  badge, or the fields themselves after navigation. The likely mechanism: the dependent display
-  reads from the SERVER round-trip (autosave debounce 800ms → PATCH → React Query invalidate →
-  refetch) instead of computing live from form state with `useWatch` — the same class of thing
-  the Betrag column fix solved on the invoice (`invoice-banner.tsx` computes from `useWatch`
-  now; `loss-section.tsx` should treat its derived values the same way).
-- Reproduce with the network tab open; if the lag is the save cycle, move the derived values to
-  client-side computation and leave persistence async as it is.
-- Needs-info only for the exact spot the client watched — ask Ivan which number felt stale if
-  the reproduction isn't obvious.
+The pattern (fill → navigate away quickly → come back → gone) points at the debounced autosave
+racing navigation, and/or the page's initialise-from-API `reset()` overwriting form state with
+a stale fetch:
+
+- `useAutoSave` flushes on unmount — verify the flush actually AWAITS and that a navigation
+  right after typing cannot cancel the in-flight PATCH (`keepalive`/`fetch` on unmount,
+  the queued-while-saving path, and the 800ms window).
+- On re-entry the page `reset(fromApi(data))` runs against React Query's CACHED response — if
+  the cache predates the last save (invalidate not awaited, or flush landed after refetch),
+  the stale reset wipes what was saved. Check the invalidate/refetch ordering in `useAutoSave`
+  onSuccess vs the pages' `initializedRef` pattern.
+- Reproduce deterministically with throttled network: type → switch tab within 800ms → return.
+  Fix must make that sequence lossless across calculation, invoice and tires (all three share
+  the same hooks/pattern, so the fix is likely central in `use-auto-save.ts` + the init
+  effect convention).
+- Add a regression E2E: fill loss-of-use → immediately click Invoice tab → back → values
+  present; same for a tire field and an invoice field.
+
+The one-word UX part of the original ticket (computed values feeling laggy) rides along:
+derived displays should compute from `useWatch`, not wait for the server round-trip.

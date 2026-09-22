@@ -25,3 +25,13 @@ Two distinct defects plus a requirement:
 
 E2E: extend the send flow spec with send → reopen → assert chips present → clear chips →
 button disabled.
+
+## Addendum from the meeting-notes PDFs
+
+- Scope widened: not just recipients — "if you fill out the sending formula but go back to the
+  report and come back, everything is lost" — SUBJECT and BODY must persist per report too
+  (ExportConfig carries all composer state).
+- The stale send is worse than captured: "recipient is empty but I click send — I receive the
+  OLD VERSION I sent last time; could be a problem if it is overarching between reports."
+  Verify the payload cannot come from another report's state, and that a re-send always
+  regenerates the PDFs from CURRENT data (never a cached attachment).

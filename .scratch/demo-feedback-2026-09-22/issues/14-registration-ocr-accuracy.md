@@ -39,3 +39,11 @@ and teach the plate-detection prompt to read the Plakette (year in the center, m
   write-site guard from 18 (never overwrite a non-empty user value) applies to these fields too.
 - Regression material exists: the audit photos + `testing/testing-images/`; add the client's
   expectation (correct kW/ccm/EZ for a known document) as an assertion where feasible.
+
+## Addendum from the meeting-notes PDFs
+
+- "Fix/Vehicle type wrong" — the detected VEHICLE TYPE was also wrong on the demo car (KIA Ceed
+  wagon); include vehicle-type classification in the accuracy pass and in the never-overwrite
+  guard.
+- The notes confirm: Power (kW) wrong, engine displacement wrong (screenshot showed 1482ccm on
+  a 1.6 CRDi), Last registration empty despite being clearly legible on the document photo.

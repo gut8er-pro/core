@@ -12,21 +12,24 @@ saves still go through.
 Business rule #1 in CLAUDE.md says locked reports are read-only, and the 2026-09-15 pass verified
 the BANNER, not the enforcement.
 
-## Direction
+## Finding (2026-09-22, pre-implementation audit)
 
-Two layers, both needed:
+The server ALREADY refuses locked writes — every section route
+(accident-info/vehicle/condition/calculation/invoice/photos) returns 403 "Report is locked" on
+PATCH/POST. What the client experienced is the CLIENT side: inputs stay enabled on a locked
+report, the debounced autosave swallows the 403 silently, and typing looks saved while nothing
+persists. Silent data-loss illusion, not a server hole.
 
-1. **Server (the one that matters):** every section PATCH route
-   (`/api/reports/[id]/{accident-info,vehicle,condition,calculation,invoice,photos,signatures}`)
-   must refuse writes when `report.isLocked` — today at least some of them don't check. Return a
-   dedicated code (e.g. 423 `locked`) so the client can toast it. Unlock stays where it is
-   (Export & Send toggle → `/api/reports/[id]` PATCH `isLocked: false`), and the send route keeps
-   working for delivered reports.
-2. **Client:** the details pages already receive `report.isLocked` (invoice page passes
-   `disabled: report?.isLocked` to `useAutoSave` — check the other tabs do the same) but the
-   INPUTS remain enabled. Disable/readOnly the form controls per tab when locked, hide
-   add/remove/upload affordances (photos, visits, line items, annotation editor), and make the
-   banner the single explanation.
+## Direction (revised)
 
-Add gate tests next to the existing send-gate suite (`testing/e2e/19-send-gate.spec.ts` covers
-the locked-download exemption; extend with locked-write refusals).
+1. **Shared:** `useAutoSave` surfaces the 403/locked response as a distinct error status so
+   every tab's save indicator shows "locked" loudly instead of nothing. (Done in the foundation
+   pass alongside the other shared pieces.)
+2. **Per tab, owned by each cluster agent:** when `report.isLocked`, disable/readOnly the form
+   controls and hide add/remove/upload affordances — accident-info, vehicle, condition,
+   calculation (wave 1); gallery + annotation editor (wave 1); invoice + export composer
+   (wave 2). The invoice page already passes `disabled` to `useAutoSave`; the rest follow the
+   same shape and additionally disable the inputs themselves.
+
+E2E: extend `19-send-gate.spec.ts` with a locked-write refusal probe and a locked-page
+inputs-disabled check per tab.

@@ -32,7 +32,7 @@ annotation, accident info and export.
 | 19 | Schadstoffplakette: selectable + official sticker look (label is mistranslated) | bug + design | medium |
 | 20 | Tires: "Align Axes" and "Match The Set" do nothing | bug | medium |
 | 21 | Calculation: missing € prefixes, clipped tax-rate select | polish | low |
-| 22 | Loss of Use values don't reflect immediately | bug | medium |
+| 22 | Data loss on tab switch: calculation, invoice, tire values vanish | bug | high |
 | 23 | Correction Calculation: Manual and AI paths don't work | bug | high |
 | 24 | Preview Invoice does nothing | bug | high |
 | 25 | Invoice carries claimant name + address | feature | medium |
@@ -45,6 +45,10 @@ annotation, accident info and export.
 | 32 | Resend: recipients vanish, "empty" send still mails out | bug | high |
 | 33 | Report number everywhere = file number (Aktenzeichen) | feature | medium |
 | 34 | Business Information: website/email/phone editable (no storage today) | bug | medium |
+| 35 | Completeness gate demands fields the client considers optional | feature | high |
+| 36 | Multi-upload silently drops photos | bug | high |
+| 37 | Updating Business Information breaks sending | bug | high |
+| 38 | OT Vehicle Grading rework (own tab, auto-grade, no duplicate paint) | feature | medium-high |
 
 ## Suggested order of attack
 
@@ -52,6 +56,10 @@ annotation, accident info and export.
 with) → 14 (AI credibility — read together with audit issues 17/18) → 04 + 05 (the two big
 feature asks; 05 has a schema migration) → 06 (schema migration) → 13, 16, 07, 08, 09, 10 →
 11, 12, 15.
+
+The client's own meeting-notes PDFs (Haftpflichtschaden_/Kurzgutachten_/Oldtimergutachten_,
+read 2026-09-22) are fully reconciled into these tickets. Future-steps noted there for later:
+Honorartables (see 27) and automatic Mahnung on delayed invoices (extends 28, not ticketed yet).
 
 Schema changes land in 05 and 06 — both are additive columns, so the auto-migrate deploy path
 covers them (`prisma/migrations/README.md`).
