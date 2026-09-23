@@ -78,7 +78,7 @@ function DetailsSection({
 
 	return (
 		<CollapsibleSection title={t('vehicle.details.heading')} info className={className} {...badge}>
-			<fieldset disabled={disabled} className="flex flex-col gap-6">
+			<fieldset disabled={disabled} className="flex min-w-0 flex-col gap-6">
 				<div className="flex items-center justify-between">
 					<Label className="min-w-35">{t('vehicle.details.vehicleType')}</Label>
 					<div className="flex items-center gap-2">

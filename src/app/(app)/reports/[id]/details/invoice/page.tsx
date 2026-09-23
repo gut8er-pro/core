@@ -224,7 +224,7 @@ function InvoicePage() {
 					reportType={toReportType(report?.reportType)}
 					control={control}
 				>
-					<fieldset disabled={isLocked} className="flex flex-col gap-6 disabled:opacity-60">
+					<fieldset disabled={isLocked} className="flex min-w-0 flex-col gap-6 disabled:opacity-60">
 						<InvoiceSettings
 							register={register}
 							control={control}

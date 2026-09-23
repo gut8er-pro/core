@@ -1061,6 +1061,7 @@
       "previewPdfLanguage": "Preview {language}",
       "noRecipientsHint": "Add at least one recipient to send this report.",
       "presetNoEmail": "No email address is on file for this recipient yet — add it in the report or enter the address manually.",
+      "presetLawyerNoEmail": "No email address is on file for the lawyer — only the claimant was added. Enter the lawyer's address manually or add it in the report.",
       "noSectionsHint": "Select at least one document section to include.",
       "reportSentToast": "Report sent successfully",
       "sendFailed": "Failed to send report. Please try again.",

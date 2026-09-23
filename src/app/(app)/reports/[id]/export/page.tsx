@@ -172,6 +172,10 @@ function ExportPage() {
 		toast.error(t('presetNoEmail'))
 	}, [toast, t])
 
+	const handlePresetPartial = useCallback(() => {
+		toast.warning(t('presetLawyerNoEmail'))
+	}, [toast, t])
+
 	const previewUrl = useCallback(
 		(lang: 'en' | 'de') =>
 			buildPdfUrl(reportId, {
@@ -374,6 +378,7 @@ function ExportPage() {
 						onRecipientsChange={handleRecipientsChange}
 						onRecipientModeChange={handleRecipientModeChange}
 						onPresetEmpty={handlePresetEmpty}
+						onPresetPartial={handlePresetPartial}
 						onBodyChange={handleBodyChange}
 						onSubjectBlur={handleSubjectBlur}
 					/>

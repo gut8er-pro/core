@@ -75,6 +75,30 @@ describe('EmailComposer presets', () => {
 		expect(onPresetEmpty).toHaveBeenCalledWith('claimant')
 	})
 
+	it('fills what exists and flags the missing lawyer on a partial preset', () => {
+		const onRecipientsChange = vi.fn()
+		const onRecipientModeChange = vi.fn()
+		const onPresetPartial = vi.fn()
+		render(
+			wrap(
+				<EmailComposer
+					{...baseProps}
+					recipients={[]}
+					presets={{ claimant: 'claimant@example.test', lawyer: null }}
+					onRecipientsChange={onRecipientsChange}
+					onRecipientModeChange={onRecipientModeChange}
+					onPresetPartial={onPresetPartial}
+				/>,
+			),
+		)
+
+		fireEvent.click(screen.getByRole('button', { name: 'Send to the claimant and their lawyer' }))
+
+		expect(onRecipientsChange).toHaveBeenCalledWith(['claimant@example.test'])
+		expect(onRecipientModeChange).toHaveBeenCalledWith('claimant_lawyer')
+		expect(onPresetPartial).toHaveBeenCalledWith('claimant_lawyer')
+	})
+
 	it('disables the preset buttons while the presets are loading', () => {
 		render(
 			wrap(

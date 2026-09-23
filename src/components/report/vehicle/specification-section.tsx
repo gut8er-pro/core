@@ -93,7 +93,7 @@ function SpecificationSection({
 			className={className}
 			{...badge}
 		>
-			<fieldset disabled={disabled} className="flex flex-col gap-4">
+			<fieldset disabled={disabled} className="flex min-w-0 flex-col gap-4">
 				{/* Row 1: Power (kW) / Power (HP) / Engine Design */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-end">
 					<TextField

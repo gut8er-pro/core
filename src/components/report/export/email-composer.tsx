@@ -25,6 +25,7 @@ type EmailComposerProps = {
 	onRecipientsChange: (recipients: string[]) => void
 	onRecipientModeChange: (mode: RecipientMode | null) => void
 	onPresetEmpty?: (mode: RecipientMode) => void
+	onPresetPartial?: (mode: RecipientMode) => void
 	onBodyChange: (html: string) => void
 	onSubjectBlur: () => void
 	disabled?: boolean
@@ -55,6 +56,7 @@ function EmailComposer({
 	onRecipientsChange,
 	onRecipientModeChange,
 	onPresetEmpty,
+	onPresetPartial,
 	onBodyChange,
 	onSubjectBlur,
 	disabled,
@@ -93,10 +95,11 @@ function EmailComposer({
 				onPresetEmpty?.(mode)
 				return
 			}
+			if (next.length < candidates.length) onPresetPartial?.(mode)
 			onRecipientsChange(next)
 			onRecipientModeChange(mode)
 		},
-		[presets, onRecipientsChange, onRecipientModeChange, onPresetEmpty],
+		[presets, onRecipientsChange, onRecipientModeChange, onPresetEmpty, onPresetPartial],
 	)
 
 	return (

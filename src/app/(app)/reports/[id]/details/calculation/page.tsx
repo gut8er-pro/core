@@ -297,7 +297,7 @@ function CalculationPage() {
 				>
 					<fieldset
 						disabled={isLocked}
-						className="flex flex-col gap-5 border-0 p-0 disabled:opacity-60"
+						className="flex min-w-0 flex-col gap-5 border-0 p-0 disabled:opacity-60"
 					>
 						{isOldtimerReport ? (
 							/* OT — Simple Vehicle Value with Market/Replacement/Restoration */
