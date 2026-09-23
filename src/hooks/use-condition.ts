@@ -103,17 +103,73 @@ function useSavePaintMarker(reportId: string) {
 	})
 }
 
+type CachedTireSet = ConditionResponse['tireSets'][number]
+
+function withSavedTires(cached: CachedTireSet, saved: TireSetInput): CachedTireSet {
+	return {
+		...cached,
+		matchAndAlloy: saved.matchAndAlloy ?? cached.matchAndAlloy,
+		tires: cached.tires.map((tire) => {
+			const typed = saved.tires?.find(
+				(candidate) =>
+					(candidate.id !== undefined && candidate.id === tire.id) ||
+					candidate.position === tire.position,
+			)
+			if (!typed) return tire
+			return {
+				...tire,
+				size: typed.size ?? tire.size,
+				profileLevel: typed.profileLevel ?? tire.profileLevel,
+				manufacturer: typed.manufacturer ?? tire.manufacturer,
+				usability: typed.usability ?? tire.usability,
+				dotCode: typed.dotCode ?? tire.dotCode,
+				tireType: typed.tireType ?? tire.tireType,
+			}
+		}),
+	}
+}
+
+/**
+ * Only sets the cache already holds are patched: a set the server has not
+ * created yet has no id to key it by, so it waits for the refetch.
+ */
+function applyTireSetsToCache(
+	tireSets: CachedTireSet[],
+	saves: TireSetInput[],
+): CachedTireSet[] | null {
+	let changed = false
+	const next = tireSets.map((cached) => {
+		const saved = saves.find((candidate) =>
+			candidate.id ? candidate.id === cached.id : candidate.setNumber === cached.setNumber,
+		)
+		if (!saved) return cached
+		changed = true
+		return withSavedTires(cached, saved)
+	})
+	return changed ? next : null
+}
+
 function useSaveTireSet(reportId: string) {
 	const queryClient = useQueryClient()
+	const queryKey = ['report', reportId, 'condition']
 	return useMutation({
 		mutationFn: (data: TireSetInput | TireSetInput[]) =>
 			patchConditionSection(reportId, {
 				tireSets: Array.isArray(data) ? data : [data],
 			}),
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ['report', reportId, 'condition'],
+		onMutate: async (data) => {
+			const saves = Array.isArray(data) ? data : [data]
+			const cached = queryClient.getQueryData<ConditionResponse>(queryKey)
+			if (!cached || !applyTireSetsToCache(cached.tireSets, saves)) return
+			await queryClient.cancelQueries({ queryKey })
+			queryClient.setQueryData<ConditionResponse>(queryKey, (current) => {
+				if (!current) return current
+				const tireSets = applyTireSetsToCache(current.tireSets, saves)
+				return tireSets ? { ...current, tireSets } : current
 			})
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey })
 		},
 	})
 }

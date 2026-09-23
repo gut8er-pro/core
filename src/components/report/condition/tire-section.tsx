@@ -2,7 +2,7 @@
 
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { useMissingProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
@@ -119,12 +119,14 @@ function TirePositionFields({
 	activeSetIndex,
 	activePosition,
 	onSaveTireSet,
+	liveTire,
 	disabled,
 }: {
 	activeTireSet: TireSetData & { id: string }
 	activeSetIndex: number
 	activePosition: string
 	onSaveTireSet: (tireSet: TireSetData & { id?: string }) => void
+	liveTire: RefObject<TireData | null>
 	disabled?: boolean
 }) {
 	const t = useTranslations('report.condition')
@@ -137,6 +139,7 @@ function TirePositionFields({
 	const baseTire = existingTire ?? { ...DEFAULT_TIRE, position: activePosition }
 
 	const [tire, setTire] = useState<TireData>(baseTire)
+	liveTire.current = tire
 
 	// Two things arrive from the server after this component has already
 	// rendered: the saved row's id, which the next blur needs or it writes a
@@ -361,12 +364,27 @@ function TireSection({
 	const displayedTireSets = tireSets.length > 0 ? tireSets : [PLACEHOLDER_TIRE_SET]
 	const activeTireSet = displayedTireSets[activeSetIndex] ?? displayedTireSets[0] ?? null
 
+	// Copy from the tyre on screen: it can hold typing the cache has not seen yet.
+	const liveTire = useRef<TireData | null>(null)
+
 	const copyActiveTireTo = useCallback(
 		(targets: string[]) => {
 			if (!activeTireSet) return
-			const source = activeTireSet.tires.find((tire) => tire.position === activePosition)
+			const cachedSource = activeTireSet.tires.find((tire) => tire.position === activePosition)
+			const onScreen = liveTire.current?.position === activePosition ? liveTire.current : null
+			const source = onScreen ?? cachedSource
 			if (!source) return
-			onSaveTireSet(applyTireToPositions(activeTireSet, source, targets))
+			const withSource = {
+				...activeTireSet,
+				tires: cachedSource
+					? activeTireSet.tires.map((tire) =>
+							tire.position === activePosition
+								? { ...source, id: tire.id ?? source.id, position: tire.position }
+								: tire,
+						)
+					: [...activeTireSet.tires, source],
+			}
+			onSaveTireSet(applyTireToPositions(withSource, source, targets))
 		},
 		[activeTireSet, activePosition, onSaveTireSet],
 	)
@@ -445,6 +463,7 @@ function TireSection({
 							activeSetIndex={activeSetIndex}
 							activePosition={activePosition}
 							onSaveTireSet={onSaveTireSet}
+							liveTire={liveTire}
 							disabled={disabled || awaitingFirstSet}
 						/>
 

@@ -225,4 +225,69 @@ test.describe('Condition Tab', () => {
 			await expect(page.getByLabel('Tire size')).toHaveValue('205/55 R16')
 		}
 	})
+
+	test('match the set copies what is on screen and shows it without a round-trip', async ({
+		page,
+	}) => {
+		const freshReportId = await createReportViaAPI(page, 'PW Tires Instant Copy', 'HS')
+		await page.goto(`/reports/${freshReportId}/details/condition`)
+		await openTires(page)
+
+		const size = page.getByLabel('Tire size')
+		const profile = page.getByLabel('Profile (mm)')
+		const manufacturer = page.getByLabel('Manufacturer', { exact: true })
+		await size.fill('235/40 R18')
+		await profile.fill('7')
+		await manufacturer.fill('Michelin')
+
+		await page.getByRole('button', { name: 'Match The Set' }).click()
+
+		for (const position of ['VR', 'HL', 'HR']) {
+			await page.getByRole('button', { name: position, exact: true }).click()
+			await expect(size).toHaveValue('235/40 R18', { timeout: 1500 })
+			await expect(profile).toHaveValue('7', { timeout: 1500 })
+			await expect(manufacturer).toHaveValue('Michelin', { timeout: 1500 })
+		}
+
+		await expect
+			.poll(
+				() =>
+					page.evaluate(async (rid: string) => {
+						const response = await fetch(`/api/reports/${rid}/condition`)
+						const body = (await response.json()) as {
+							tireSets: {
+								tires: {
+									position: string
+									size: string
+									profileLevel: string
+									manufacturer: string
+								}[]
+							}[]
+						}
+						return body.tireSets.map((set) =>
+							set.tires
+								.map((tire) => `${tire.position}:${tire.size}:${tire.profileLevel}:${tire.manufacturer}`)
+								.sort(),
+						)
+					}, freshReportId),
+				{ timeout: 10000 },
+			)
+			.toEqual([
+				[
+					'HL:235/40 R18:7:Michelin',
+					'HR:235/40 R18:7:Michelin',
+					'VL:235/40 R18:7:Michelin',
+					'VR:235/40 R18:7:Michelin',
+				],
+			])
+
+		await page.reload({ waitUntil: 'networkidle' })
+		await openTires(page)
+		for (const position of ['VL', 'VR', 'HL', 'HR']) {
+			await page.getByRole('button', { name: position, exact: true }).click()
+			await expect(size).toHaveValue('235/40 R18')
+			await expect(profile).toHaveValue('7')
+			await expect(manufacturer).toHaveValue('Michelin')
+		}
+	})
 })

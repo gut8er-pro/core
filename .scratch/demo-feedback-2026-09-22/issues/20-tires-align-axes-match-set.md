@@ -163,3 +163,24 @@ red for the wrong reason, and it would have stayed red after any fix. It now ope
 accordion the way `07-condition.spec.ts` does and addresses the field by its label; the
 `toBeEditable` wait doubles as the wait for the real set. 5/5 green, and faster (8-12s, against
 20-30s when it was timing out).
+
+### Follow-up 3: 2026-09-23 prod feedback — copies used stale values and showed late
+
+Reported on production: Align/Match seemed to copy old or empty values, and the other position
+tabs showed the copies (and even plain typed values after a tab switch) only seconds later.
+
+Two causes. `copyActiveTireTo` took its source from `activeTireSet.tires`, the React Query cache,
+not from `TirePositionFields`' local `tire` state, so a click before the blur save and refetch
+had landed copied the stale row. And `useSaveTireSet` only invalidated, so every tab rendered the
+old `tireSets` until the PATCH and the refetch both answered.
+
+Fix: `TireSection` owns a `liveTire` ref that `TirePositionFields` keeps pointed at the tyre on
+screen; the copy sources from it (falling back to the cache row), refreshes the source row in the
+set, and sends one full-set PATCH that persists the source and the copies together, with each
+target keeping its own id and position via `applyTireToPositions`. `useSaveTireSet` now writes
+the payload into the condition cache in `onMutate` (matched by set id, else `setNumber`; only
+sets already in the cache, so the placeholder never lands there; cached ids are kept) and
+invalidates on settle so server truth still converges and a failed save reverts. The adoption
+effect's editing guard is unchanged. New E2E in `07-condition.spec.ts` fills VL, clicks Match
+The Set with no wait, and asserts VR/HL/HR within 1.5s, then one set with four matching tyres
+via the API and after a reload. With the fix disabled that test fails on VR (`""`).
