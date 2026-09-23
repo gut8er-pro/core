@@ -1,6 +1,6 @@
 'use client'
 
-import { Plus } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 import { Controller, useFieldArray, useWatch } from 'react-hook-form'
@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { TextField } from '@/components/ui/text-field'
 import { SECTION } from '@/lib/completeness'
+import { defaultLineItemByKey, lineItemAmount } from '@/lib/invoice/default-line-items'
 import { cn } from '@/lib/utils'
 import type { InvoiceSectionProps } from './types'
 
@@ -22,14 +23,28 @@ function formatEUR(value: number): string {
 
 type LineItemRowProps = InvoiceSectionProps & {
 	index: number
+	onRemove: (index: number) => void
 }
 
-function LineItemRow({ register, control, errors, onFieldBlur, index }: LineItemRowProps) {
+function LineItemRow({
+	register,
+	control,
+	errors,
+	onFieldBlur,
+	index,
+	onRemove,
+}: LineItemRowProps) {
 	const t = useTranslations('report.invoice')
 	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
 	const rate = useWatch({ control, name: `lineItems.${index}.rate` })
-	const qty = useWatch({ control, name: `lineItems.${index}.quantity` }) ?? 1
-	const amountVal = (parseFloat(String(rate)) || 0) * (parseInt(String(qty), 10) || 1)
+	const qty = useWatch({ control, name: `lineItems.${index}.quantity` })
+	const isLumpSum = useWatch({ control, name: `lineItems.${index}.isLumpSum` })
+	const key = useWatch({ control, name: `lineItems.${index}.specialFeature` })
+
+	const defaultItem = defaultLineItemByKey(key)
+	const lumpSumOnly = defaultItem?.lumpSumOnly ?? false
+	const showQuantity = !lumpSumOnly && !isLumpSum
+	const amountVal = lineItemAmount({ specialFeature: key, isLumpSum, rate, quantity: qty })
 
 	return (
 		<div
@@ -38,8 +53,7 @@ function LineItemRow({ register, control, errors, onFieldBlur, index }: LineItem
 				'md:grid md:grid-cols-12 md:items-center md:gap-4 md:px-1',
 			)}
 		>
-			{/* Description */}
-			<div className="md:col-span-4">
+			<div className="md:col-span-3">
 				<TextField
 					label={t('description')}
 					placeholder={t('serviceDescription')}
@@ -48,28 +62,40 @@ function LineItemRow({ register, control, errors, onFieldBlur, index }: LineItem
 				/>
 			</div>
 
-			{/* Special Feature with Lump Sum checkbox */}
 			<div className="md:col-span-2 flex items-center gap-2">
-				<Controller
-					name={`lineItems.${index}.isLumpSum`}
-					control={control}
-					render={({ field: checkboxField }) => (
-						<label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
-							<Checkbox
-								checked={checkboxField.value}
-								onCheckedChange={(checked) => {
-									checkboxField.onChange(checked)
-									onFieldBlur?.(`lineItems.${index}.isLumpSum`)
-								}}
-							/>
-							<span className="text-body-sm text-black">{t('lumpSum')}</span>
-						</label>
-					)}
-				/>
+				{!lumpSumOnly && (
+					<Controller
+						name={`lineItems.${index}.isLumpSum`}
+						control={control}
+						render={({ field: checkboxField }) => (
+							<label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
+								<Checkbox
+									checked={checkboxField.value}
+									onCheckedChange={(checked) => {
+										checkboxField.onChange(checked)
+										onFieldBlur?.(`lineItems.${index}.isLumpSum`)
+									}}
+								/>
+								<span className="text-body-sm text-black">{t('lumpSum')}</span>
+							</label>
+						)}
+					/>
+				)}
 			</div>
 
-			{/* Rate */}
-			<div className="md:col-span-1" />
+			<div className="md:col-span-2">
+				{showQuantity && (
+					<TextField
+						label={t('quantity')}
+						type="number"
+						min="0"
+						step="1"
+						placeholder={defaultItem?.unitKey ? t(defaultItem.unitKey) : '0'}
+						{...fieldProps(`lineItems.${index}.quantity`)}
+						className="md:[&>label]:hidden"
+					/>
+				)}
+			</div>
 
 			<div className="md:col-span-2">
 				<TextField
@@ -83,9 +109,19 @@ function LineItemRow({ register, control, errors, onFieldBlur, index }: LineItem
 				/>
 			</div>
 
-			{/* Amount */}
-			<div className="md:col-span-3 flex items-center justify-end">
+			<div className="md:col-span-2 flex items-center justify-end">
 				<span className="text-body font-semibold text-black">{formatEUR(amountVal)}</span>
+			</div>
+
+			<div className="md:col-span-1 flex items-center justify-end">
+				<button
+					type="button"
+					onClick={() => onRemove(index)}
+					aria-label={t('removeRow')}
+					className="cursor-pointer rounded-md p-2 text-grey-100 transition-colors hover:bg-grey-25 hover:text-danger"
+				>
+					<Trash2 className="h-4 w-4" />
+				</button>
 			</div>
 		</div>
 	)
@@ -93,6 +129,7 @@ function LineItemRow({ register, control, errors, onFieldBlur, index }: LineItem
 
 type LineItemsSectionProps = InvoiceSectionProps & {
 	bvskContent?: ReactNode
+	onRowsChange?: () => void
 }
 
 function LineItemsSection({
@@ -102,10 +139,11 @@ function LineItemsSection({
 	onFieldBlur,
 	className,
 	bvskContent,
+	onRowsChange,
 }: LineItemsSectionProps) {
 	const t = useTranslations('report.invoice')
 	const badge = useSectionBadge(SECTION.lineItems)
-	const { fields, append } = useFieldArray({
+	const { fields, append, remove } = useFieldArray({
 		control,
 		name: 'lineItems',
 	})
@@ -113,25 +151,23 @@ function LineItemsSection({
 	return (
 		<CollapsibleSection title={t('itemDetails')} info defaultOpen className={className} {...badge}>
 			<div className="flex flex-col gap-5">
-				{/* BVSK rate table content, passed from parent */}
 				{bvskContent}
 
-				{/* Column headers */}
 				<div className="hidden border-b border-border pb-2 md:grid md:grid-cols-12 md:gap-4 md:px-1">
-					<span className="col-span-4 text-caption font-medium text-grey-100">
+					<span className="col-span-3 text-caption font-medium text-grey-100">
 						{t('description')}
 					</span>
 					<span className="col-span-2 text-caption font-medium text-grey-100">
 						{t('specialFeature')}
 					</span>
-					<span className="col-span-1 text-caption font-medium text-grey-100 text-center"></span>
+					<span className="col-span-2 text-caption font-medium text-grey-100">{t('quantity')}</span>
 					<span className="col-span-2 text-caption font-medium text-grey-100">{t('rate')}</span>
-					<span className="col-span-3 text-caption font-medium text-grey-100 text-right">
+					<span className="col-span-2 text-caption font-medium text-grey-100 text-right">
 						{t('amount')}
 					</span>
+					<span className="col-span-1" />
 				</div>
 
-				{/* Line item rows */}
 				{fields.map((row, index) => (
 					<LineItemRow
 						key={row.id}
@@ -140,10 +176,13 @@ function LineItemsSection({
 						errors={errors}
 						onFieldBlur={onFieldBlur}
 						index={index}
+						onRemove={(target) => {
+							remove(target)
+							queueMicrotask(() => onRowsChange?.())
+						}}
 					/>
 				))}
 
-				{/* Add Row button */}
 				<Button
 					type="button"
 					variant="primary"

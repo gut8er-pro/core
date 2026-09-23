@@ -24,6 +24,9 @@ type UserSettings = {
 		taxId: string
 		vatId: string | null
 		logoUrl: string | null
+		website: string | null
+		email: string | null
+		phone: string | null
 	} | null
 	integrations: Array<{
 		id: string

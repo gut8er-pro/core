@@ -5,7 +5,12 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { ChartPeriodToggle } from '@/components/ui/chart-period-toggle'
 import { useRevenueSeries } from '@/hooks/use-revenue-series'
-import { type ChartPeriod, type InvoiceStatus, useRevenueStats } from '@/hooks/use-revenue-stats'
+import {
+	type ChartPeriod,
+	type InvoiceStatus,
+	useRevenueStats,
+	useSetInvoicePaid,
+} from '@/hooks/use-revenue-stats'
 import { cn } from '@/lib/utils'
 
 const MONTH_KEYS = [
@@ -23,6 +28,9 @@ const MONTH_KEYS = [
 	'months.dec',
 ] as const
 
+const STATUS_FILTERS: Array<InvoiceStatus | 'all'> = ['all', 'pending', 'delayed', 'completed']
+const NO_VALUE = '—'
+
 const AXIS_STEPS = [4, 3, 2, 1, 0]
 const NICE_STEPS = [1, 2, 4, 8, 10]
 const EMPTY_AXIS_MAX = 1000
@@ -39,8 +47,10 @@ function StatisticsPage() {
 	const tc = useTranslations('common')
 	const locale = useLocale()
 	const { data: stats, isLoading, isError } = useRevenueStats()
+	const setPaid = useSetInvoicePaid()
 	const [chartView, setChartView] = useState<ChartPeriod>('monthly')
 	const [searchQuery, setSearchQuery] = useState('')
+	const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all'>('all')
 
 	const totalRevenue = stats?.totalRevenue ?? 0
 	const totalReports = stats?.totalReports ?? 0
@@ -58,11 +68,13 @@ function StatisticsPage() {
 
 	const invoices = stats?.invoices ?? []
 	const filteredInvoices = invoices.filter((invoice) => {
+		if (statusFilter !== 'all' && invoice.status !== statusFilter) return false
 		if (!searchQuery) return true
 		const query = searchQuery.toLowerCase()
 		return (
 			(invoice.client?.toLowerCase().includes(query) ?? false) ||
-			(invoice.invoiceNumber?.toLowerCase().includes(query) ?? false)
+			(invoice.invoiceNumber?.toLowerCase().includes(query) ?? false) ||
+			(invoice.fileNumber?.toLowerCase().includes(query) ?? false)
 		)
 	})
 
@@ -122,6 +134,20 @@ function StatisticsPage() {
 					changeLabel={t('vsPreviousPeriod')}
 					locale={locale}
 				/>
+				<StatCard
+					label={t('pendingRevenue')}
+					value={isLoading ? '—' : formatCurrencyRounded(stats?.pendingRevenue ?? 0, locale)}
+					change={null}
+					changeLabel={t('vsPreviousPeriod')}
+					locale={locale}
+				/>
+				<StatCard
+					label={t('delayedRevenue')}
+					value={isLoading ? '—' : formatCurrencyRounded(stats?.delayedRevenue ?? 0, locale)}
+					change={null}
+					changeLabel={t('vsPreviousPeriod')}
+					locale={locale}
+				/>
 			</div>
 
 			{/* Revenue chart */}
@@ -165,15 +191,34 @@ function StatisticsPage() {
 						<h2 className="text-subsection font-medium text-black">{t('invoiceHistory')}</h2>
 						<Info className="h-4 w-4 text-grey-100" />
 					</div>
-					<div className="relative">
-						<Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-grey-100" />
-						<input
-							type="text"
-							placeholder={t('searchPlaceholder')}
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							className="h-11 w-[320px] rounded-lg border border-border bg-white pl-10 pr-3 text-body-sm text-black opacity-80 outline-none placeholder:text-grey-100 focus:border-primary"
-						/>
+					<div className="flex items-center gap-3">
+						<div className="flex items-center gap-1 rounded-lg border border-border bg-white p-1">
+							{STATUS_FILTERS.map((option) => (
+								<button
+									key={option}
+									type="button"
+									onClick={() => setStatusFilter(option)}
+									className={cn(
+										'cursor-pointer rounded-md px-3 py-1.5 text-body-sm font-medium transition-colors',
+										statusFilter === option
+											? 'bg-primary text-white'
+											: 'text-grey-100 hover:text-black',
+									)}
+								>
+									{option === 'all' ? t('status.all') : statusLabels[option]}
+								</button>
+							))}
+						</div>
+						<div className="relative">
+							<Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-grey-100" />
+							<input
+								type="text"
+								placeholder={t('searchPlaceholder')}
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								className="h-11 w-[320px] rounded-lg border border-border bg-white pl-10 pr-3 text-body-sm text-black opacity-80 outline-none placeholder:text-grey-100 focus:border-primary"
+							/>
+						</div>
 					</div>
 				</div>
 
@@ -183,6 +228,9 @@ function StatisticsPage() {
 							<tr className="border-b border-border-card bg-surface-secondary">
 								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">
 									{t('table.clients')}
+								</th>
+								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">
+									{t('table.reportNumber')}
 								</th>
 								<th className="px-6 py-3 text-left text-caption font-medium text-grey-100">
 									{t('table.invoiceId')}
@@ -201,7 +249,7 @@ function StatisticsPage() {
 						<tbody>
 							{filteredInvoices.length === 0 ? (
 								<tr>
-									<td colSpan={5} className="px-6 py-10 text-center text-body-sm text-grey-100">
+									<td colSpan={6} className="px-6 py-10 text-center text-body-sm text-grey-100">
 										{emptyMessage()}
 									</td>
 								</tr>
@@ -222,7 +270,10 @@ function StatisticsPage() {
 												</div>
 											</td>
 											<td className="px-6 py-3 text-body-sm text-grey-100">
-												{invoice.invoiceNumber ?? '—'}
+												{invoice.fileNumber || NO_VALUE}
+											</td>
+											<td className="px-6 py-3 text-body-sm text-grey-100">
+												{invoice.invoiceNumber || NO_VALUE}
 											</td>
 											<td className="px-6 py-3 text-body-sm text-grey-100">
 												{formatInvoiceDate(invoice.date, locale)}
@@ -239,6 +290,14 @@ function StatisticsPage() {
 												<InvoiceStatusBadge
 													status={invoice.status}
 													label={statusLabels[invoice.status]}
+													title={t('toggleStatus')}
+													disabled={setPaid.isPending}
+													onToggle={() =>
+														setPaid.mutate({
+															id: invoice.id,
+															paid: invoice.status !== 'completed',
+														})
+													}
 												/>
 											</td>
 										</tr>
@@ -335,25 +394,39 @@ function AreaChart({ data, maxValue }: { data: number[]; maxValue: number }) {
 	)
 }
 
-function InvoiceStatusBadge({ status, label }: { status: InvoiceStatus; label: string }) {
-	if (status === 'completed') {
-		return (
-			<span className="inline-flex items-center justify-center rounded-md border border-[0.5px] border-primary bg-primary/10 px-1.5 py-1 text-caption text-success-dark">
-				{label}
-			</span>
-		)
-	}
-	if (status === 'pending') {
-		return (
-			<span className="inline-flex items-center justify-center rounded-md border border-warning-border bg-warning/10 px-1.5 py-1 text-caption text-warning-dark">
-				{label}
-			</span>
-		)
-	}
+const STATUS_BADGE_STYLES: Record<InvoiceStatus, string> = {
+	completed: 'border-[0.5px] border-primary bg-primary/10 text-success-dark',
+	pending: 'border-warning-border bg-warning/10 text-warning-dark',
+	delayed: 'border-[0.5px] border-danger bg-error/10 text-danger',
+}
+
+function InvoiceStatusBadge({
+	status,
+	label,
+	title,
+	disabled,
+	onToggle,
+}: {
+	status: InvoiceStatus
+	label: string
+	title: string
+	disabled?: boolean
+	onToggle: () => void
+}) {
 	return (
-		<span className="inline-flex items-center justify-center rounded-md border border-[0.5px] border-danger bg-error/10 px-1.5 py-1 text-caption text-danger">
+		<button
+			type="button"
+			title={title}
+			aria-label={title}
+			disabled={disabled}
+			onClick={onToggle}
+			className={cn(
+				'inline-flex cursor-pointer items-center justify-center rounded-md border px-1.5 py-1 text-caption transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-60',
+				STATUS_BADGE_STYLES[status],
+			)}
+		>
 			{label}
-		</span>
+		</button>
 	)
 }
 

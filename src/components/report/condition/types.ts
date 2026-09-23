@@ -69,7 +69,7 @@ type OldtimerDetailsData = {
 	marketReputation: string
 }
 
-/** The ten graded categories, in the order the grading table renders them. */
+/** Every category the `grading*` columns cover, paint included. */
 const GRADING_CATEGORIES = [
 	'bodywork',
 	'tires',
@@ -84,6 +84,15 @@ const GRADING_CATEGORIES = [
 ] as const
 
 type GradingCategory = (typeof GRADING_CATEGORIES)[number]
+
+/**
+ * The categories the grading tab actually asks for, in render order. Paint is
+ * assessed once, on the Visual Accident Details paint layer; its column stays so
+ * reports graded before the split keep their value.
+ */
+const GRADED_CATEGORIES = GRADING_CATEGORIES.filter(
+	(category) => category !== 'paint',
+) as readonly Exclude<GradingCategory, 'paint'>[]
 
 /** Every column that holds a grade — the ten categories plus the overall score. */
 type GradingField = `grading${Capitalize<GradingCategory>}` | 'gradingOverall'
@@ -195,4 +204,4 @@ export type {
 	TireData,
 	TireSetData,
 }
-export { EMISSION_GROUPS, GRADING_CATEGORIES, gradingKey, MILEAGE_UNITS }
+export { EMISSION_GROUPS, GRADED_CATEGORIES, GRADING_CATEGORIES, gradingKey, MILEAGE_UNITS }

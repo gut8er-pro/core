@@ -26,6 +26,7 @@ function useTabCompletion(reportId: string, reportType?: string): TabCompletion 
 			accidentInfo: toCompletion(report.tabs.accidentInfo),
 			vehicle: toCompletion(report.tabs.vehicle),
 			condition: toCompletion(report.tabs.condition),
+			grading: toCompletion(report.tabs.grading),
 			calculation: toCompletion(report.tabs.calculation),
 			invoice: toCompletion(report.tabs.invoice),
 		}),

@@ -55,10 +55,7 @@ function formatReportDate(dateStr: string, locale: string): string {
 	}).format(new Date(dateStr))
 }
 
-function generateReportNumber(id: string): string {
-	const hash = id.replace(/-/g, '').slice(0, 6).toUpperCase()
-	return `GH-${hash.slice(0, 3)}-${hash.slice(3, 5)}`
-}
+const NO_VALUE = '—'
 
 function ReportTable({ reports, onDelete, isDeleting }: ReportTableProps) {
 	const router = useRouter()
@@ -140,7 +137,6 @@ function ReportRow({
 
 	const title = report.title === UNTITLED_REPORT ? t('untitledReport') : report.title
 	const displayName = report.claimantName || title
-	const reportNumber = generateReportNumber(report.id)
 	const plateNumber = report.plateNumber
 	const carModel = [report.vehicleMake, report.vehicleModel].filter(Boolean).join(' - ') || null
 
@@ -175,7 +171,7 @@ function ReportRow({
 
 			{/* Report Number */}
 			<td className="hidden px-6 py-3 md:table-cell">
-				<span className="text-body-sm text-grey-100">{reportNumber}</span>
+				<span className="text-body-sm text-grey-100">{report.fileNumber || NO_VALUE}</span>
 			</td>
 
 			{/* Plate Number */}

@@ -56,3 +56,13 @@ should omit the line entirely when the group is `null`.
 
 E2E: `07-condition.spec.ts` covers select → reload → still selected, then click-again →
 reload → deselected.
+
+## PDF follow-up (2026-09-23) — done
+
+The line the wave-1 resolution flagged as "not done, out of my file ownership" now exists.
+`src/lib/pdf/report-template.tsx` renders a **Schadstoffplakette / Emission Sticker** row in the
+Vehicle Condition section, sourced from `condition.emissionGroup` and **omitted entirely when
+the value is null**, exactly as the ticket note asked. New `emissionSticker` key in both PDF
+locales (`src/lib/pdf/translations.ts`).
+
+Verified on a live report with group 4: `Schadstoffplakette    4`.

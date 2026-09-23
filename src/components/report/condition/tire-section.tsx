@@ -47,6 +47,24 @@ function withoutPlaceholderId(tireSet: TireSetData & { id?: string }) {
 	return rest
 }
 
+/**
+ * Re-aims a save written against the placeholder at the set the server actually
+ * created, matching on position and keeping each real row's own id so the PATCH
+ * updates rows instead of creating a second set beside the first.
+ */
+function ontoRealSet(
+	realSet: TireSetData & { id: string },
+	placeholderSave: TireSetData,
+): TireSetData & { id: string } {
+	return {
+		...realSet,
+		tires: realSet.tires.map((tire) => {
+			const typed = placeholderSave.tires.find((candidate) => candidate.position === tire.position)
+			return typed ? { ...typed, id: tire.id, position: tire.position } : tire
+		}),
+	}
+}
+
 const MAX_USABILITY = 5
 
 type TireSectionProps = {
@@ -120,11 +138,26 @@ function TirePositionFields({
 
 	const [tire, setTire] = useState<TireData>(baseTire)
 
-	// Sync local state when position or set changes
+	// Two things arrive from the server after this component has already
+	// rendered: the saved row's id, which the next blur needs or it writes a
+	// second tyre at the same position, and the saved values, which are what the
+	// assessor sees on coming back to the tab. Both are adopted — but a field the
+	// assessor is currently editing is never overwritten, so an answer landing
+	// mid-edit cannot wipe what they are typing.
+	const editing = useRef(false)
 	useEffect(() => {
-		const found = activeTireSet.tires.find((tr) => tr.position === activePosition)
-		setTire(found ?? { ...DEFAULT_TIRE, position: activePosition })
-	}, [activePosition, activeTireSet.tires.find])
+		setTire((current) => {
+			if (current.position !== activePosition) {
+				editing.current = false
+				return existingTire ?? { ...DEFAULT_TIRE, position: activePosition }
+			}
+			if (!existingTire) return current
+			if (editing.current) {
+				return current.id === existingTire.id ? current : { ...current, id: existingTire.id }
+			}
+			return existingTire
+		})
+	}, [activePosition, existingTire])
 
 	const TIRE_TYPES = [
 		{ value: 'summer', label: t('tires.tireTypeOptions.summer') },
@@ -135,21 +168,26 @@ function TirePositionFields({
 	function saveCurrentTire(updated: TireData) {
 		const hasTire = activeTireSet.tires.some((tr) => tr.position === activePosition)
 		const updatedTires = hasTire
-			? activeTireSet.tires.map((tr) => (tr.position === activePosition ? updated : tr))
+			? activeTireSet.tires.map((tr) =>
+					tr.position === activePosition ? { ...updated, id: updated.id ?? tr.id } : tr,
+				)
 			: [...activeTireSet.tires, updated]
 		onSaveTireSet({ ...activeTireSet, tires: updatedTires })
 	}
 
 	function handleLocalChange(field: keyof TireData, value: string | number) {
+		editing.current = true
 		const updated = { ...tire, [field]: value }
 		setTire(updated)
 	}
 
 	function handleBlur() {
+		editing.current = false
 		saveCurrentTire(tire)
 	}
 
 	function handleImmediateChange(field: keyof TireData, value: string | number) {
+		editing.current = false
 		const updated = { ...tire, [field]: value }
 		setTire(updated)
 		saveCurrentTire(updated)
@@ -258,8 +296,25 @@ function TireSection({
 	disabled,
 	className,
 }: TireSectionProps) {
+	// A save aimed at the placeholder must not go out carrying its synthetic id,
+	// and must not go out id-less either — the API reads that as a brand-new set
+	// and answers by creating a SECOND one, which is where the typed value used to
+	// disappear. By the time anything is typed the auto-create has normally
+	// answered, so the save is simply re-aimed at the real set.
+	const realFirstSet = tireSets[0]
+	const realFirstSetRef = useRef(realFirstSet)
+	realFirstSetRef.current = realFirstSet
+
 	const onSaveTireSet = useCallback(
-		(tireSet: TireSetData & { id?: string }) => onSaveTireSetRaw(withoutPlaceholderId(tireSet)),
+		(tireSet: TireSetData & { id?: string }) => {
+			if (tireSet.id !== PLACEHOLDER_SET_ID) {
+				onSaveTireSetRaw(tireSet)
+				return
+			}
+			const landed = realFirstSetRef.current
+			if (!landed) return
+			onSaveTireSetRaw(ontoRealSet(landed, withoutPlaceholderId(tireSet)))
+		},
 		[onSaveTireSetRaw],
 	)
 	const t = useTranslations('report.condition')
@@ -299,8 +354,10 @@ function TireSection({
 
 	// The first set's fields show from the first render, before the auto-create
 	// round-trip returns an id — the assessor sees the four position tabs and an
-	// empty form, not an empty card. Typing saves onto this set the moment it
-	// lands, because the save path matches on position, not id.
+	// empty form, not an empty card. They stay read-only for the round-trip,
+	// because there is no set to save onto yet and a value typed into the
+	// placeholder would be dropped rather than written.
+	const awaitingFirstSet = tireSets.length === 0
 	const displayedTireSets = tireSets.length > 0 ? tireSets : [PLACEHOLDER_TIRE_SET]
 	const activeTireSet = displayedTireSets[activeSetIndex] ?? displayedTireSets[0] ?? null
 
@@ -388,7 +445,7 @@ function TireSection({
 							activeSetIndex={activeSetIndex}
 							activePosition={activePosition}
 							onSaveTireSet={onSaveTireSet}
-							disabled={disabled}
+							disabled={disabled || awaitingFirstSet}
 						/>
 
 						{/* Match and Align — icon + label left, buttons right (no checkbox per Figma) */}

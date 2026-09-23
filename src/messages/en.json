@@ -1,5 +1,11 @@
 {
   "common": {
+    "dateField": {
+      "placeholder": "dd.mm.yyyy",
+      "openCalendar": "Open calendar",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month"
+    },
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -768,7 +774,6 @@
         "miles": "miles"
       },
       "nextMot": "Next MOT",
-      "nextMotPlaceholder": "DD.MM.YYYY",
       "fullServiceHistory": "Full serviced history",
       "testDrivePerformed": "Test drive performed",
       "errorMemoryRead": "Error memory read",
@@ -826,12 +831,9 @@
       },
       "vehicleGrading": {
         "title": "Vehicle Grading",
-        "grading": "Grading",
-        "paint": "Paint",
         "overallCondition": "Overall Condition",
         "bodywork": "Bodywork / Sheet Metal",
         "tires": "Tires",
-        "paintLabel": "Paint",
         "interior": "Passenger compartment / Interior",
         "chrome": "Chrome / trim parts",
         "engineBay": "Engine bay",
@@ -841,8 +843,7 @@
         "trunk": "Trunk",
         "autoCalculateGrade": "Automatically calculate grade",
         "scorePopupHint": "Click + for above standard, number for standard, or - for below",
-        "overallConditionTitle": "Overall condition",
-        "paintGradingNote": "Paint grading will use the same paint thickness data from the Condition tab."
+        "overallConditionTitle": "Overall condition"
       },
       "valueIncreasingFeatures": {
         "title": "Value Increasing Features",
@@ -964,8 +965,8 @@
         "average": "Average",
         "minimum": "Minimum",
         "date": "Date",
-        "datePlaceholder": "MM/YYYY",
-        "removeCalculation": "Remove Calculation"
+        "removeCalculation": "Remove Calculation",
+        "needsDatCalculation": "This valuation is read from a SilverDAT3 calculation. Run the DAT calculation first, then the values appear here."
       },
       "oldtimer": {
         "value": "Value",
@@ -999,13 +1000,11 @@
       "settings": "Settings",
       "recipient": "Recipient",
       "recipientTypes": {
-        "individual": "Individual recipient",
-        "group": "Group recipient",
-        "document": "Document recipient"
+        "claimant": "Claimant",
+        "claimantLawyer": "Claimant and lawyer"
       },
       "invoiceNumber": "Invoice number",
       "date": "Date",
-      "datePlaceholder": "DD/MM/YYYY",
       "payoutDelay": "Payout delay (optional)",
       "eInvoice": "E-Invoice",
       "itemDetails": "Item Details",
@@ -1015,7 +1014,19 @@
       "amount": "Amount",
       "serviceDescription": "Service description",
       "lumpSum": "Lump sum",
+      "quantity": "Quantity",
       "addRow": "Add Row",
+      "removeRow": "Remove row",
+      "units": {
+        "km": "km",
+        "piece": "pcs"
+      },
+      "defaultRows": {
+        "grundhonorar": "Basic fee",
+        "anfahrt": "Travel",
+        "druckVersand": "Printing & postage",
+        "fotografien": "Photographs"
+      },
       "invoiceAmount": "Invoice Amount",
       "beforeTax": "Before tax {amount}",
       "previewInvoice": "Preview Invoice",
@@ -1044,9 +1055,12 @@
       "saving": "Saving...",
       "saved": "Saved",
       "failedToSave": "Failed to save",
-      "individualRecipient": "Individual recipient",
-      "groupRecipient": "Group recipient",
-      "documentRecipient": "Document recipient",
+      "claimantRecipient": "Send to the claimant",
+      "claimantLawyerRecipient": "Send to the claimant and their lawyer",
+      "previewPdf": "Preview",
+      "previewPdfLanguage": "Preview {language}",
+      "noRecipientsHint": "Add at least one recipient to send this report.",
+      "noSectionsHint": "Select at least one document section to include.",
       "reportSentToast": "Report sent successfully",
       "sendFailed": "Failed to send report. Please try again.",
       "pdfLanguage": "PDF Language",
@@ -1337,6 +1351,9 @@
     "totalReports": "Total Reports",
     "avgReportValue": "Avg. Report Value",
     "completionRate": "Completion Rate",
+    "pendingRevenue": "Pending Amount",
+    "delayedRevenue": "Overdue Amount",
+    "toggleStatus": "Change payment status",
     "last6Months": "Last 6 months",
     "downloadReport": "Download Report",
     "searchPlaceholder": "Search...",
@@ -1364,12 +1381,14 @@
     },
     "table": {
       "clients": "Clients",
+      "reportNumber": "Report No.",
       "invoiceId": "Invoice ID",
       "dateCreated": "Date Created",
       "amount": "Amount",
       "status": "Status"
     },
     "status": {
+      "all": "All",
       "completed": "Completed",
       "pending": "Pending",
       "rejected": "Rejected",

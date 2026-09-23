@@ -10,8 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const findFirst = vi.fn()
 const reportUpdate = vi.fn()
-const exportConfigFindUnique = vi.fn()
-const exportConfigUpdate = vi.fn()
+const exportConfigUpsert = vi.fn()
 const userFindUnique = vi.fn()
 const generateReportPdfBuffer = vi.fn()
 const createNotification = vi.fn()
@@ -32,8 +31,7 @@ vi.mock('@/lib/prisma', () => ({
 			update: (...a: unknown[]) => reportUpdate(...a),
 		},
 		exportConfig: {
-			findUnique: (...a: unknown[]) => exportConfigFindUnique(...a),
-			update: (...a: unknown[]) => exportConfigUpdate(...a),
+			upsert: (...a: unknown[]) => exportConfigUpsert(...a),
 		},
 		user: { findUnique: (...a: unknown[]) => userFindUnique(...a) },
 	},
@@ -94,8 +92,7 @@ beforeEach(() => {
 		status: 'COMPLETED',
 		isLocked: false,
 	})
-	exportConfigFindUnique.mockResolvedValue({ reportId: REPORT })
-	exportConfigUpdate.mockResolvedValue({})
+	exportConfigUpsert.mockResolvedValue({ reportId: REPORT })
 	reportUpdate.mockResolvedValue({})
 	userFindUnique.mockResolvedValue({
 		firstName: 'Anna',
@@ -120,7 +117,7 @@ describe('POST /api/reports/[id]/send', () => {
 		expect(createNotification).not.toHaveBeenCalled()
 		expect(captureException).toHaveBeenCalled()
 		// The recipient details of the refused attempt are what the assessor retries from.
-		expect(exportConfigUpdate).toHaveBeenCalled()
+		expect(exportConfigUpsert).toHaveBeenCalled()
 	})
 
 	it('refuses a partial send, naming the language that failed', async () => {
@@ -169,6 +166,86 @@ describe('POST /api/reports/[id]/send', () => {
 				params: { title: 'Gutachten 2026-001', recipient: 'kunde@example.com' },
 			}),
 		)
+	})
+})
+
+describe('re-sending a report', () => {
+	beforeEach(() => {
+		generateReportPdfBuffer.mockImplementation(async (_id, _userId, language) =>
+			generatedPdf(String(language)),
+		)
+	})
+
+	it('sends a locked report rather than refusing it', async () => {
+		// The refusal is what the client saw as "Failed to send report" on the
+		// second visit. Locking closes the Gutachten to edits, not to delivery.
+		findFirst.mockResolvedValue({
+			id: REPORT,
+			title: 'Gutachten 2026-001',
+			status: 'LOCKED',
+			isLocked: true,
+		})
+
+		const response = await POST(request(['de']), context())
+
+		expect(response.status).toBe(200)
+		expect(send).toHaveBeenCalledTimes(1)
+	})
+
+	it('regenerates the attachment instead of reusing the last one', async () => {
+		await POST(request(['de']), context())
+		expect(generateReportPdfBuffer).toHaveBeenCalledTimes(1)
+
+		await POST(request(['de']), context())
+		expect(generateReportPdfBuffer).toHaveBeenCalledTimes(2)
+	})
+
+	it('stores the recipients it actually sent to, so reopening shows them', async () => {
+		await POST(request(['de']), context())
+
+		expect(exportConfigUpsert).toHaveBeenCalledWith(
+			expect.objectContaining({
+				update: expect.objectContaining({ recipients: ['kunde@example.com'] }),
+			}),
+		)
+	})
+
+	it('sends even though the composer page was never opened', async () => {
+		// The config row is created by the composer's GET. A send that skipped
+		// that page used to die on "Export config not found" — the other half of
+		// the client's "Failed to send report".
+		exportConfigUpsert.mockResolvedValue({ reportId: REPORT })
+
+		const response = await POST(request(['de']), context())
+
+		expect(response.status).toBe(200)
+		expect(exportConfigUpsert).toHaveBeenCalledWith(
+			expect.objectContaining({ create: expect.objectContaining({ reportId: REPORT }) }),
+		)
+	})
+
+	it('renders only the sections the composer had on screen', async () => {
+		const invoiceOnly = new Request(`https://app.gut8erpro.de/api/reports/${REPORT}/send`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				recipientEmail: 'kunde@example.com',
+				recipientName: 'Herr Schmidt',
+				emailSubject: 'Ihre Rechnung',
+				lockReport: false,
+				pdfLanguages: ['de'],
+				sections: ['invoice'],
+			}),
+		}) as unknown as NextRequest
+
+		await POST(invoiceOnly, context())
+
+		expect(generateReportPdfBuffer).toHaveBeenCalledWith(REPORT, 'user_1', 'de', {
+			report: false,
+			valuation: false,
+			commission: false,
+			invoice: true,
+		})
 	})
 })
 

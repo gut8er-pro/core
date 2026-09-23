@@ -378,6 +378,9 @@ function BusinessSection() {
 				city: settings.business.city ?? '',
 				taxId: settings.business.taxId ?? '',
 				vatId: settings.business.vatId ?? '',
+				website: settings.business.website ?? '',
+				email: settings.business.email ?? '',
+				phone: settings.business.phone ?? '',
 			})
 		}
 	}, [settings, reset])
@@ -492,13 +495,28 @@ function BusinessSection() {
 						{...register('companyName')}
 						error={errors.companyName?.message}
 					/>
-					<TextField label={t('business.website')} placeholder="www.kfz.de" disabled />
+					<TextField
+						label={t('business.website')}
+						placeholder="www.kfz-gutachten.de"
+						{...register('website')}
+						error={errors.website?.message}
+					/>
 				</div>
 
 				{/* Email / Phone number */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-					<TextField label={t('profile.email')} placeholder="sales.contact@kfz.com" disabled />
-					<TextField label={t('profile.phoneNumber')} placeholder="+3513331253" disabled />
+					<TextField
+						label={t('profile.email')}
+						placeholder="kontakt@kfz-gutachten.de"
+						{...register('email')}
+						error={errors.email?.message}
+					/>
+					<TextField
+						label={t('profile.phoneNumber')}
+						placeholder="+49 30 12345678"
+						{...register('phone')}
+						error={errors.phone?.message}
+					/>
 				</div>
 
 				{/* Street & Number */}

@@ -47,6 +47,18 @@ function formatRevenue(amount: number): string {
 	}).format(amount)
 }
 
+function PaymentTotal({ label, count, amount }: { label: string; count: number; amount: number }) {
+	return (
+		<div>
+			<p className="text-body-sm tracking-[0.14px] text-white/50">{label}</p>
+			<div className="flex items-baseline gap-2">
+				<p className="text-h2 font-medium tracking-[0.24px] text-white">{count}</p>
+				<p className="text-body-sm font-medium text-white/70">{formatRevenue(amount)}</p>
+			</div>
+		</div>
+	)
+}
+
 function DashboardPage() {
 	const t = useTranslations('dashboard')
 	const tt = useTranslations('toast')
@@ -158,6 +170,7 @@ function DashboardPage() {
 		const q = search.toLowerCase()
 		return (
 			report.title.toLowerCase().includes(q) ||
+			(report.fileNumber?.toLowerCase().includes(q) ?? false) ||
 			(report.claimantName?.toLowerCase().includes(q) ?? false) ||
 			(report.plateNumber?.toLowerCase().includes(q) ?? false) ||
 			(report.vehicleMake?.toLowerCase().includes(q) ?? false) ||
@@ -217,26 +230,21 @@ function DashboardPage() {
 				{/* Bottom section: stats + month labels */}
 				<div className="flex items-end justify-between">
 					<div className="flex items-center gap-8">
-						<div>
-							<p className="text-body-sm tracking-[0.14px] text-white/50">
-								{t('completedPayments')}
-							</p>
-							<p className="text-h2 font-medium tracking-[0.24px] text-white">
-								{stats?.completedPayments ?? 0}
-							</p>
-						</div>
-						<div>
-							<p className="text-body-sm tracking-[0.14px] text-white/50">{t('pendingPayments')}</p>
-							<p className="text-h2 font-medium tracking-[0.24px] text-white">
-								{stats?.pendingPayments ?? 0}
-							</p>
-						</div>
-						<div>
-							<p className="text-body-sm tracking-[0.14px] text-white/50">{t('delayedPayments')}</p>
-							<p className="text-h2 font-medium tracking-[0.24px] text-white">
-								{stats?.delayedPayments ?? 0}
-							</p>
-						</div>
+						<PaymentTotal
+							label={t('completedPayments')}
+							count={stats?.completedPayments ?? 0}
+							amount={stats?.totalRevenue ?? 0}
+						/>
+						<PaymentTotal
+							label={t('pendingPayments')}
+							count={stats?.pendingPayments ?? 0}
+							amount={stats?.pendingRevenue ?? 0}
+						/>
+						<PaymentTotal
+							label={t('delayedPayments')}
+							count={stats?.delayedPayments ?? 0}
+							amount={stats?.delayedRevenue ?? 0}
+						/>
 					</div>
 					<div className="flex items-center gap-4 px-4">
 						{chartLabels.map((label) => (

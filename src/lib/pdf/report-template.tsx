@@ -1,4 +1,7 @@
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
+import { formatIban } from '@/lib/utils/iban'
+import type { PdfSectionSelection } from './sections'
+import { ALL_SECTIONS } from './sections'
 import type { PdfTranslations } from './translations'
 import { translateValue } from './translations'
 
@@ -27,10 +30,28 @@ type ReportData = {
 		email: string | null
 		phone: string | null
 		licensePlate: string | null
+		iban: string | null
 		eligibleForInputTaxDeduction: boolean
 		isVehicleOwner: boolean
 		representedByLawyer: boolean
 		involvedLawyer: string | null
+		lawyerFirm: string | null
+		lawyerStreet: string | null
+		lawyerPostcode: string | null
+		lawyerLocation: string | null
+		lawyerEmail: string | null
+		lawyerPhone: string | null
+	} | null
+	ownerInfo: {
+		company: string | null
+		salutation: string | null
+		firstName: string | null
+		lastName: string | null
+		street: string | null
+		postcode: string | null
+		location: string | null
+		email: string | null
+		phone: string | null
 	} | null
 	opponentInfo: {
 		company: string | null
@@ -42,6 +63,7 @@ type ReportData = {
 		location: string | null
 		email: string | null
 		phone: string | null
+		iban: string | null
 		insuranceCompany: string | null
 		insuranceNumber: string | null
 	} | null
@@ -76,6 +98,7 @@ type ReportData = {
 		bodyCondition: string | null
 		interiorCondition: string | null
 		drivingAbility: string | null
+		emissionGroup: string | null
 		specialFeatures: string | null
 		parkingSensors: boolean
 		mileageRead: number | null
@@ -180,13 +203,10 @@ type ReportData = {
 			order: number
 		}[]
 	} | null
-	exportConfig: {
-		includeVehicleValuation: boolean
-		includeInvoice: boolean
-	}
 	photos: {
 		id: string
 		url: string
+		previewUrl: string | null
 		annotatedUrl: string | null
 		filename: string
 		aiClassification: string | null
@@ -196,6 +216,12 @@ type ReportData = {
 		firstName: string | null
 		lastName: string | null
 		companyName: string | null
+		street: string | null
+		postcode: string | null
+		city: string | null
+		website: string | null
+		email: string | null
+		phone: string | null
 	} | null
 }
 
@@ -387,28 +413,61 @@ const styles = StyleSheet.create({
 		fontSize: 8,
 		color: GREY_TEXT,
 	},
-	// Photo gallery
-	photoGrid: {
+	// Letterhead
+	letterhead: {
+		marginBottom: 12,
 		flexDirection: 'row',
-		flexWrap: 'wrap',
-		gap: 8,
+		justifyContent: 'space-between',
+		alignItems: 'flex-start',
 	},
+	letterheadName: {
+		fontSize: 10,
+		fontFamily: 'Helvetica-Bold',
+		color: DARK_TEXT,
+	},
+	letterheadLine: {
+		fontSize: 8,
+		color: GREY_TEXT,
+	},
+	letterheadRight: {
+		alignItems: 'flex-end',
+	},
+	// Invoice addressee
+	addresseeBlock: {
+		marginBottom: 14,
+	},
+	addresseeLabel: {
+		fontSize: 8,
+		color: GREY_TEXT,
+		marginBottom: 4,
+	},
+	addresseeLine: {
+		fontSize: 10,
+		color: DARK_TEXT,
+		lineHeight: 1.4,
+	},
+	// Photo gallery
 	photoItem: {
-		width: '48%',
-		marginBottom: 8,
+		marginBottom: 14,
 	},
-	photoImage: {
-		width: '100%',
-		height: 180,
-		objectFit: 'cover',
+	// The frame carries the border, not the image: @react-pdf scales the image
+	// to its own aspect ratio, so a border on it does not track the rendered
+	// edges and shows as a line through the photo.
+	photoFrame: {
 		borderRadius: 4,
 		borderWidth: 0.5,
 		borderColor: BORDER_COLOR,
+		padding: 2,
+	},
+	photoImage: {
+		width: '100%',
+		maxHeight: 320,
+		objectFit: 'contain',
 	},
 	photoCaption: {
-		fontSize: 7,
+		fontSize: 8,
 		color: GREY_TEXT,
-		marginTop: 3,
+		marginTop: 4,
 		maxLines: 2,
 	},
 	photoCategoryTitle: {
@@ -472,9 +531,43 @@ function DataRow({ label, value }: { label: string; value: string }) {
 	)
 }
 
+function LetterheadSection({ expert }: { expert: ReportData['expert'] }) {
+	if (!expert) return null
+
+	const name = [expert.firstName, expert.lastName].filter(Boolean).join(' ')
+	const address = [expert.street, [expert.postcode, expert.city].filter(Boolean).join(' ')]
+		.filter(Boolean)
+		.join(', ')
+	const contact = [expert.phone, expert.email, expert.website].filter(Boolean)
+
+	if (!expert.companyName && !name && !address && contact.length === 0) return null
+
+	return (
+		<View style={styles.letterhead}>
+			<View>
+				{expert.companyName && <Text style={styles.letterheadName}>{expert.companyName}</Text>}
+				{name && <Text style={styles.letterheadLine}>{name}</Text>}
+				{address && <Text style={styles.letterheadLine}>{address}</Text>}
+			</View>
+			<View style={styles.letterheadRight}>
+				{contact.map((line) => (
+					<Text key={line} style={styles.letterheadLine}>
+						{line}
+					</Text>
+				))}
+			</View>
+		</View>
+	)
+}
+
+/**
+ * The Aktenzeichen is the report's identifier everywhere in the app (ticket 33),
+ * so the PDF cannot fall back to a slice of the UUID — a number the assessor has
+ * never seen is worse than none.
+ */
 function HeaderSection({ data, t }: { data: ReportData; t: PdfTranslations }) {
 	const reportDate = formatDate(data.report.createdAt)
-	const reportId = data.report.id.slice(0, 8).toUpperCase()
+	const fileNumber = data.expertOpinion?.fileNumber?.trim()
 
 	return (
 		<View style={styles.header}>
@@ -491,7 +584,7 @@ function HeaderSection({ data, t }: { data: ReportData; t: PdfTranslations }) {
 				</View>
 				<View style={styles.headerRight}>
 					<Text style={styles.reportNumber}>
-						{t.reportNo} {reportId}
+						{t.reportNo} {fileNumber || '—'}
 					</Text>
 					<Text style={styles.reportNumber}>
 						{t.date}: {reportDate}
@@ -560,18 +653,31 @@ function VehicleInfoSection({
 	)
 }
 
+function PartyHeading({ label }: { label: string }) {
+	return (
+		<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 6, fontSize: 10 }]}>{label}</Text>
+	)
+}
+
 function AccidentInfoSection({
 	accidentInfo,
 	claimantInfo,
+	ownerInfo,
 	opponentInfo,
 	t,
 }: {
 	accidentInfo: ReportData['accidentInfo']
 	claimantInfo: ReportData['claimantInfo']
+	ownerInfo: ReportData['ownerInfo']
 	opponentInfo: ReportData['opponentInfo']
 	t: PdfTranslations
 }) {
 	if (!accidentInfo && !claimantInfo && !opponentInfo) return null
+
+	// The Halter is only a separate party when the claimant said they are not the
+	// owner — otherwise the claimant block already names them (ticket 06).
+	const showOwner = claimantInfo?.isVehicleOwner === false && ownerInfo !== null
+	const showLawyer = claimantInfo?.representedByLawyer === true
 
 	return (
 		<View style={styles.section}>
@@ -586,9 +692,7 @@ function AccidentInfoSection({
 
 			{claimantInfo && (
 				<View style={{ marginBottom: 8 }}>
-					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 6, fontSize: 10 }]}>
-						{t.claimant}
-					</Text>
+					<PartyHeading label={t.claimant} />
 					<DataRow
 						label={t.name}
 						value={
@@ -617,14 +721,72 @@ function AccidentInfoSection({
 					{claimantInfo.licensePlate && (
 						<DataRow label={t.licensePlate} value={displayValue(claimantInfo.licensePlate)} />
 					)}
+					{claimantInfo.iban && <DataRow label={t.iban} value={formatIban(claimantInfo.iban)} />}
+				</View>
+			)}
+
+			{showLawyer && claimantInfo && (
+				<View style={{ marginBottom: 8 }}>
+					<PartyHeading label={t.lawyer} />
+					{claimantInfo.lawyerFirm && (
+						<DataRow label={t.lawFirm} value={displayValue(claimantInfo.lawyerFirm)} />
+					)}
+					{claimantInfo.involvedLawyer && (
+						<DataRow label={t.name} value={displayValue(claimantInfo.involvedLawyer)} />
+					)}
+					{(claimantInfo.lawyerStreet ||
+						claimantInfo.lawyerPostcode ||
+						claimantInfo.lawyerLocation) && (
+						<DataRow
+							label={t.address}
+							value={[
+								claimantInfo.lawyerStreet,
+								claimantInfo.lawyerPostcode,
+								claimantInfo.lawyerLocation,
+							]
+								.filter(Boolean)
+								.join(', ')}
+						/>
+					)}
+					{claimantInfo.lawyerEmail && (
+						<DataRow label={t.email} value={displayValue(claimantInfo.lawyerEmail)} />
+					)}
+					{claimantInfo.lawyerPhone && (
+						<DataRow label={t.phone} value={displayValue(claimantInfo.lawyerPhone)} />
+					)}
+				</View>
+			)}
+
+			{showOwner && ownerInfo && (
+				<View style={{ marginBottom: 8 }}>
+					<PartyHeading label={t.vehicleOwner} />
+					<DataRow
+						label={t.name}
+						value={
+							[ownerInfo.salutation, ownerInfo.firstName, ownerInfo.lastName]
+								.filter(Boolean)
+								.join(' ') || '-'
+						}
+					/>
+					{ownerInfo.company && (
+						<DataRow label={t.company} value={displayValue(ownerInfo.company)} />
+					)}
+					<DataRow
+						label={t.address}
+						value={
+							[ownerInfo.street, ownerInfo.postcode, ownerInfo.location]
+								.filter(Boolean)
+								.join(', ') || '-'
+						}
+					/>
+					{ownerInfo.email && <DataRow label={t.email} value={displayValue(ownerInfo.email)} />}
+					{ownerInfo.phone && <DataRow label={t.phone} value={displayValue(ownerInfo.phone)} />}
 				</View>
 			)}
 
 			{opponentInfo && (
 				<View style={{ marginBottom: 8 }}>
-					<Text style={[styles.dataLabel, { marginBottom: 4, marginTop: 6, fontSize: 10 }]}>
-						{t.opponent}
-					</Text>
+					<PartyHeading label={t.opponent} />
 					<DataRow
 						label={t.name}
 						value={
@@ -645,6 +807,7 @@ function AccidentInfoSection({
 					{opponentInfo.insuranceNumber && (
 						<DataRow label={t.insuranceNumber} value={displayValue(opponentInfo.insuranceNumber)} />
 					)}
+					{opponentInfo.iban && <DataRow label={t.iban} value={formatIban(opponentInfo.iban)} />}
 				</View>
 			)}
 		</View>
@@ -694,6 +857,9 @@ function ConditionSection({
 					label={t.estimatedMileage}
 					value={formatNumber(condition.estimateMileage, condition.unit)}
 				/>
+			)}
+			{condition.emissionGroup && (
+				<DataRow label={t.emissionSticker} value={displayValue(condition.emissionGroup)} />
 			)}
 			{condition.nextMot && <DataRow label={t.nextMot} value={formatDate(condition.nextMot)} />}
 			{condition.specialFeatures && (
@@ -1074,7 +1240,60 @@ function VisitsSection({
 	)
 }
 
-function InvoiceSection({ invoice, t }: { invoice: ReportData['invoice']; t: PdfTranslations }) {
+/**
+ * German invoice convention: the addressee block sits under the sender line.
+ * The addressee is the claimant — name and address only, never the full party
+ * block (ticket 25). When the invoice ever addresses someone else, this is the
+ * one place that has to learn about it.
+ */
+function InvoiceAddressee({
+	claimantInfo,
+	t,
+}: {
+	claimantInfo: ReportData['claimantInfo']
+	t: PdfTranslations
+}) {
+	if (!claimantInfo) return null
+
+	const name =
+		[claimantInfo.salutation, claimantInfo.firstName, claimantInfo.lastName]
+			.filter(Boolean)
+			.join(' ') || null
+	const lines = [
+		claimantInfo.company,
+		name,
+		claimantInfo.street,
+		[claimantInfo.postcode, claimantInfo.location].filter(Boolean).join(' ') || null,
+	].filter((line): line is string => Boolean(line))
+
+	if (lines.length === 0) return null
+
+	return (
+		<View style={styles.addresseeBlock}>
+			<Text style={styles.addresseeLabel}>{t.invoiceTo}</Text>
+			{lines.map((line) => (
+				<Text key={line} style={styles.addresseeLine}>
+					{line}
+				</Text>
+			))}
+		</View>
+	)
+}
+
+function InvoiceSection({
+	invoice,
+	claimantInfo,
+	expert,
+	t,
+	standalone,
+}: {
+	invoice: ReportData['invoice']
+	claimantInfo: ReportData['claimantInfo']
+	expert: ReportData['expert']
+	t: PdfTranslations
+	/** True when the invoice is the whole document and owns page 1 already. */
+	standalone: boolean
+}) {
 	if (!invoice) return null
 
 	const sortedItems = [...invoice.lineItems].sort((a, b) => a.order - b.order)
@@ -1089,8 +1308,10 @@ function InvoiceSection({ invoice, t }: { invoice: ReportData['invoice']; t: Pdf
 	const taxAmount = grossTotal - netTotal
 
 	return (
-		<View style={styles.section}>
+		<View style={styles.section} break={!standalone}>
+			{standalone && <LetterheadSection expert={expert} />}
 			<Text style={styles.sectionTitle}>{t.invoice}</Text>
+			<InvoiceAddressee claimantInfo={claimantInfo} t={t} />
 
 			{invoice.invoiceNumber && (
 				<DataRow label={t.invoiceNumber} value={displayValue(invoice.invoiceNumber)} />
@@ -1173,6 +1394,32 @@ const PHOTO_CATEGORIES: {
 	{ key: 'document', labelKey: 'photoCategoryDocuments', matchTypes: ['document'] },
 ]
 
+/**
+ * An annotated photo has the markings burnt in, so it is the only truthful
+ * render. Otherwise the preview variant: at two per page the thumbnail is
+ * visibly soft, and the original blows the mail attachment budget.
+ */
+function photoSource(photo: ReportData['photos'][number]): string {
+	return photo.annotatedUrl ?? photo.previewUrl ?? photo.url
+}
+
+function PhotoEntry({
+	photo,
+	caption,
+}: {
+	photo: ReportData['photos'][number]
+	caption: string | null
+}) {
+	return (
+		<View style={styles.photoItem} wrap={false}>
+			<View style={styles.photoFrame}>
+				<Image src={photoSource(photo)} style={styles.photoImage} />
+			</View>
+			{caption && <Text style={styles.photoCaption}>{caption}</Text>}
+		</View>
+	)
+}
+
 function PhotoGallerySection({ photos, t }: { photos: ReportData['photos']; t: PdfTranslations }) {
 	if (photos.length === 0) return null
 
@@ -1197,49 +1444,33 @@ function PhotoGallerySection({ photos, t }: { photos: ReportData['photos']; t: P
 		if (!placed) uncategorized.push(photo)
 	}
 
+	// Two per page, so each entry carries its own category label rather than
+	// sitting under a heading that a page break may have left behind.
+	const groups: { label: string; photos: ReportData['photos'] }[] = []
+	for (const cat of PHOTO_CATEGORIES) {
+		const catPhotos = categorized.get(cat.key)
+		if (catPhotos && catPhotos.length > 0) {
+			groups.push({ label: String(t[cat.labelKey]), photos: catPhotos })
+		}
+	}
+	if (uncategorized.length > 0) {
+		groups.push({ label: t.otherPhotos, photos: uncategorized })
+	}
+
 	return (
 		<View style={styles.section} break>
 			<Text style={styles.sectionTitle}>{t.photoDocumentation}</Text>
 
-			{PHOTO_CATEGORIES.map((cat) => {
-				const catPhotos = categorized.get(cat.key)
-				if (!catPhotos || catPhotos.length === 0) return null
-				return (
-					<View key={cat.key} wrap={false}>
-						<Text style={styles.photoCategoryTitle}>
-							{t[cat.labelKey]} ({catPhotos.length})
-						</Text>
-						<View style={styles.photoGrid}>
-							{catPhotos.map((photo) => (
-								<View key={photo.id} style={styles.photoItem}>
-									<Image src={photo.annotatedUrl ?? photo.url} style={styles.photoImage} />
-									{photo.aiDescription && (
-										<Text style={styles.photoCaption}>{photo.aiDescription}</Text>
-									)}
-								</View>
-							))}
-						</View>
-					</View>
-				)
-			})}
-
-			{uncategorized.length > 0 && (
-				<View wrap={false}>
+			{groups.map((group) => (
+				<View key={group.label}>
 					<Text style={styles.photoCategoryTitle}>
-						{t.otherPhotos} ({uncategorized.length})
+						{group.label} ({group.photos.length})
 					</Text>
-					<View style={styles.photoGrid}>
-						{uncategorized.map((photo) => (
-							<View key={photo.id} style={styles.photoItem}>
-								<Image src={photo.annotatedUrl ?? photo.url} style={styles.photoImage} />
-								{photo.aiDescription && (
-									<Text style={styles.photoCaption}>{photo.aiDescription}</Text>
-								)}
-							</View>
-						))}
-					</View>
+					{group.photos.map((photo) => (
+						<PhotoEntry key={photo.id} photo={photo} caption={photo.aiDescription} />
+					))}
 				</View>
-			)}
+			))}
 		</View>
 	)
 }
@@ -1271,18 +1502,23 @@ function FooterSection({ expert, t }: { expert: ReportData['expert']; t: PdfTran
 
 // ─── Main Document ────────────────────────────────────────────
 
+/**
+ * The invoice is always last and always on a page of its own — it is a separate
+ * document that happens to travel with the Gutachten, and the client reads it
+ * as one. `standalone` is the invoice-only case, where it is page 1 and gets the
+ * letterhead the report header would otherwise have carried.
+ */
 function ReportPdfDocument({
 	data,
 	t,
 	locale = 'en',
+	sections = ALL_SECTIONS,
 }: {
 	data: ReportData
 	t: PdfTranslations
 	locale?: string
+	sections?: PdfSectionSelection
 }) {
-	const includeValuation = data.exportConfig.includeVehicleValuation
-	const includeInvoice = data.exportConfig.includeInvoice
-
 	return (
 		<Document
 			title={data.report.title}
@@ -1291,30 +1527,46 @@ function ReportPdfDocument({
 			creator="Gut8erPRO"
 		>
 			<Page size="A4" style={styles.page}>
-				<HeaderSection data={data} t={t} />
-				<VehicleInfoSection vehicleInfo={data.vehicleInfo} t={t} locale={locale} />
-				<AccidentInfoSection
-					accidentInfo={data.accidentInfo}
-					claimantInfo={data.claimantInfo}
-					opponentInfo={data.opponentInfo}
-					t={t}
-				/>
-				<VisitsSection
-					visits={data.visits}
-					expertOpinion={data.expertOpinion}
-					t={t}
-					locale={locale}
-				/>
-				<ConditionSection condition={data.condition} t={t} locale={locale} />
-				{includeValuation && (
+				{sections.report && (
+					<>
+						<LetterheadSection expert={data.expert} />
+						<HeaderSection data={data} t={t} />
+						<VehicleInfoSection vehicleInfo={data.vehicleInfo} t={t} locale={locale} />
+						<AccidentInfoSection
+							accidentInfo={data.accidentInfo}
+							claimantInfo={data.claimantInfo}
+							ownerInfo={data.ownerInfo}
+							opponentInfo={data.opponentInfo}
+							t={t}
+						/>
+						{sections.commission && (
+							<VisitsSection
+								visits={data.visits}
+								expertOpinion={data.expertOpinion}
+								t={t}
+								locale={locale}
+							/>
+						)}
+						<ConditionSection condition={data.condition} t={t} locale={locale} />
+					</>
+				)}
+				{sections.valuation && (
 					<CalculationSection
 						calculation={data.calculation}
 						reportType={data.report.reportType}
 						t={t}
 					/>
 				)}
-				{includeInvoice && <InvoiceSection invoice={data.invoice} t={t} />}
-				<PhotoGallerySection photos={data.photos} t={t} />
+				{sections.report && <PhotoGallerySection photos={data.photos} t={t} />}
+				{sections.invoice && (
+					<InvoiceSection
+						invoice={data.invoice}
+						claimantInfo={data.claimantInfo}
+						expert={data.expert}
+						t={t}
+						standalone={!sections.report && !sections.valuation}
+					/>
+				)}
 				<FooterSection expert={data.expert} t={t} />
 			</Page>
 		</Document>

@@ -108,3 +108,58 @@ already refused these writes; both new routes (`/photos/reorder`, `/photos/[phot
 return 403 on a locked report, matching the existing photo routes.
 
 Not in this slice: the annotation editor's locked state (annotation-modal is another agent's file).
+
+## Resolution — Export composer slice (2026-09-23)
+
+Status: the export slice is done, and it deliberately does NOT disable the composer.
+
+Locking closes the Gutachten to **edits**, not to **delivery**. Re-sending a delivered report —
+to a second insurer, or to a client who lost the mail — is ordinary work, and the completeness
+gate's standing exemption already assumes a locked report stays deliverable. So on a locked
+report the composer stays fully usable: recipients, presets, subject, body, the section toggles,
+Preview and Send Report all work.
+
+What changed to make that true rather than merely look true:
+
+- `useAutoSave` no longer receives `disabled: report?.isLocked` on this page. It did before,
+  which meant a locked report silently dropped every composer change — the same
+  looks-saved-but-isn't illusion this ticket is about, just one page over. `ExportConfig` is
+  send metadata, not report content, and `/api/reports/[id]/export` PATCH has no lock guard, so
+  the writes land.
+- The send route's `isLocked` 403 is gone (see ticket 32), so the Send button on a locked report
+  no longer leads to a generic failure banner.
+- A locked report that is re-sent **keeps its lock**: the route no longer downgrades `LOCKED` to
+  `SENT`, and the response's `reportLocked` reflects the report's real state.
+
+The lock toggle itself is unchanged, as instructed.
+
+**No misleading disabled states:** Send is disabled only for reasons the page explains on
+screen — the completeness gate (existing panel), zero recipient chips (`noRecipientsHint`), or
+all three section toggles off (`noSectionsHint`). Preview is disabled on the same terms minus
+the recipients. Nothing is disabled merely because the report is locked.
+
+## Follow-up (2026-09-23): the client could not unlock on production
+
+Reported live: "odčekiram Lock Report, ali polja i dalje ne mogu da se menjaju" — and the
+toggle is back ON after a reload.
+
+Reproduced on production (wave 1) with a network probe: clicking the switch fires **no
+request at all**. Root cause is the wave-1 deadlock this ticket's export slice already
+removed: the export page passed `disabled: report?.isLocked` into `useAutoSave`, so on a
+locked report the unlock write itself was silently dropped. Locked → autosave disabled →
+unlock impossible. The switch flips only in local form state and reverts on reload.
+
+Wave 2 (staged) already fixes the save path. Two additions made today on top of it:
+
+1. **The banner now follows the unlock without navigating away.** The lock write is flushed
+   immediately (`flushNow`) and, once the tracked save lands (`awaitSectionSave`), the page
+   invalidates `['report', id]` (exact) so the layout's read-only banner and chip clear in
+   place. Export config and section queries are not refetched, so the composer form is never
+   reset by this.
+2. **E2E regression test** in `10-export.spec.ts` ("Lock and unlock from the UI"): lock via
+   API, open Export, click the switch, assert the PATCH lands and `isLocked` is false in the
+   DB, banner gone, then type into Accident Scene on the details tab, assert the save PATCH
+   returns 200 and the value survives a reload. The suite previously locked only via API and
+   never exercised the unlock click — which is exactly where the client got stuck.
+
+Verified: tsc clean, biome clean, hooks unit 105/105, `10-export` + `19-send-gate` 18/18.

@@ -53,6 +53,7 @@ annotation, accident info and export.
 | 40 | Prior-damage "Damage description" textarea has no column — typed text never persisted | bug | medium |
 | 41 | BE Valuation: Quick/Detail Valuation buttons have no onClick | bug | medium |
 | 42 | CollapsibleSection unmounts collapsed children — effects never run | bug | medium |
+| 43 | Condition PATCH: no server idempotency on tire sets | hardening | low-medium |
 
 ## Suggested order of attack
 

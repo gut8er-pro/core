@@ -1,6 +1,6 @@
 # 20 — Tires: "Align Axes" and "Match The Set" buttons do nothing
 
-Status: ready-for-agent
+Status: done
 Type: bug
 Severity: medium
 
@@ -89,3 +89,77 @@ typing before the round-trip lands still writes to the right tyre.
 
 This also removes the race that made `align axes` flaky: the test no longer has to wait for a
 round-trip before its first fill.
+
+### Follow-up 2: a tyre size typed just before a tab switch was lost
+
+Carried into wave 2 from the wave-1 report as "fast-switch during the placeholder/auto-create
+window". The value was never actually lost — it was written to rows nobody reads. Two distinct
+causes, both proven with instrumented probes rather than inferred.
+
+**Cause 1 — the sync effect in `TirePositionFields` never ran.** Its dependency array was
+
+```ts
+}, [activePosition, activeTireSet.tires.find])
+```
+
+`activeTireSet.tires.find` is `Array.prototype.find`: the same function object for every array
+in the realm. The dep never changed, so the effect fired only on mount, when the active set is
+the id-less `PLACEHOLDER_TIRE_SET`. The local `tire` state then kept that id-less tyre forever,
+and the blur posted it as-is:
+
+```
+REQ PATCH tireSets=[{"id":"5fe4…","tires":["HL::ID","HR::ID","VL:225/45 R17:NOID","VR::ID"]}]
+RES PATCH 200 [["HL:","HR:","VL:","VL:225/45 R17","VR:"]]        <- FIVE tyres, two at VL
+```
+
+The PATCH treats an id-less tyre as a new row, so the set gained a second VL. Coming back,
+`tires.find(tr => tr.position === activePosition)` returns the empty original.
+
+**Cause 2 — typing during the placeholder window created a second SET.** Even with cause 1
+fixed the case still failed, and the probe showed why: when the blur lands while the
+placeholder is still on screen, `withoutPlaceholderId` strips the synthetic id and the PATCH's
+no-id branch creates a whole new set beside the first.
+
+```
+PATCH setId=NONE ["VL:225/45 R17","VR:","HL:","HR:"]
+DB sets=2 [["HL:","HR:","VL:","VR:"], ["HL:","HR:","VL:225/45 R17","VR:"]]
+```
+
+The card renders set 1, which is the empty one. The window is much wider than "the PATCH is in
+flight": the row exists server-side long before React Query refetches, so on a loaded machine
+the client can sit on the placeholder for many seconds.
+
+### Fix
+
+`src/components/report/condition/tire-section.tsx` only. `use-condition.ts` was examined and
+deliberately left alone — the save path and `trackSectionSave` were both already correct, and
+an id-resolving lookup tried there raced the auto-create it was supposed to follow.
+
+- The sync effect now keys on `activePosition` and the resolved `existingTire`. It adopts the
+  saved row — id *and* values — whenever the assessor is not mid-edit, tracked by an `editing`
+  ref set on change and cleared on blur. That is what makes both the id reach the next save and
+  the saved value reach the field on return; adopting only the id left the input rendering
+  empty over correct data.
+- `saveCurrentTire` re-attaches the id from the matched set row (`id: updated.id ?? tr.id`) as
+  a second line of defence.
+- The placeholder's fields are now **read-only until the real set lands** (`awaitingFirstSet`),
+  and a save still aimed at the placeholder is re-pointed at the real set via `ontoRealSet`, or
+  dropped if there is none. Ticket 20's original point stands — the card shows its four
+  position tabs and its form immediately rather than an empty box — it just cannot be typed
+  into for the one round-trip in which typing could not be persisted.
+
+Result, stable across runs: one set, four tyres, the value on screen.
+
+```
+DB sets=1 [["HL:","HR:","VL:225/45 R17","VR:"]]  input="225/45 R17"
+```
+
+### The spec's tyre case was never testing this
+
+`21-tab-switch-data-loss.spec.ts` looked the input up as `input[name$=".size"]`. The tyre
+fields are `TextField`s with no `name` attribute, and the card is `defaultOpen={false}`, so the
+locator matched nothing and the test died on a 15s `waitFor` without reaching the tyre logic —
+red for the wrong reason, and it would have stayed red after any fix. It now opens the
+accordion the way `07-condition.spec.ts` does and addresses the field by its label; the
+`toBeEditable` wait doubles as the wait for the real set. 5/5 green, and faster (8-12s, against
+20-30s when it was timing out).

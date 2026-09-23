@@ -30,18 +30,29 @@ function useMissingInfo(reportId: string, reportType?: string): MissingInfoRepor
 	const { data: calculationData } = useCalculation(reportId)
 	const { data: invoiceData } = useInvoice(reportId)
 
-	return useMemo(
-		() =>
-			computeMissingInfo(toReportType(reportType), {
-				gallery: { photos: photoData?.photos ?? [] },
-				accidentInfo: accidentInfoValuesFromApi(accidentData),
-				vehicle: vehicleFromApi(vehicleData),
-				condition: conditionValuesFromApi(conditionData),
-				calculation: calculationFromApi(calculationData),
-				invoice: invoiceFromApi(invoiceData),
-			}),
-		[reportType, photoData, accidentData, vehicleData, conditionData, calculationData, invoiceData],
-	)
+	return useMemo(() => {
+		// Grading reads the same condition payload — it is its own tab in the UI
+		// and its own grouping in the manifest, not its own endpoint.
+		const condition = conditionValuesFromApi(conditionData)
+
+		return computeMissingInfo(toReportType(reportType), {
+			gallery: { photos: photoData?.photos ?? [] },
+			accidentInfo: accidentInfoValuesFromApi(accidentData),
+			vehicle: vehicleFromApi(vehicleData),
+			condition,
+			grading: condition,
+			calculation: calculationFromApi(calculationData),
+			invoice: invoiceFromApi(invoiceData),
+		})
+	}, [
+		reportType,
+		photoData,
+		accidentData,
+		vehicleData,
+		conditionData,
+		calculationData,
+		invoiceData,
+	])
 }
 
 /** Every query the completeness engine reads, under `['report', id, …]`. */

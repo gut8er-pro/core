@@ -12,9 +12,20 @@ import type { VehicleFormData } from '@/components/report/vehicle/types'
 import type { ReportType } from '@/lib/validations/reports'
 import type { SectionId } from './sections'
 
-type TabKey = 'gallery' | 'accidentInfo' | 'vehicle' | 'condition' | 'calculation' | 'invoice'
+type TabKey =
+	| 'gallery'
+	| 'accidentInfo'
+	| 'vehicle'
+	| 'condition'
+	| 'grading'
+	| 'calculation'
+	| 'invoice'
 
-/** The five tabs of the Report Details screen — everything but the gallery. */
+/**
+ * The tabs of the Report Details screen — everything but the gallery. Grading
+ * renders on Oldtimer valuations only; on the other three types it is a tab with
+ * no sections, which is complete by definition and never shown.
+ */
 type DetailTabKey = Exclude<TabKey, 'gallery'>
 
 /** Only top-level keys of a tab's value object may be named by a rule. */
@@ -75,6 +86,7 @@ type ReportManifest = {
 	accidentInfo: SectionSpec<AccidentInfoValues>[]
 	vehicle: SectionSpec<VehicleValues>[]
 	condition: SectionSpec<ConditionValues>[]
+	grading: SectionSpec<ConditionValues>[]
 	calculation: SectionSpec<CalculationValues>[]
 	invoice: SectionSpec<InvoiceValues>[]
 }

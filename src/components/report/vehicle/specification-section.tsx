@@ -6,6 +6,7 @@ import { useWatch } from 'react-hook-form'
 import { useFieldProps, useMissingProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { ComboField } from '@/components/ui/combo-field'
+import { DateField } from '@/components/ui/date-field'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import { SECTION } from '@/lib/completeness'
@@ -154,14 +155,14 @@ function SpecificationSection({
 
 				{/* Row 3: First registration / Last registration / Source of technical data */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-end">
-					<TextField
+					<DateField
 						label={t('vehicle.identification.firstRegistration')}
-						type="date"
+						disabled={disabled}
 						{...fieldProps('firstRegistration')}
 					/>
-					<TextField
+					<DateField
 						label={t('vehicle.identification.lastRegistration')}
-						type="date"
+						disabled={disabled}
 						{...fieldProps('lastRegistration')}
 					/>
 					<ComboField

@@ -30,6 +30,11 @@ const TAB_ROUTES: TabRoute[] = [
 	{ key: 'vehicle', path: 'details/vehicle', label: (t) => t('vehicle.title') },
 	{ key: 'condition', path: 'details/condition', label: (t) => t('condition.title') },
 	{
+		key: 'grading',
+		path: 'details/grading',
+		label: (t) => t('condition.vehicleGrading.title'),
+	},
+	{
 		key: 'calculation',
 		path: 'details/calculation',
 		label: (t, reportType) =>

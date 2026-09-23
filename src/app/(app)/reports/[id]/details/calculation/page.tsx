@@ -314,6 +314,8 @@ function CalculationPage() {
 								control={control}
 								errors={errors}
 								onFieldBlur={handleFieldBlur}
+								datConnected={datConnected}
+								onOpenDat={() => setDatModalOpen(true)}
 							/>
 						) : (
 							/* HS / KG — Value + Repair + Loss of Use */

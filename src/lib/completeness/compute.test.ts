@@ -8,6 +8,7 @@ const EMPTY: Record<TabKey, Record<string, unknown>> = {
 	accidentInfo: {},
 	vehicle: {},
 	condition: {},
+	grading: {},
 	calculation: {},
 	invoice: {},
 }
@@ -23,7 +24,6 @@ describe('accident info requirements by report type', () => {
 		expect(paths).toContain('accidentDay')
 		expect(paths).toContain('accidentScene')
 		expect(paths).toContain('opponentInsuranceCompany')
-		expect(paths).toContain('opponentInsuranceNumber')
 	})
 
 	it('requires the same accident and opponent fields for short reports', () => {
@@ -93,6 +93,64 @@ describe('either/or requirements', () => {
 		const withCompany = evaluateTab('HS', 'accidentInfo', { claimantCompany: 'Müller GmbH' })
 
 		expect(withNeither.missingCount - withCompany.missingCount).toBe(1)
+	})
+})
+
+describe('what the gate deliberately stops asking for', () => {
+	it('never blocks on the opponent insurance number', () => {
+		for (const reportType of ['HS', 'KG'] as const) {
+			expect(missingPaths(reportType, 'accidentInfo', {})).not.toContain('opponentInsuranceNumber')
+		}
+	})
+
+	it('accepts an opponent who is a private person, with no company', () => {
+		const paths = missingPaths('HS', 'accidentInfo', {
+			opponentLastName: 'Braun',
+			opponentInsuranceCompany: 'HUK-COBURG',
+		})
+
+		expect(paths.some((path) => path.startsWith('opponent'))).toBe(false)
+	})
+
+	it('still asks for the opponent and their insurer', () => {
+		const paths = missingPaths('HS', 'accidentInfo', {})
+
+		expect(paths).toContain('opponentLastName')
+		expect(paths).toContain('opponentInsuranceCompany')
+	})
+
+	it('never requires a paint marker on any report type', () => {
+		for (const reportType of ['HS', 'BE', 'KG', 'OT'] as const) {
+			expect(missingPaths(reportType, 'condition', {})).not.toContain('paintMarkers')
+		}
+	})
+
+	it('ignores a second tyre set entirely, filled or not', () => {
+		const firstSet = {
+			setNumber: 1,
+			tires: [{ position: 'VL', size: '205/55 R16', profileLevel: '6' }],
+		}
+		const empty = missingPaths('HS', 'condition', {
+			tireSets: [firstSet, { setNumber: 2, tires: [] }],
+		})
+		const blank = missingPaths('HS', 'condition', {
+			tireSets: [
+				firstSet,
+				{ setNumber: 2, tires: [{ position: 'VL', size: '', profileLevel: '' }] },
+			],
+		})
+
+		expect(empty.some((path) => path.startsWith('tireSets'))).toBe(false)
+		expect(blank.some((path) => path.startsWith('tireSets'))).toBe(false)
+	})
+
+	it('still asks the first set for every tyre', () => {
+		const paths = missingPaths('HS', 'condition', {
+			tireSets: [{ setNumber: 1, tires: [{ position: 'VL', size: '', profileLevel: '' }] }],
+		})
+
+		expect(paths).toContain('tireSets.0.tires.0.size')
+		expect(paths).toContain('tireSets.0.tires.0.profileLevel')
 	})
 })
 
@@ -243,7 +301,7 @@ describe('array-backed sections', () => {
 
 	it('reaches into the tyres of a tyre set', () => {
 		const paths = missingPaths('HS', 'condition', {
-			tireSets: [{ tires: [{ position: 'VL', size: '', profileLevel: '' }] }],
+			tireSets: [{ setNumber: 1, tires: [{ position: 'VL', size: '', profileLevel: '' }] }],
 		})
 
 		expect(paths).toContain('tireSets.0.tires.0.size')
@@ -252,7 +310,7 @@ describe('array-backed sections', () => {
 	})
 
 	it('reports a tyre set that carries no tyres', () => {
-		const paths = missingPaths('HS', 'condition', { tireSets: [{ tires: [] }] })
+		const paths = missingPaths('HS', 'condition', { tireSets: [{ setNumber: 1, tires: [] }] })
 
 		expect(paths).toContain('tireSets.0.tires')
 	})
@@ -342,7 +400,6 @@ describe('oldtimer vehicle grading', () => {
 	const GRADES = {
 		gradingBodywork: '2',
 		gradingTires: '3',
-		gradingPaint: '2',
 		gradingInterior: '2',
 		gradingChrome: '3',
 		gradingEngineBay: '2',
@@ -354,7 +411,7 @@ describe('oldtimer vehicle grading', () => {
 	}
 
 	it('requires every category and the overall score on an oldtimer valuation', () => {
-		const paths = missingPaths('OT', 'condition', {})
+		const paths = missingPaths('OT', 'grading', {})
 
 		for (const key of Object.keys(GRADES)) {
 			expect(paths).toContain(key)
@@ -362,23 +419,34 @@ describe('oldtimer vehicle grading', () => {
 	})
 
 	it('is satisfied once every category is graded', () => {
-		const paths = missingPaths('OT', 'condition', GRADES)
+		const paths = missingPaths('OT', 'grading', GRADES)
 
 		for (const key of Object.keys(GRADES)) {
 			expect(paths).not.toContain(key)
 		}
 	})
 
-	it('does not ask the other three types to grade anything', () => {
-		for (const reportType of ['HS', 'BE', 'KG'] as const) {
-			const paths = missingPaths(reportType, 'condition', {})
+	it('never grades the paint — it is assessed on the paint layer instead', () => {
+		const paths = missingPaths('OT', 'grading', {})
 
-			expect(paths.some((path) => path.startsWith('grading'))).toBe(false)
+		expect(paths).not.toContain('gradingPaint')
+	})
+
+	it('grades on its own tab, not inside the condition tab', () => {
+		const condition = missingPaths('OT', 'condition', {})
+
+		expect(condition.some((path) => path.startsWith('grading'))).toBe(false)
+	})
+
+	it('gives the other three types no grading tab at all', () => {
+		for (const reportType of ['HS', 'BE', 'KG'] as const) {
+			expect(evaluateTab(reportType, 'grading', {}).sectionsTotal).toBe(0)
+			expect(evaluateTab(reportType, 'grading', {}).isComplete).toBe(true)
 		}
 	})
 
 	it('never requires the value-increasing lists', () => {
-		const paths = missingPaths('OT', 'condition', GRADES)
+		const paths = missingPaths('OT', 'grading', GRADES)
 
 		expect(paths).not.toContain('rareEquipment')
 		expect(paths).not.toContain('originality')
@@ -462,13 +530,6 @@ describe('condition requirements by report type', () => {
 		expect(missingPaths('KG', 'condition', {})).toContain('damageMarkers')
 		expect(missingPaths('BE', 'condition', {})).not.toContain('damageMarkers')
 		expect(missingPaths('OT', 'condition', {})).not.toContain('damageMarkers')
-	})
-
-	it('requires a paint marker everywhere except an evaluation report', () => {
-		expect(missingPaths('HS', 'condition', {})).toContain('paintMarkers')
-		expect(missingPaths('KG', 'condition', {})).toContain('paintMarkers')
-		expect(missingPaths('OT', 'condition', {})).toContain('paintMarkers')
-		expect(missingPaths('BE', 'condition', {})).not.toContain('paintMarkers')
 	})
 
 	it('requires the condition gradings on every type', () => {
@@ -574,8 +635,9 @@ describe('section roll-up', () => {
 				errorMemoryRead: false,
 				previousDamageReported: 'Keine',
 				damageMarkers: [{ id: 'd1', x: 10, y: 10, comment: null }],
-				paintMarkers: [{ id: 'p1', x: 10, y: 10, thickness: 120, color: null, position: null }],
-				tireSets: [{ tires: [{ position: 'VL', size: '205/55 R16', profileLevel: '6' }] }],
+				tireSets: [
+					{ setNumber: 1, tires: [{ position: 'VL', size: '205/55 R16', profileLevel: '6' }] },
+				],
 			},
 			calculation: {
 				replacementValue: '25000',

@@ -28,6 +28,15 @@ const businessSettingsSchema = z.object({
 			message: 'VAT ID must be in format DE + 9 digits',
 		}),
 	logoUrl: z.string().url().optional().nullable(),
+	website: z.string().max(200).optional().nullable(),
+	email: z
+		.string()
+		.optional()
+		.nullable()
+		.refine((val) => !val || z.string().email().safeParse(val).success, {
+			message: 'Invalid email address',
+		}),
+	phone: z.string().max(40).optional().nullable(),
 })
 
 const integrationSettingsSchema = z.object({

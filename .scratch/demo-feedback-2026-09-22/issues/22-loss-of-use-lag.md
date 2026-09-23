@@ -147,3 +147,30 @@ territory. Owner: condition agent.
 
 Both cases are left in the spec deliberately, failing, as live regression
 coverage for those owners rather than being skipped into silence.
+
+## Note from the wave-2 invoice agent (2026-09-23)
+
+The invoice case of `21-tab-switch-data-loss.spec.ts` is **green**. It needed two fixes, not
+the one the wave-1 hand-off predicted.
+
+1. **The change subscription** the calculation page has, ported to `invoice/page.tsx` with the
+   same `dirtyFields` guard and dotted-name (array field) exclusion. That alone was **not**
+   enough.
+2. **A stale-cache latch in the init effect.** `useInvoice` sets `refetchOnMount: 'always'`, so
+   a remount serves the *previous* mount's cached body first and fires the new GET behind it.
+   The effect guarded only on `if (!data ...)`, so it latched `initializedRef` on that cached
+   body — which predated the unmount PATCH — reset the form to `INVOICE_DEFAULTS`, and then
+   regenerated and saved a **new invoice number** on top. Proven with a request/response probe:
+   the DB held `payoutDelay = 21` and the GET returned `21`, while the input showed the default
+   `30` and a spurious `{"invoice":{"invoiceNumber":"GH-9254-2026"}}` PATCH went out on every
+   re-entry.
+
+   Fixed by gating the effect on React Query's `isFetchedAfterMount`, so the form only ever
+   initialises from **this** mount's own fetch.
+
+Worth checking on the other tabs: every section hook uses `refetchOnMount: 'always'`, and the
+calculation / accident-info / vehicle / condition pages all latch on `data` (or on one nested
+object) the same way. The section-save barrier from this ticket makes the *write* safe, but
+this second latch is a separate hazard and the same pattern is present in all of them. They
+pass today because their init guards happen to look at a nested object that is null until the
+first real save — which is luck, not design.

@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { grossFromNet, invoiceNet } from '@/lib/invoice/amount'
+import { seedLineItems } from '@/lib/invoice/default-line-items'
 import { prisma } from '@/lib/prisma'
 import { syncReportCompletion } from '@/lib/reports/completion'
 import { invoicePatchSchema } from '@/lib/validations/invoice'
@@ -22,12 +24,23 @@ async function GET(_request: NextRequest, context: RouteContext) {
 		return NextResponse.json({ error: 'Report not found' }, { status: 404 })
 	}
 
-	const invoice = await prisma.invoice.findUnique({
+	let invoice = await prisma.invoice.findUnique({
 		where: { reportId: id },
 		include: {
 			lineItems: { orderBy: { order: 'asc' } },
 		},
 	})
+
+	// Seeded once, at creation, so rows the assessor deletes stay deleted.
+	if (!invoice) {
+		invoice = await prisma.invoice.create({
+			data: {
+				reportId: id,
+				lineItems: { create: seedLineItems() },
+			},
+			include: { lineItems: { orderBy: { order: 'asc' } } },
+		})
+	}
 
 	return NextResponse.json({
 		invoice: invoice
@@ -87,7 +100,10 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 
 	if (!invoice) {
 		invoice = await prisma.invoice.create({
-			data: { reportId: id },
+			data: {
+				reportId: id,
+				lineItems: data.lineItems ? undefined : { create: seedLineItems() },
+			},
 		})
 	}
 
@@ -172,6 +188,25 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 			},
 		})
 		results.deletedLineItems = data.deleteLineItemIds
+	}
+
+	// The stored totals are what stats and the PDF read, so they are derived
+	// here rather than by each consumer summing the rows for itself.
+	if (data.lineItems || data.deleteLineItemIds || data.invoice?.taxRate !== undefined) {
+		const current = await prisma.invoice.findUnique({
+			where: { id: invoice.id },
+			include: { lineItems: true },
+		})
+		if (current) {
+			const totalNet = invoiceNet(current)
+			results.invoice = await prisma.invoice.update({
+				where: { id: invoice.id },
+				data: {
+					totalNet,
+					totalGross: grossFromNet(totalNet, current.taxRate),
+				},
+			})
+		}
 	}
 
 	// Recompute completion and touch updatedAt in one write.

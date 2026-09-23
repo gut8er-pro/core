@@ -1,6 +1,6 @@
 # 29 — PDF preview/download from Export & Send before sending
 
-Status: ready-for-agent
+Status: done
 Type: feature
 Severity: high
 
@@ -21,3 +21,35 @@ više od toga." What is previewed is what gets sent.
   locked reports stay downloadable per the standing exemption.
 - One button per language when both are selected, or preview follows the first selected
   language — pick the simpler; label clearly.
+
+## Resolution (2026-09-23)
+
+Status: done.
+
+A "Vorschau" / "Preview" button sits next to Send Report on Export & Send. It is a plain link,
+which is the whole of what the client asked for — `target="_blank"`, no modal, no viewer.
+
+- **One URL builder, `buildPdfUrl` in `src/hooks/use-export.ts`**, used by the preview link and
+  mirrored by the send payload, so the previewed document and the attached one are produced by
+  the same code path and the same params. The link carries `format=pdf`, `lang`, `sections`
+  (serialized from the live toggles) and `disposition=inline`.
+- **`disposition=inline`** on the export GET makes the browser render the PDF in the new tab
+  instead of downloading it. Without the param the route still answers `attachment`, so the
+  existing download path and `18-exhaustive-verify` are untouched.
+- **Language.** One button per selected language: with a single language the label is
+  "Vorschau", with both it becomes "Vorschau DE" / "Vorschau EN". The simpler of the two options
+  the ticket offered, and it makes the two-PDF case explicit rather than silently previewing
+  one of them.
+- **The gate applies unchanged.** The preview goes through `generateReportPdfBuffer`, which is
+  where the gate lives, so an incomplete report gets the same 422 as the send and the existing
+  missing-fields panel is already on screen. The button is disabled while the report is blocked
+  or while completeness is still being checked, so the assessor is not sent to a tab full of
+  JSON. A delivered report previews regardless, per the standing exemption.
+- Also disabled when all three section toggles are off, with a one-line hint — there is no
+  document to look at.
+
+### Tests
+
+`10-export.spec.ts`: the inline URL answers 200 with `content-type: application/pdf` and
+`content-disposition: inline`; the rendered button is a link whose href carries `format=pdf`,
+`disposition=inline` and `sections=`.

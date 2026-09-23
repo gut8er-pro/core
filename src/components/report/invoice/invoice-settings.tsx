@@ -1,10 +1,11 @@
 'use client'
 
-import { FileText, Info, User, Users } from 'lucide-react'
+import { Info, User, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
 import { useFieldProps, useMissingProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { DateField } from '@/components/ui/date-field'
 import { IconSelector } from '@/components/ui/icon-selector'
 import { TextField } from '@/components/ui/text-field'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
@@ -24,9 +25,8 @@ function InvoiceSettings({
 	const badge = useSectionBadge(SECTION.invoiceSettings)
 
 	const RECIPIENT_OPTIONS = [
-		{ value: 'individual', icon: User, label: t('recipientTypes.individual') },
-		{ value: 'group', icon: Users, label: t('recipientTypes.group') },
-		{ value: 'document', icon: FileText, label: t('recipientTypes.document') },
+		{ value: 'claimant', icon: User, label: t('recipientTypes.claimant') },
+		{ value: 'claimant_lawyer', icon: Users, label: t('recipientTypes.claimantLawyer') },
 	]
 
 	return (
@@ -62,12 +62,7 @@ function InvoiceSettings({
 						{...fieldProps('invoiceNumber')}
 					/>
 
-					<TextField
-						label={t('date')}
-						type="date"
-						placeholder={t('datePlaceholder')}
-						{...fieldProps('date')}
-					/>
+					<DateField label={t('date')} {...fieldProps('date')} />
 
 					<TextField
 						label={t('payoutDelay')}

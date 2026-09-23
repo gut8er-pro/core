@@ -25,6 +25,7 @@ type Report = {
 	_count: { photos: number }
 	// Joined data for dashboard display
 	claimantName?: string | null
+	fileNumber?: string | null
 	plateNumber?: string | null
 	vehicleMake?: string | null
 	vehicleModel?: string | null

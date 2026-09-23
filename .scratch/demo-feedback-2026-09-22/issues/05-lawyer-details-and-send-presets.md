@@ -1,6 +1,6 @@
 # 05 — Lawyer: full contact details + recipient presets on Export & Send
 
-Status: ready-for-agent
+Status: done
 Type: feature
 Severity: high
 
@@ -59,3 +59,36 @@ Six columns on `ClaimantInfo` (`lawyerFirm`, `lawyerStreet`, `lawyerPostcode`, `
   has the checkbox on, so `completeManifest` still reaches 0 missing.
 
 For wave 2 (PDF): the six new API fields arrive under `claimantInfo.lawyer*`.
+
+## Resolution — Part B (2026-09-23)
+
+Status: done. Ticket 05 is now complete.
+
+Exactly two recipient-type buttons on Export & Send; the third (Dokumentempfänger) is gone,
+along with its `individualRecipient` / `groupRecipient` / `documentRecipient` locale keys, which
+had no other caller.
+
+- **Claimant** (single-person icon) → replaces the chips with the claimant's email.
+- **Claimant + lawyer** (two-people icon) → replaces them with the claimant's and the lawyer's.
+- Either/or: `aria-pressed` carries which is active, and picking one replaces the chips rather
+  than appending, so the two can never both be on.
+- **Missing emails leave the field empty.** The preset filters out nulls, so a report with no
+  claimant email and no lawyer email prefills nothing and manual entry works exactly as before
+  — the explicit fallback the client asked for.
+- **Chips stay editable** — a prefilled chip is an ordinary chip, removable with its X, and the
+  input still accepts more addresses.
+
+Stored as `ExportConfig.recipientMode`, validated by zod against `RECIPIENT_MODES =
+['claimant', 'claimant_lawyer']` exported from `src/lib/validations/export.ts` — the same two
+strings the invoice agent uses on the invoice card, so the two surfaces agree. The mode is
+persisted and restored with the rest of the composer state (ticket 32).
+
+The emails come from `useAccidentInfo(reportId)`: `claimantInfo.email` and
+`claimantInfo.lawyerEmail`, the latter one of the six columns Part A added.
+
+Answering the open question Ivan left on Part A — **yes, the lawyer appears in the PDF's parties
+block**, as its own "Rechtsanwalt" section under the claimant, rendered only while
+`representedByLawyer` is true. See the PDF notes appended to this wave's tickets.
+
+E2E: `10-export.spec.ts` asserts both buttons are present and that no "Document recipient"
+button remains.

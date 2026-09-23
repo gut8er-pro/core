@@ -11,6 +11,7 @@ import {
 } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { ComboField } from '@/components/ui/combo-field'
+import { DateField } from '@/components/ui/date-field'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import { YesNoField } from '@/components/ui/yes-no-field'
@@ -366,10 +367,8 @@ function ConditionSection({
 				{/* Next MOT (optional) with QR area */}
 				<div className="flex items-end gap-4">
 					<div className="w-full max-w-xs">
-						<TextField
+						<DateField
 							label={t('condition.nextMot')}
-							type="date"
-							placeholder={t('condition.nextMotPlaceholder')}
 							disabled={disabled}
 							{...fieldProps('nextMot')}
 						/>

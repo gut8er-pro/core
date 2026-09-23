@@ -128,6 +128,12 @@ type PdfTranslations = {
 	issuedDate: string
 	orderedByClaimant: string
 	mediator: string
+	lawyer: string
+	lawFirm: string
+	vehicleOwner: string
+	iban: string
+	emissionSticker: string
+	invoiceTo: string
 }
 
 const translations: Record<Locale, PdfTranslations> = {
@@ -258,6 +264,12 @@ const translations: Record<Locale, PdfTranslations> = {
 		issuedDate: 'Issued Date',
 		orderedByClaimant: 'Ordered by Claimant',
 		mediator: 'Mediator',
+		lawyer: 'Lawyer',
+		lawFirm: 'Law Firm',
+		vehicleOwner: 'Vehicle Owner',
+		iban: 'IBAN',
+		emissionSticker: 'Emission Sticker',
+		invoiceTo: 'Invoice to',
 	},
 	de: {
 		vehicleDamageAssessment: 'Kfz-Schadensgutachten',
@@ -386,6 +398,12 @@ const translations: Record<Locale, PdfTranslations> = {
 		issuedDate: 'Ausstellungsdatum',
 		orderedByClaimant: 'Vom Anspruchsteller beauftragt',
 		mediator: 'Vermittler',
+		lawyer: 'Rechtsanwalt',
+		lawFirm: 'Kanzlei',
+		vehicleOwner: 'Fahrzeughalter',
+		iban: 'IBAN',
+		emissionSticker: 'Schadstoffplakette',
+		invoiceTo: 'Rechnung an',
 	},
 }
 

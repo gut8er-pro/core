@@ -3,21 +3,14 @@
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { ConditionSection } from '@/components/report/condition/condition-section'
 import { DamageDiagramSection } from '@/components/report/condition/damage-diagram-section'
-import {
-	CONDITION_DEFAULTS,
-	conditionFromApi,
-	OLDTIMER_DEFAULTS,
-	oldtimerFromApi,
-} from '@/components/report/condition/form-data'
+import { CONDITION_DEFAULTS, conditionFromApi } from '@/components/report/condition/form-data'
 import { PriorDamageSection } from '@/components/report/condition/prior-damage-section'
 import { TireSection } from '@/components/report/condition/tire-section'
-import type { ConditionFormData, OldtimerDetailsData } from '@/components/report/condition/types'
-import { ValueIncreasingFeaturesSection } from '@/components/report/condition/value-increasing-features-section'
-import { VehicleGradingSection } from '@/components/report/condition/vehicle-grading-section'
+import type { ConditionFormData } from '@/components/report/condition/types'
 import { MissingFieldsProvider } from '@/components/report/missing-info'
 import { CompletionBadge } from '@/components/ui/completion-badge'
 import { useAutoSave } from '@/hooks/use-auto-save'
@@ -72,24 +65,6 @@ function ConditionPage() {
 		initializedRef.current = true
 		reset(conditionFromApi(data))
 	}, [data, reset])
-
-	// The two Oldtimer sections sit outside the form — they are their own
-	// columns, saved field by field the same way the form's fields are.
-	const [oldtimer, setOldtimer] = useState<OldtimerDetailsData>(OLDTIMER_DEFAULTS)
-	const oldtimerInitializedRef = useRef(false)
-	useEffect(() => {
-		if (!data || oldtimerInitializedRef.current) return
-		oldtimerInitializedRef.current = true
-		setOldtimer(oldtimerFromApi(data.oldtimerDetails))
-	}, [data])
-
-	const handleOldtimerChange = useCallback(
-		<K extends keyof OldtimerDetailsData>(field: K, value: OldtimerDetailsData[K]) => {
-			setOldtimer((prev) => ({ ...prev, [field]: value }))
-			saveField(`oldtimerDetails.${field}`, value)
-		},
-		[saveField],
-	)
 
 	const handleFieldBlur = useCallback(
 		(field: string) => {
@@ -218,9 +193,8 @@ function ConditionPage() {
 			damageMarkers: data?.damageMarkers ?? [],
 			paintMarkers: data?.paintMarkers ?? [],
 			tireSets: data?.tireSets ?? [],
-			...oldtimer,
 		}),
-		[data?.damageMarkers, data?.paintMarkers, data?.tireSets, oldtimer],
+		[data?.damageMarkers, data?.paintMarkers, data?.tireSets],
 	)
 
 	// Completion percentage
@@ -299,14 +273,6 @@ function ConditionPage() {
 						onFieldBlur={handleFieldBlur}
 						disabled={isLocked}
 					/>
-
-					{/* OT-only sections */}
-					{report?.reportType === 'OT' && (
-						<>
-							<ValueIncreasingFeaturesSection values={oldtimer} onChange={handleOldtimerChange} />
-							<VehicleGradingSection values={oldtimer} onChange={handleOldtimerChange} />
-						</>
-					)}
 
 					<DamageDiagramSection
 						damageMarkers={data?.damageMarkers ?? []}

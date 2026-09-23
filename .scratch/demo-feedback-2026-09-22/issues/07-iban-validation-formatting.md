@@ -42,3 +42,15 @@ Status: done for the report IBANs. Business settings: not applicable — see the
 **Out of scope, flagged:** the business settings tab has no IBAN field and `Business` has no
 `iban` column, so there was nothing to wire there. Adding one needs a schema change, which was
 outside this ticket's remit. Ivan should confirm whether the business IBAN is wanted at all.
+
+## PDF part (2026-09-23) — done
+
+The IBAN is stored normalised (no spaces) and was not printed at all. The PDF now renders it
+through the same `formatIban` from `src/lib/utils/iban.ts` that the form field uses, so the
+grouped display is identical on screen and on paper. Rows added for the claimant and the
+opponent, each omitted when the column is null, plus an `iban` key in both PDF locales.
+
+Verified live: `IBAN    DE89 3704 0044 0532 0130 00`.
+
+The open question on this ticket is unchanged: `Business` still has no `iban` column, so there
+is no sender IBAN to print on the invoice. Ivan to confirm whether it is wanted.

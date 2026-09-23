@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl'
 import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { DateField } from '@/components/ui/date-field'
 import { TextField } from '@/components/ui/text-field'
 import { SECTION } from '@/lib/completeness'
 import type { SectionProps } from './types'
@@ -26,9 +27,8 @@ function AccidentSection({
 			{...badge}
 		>
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-				<TextField
+				<DateField
 					label={t('accidentInfo.accidentDay')}
-					type="date"
 					disabled={disabled}
 					{...fieldProps('accidentDay')}
 				/>

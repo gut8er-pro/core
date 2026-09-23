@@ -33,6 +33,9 @@ async function GET() {
 					taxId: true,
 					vatId: true,
 					logoUrl: true,
+					website: true,
+					email: true,
+					phone: true,
 				},
 			},
 			integrations: {
@@ -97,6 +100,9 @@ async function PATCH(request: NextRequest) {
 					taxId: business.taxId,
 					vatId: business.vatId,
 					logoUrl: business.logoUrl,
+					website: business.website,
+					email: business.email,
+					phone: business.phone,
 				},
 				create: {
 					userId: user.id,
@@ -107,6 +113,9 @@ async function PATCH(request: NextRequest) {
 					taxId: business.taxId,
 					vatId: business.vatId,
 					logoUrl: business.logoUrl,
+					website: business.website,
+					email: business.email,
+					phone: business.phone,
 				},
 			})
 		}
@@ -184,6 +193,9 @@ async function PATCH(request: NextRequest) {
 						taxId: true,
 						vatId: true,
 						logoUrl: true,
+						website: true,
+						email: true,
+						phone: true,
 					},
 				},
 				integrations: {

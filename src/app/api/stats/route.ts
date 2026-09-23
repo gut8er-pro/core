@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
+import { invoiceGross } from '@/lib/invoice/amount'
+import { countByStatus, paymentStatus, sumByStatus } from '@/lib/invoice/payment-status'
 import { prisma } from '@/lib/prisma'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -83,16 +85,6 @@ function clientName(
 	return name || info.company || null
 }
 
-function invoiceStatus(
-	reportStatus: string,
-	reportCreatedAt: Date,
-	delayedBefore: Date,
-): 'completed' | 'pending' | 'delayed' {
-	if (reportStatus === 'SENT' || reportStatus === 'LOCKED') return 'completed'
-	if (reportStatus === 'DRAFT' && reportCreatedAt < delayedBefore) return 'delayed'
-	return 'pending'
-}
-
 async function GET() {
 	const { user, error } = await getAuthenticatedUser()
 	if (error || !user) return unauthorizedResponse()
@@ -102,84 +94,93 @@ async function GET() {
 	const windowStart = new Date(now.getTime() - WINDOW_DAYS * DAY_MS)
 	const previousWindowStart = new Date(now.getTime() - 2 * WINDOW_DAYS * DAY_MS)
 
-	const [
-		invoices,
-		totalReports,
-		completed,
-		pending,
-		delayed,
-		reportsInWindow,
-		reportsInPreviousWindow,
-	] = await Promise.all([
+	const [invoices, totalReports, reportsInWindow, reportsInPreviousWindow] = await Promise.all([
 		prisma.invoice.findMany({
 			where: { report: { userId } },
 			select: {
 				id: true,
 				invoiceNumber: true,
 				totalGross: true,
+				totalNet: true,
+				taxRate: true,
 				date: true,
+				payoutDelay: true,
+				paidAt: true,
+				lineItems: { select: { amount: true, rate: true, quantity: true } },
 				report: {
 					select: {
-						status: true,
+						id: true,
 						createdAt: true,
+						expertOpinion: { select: { fileNumber: true } },
 						claimantInfo: { select: { company: true, firstName: true, lastName: true } },
 					},
 				},
 			},
 		}),
 		prisma.report.count({ where: { userId } }),
-		prisma.report.count({ where: { userId, status: { in: ['SENT', 'LOCKED'] } } }),
-		prisma.report.count({ where: { userId, status: 'COMPLETED' } }),
-		prisma.report.count({
-			where: {
-				userId,
-				status: 'DRAFT',
-				createdAt: { lt: windowStart },
-				invoice: { isNot: null },
-			},
-		}),
 		prisma.report.count({ where: { userId, createdAt: { gte: windowStart } } }),
 		prisma.report.count({
 			where: { userId, createdAt: { gte: previousWindowStart, lt: windowStart } },
 		}),
 	])
 
-	const entries: DatedAmount[] = invoices.map((invoice) => ({
-		date: invoice.date ?? invoice.report.createdAt,
-		amount: invoice.totalGross,
+	const payments = invoices.map((invoice) => ({
+		id: invoice.id,
+		invoiceNumber: invoice.invoiceNumber,
+		reportId: invoice.report.id,
+		fileNumber: invoice.report.expertOpinion?.fileNumber ?? null,
+		client: clientName(invoice.report.claimantInfo),
+		issuedAt: invoice.date ?? invoice.report.createdAt,
+		createdAt: invoice.report.createdAt,
+		date: invoice.date,
+		payoutDelay: invoice.payoutDelay,
+		paidAt: invoice.paidAt,
+		amount: invoiceGross(invoice),
 	}))
 
-	const totalRevenue = entries.reduce((sum, entry) => sum + entry.amount, 0)
-	const revenueInWindow = sumBetween(entries, windowStart, now)
-	const revenueInPreviousWindow = sumBetween(entries, previousWindowStart, windowStart)
+	const sums = sumByStatus(payments, now)
+	const counts = countByStatus(payments, now)
+
+	// Revenue is what has actually been paid, bucketed on the day it was paid, so the
+	// chart and the headline number are the same query.
+	const paidEntries: DatedAmount[] = payments
+		.filter((payment) => payment.paidAt !== null)
+		.map((payment) => ({ date: payment.paidAt as Date, amount: payment.amount }))
+
+	const revenueInWindow = sumBetween(paidEntries, windowStart, now)
+	const revenueInPreviousWindow = sumBetween(paidEntries, previousWindowStart, windowStart)
 	const avgInWindow = reportsInWindow > 0 ? revenueInWindow / reportsInWindow : 0
 	const avgInPreviousWindow =
 		reportsInPreviousWindow > 0 ? revenueInPreviousWindow / reportsInPreviousWindow : 0
 
-	const rows = invoices
-		.map((invoice) => ({
-			id: invoice.id,
-			invoiceNumber: invoice.invoiceNumber,
-			client: clientName(invoice.report.claimantInfo),
-			date: toDateKey(invoice.date ?? invoice.report.createdAt),
-			amount: invoice.totalGross,
-			status: invoiceStatus(invoice.report.status, invoice.report.createdAt, windowStart),
+	const rows = payments
+		.map((payment) => ({
+			id: payment.id,
+			reportId: payment.reportId,
+			invoiceNumber: payment.invoiceNumber,
+			fileNumber: payment.fileNumber,
+			client: payment.client,
+			date: toDateKey(payment.issuedAt),
+			amount: payment.amount,
+			status: paymentStatus(payment, now),
 		}))
-		.sort((a, b) => b.date.localeCompare(a.date))
+		.sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
 
 	return NextResponse.json({
-		totalRevenue,
+		totalRevenue: sums.completed,
+		pendingRevenue: sums.pending,
+		delayedRevenue: sums.delayed,
 		totalReports,
-		completedPayments: completed,
-		pendingPayments: pending,
-		delayedPayments: delayed,
+		completedPayments: counts.completed,
+		pendingPayments: counts.pending,
+		delayedPayments: counts.delayed,
 		revenueChange: percentChange(revenueInWindow, revenueInPreviousWindow),
 		reportsChange: percentChange(reportsInWindow, reportsInPreviousWindow),
 		avgReportValueChange: percentChange(avgInWindow, avgInPreviousWindow),
 		revenueSeries: {
-			weekly: buildSeries(weekBuckets(now), entries),
-			monthly: buildSeries(monthBuckets(now), entries),
-			yearly: buildSeries(yearBuckets(now), entries),
+			weekly: buildSeries(weekBuckets(now), paidEntries),
+			monthly: buildSeries(monthBuckets(now), paidEntries),
+			yearly: buildSeries(yearBuckets(now), paidEntries),
 		},
 		invoices: rows,
 	})

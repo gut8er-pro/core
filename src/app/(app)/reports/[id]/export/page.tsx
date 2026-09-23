@@ -1,6 +1,7 @@
 'use client'
 
-import { CheckCircle2, Loader2, Send } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { CheckCircle2, Eye, Loader2, Send } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useState } from 'react'
@@ -8,10 +9,12 @@ import { useForm } from 'react-hook-form'
 import { EmailComposer } from '@/components/report/export/email-composer'
 import { ExportToggles } from '@/components/report/export/export-toggles'
 import { IncompleteNotice } from '@/components/report/export/incomplete-notice'
-import type { ExportFormData } from '@/components/report/export/types'
+import type { ExportFormData, RecipientMode } from '@/components/report/export/types'
 import { Button } from '@/components/ui/button'
+import { useAccidentInfo } from '@/hooks/use-accident-info'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import {
+	buildPdfUrl,
 	IncompleteReportError,
 	PdfGenerationFailedError,
 	SendFailedError,
@@ -21,8 +24,10 @@ import {
 import { useFreshMissingInfo } from '@/hooks/use-missing-info'
 import { useReport } from '@/hooks/use-reports'
 import { useToast } from '@/hooks/use-toast'
+import { awaitSectionSave } from '@/lib/api/section-saves'
 import { isDelivered, toReportType } from '@/lib/completeness'
 import type { SendFailureCode } from '@/lib/email/send-failure'
+import { serializeSections } from '@/lib/pdf/sections'
 
 /**
  * A `Record` rather than a switch: a new failure code is then a type error here
@@ -41,6 +46,7 @@ function ExportPage() {
 	const reportId = params.id
 	const { data, isLoading } = useExportConfig(reportId)
 	const { data: report } = useReport(reportId)
+	const { data: accidentInfo } = useAccidentInfo(reportId)
 	const sendMutation = useSendReport(reportId)
 	const toast = useToast()
 	const [sendSuccess, setSendSuccess] = useState(false)
@@ -53,13 +59,20 @@ function ExportPage() {
 		report?.reportType ?? undefined,
 	)
 	const isBlocked = !isSent && !missingInfo.isComplete
-	const canSend = !isRefreshing && !isBlocked
 
-	const { saveField, state: autoSaveState } = useAutoSave({
+	// No `disabled` on a locked report: locking closes the Gutachten to edits,
+	// not to delivery, and the composer is how a re-send is addressed. The
+	// export config is not report content (ticket 02 export slice).
+	const {
+		saveField,
+		saveFields,
+		flushNow,
+		state: autoSaveState,
+	} = useAutoSave({
 		reportId,
 		section: 'export',
-		disabled: report?.isLocked,
 	})
+	const queryClient = useQueryClient()
 
 	const {
 		register,
@@ -76,14 +89,15 @@ function ExportPage() {
 			includeInvoice: true,
 			lockReport: false,
 			pdfLanguages: [locale as 'en' | 'de'],
-			recipientEmail: '',
-			recipientName: '',
+			recipients: [],
+			recipientMode: null,
 			emailSubject: '',
 			emailBody: '',
 		},
 	})
 
-	// Populate form when data loads
+	// Everything the assessor typed comes back on reopen — recipients, subject
+	// and body alike, not just the toggles (ticket 32.1).
 	useEffect(() => {
 		if (!data) return
 
@@ -92,18 +106,80 @@ function ExportPage() {
 			includeCommission: data.includeCommission ?? true,
 			includeInvoice: data.includeInvoice ?? true,
 			lockReport: data.lockReport ?? false,
-			recipientEmail: data.recipientEmail ?? '',
-			recipientName: data.recipientName ?? '',
+			pdfLanguages: [locale as 'en' | 'de'],
+			recipients: data.recipients ?? [],
+			recipientMode: data.recipientMode ?? null,
 			emailSubject: data.emailSubject ?? '',
 			emailBody: data.emailBody ?? '',
 		})
-	}, [data, reset])
+	}, [data, reset, locale])
+
+	const recipients = watch('recipients')
+	const recipientMode = watch('recipientMode')
+	const pdfLanguages = watch('pdfLanguages')
+	const includeValuation = watch('includeValuation')
+	const includeCommission = watch('includeCommission')
+	const includeInvoice = watch('includeInvoice')
+
+	const hasSections = includeValuation || includeCommission || includeInvoice
+	const canSend = !isRefreshing && !isBlocked && recipients.length > 0 && hasSections
+	const canPreview = (!isRefreshing && !isBlocked && hasSections) || (isSent && hasSections)
 
 	const handleToggleChange = useCallback(
 		(field: keyof ExportFormData, value: boolean) => {
 			saveField(field, value)
+			// The lock is state, not content: land it now and refresh the report
+			// row, or the read-only banner outlives the unlock it announces.
+			if (field === 'lockReport') {
+				flushNow()
+				void awaitSectionSave(reportId, 'export').then(() => {
+					queryClient.invalidateQueries({ queryKey: ['report', reportId], exact: true })
+				})
+			}
 		},
-		[saveField],
+		[saveField, flushNow, reportId, queryClient],
+	)
+
+	const handleRecipientsChange = useCallback(
+		(next: string[]) => {
+			setValue('recipients', next, { shouldDirty: true })
+			saveFields({ recipients: next, recipientEmail: next.join(', ') })
+		},
+		[setValue, saveFields],
+	)
+
+	const handleRecipientModeChange = useCallback(
+		(mode: RecipientMode | null) => {
+			setValue('recipientMode', mode, { shouldDirty: true })
+			saveField('recipientMode', mode)
+		},
+		[setValue, saveField],
+	)
+
+	const handleBodyChange = useCallback(
+		(html: string) => {
+			setValue('emailBody', html, { shouldDirty: true })
+			saveField('emailBody', html)
+		},
+		[setValue, saveField],
+	)
+
+	const handleSubjectBlur = useCallback(() => {
+		saveField('emailSubject', getValues('emailSubject'))
+	}, [saveField, getValues])
+
+	const previewUrl = useCallback(
+		(lang: 'en' | 'de') =>
+			buildPdfUrl(reportId, {
+				lang,
+				sections: {
+					valuation: includeValuation,
+					commission: includeCommission,
+					invoice: includeInvoice,
+				},
+				inline: true,
+			}),
+		[reportId, includeValuation, includeCommission, includeInvoice],
 	)
 
 	// The only place a send failure is put into words. The server answers with a
@@ -129,16 +205,28 @@ function ExportPage() {
 
 	const handleSend = useCallback(() => {
 		const values = getValues()
+		// Built from the rendered chips and nothing else. Zero chips never reaches
+		// the server: the button is disabled, and this guard closes the race where
+		// a click lands on state that has since emptied (ticket 32.2).
+		if (values.recipients.length === 0) return
 
 		setSendSuccess(false)
 		sendMutation.mutate(
 			{
-				recipientEmail: values.recipientEmail,
-				recipientName: values.recipientName,
+				recipientEmail: values.recipients.join(', '),
+				recipientName: values.recipients.map((email) => email.split('@')[0] ?? email).join(', '),
+				recipientMode: values.recipientMode,
 				emailSubject: values.emailSubject,
 				emailBody: values.emailBody,
 				lockReport: values.lockReport,
 				pdfLanguages: values.pdfLanguages ?? [locale as 'en' | 'de'],
+				sections: serializeSections({
+					valuation: values.includeValuation,
+					commission: values.includeCommission,
+					invoice: values.includeInvoice,
+				})
+					.split(',')
+					.filter(Boolean),
 			},
 			{
 				onSuccess: () => {
@@ -162,7 +250,7 @@ function ExportPage() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{/* Page header with Send Report button */}
+			{/* Page header with Preview + Send Report buttons */}
 			<div className="flex items-center justify-between">
 				<h2 className="text-h2 font-bold text-black">{t('title')}</h2>
 				<div className="flex items-center gap-3">
@@ -184,6 +272,39 @@ function ExportPage() {
 							<span className="text-error">{t('failedToSave')}</span>
 						)}
 					</div>
+
+					{pdfLanguages.map((lang) => {
+						const label =
+							pdfLanguages.length > 1
+								? t('previewPdfLanguage', { language: lang.toUpperCase() })
+								: t('previewPdf')
+						if (!canPreview) {
+							return (
+								<Button
+									key={lang}
+									variant="secondary"
+									size="md"
+									icon={<Eye className="h-4 w-4" />}
+									disabled
+								>
+									{label}
+								</Button>
+							)
+						}
+						return (
+							<Button key={lang} variant="secondary" size="md" asChild>
+								<a
+									href={previewUrl(lang)}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="flex items-center gap-2"
+								>
+									<Eye className="h-4 w-4" />
+									{label}
+								</a>
+							</Button>
+						)
+					})}
 
 					<Button
 						variant="primary"
@@ -221,6 +342,10 @@ function ExportPage() {
 			{isBlocked && !isRefreshing && (
 				<IncompleteNotice reportId={reportId} reportType={reportType} missingInfo={missingInfo} />
 			)}
+			{!isBlocked && recipients.length === 0 && (
+				<p className="text-body-sm text-grey-100">{t('noRecipientsHint')}</p>
+			)}
+			{!hasSections && <p className="text-body-sm text-grey-100">{t('noSectionsHint')}</p>}
 
 			{/* Two-column layout: Toggles (left) + Email composer (right) */}
 			<div className="flex flex-col gap-6 lg:flex-row">
@@ -233,11 +358,18 @@ function ExportPage() {
 				<div className="min-w-0 flex-1">
 					<EmailComposer
 						register={register}
-						setValue={setValue}
 						errors={errors}
 						body={watch('emailBody')}
-						onSend={handleSend}
-						isSending={sendMutation.isPending}
+						recipients={recipients}
+						recipientMode={recipientMode}
+						presets={{
+							claimant: accidentInfo?.claimantInfo?.email ?? null,
+							lawyer: accidentInfo?.claimantInfo?.lawyerEmail ?? null,
+						}}
+						onRecipientsChange={handleRecipientsChange}
+						onRecipientModeChange={handleRecipientModeChange}
+						onBodyChange={handleBodyChange}
+						onSubjectBlur={handleSubjectBlur}
 					/>
 				</div>
 			</div>

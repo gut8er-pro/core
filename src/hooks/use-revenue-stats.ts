@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 type ChartPeriod = 'weekly' | 'monthly' | 'yearly'
 
@@ -13,7 +13,9 @@ type InvoiceStatus = 'completed' | 'pending' | 'delayed'
 
 type InvoiceRow = {
 	id: string
+	reportId: string
 	invoiceNumber: string | null
+	fileNumber: string | null
 	client: string | null
 	date: string
 	amount: number
@@ -22,6 +24,8 @@ type InvoiceRow = {
 
 type RevenueStats = {
 	totalRevenue: number
+	pendingRevenue: number
+	delayedRevenue: number
 	totalReports: number
 	completedPayments: number
 	pendingPayments: number
@@ -39,6 +43,15 @@ async function fetchRevenueStats(): Promise<RevenueStats> {
 	return response.json()
 }
 
+async function setInvoicePaid({ id, paid }: { id: string; paid: boolean }): Promise<void> {
+	const response = await fetch(`/api/invoices/${id}/payment`, {
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ paid }),
+	})
+	if (!response.ok) throw new Error('Failed to update payment status')
+}
+
 function useRevenueStats() {
 	return useQuery<RevenueStats>({
 		queryKey: ['stats'],
@@ -47,5 +60,15 @@ function useRevenueStats() {
 	})
 }
 
+function useSetInvoicePaid() {
+	const queryClient = useQueryClient()
+	return useMutation({
+		mutationFn: setInvoicePaid,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['stats'] })
+		},
+	})
+}
+
 export type { ChartPeriod, InvoiceRow, InvoiceStatus, RevenuePoint, RevenueSeries, RevenueStats }
-export { useRevenueStats }
+export { useRevenueStats, useSetInvoicePaid }

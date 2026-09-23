@@ -14,8 +14,10 @@ import type { InvoiceFormData } from '@/components/report/invoice/types'
 import { MissingFieldsProvider } from '@/components/report/missing-info'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useInvoice } from '@/hooks/use-invoice'
+import { usePhotos } from '@/hooks/use-photos'
 import { useReport } from '@/hooks/use-reports'
 import { toReportType } from '@/lib/completeness'
+import { defaultLineItemByKey, lineItemAmount } from '@/lib/invoice/default-line-items'
 import { generateInvoiceNumber } from '@/lib/utils/invoice-calculations'
 
 function InvoicePage() {
@@ -23,8 +25,11 @@ function InvoicePage() {
 	const tc = useTranslations('common')
 	const params = useParams<{ id: string }>()
 	const reportId = params.id
-	const { data, isLoading } = useInvoice(reportId)
+	const { data, isLoading, isFetchedAfterMount } = useInvoice(reportId)
 	const { data: report } = useReport(reportId)
+	const { data: photoData } = usePhotos(reportId)
+	const photoCount = photoData?.photos?.length ?? 0
+	const isLocked = report?.isLocked === true
 
 	const {
 		saveField,
@@ -39,52 +44,58 @@ function InvoicePage() {
 	const {
 		register,
 		control,
-		formState: { errors },
+		formState: { errors, dirtyFields },
 		reset,
 		setValue,
 		getValues,
+		watch,
 	} = useForm<InvoiceFormData>({ defaultValues: { ...INVOICE_DEFAULTS } })
 
-	// Populate form when data loads
+	// Wait for this mount's own fetch. React Query serves the previous mount's
+	// cached body first, and initialising from it re-entered the tab showing the
+	// form defaults — discarding, and then overwriting, what was just saved.
 	const initializedRef = useRef(false)
 	useEffect(() => {
-		if (!data || initializedRef.current) return
+		if (!data || !isFetchedAfterMount || initializedRef.current) return
 		initializedRef.current = true
 
 		const formData = invoiceFromApi(data)
 
-		// Generate invoice number if missing
 		if (!formData.invoiceNumber) {
 			formData.invoiceNumber = generateInvoiceNumber('GH')
 		}
 
 		reset(formData)
 
-		// Auto-save invoice number if it was just generated (not yet in DB)
 		if (!data.invoice?.invoiceNumber && formData.invoiceNumber) {
 			saveField('invoice.invoiceNumber', formData.invoiceNumber)
 		}
-	}, [data, reset, saveField])
+	}, [data, isFetchedAfterMount, reset, saveField])
+
+	const saveLineItems = useCallback(() => {
+		const items = (getValues('lineItems') ?? []).filter(
+			(li) => li.description || Number(li.rate) > 0,
+		)
+		const formatted = items.map((li, i) => {
+			const lumpSumOnly = defaultLineItemByKey(li.specialFeature)?.lumpSumOnly ?? false
+			const isLumpSum = lumpSumOnly || (li.isLumpSum ?? false)
+			return {
+				description: li.description || '',
+				specialFeature: li.specialFeature || '',
+				isLumpSum,
+				rate: parseFloat(String(li.rate)) || 0,
+				amount: lineItemAmount(li),
+				quantity: isLumpSum ? 1 : parseFloat(String(li.quantity)) || 0,
+				order: i,
+			}
+		})
+		saveFields({ lineItems: formatted })
+	}, [getValues, saveFields])
 
 	const handleFieldBlur = useCallback(
 		(field: string) => {
-			// Line items: replace all — delete existing + create new
 			if (field.startsWith('lineItems')) {
-				const items = (getValues('lineItems') ?? []).filter(
-					(li) => li.description || Number(li.rate) > 0,
-				)
-				if (items.length > 0) {
-					const formatted = items.map((li, i) => ({
-						description: li.description || '',
-						specialFeature: li.specialFeature || '',
-						isLumpSum: li.isLumpSum ?? false,
-						rate: parseFloat(String(li.rate)) || 0,
-						amount: (parseFloat(String(li.rate)) || 0) * (parseInt(String(li.quantity), 10) || 1),
-						quantity: parseInt(String(li.quantity), 10) || 1,
-						order: i,
-					}))
-					saveFields({ lineItems: formatted })
-				}
+				saveLineItems()
 				return
 			}
 
@@ -101,19 +112,63 @@ function InvoicePage() {
 				saveField(`invoice.${field}`, value)
 			}
 		},
-		[saveField, saveFields, getValues],
+		[saveField, saveLineItems, getValues],
+	)
+
+	// Auto-save fires on input change too (debounced) — without this the
+	// last-typed field is lost if the user navigates before blur. Dotted (array)
+	// names are excluded; line items keep the blur-only path because the form
+	// doesn't round-trip created row ids and per-keystroke replace-all writes
+	// would thrash the table. Only user-initiated changes are saved: reset()
+	// also fires watch and would otherwise write the form's defaults back.
+	useEffect(() => {
+		const sub = watch((_v, { name, type }) => {
+			if (!name || name.includes('.')) return
+			if (type !== 'change') return
+			if (!dirtyFields[name as keyof InvoiceFormData]) return
+			handleFieldBlur(name)
+		})
+		return () => sub.unsubscribe()
+	}, [watch, handleFieldBlur, dirtyFields])
+
+	// The Fotografien row counts the gallery for itself until the assessor
+	// types a quantity of their own.
+	const photoRowTouchedRef = useRef(false)
+	useEffect(() => {
+		if (isLocked || !data || !isFetchedAfterMount || photoRowTouchedRef.current) return
+		const items = getValues('lineItems') ?? []
+		const index = items.findIndex((li) => li.specialFeature === 'fotografien')
+		if (index === -1 || items[index]?.quantity === String(photoCount)) return
+		setValue(`lineItems.${index}.quantity`, String(photoCount))
+		saveLineItems()
+	}, [photoCount, data, isFetchedAfterMount, getValues, setValue, saveLineItems, isLocked])
+
+	const handleLineItemBlur = useCallback(
+		(field: string) => {
+			if (field.endsWith('.quantity')) {
+				const index = Number(field.split('.')[1])
+				const items = getValues('lineItems') ?? []
+				if (items[index]?.specialFeature === 'fotografien') {
+					photoRowTouchedRef.current = true
+				}
+			}
+			handleFieldBlur(field)
+		},
+		[getValues, handleFieldBlur],
 	)
 
 	const handleApplyBvskRate = useCallback(
 		(baseFee: number, additionalFee: number) => {
-			const currentItems = getValues('lineItems')
+			const currentItems = getValues('lineItems') ?? []
 			const totalFee = baseFee + additionalFee
+			const index = currentItems.findIndex((li) => li.specialFeature === 'grundhonorar')
 
-			if (currentItems.length === 0) {
+			if (index === -1) {
 				setValue('lineItems', [
+					...currentItems,
 					{
-						description: 'BVSK Appraisal Fee',
-						specialFeature: `Base: ${baseFee.toFixed(2)} + Additional: ${additionalFee.toFixed(2)}`,
+						description: t('defaultRows.grundhonorar'),
+						specialFeature: 'grundhonorar',
 						isLumpSum: true,
 						rate: totalFee.toFixed(2),
 						amount: totalFee.toFixed(2),
@@ -121,18 +176,14 @@ function InvoicePage() {
 					},
 				])
 			} else {
-				setValue('lineItems.0.description', 'BVSK Appraisal Fee')
-				setValue(
-					'lineItems.0.specialFeature',
-					`Base: ${baseFee.toFixed(2)} + Additional: ${additionalFee.toFixed(2)}`,
-				)
-				setValue('lineItems.0.isLumpSum', true)
-				setValue('lineItems.0.rate', totalFee.toFixed(2))
-				setValue('lineItems.0.amount', totalFee.toFixed(2))
-				setValue('lineItems.0.quantity', '1')
+				setValue(`lineItems.${index}.isLumpSum`, true)
+				setValue(`lineItems.${index}.rate`, totalFee.toFixed(2))
+				setValue(`lineItems.${index}.amount`, totalFee.toFixed(2))
+				setValue(`lineItems.${index}.quantity`, '1')
 			}
+			saveLineItems()
 		},
-		[getValues, setValue],
+		[getValues, setValue, saveLineItems, t],
 	)
 
 	if (isLoading) {
@@ -145,7 +196,6 @@ function InvoicePage() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{/* Auto-save status indicator */}
 			<div className="flex items-center justify-end gap-1 text-caption">
 				{autoSaveState.status === 'saving' && (
 					<>
@@ -164,12 +214,9 @@ function InvoicePage() {
 				)}
 			</div>
 
-			{/* Invoice totals banner */}
-			<InvoiceBanner control={control} />
+			<InvoiceBanner control={control} reportId={reportId} />
 
-			{/* White card wrapping invoice details */}
 			<div className="flex flex-col gap-6 rounded-card bg-white p-5">
-				{/* Invoice Details heading */}
 				<h3 className="text-h3 font-semibold text-black">{t('title')}</h3>
 
 				<MissingFieldsProvider
@@ -177,8 +224,7 @@ function InvoicePage() {
 					reportType={toReportType(report?.reportType)}
 					control={control}
 				>
-					<div className="flex flex-col gap-6">
-						{/* Invoice settings */}
+					<fieldset disabled={isLocked} className="flex flex-col gap-6 disabled:opacity-60">
 						<InvoiceSettings
 							register={register}
 							control={control}
@@ -186,15 +232,15 @@ function InvoicePage() {
 							onFieldBlur={handleFieldBlur}
 						/>
 
-						{/* Line items with BVSK rate table embedded */}
 						<LineItemsSection
 							register={register}
 							control={control}
 							errors={errors}
-							onFieldBlur={handleFieldBlur}
+							onFieldBlur={handleLineItemBlur}
+							onRowsChange={saveLineItems}
 							bvskContent={<BvskRateTable onApplyRate={handleApplyBvskRate} />}
 						/>
-					</div>
+					</fieldset>
 				</MissingFieldsProvider>
 			</div>
 		</div>

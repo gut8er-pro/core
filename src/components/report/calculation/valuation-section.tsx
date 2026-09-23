@@ -1,7 +1,9 @@
-import { Calendar, ChevronDown, Info } from 'lucide-react'
+import { AlertCircle, ChevronDown, Info } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import { Controller } from 'react-hook-form'
 import { useFieldProps, useMissingProps, useSectionBadge } from '@/components/report/missing-info'
+import { DateField } from '@/components/ui/date-field'
 import { MISSING_FIELD_CLASS, MISSING_GROUP_CLASS, MissingBadge } from '@/components/ui/missing'
 import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
@@ -26,18 +28,39 @@ const DATA_SOURCE_OPTIONS = [
 	{ value: 'dat', label: 'DAT' },
 ]
 
+type ValuationSectionProps = CalculationSectionProps & {
+	datConnected?: boolean
+	onOpenDat?: () => void
+}
+
 function ValuationSection({
 	register,
 	control,
 	errors,
 	onFieldBlur,
+	datConnected = false,
+	onOpenDat,
 	className,
-}: CalculationSectionProps) {
+}: ValuationSectionProps) {
 	const t = useTranslations('report.calculation')
 	const fieldProps = useFieldProps({ register, errors, onFieldBlur })
 	const missing = useMissingProps()
 	const datBadge = useSectionBadge(SECTION.datValuation)
 	const manualBadge = useSectionBadge(SECTION.manualValuation)
+	const [valuationHint, setValuationHint] = useState<string | null>(null)
+
+	// Neither button may go quiet. With an account the DAT modal is the flow;
+	// without one the assessor is told which of the two things is missing —
+	// the connection, or a calculation to read the valuation from.
+	function handleValuationClick() {
+		if (!datConnected) {
+			setValuationHint(t('correction.datNotConnected'))
+			return
+		}
+		setValuationHint(null)
+		if (onOpenDat) onOpenDat()
+		else setValuationHint(t('valuation.needsDatCalculation'))
+	}
 
 	return (
 		<div className={cn('grid grid-cols-1 gap-5 lg:grid-cols-2', className)}>
@@ -133,19 +156,29 @@ function ValuationSection({
 				</div>
 
 				{/* Action buttons */}
-				<div className="grid grid-cols-2 gap-6">
-					<button
-						type="button"
-						className="flex items-center justify-center rounded-btn border border-black p-3.5 text-body-sm font-medium text-black transition-colors hover:bg-grey-25"
-					>
-						{t('valuation.quickValuation')}
-					</button>
-					<button
-						type="button"
-						className="flex items-center justify-center rounded-btn bg-primary p-3.5 text-body-sm font-medium text-white transition-colors hover:bg-primary-hover"
-					>
-						{t('valuation.detailValuation')}
-					</button>
+				<div className="flex flex-col gap-3">
+					{valuationHint && (
+						<div className="flex items-start gap-2 rounded-xl border border-warning-border bg-warning-border/10 px-4 py-3">
+							<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning-dark" />
+							<span className="text-body-sm text-warning-dark">{valuationHint}</span>
+						</div>
+					)}
+					<div className="grid grid-cols-2 gap-6">
+						<button
+							type="button"
+							onClick={handleValuationClick}
+							className="flex items-center justify-center rounded-btn border border-black p-3.5 text-body-sm font-medium text-black transition-colors hover:bg-grey-25"
+						>
+							{t('valuation.quickValuation')}
+						</button>
+						<button
+							type="button"
+							onClick={handleValuationClick}
+							className="flex items-center justify-center rounded-btn bg-primary p-3.5 text-body-sm font-medium text-white transition-colors hover:bg-primary-hover"
+						>
+							{t('valuation.detailValuation')}
+						</button>
+					</div>
 				</div>
 			</div>
 
@@ -225,21 +258,11 @@ function ValuationSection({
 				</div>
 
 				{/* Date */}
-				<div className="flex flex-col gap-3">
-					<label className="text-body-sm font-medium text-black">{t('valuation.date')}</label>
-					<div className="relative">
-						<input
-							{...fieldProps('valuationDate')}
-							data-missing={missing('valuationDate').isMissing ? 'true' : undefined}
-							placeholder={t('valuation.datePlaceholder')}
-							className={cn(
-								'h-[53px] w-full rounded-2xl border-[1.5px] border-border-card px-3.5 pr-10 text-body text-black placeholder:text-placeholder focus:border-primary focus:outline-none',
-								missing('valuationDate').isMissing && MISSING_FIELD_CLASS,
-							)}
-						/>
-						<Calendar className="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-grey-100" />
-					</div>
-				</div>
+				<DateField
+					label={t('valuation.date')}
+					{...fieldProps('valuationDate')}
+					inputClassName="h-[53px] rounded-2xl border-[1.5px] border-border-card px-3.5 text-body focus:border-primary"
+				/>
 
 				{/* Remove Calculation */}
 				<button
@@ -253,4 +276,5 @@ function ValuationSection({
 	)
 }
 
+export type { ValuationSectionProps }
 export { ValuationSection }

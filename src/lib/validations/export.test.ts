@@ -21,6 +21,25 @@ describe('exportConfigSchema', () => {
 		expect(result.success).toBe(true)
 	})
 
+	it('accepts the recipient chips and the two preset modes', () => {
+		expect(
+			exportConfigSchema.safeParse({
+				recipients: ['kunde@example.de', 'kanzlei@example.de'],
+				recipientMode: 'claimant_lawyer',
+			}).success,
+		).toBe(true)
+		expect(exportConfigSchema.safeParse({ recipientMode: 'claimant' }).success).toBe(true)
+		expect(exportConfigSchema.safeParse({ recipientMode: null }).success).toBe(true)
+	})
+
+	it('rejects the retired third recipient type', () => {
+		expect(exportConfigSchema.safeParse({ recipientMode: 'document' }).success).toBe(false)
+	})
+
+	it('accepts an empty recipient list — clearing the last chip is a save', () => {
+		expect(exportConfigSchema.safeParse({ recipients: [] }).success).toBe(true)
+	})
+
 	it('null recipientEmail passes', () => {
 		const result = exportConfigSchema.safeParse({
 			recipientEmail: null,
@@ -265,5 +284,25 @@ describe('sendReportSchema', () => {
 			const bodyError = result.error.issues.find((issue) => issue.path[0] === 'emailBody')
 			expect(bodyError).toBeDefined()
 		}
+	})
+
+	it('carries the section selection the composer had on screen', () => {
+		const result = sendReportSchema.safeParse({
+			recipientEmail: 'test@example.de',
+			recipientName: 'Allianz',
+			emailSubject: 'Report',
+			sections: ['invoice'],
+		})
+		expect(result.success).toBe(true)
+	})
+
+	it('rejects a section name the template has no component for', () => {
+		const result = sendReportSchema.safeParse({
+			recipientEmail: 'test@example.de',
+			recipientName: 'Allianz',
+			emailSubject: 'Report',
+			sections: ['signatures'],
+		})
+		expect(result.success).toBe(false)
 	})
 })

@@ -327,7 +327,7 @@ async function fillInvoice(page: Page, reportId: string) {
 		invoice: {
 			invoiceNumber: 'GH-3552-2026',
 			date: '2026-04-03T00:00:00Z',
-			recipientId: 'individual',
+			recipientId: 'claimant',
 		},
 	}
 

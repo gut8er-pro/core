@@ -68,20 +68,30 @@ test.describe('Tab switch during auto-save debounce', () => {
 		await expect(page.locator('input[name="payoutDelay"]')).toHaveValue('21')
 	})
 
+	/**
+	 * The Tires card is collapsed by default, and its fields stay read-only for as
+	 * long as the placeholder set stands in for the real one, so waiting for
+	 * editable is what makes this deterministic.
+	 */
+	async function openTires(page: import('@playwright/test').Page) {
+		const trigger = page.getByRole('button', { name: /^Tires\b/ }).first()
+		if ((await trigger.getAttribute('data-state')) !== 'open') await trigger.click()
+		await expect(page.getByLabel('Tire size')).toBeEditable({ timeout: 15_000 })
+	}
+
 	test('a tire field survives an immediate switch to Calculation and back', async ({ page }) => {
 		await openTab(page, 'condition')
+		await openTires(page)
 
-		const tireSize = page.locator('input[name$=".size"]').first()
-		await tireSize.waitFor({ state: 'visible', timeout: 15_000 })
-		const tireName = await tireSize.getAttribute('name')
-
-		await tireSize.fill('225/45 R17')
+		await page.getByLabel('Tire size').fill('225/45 R17')
+		// No settle wait on purpose — leave before the blur save has answered.
 		await page.getByRole('tab', { name: /Calculation|Valuation/i }).click()
 		await page.waitForURL(/\/details\/calculation/)
 
 		await page.getByRole('tab', { name: /Condition/i }).click()
 		await page.waitForURL(/\/details\/condition/)
+		await openTires(page)
 
-		await expect(page.locator(`input[name="${tireName}"]`)).toHaveValue('225/45 R17')
+		await expect(page.getByLabel('Tire size')).toHaveValue('225/45 R17')
 	})
 })

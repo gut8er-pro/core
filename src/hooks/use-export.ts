@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { MissingInfoReport } from '@/lib/completeness'
 import { isSendFailureCode, type SendFailureCode } from '@/lib/email/send-failure'
+import { type PdfSectionSelection, serializeSections } from '@/lib/pdf/sections'
+import type { RecipientMode } from '@/lib/validations/export'
 
 type ExportConfigResponse = {
 	id: string
@@ -9,10 +11,30 @@ type ExportConfigResponse = {
 	includeCommission: boolean
 	includeInvoice: boolean
 	lockReport: boolean
+	recipients: string[]
+	recipientMode: RecipientMode | null
 	recipientEmail: string | null
 	recipientName: string | null
 	emailSubject: string | null
 	emailBody: string | null
+}
+
+/**
+ * The one URL preview, download and send all describe the same document with.
+ * Preview opens it inline; the params are the composer's live state, so what is
+ * looked at cannot diverge from what is attached (tickets 29 + 30).
+ */
+function buildPdfUrl(
+	reportId: string,
+	options: { lang: string; sections: Omit<PdfSectionSelection, 'report'>; inline?: boolean },
+): string {
+	const params = new URLSearchParams({
+		format: 'pdf',
+		lang: options.lang,
+		sections: serializeSections(options.sections),
+	})
+	if (options.inline) params.set('disposition', 'inline')
+	return `/api/reports/${reportId}/export?${params.toString()}`
 }
 
 type SendReportResponse = {
@@ -156,6 +178,7 @@ function useSendReport(reportId: string) {
 
 export type { ExportConfigResponse, SendReportResponse }
 export {
+	buildPdfUrl,
 	fetchExportConfig,
 	IncompleteReportError,
 	PdfGenerationFailedError,

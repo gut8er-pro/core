@@ -37,6 +37,7 @@ const mockReports: Report[] = [
 		updatedAt: new Date().toISOString(),
 		_count: { photos: 12 },
 		claimantName: 'Ana Petrović',
+		fileNumber: 'HB-2026-001',
 		plateNumber: 'AL 1815',
 		vehicleMake: 'Ford',
 		vehicleModel: 'SUV',
@@ -76,6 +77,17 @@ describe('ReportTable', () => {
 	it('renders table headers', () => {
 		render(<ReportTable reports={mockReports} onDelete={mockOnDelete} />)
 		expect(screen.getByText('Report')).toBeInTheDocument()
+	})
+
+	it('shows the file number as the report number', () => {
+		render(<ReportTable reports={mockReports} onDelete={mockOnDelete} />)
+		expect(screen.getByText('HB-2026-001')).toBeInTheDocument()
+	})
+
+	it('shows an em dash instead of an id when no file number is entered', () => {
+		render(<ReportTable reports={mockReports} onDelete={mockOnDelete} />)
+		expect(screen.getAllByText('—')).toHaveLength(2)
+		expect(screen.queryByText(/^GH-/)).not.toBeInTheDocument()
 	})
 
 	it('shows action menu on button click', async () => {

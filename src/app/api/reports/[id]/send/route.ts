@@ -6,6 +6,7 @@ import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { getMissingInfo, isDelivered } from '@/lib/completeness/server'
 import { sendReportEmail } from '@/lib/email/send-report'
 import { generateReportPdfBuffer } from '@/lib/pdf/generate-buffer'
+import { parseSectionsParam, sectionsFromToggles } from '@/lib/pdf/sections'
 import { prisma } from '@/lib/prisma'
 import { sendReportSchema } from '@/lib/validations/export'
 
@@ -39,9 +40,11 @@ async function POST(request: NextRequest, context: RouteContext) {
 		return NextResponse.json({ error: 'Report not found' }, { status: 404 })
 	}
 
-	if (report.isLocked) {
-		return NextResponse.json({ error: 'Report is already locked and sent' }, { status: 403 })
-	}
+	// A locked report is still sendable. Locking closes the report to EDITS, not
+	// to delivery: re-sending the same Gutachten to a second insurer, or to a
+	// client who lost the mail, is the assessor's normal work. Refusing it here
+	// is what produced the "Failed to send report" banner on the second visit
+	// (ticket 32.3).
 
 	// The gate. Checked here as well as inside the PDF generator so this route
 	// can answer with the structured breakdown rather than a PDF-layer error —
@@ -65,36 +68,47 @@ async function POST(request: NextRequest, context: RouteContext) {
 
 	const data = parsed.data
 
-	// Verify export config exists
-	const exportConfig = await prisma.exportConfig.findUnique({
-		where: { reportId: id },
-	})
+	// The composer's own state, stored so reopening the page shows what was sent
+	// rather than an empty form (ticket 32.1). Upserted rather than required to
+	// exist: the row is otherwise only created by opening the composer, so a
+	// send that skipped that page died on "Export config not found" — one of the
+	// two things the client read as "Failed to send report".
+	const sentRecipients = data.recipientEmail
+		.split(',')
+		.map((email) => email.trim())
+		.filter(Boolean)
 
-	if (!exportConfig) {
-		return NextResponse.json(
-			{ error: 'Export config not found. Please configure export settings first.' },
-			{ status: 400 },
-		)
+	const composerState = {
+		recipientEmail: data.recipientEmail,
+		recipientName: data.recipientName,
+		recipients: sentRecipients,
+		...(data.recipientMode !== undefined ? { recipientMode: data.recipientMode } : {}),
+		subject: data.emailSubject,
+		body: data.emailBody ?? null,
 	}
 
-	// Update export config with final send details
-	await prisma.exportConfig.update({
+	const exportConfig = await prisma.exportConfig.upsert({
 		where: { reportId: id },
-		data: {
-			recipientEmail: data.recipientEmail,
-			recipientName: data.recipientName,
-			subject: data.emailSubject,
-			body: data.emailBody ?? null,
-		},
+		create: { reportId: id, ...composerState },
+		update: composerState,
 	})
 
-	// Generate PDF attachment(s) — one per selected language
+	// Generate PDF attachment(s) — one per selected language. Always re-rendered
+	// from current data, never reused from an earlier send.
 	const pdfLanguages: string[] = Array.isArray(data.pdfLanguages) ? data.pdfLanguages : ['de']
+	const sections = parseSectionsParam(
+		data.sections ? data.sections.join(',') : null,
+		sectionsFromToggles({
+			includeVehicleValuation: exportConfig.includeVehicleValuation ?? true,
+			includeCommission: exportConfig.includeCommission ?? true,
+			includeInvoice: exportConfig.includeInvoice ?? true,
+		}),
+	)
 	const pdfAttachments: { filename: string; content: Buffer }[] = []
 	const pdfFailures: { language: string; cause: string }[] = []
 	for (const lang of pdfLanguages) {
 		try {
-			const pdfResult = await generateReportPdfBuffer(id, user.id, lang)
+			const pdfResult = await generateReportPdfBuffer(id, user.id, lang, sections)
 			if ('buffer' in pdfResult) {
 				const suffix = pdfLanguages.length > 1 ? `_${lang.toUpperCase()}` : ''
 				pdfAttachments.push({
@@ -180,7 +194,7 @@ async function POST(request: NextRequest, context: RouteContext) {
 	}
 
 	// Only update report status after successful email send
-	let reportLocked = false
+	let reportLocked = report.isLocked
 	if (data.lockReport) {
 		await prisma.report.update({
 			where: { id },
@@ -191,8 +205,9 @@ async function POST(request: NextRequest, context: RouteContext) {
 			},
 		})
 		reportLocked = true
-	} else {
-		// Mark as sent even if not locked
+	} else if (!report.isLocked) {
+		// Mark as sent even if not locked. A report that is ALREADY locked keeps
+		// its lock: re-sending it is delivery, not an unlock.
 		await prisma.report.update({
 			where: { id },
 			data: {

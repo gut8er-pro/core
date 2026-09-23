@@ -1,13 +1,15 @@
+import type { RecipientMode } from '@/lib/validations/export'
+
 type ExportFormData = {
 	includeValuation: boolean
 	includeCommission: boolean
 	includeInvoice: boolean
 	lockReport: boolean
 	pdfLanguages: ('en' | 'de')[]
-	recipientEmail: string
-	recipientName: string
+	recipients: string[]
+	recipientMode: RecipientMode | null
 	emailSubject: string
 	emailBody: string
 }
 
-export type { ExportFormData }
+export type { ExportFormData, RecipientMode }

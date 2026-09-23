@@ -1,4 +1,4 @@
-import { GRADING_CATEGORIES, gradingKey } from '@/components/report/condition/types'
+import { GRADED_CATEGORIES, gradingKey } from '@/components/report/condition/types'
 import { SECTION } from './sections'
 import type {
 	AccidentInfoValues,
@@ -73,11 +73,16 @@ function claimantSection(reportType: ReportType): SectionSpec<AccidentInfoValues
 	return { id: SECTION.claimant, rules }
 }
 
+/**
+ * The opponent can be a private person, so the company name never blocks, and
+ * the insurance number is often unknown when the Gutachten is written — the
+ * insurer itself is what makes the claim addressable.
+ */
 const opponentSection: SectionSpec<AccidentInfoValues> = {
 	id: SECTION.opponent,
 	rules: [
 		{ kind: 'either', paths: ['opponentLastName', 'opponentCompany'] },
-		...fields<AccidentInfoValues>('opponentInsuranceCompany', 'opponentInsuranceNumber'),
+		field<AccidentInfoValues>('opponentInsuranceCompany'),
 	],
 }
 
@@ -173,6 +178,10 @@ function vehicleTab(): SectionSpec<VehicleValues>[] {
  * Position is the row's identity rather than an answer — the tyre section always
  * sets it from the position tab the assessor is on — so only size and profile
  * depth can actually be left empty.
+ *
+ * Only the first set counts. A second set is winter tyres or a spare rim set:
+ * real when the assessor fills it, and never a reason to refuse a Gutachten when
+ * they did not.
  */
 const tiresSection: SectionSpec<ConditionValues> = {
 	id: SECTION.tires,
@@ -180,6 +189,7 @@ const tiresSection: SectionSpec<ConditionValues> = {
 		{
 			kind: 'rows',
 			path: 'tireSets',
+			where: { setNumber: 1 },
 			row: [
 				{
 					kind: 'rows',
@@ -195,26 +205,35 @@ const tiresSection: SectionSpec<ConditionValues> = {
 }
 
 /**
- * Every category graded, plus the overall score. The value-increasing lists are
- * not required — a car with no rare equipment is a real answer.
+ * Every graded category, plus the overall score. Paint is excluded: it is the
+ * same assessment the Visual Accident Details paint layer already carries, and
+ * grading it twice asked the assessor for one answer in two places.
+ *
+ * The value-increasing lists are not required — a car with no rare equipment is
+ * a real answer.
  */
 const vehicleGradingSection: SectionSpec<ConditionValues> = {
 	id: SECTION.vehicleGrading,
 	rules: [
-		...GRADING_CATEGORIES.map((category) =>
+		...GRADED_CATEGORIES.map((category) =>
 			field<ConditionValues>(gradingKey(category) as Extract<keyof ConditionValues, string>),
 		),
 		field<ConditionValues>('gradingOverall'),
 	],
 }
 
+/** Only an Oldtimer valuation grades a vehicle; the other three types render no tab. */
+function gradingTab(reportType: ReportType): SectionSpec<ConditionValues>[] {
+	return reportType === 'OT' ? [vehicleGradingSection] : []
+}
+
 function conditionTab(reportType: ReportType): SectionSpec<ConditionValues>[] {
 	const marksDamage = reportType === 'HS' || reportType === 'KG'
-	const marksPaint = marksDamage || reportType === 'OT'
 
 	const diagramRules: Rule<ConditionValues>[] = []
+	// Paint markers stay optional on every type: a vehicle with nothing worth
+	// measuring is a finding, not a gap.
 	if (marksDamage) diagramRules.push({ kind: 'rows', path: 'damageMarkers' })
-	if (marksPaint) diagramRules.push({ kind: 'rows', path: 'paintMarkers' })
 
 	return [
 		{
@@ -235,8 +254,6 @@ function conditionTab(reportType: ReportType): SectionSpec<ConditionValues>[] {
 				'errorMemoryRead',
 			),
 		},
-		// OT grades the vehicle; the other three types never render the table.
-		...(reportType === 'OT' ? [vehicleGradingSection] : []),
 		...(diagramRules.length > 0 ? [{ id: SECTION.damageDiagram, rules: diagramRules }] : []),
 		tiresSection,
 		{ id: SECTION.priorDamage, rules: fields<ConditionValues>('previousDamageReported') },
@@ -314,6 +331,7 @@ function manifestFor(reportType: ReportType) {
 		accidentInfo: accidentInfoTab(reportType),
 		vehicle: vehicleTab(),
 		condition: conditionTab(reportType),
+		grading: gradingTab(reportType),
 		calculation: calculationTab(reportType),
 		invoice: invoiceTab,
 	}

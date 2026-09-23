@@ -16,6 +16,7 @@ const TAB_KEYS: TabKey[] = [
 	'accidentInfo',
 	'vehicle',
 	'condition',
+	'grading',
 	'calculation',
 	'invoice',
 ]

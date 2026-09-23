@@ -81,6 +81,18 @@ function DetailsLayout({ children }: { children: ReactNode }) {
 			isComplete: completion.condition.isComplete,
 			completion: completion.condition.isComplete ? undefined : fmt(completion.condition),
 		},
+		// An Oldtimer is argued from its grade, so the grading gets a tab of its
+		// own between the condition it summarises and the valuation it feeds.
+		...(isOT
+			? [
+					{
+						key: 'grading',
+						label: t('condition.vehicleGrading.title'),
+						isComplete: completion.grading.isComplete,
+						completion: completion.grading.isComplete ? undefined : fmt(completion.grading),
+					},
+				]
+			: []),
 		{
 			key: 'calculation',
 			label: calcTabLabel,

@@ -56,6 +56,39 @@ describe('gutachtenSender', () => {
 			'"He said hi bye via Gut8erPRO" <gutachten@gut8erpro.de>',
 		)
 	})
+
+	it('falls back to the assessor when the firm name is only quotes', () => {
+		expect(gutachtenSender({ assessorName: 'Anna Berger', companyName: '""' })).toBe(
+			'"Anna Berger via Gut8erPRO" <gutachten@gut8erpro.de>',
+		)
+	})
+
+	it('encodes a German firm name rather than putting umlauts on the wire raw', () => {
+		const from = gutachtenSender({ companyName: 'Müller & Söhne', assessorName: null })
+		expect(from).toBe(
+			`=?UTF-8?B?${Buffer.from('Müller & Söhne via Gut8erPRO', 'utf8').toString('base64')}?= <gutachten@gut8erpro.de>`,
+		)
+		expect(from).toMatch(/^[\x20-\x7E]+$/)
+	})
+
+	it('leaves a plain ASCII firm name quoted rather than encoded', () => {
+		expect(gutachtenSender({ companyName: 'KFZ Berger GmbH', assessorName: null })).toBe(
+			'"KFZ Berger GmbH via Gut8erPRO" <gutachten@gut8erpro.de>',
+		)
+	})
+
+	it('stays inside the length Resend accepts when the firm name is absurd', () => {
+		const from = gutachtenSender({ companyName: 'X'.repeat(500), assessorName: 'Anna Berger' })
+		expect(from.length).toBeLessThanOrEqual(320)
+		expect(from).toContain('<gutachten@gut8erpro.de>')
+		expect(from).toContain('XXXX')
+	})
+
+	it('stays inside the length cap when the absurd name is also non-ASCII', () => {
+		const from = gutachtenSender({ companyName: 'Ä'.repeat(500), assessorName: null })
+		expect(from.length).toBeLessThanOrEqual(320)
+		expect(from).toContain('<gutachten@gut8erpro.de>')
+	})
 })
 
 describe('the sending domain', () => {

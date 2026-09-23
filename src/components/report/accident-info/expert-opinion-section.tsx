@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl'
 import { useFieldProps, useSectionBadge } from '@/components/report/missing-info'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { DateField } from '@/components/ui/date-field'
 import { Label } from '@/components/ui/label'
 import { SelectField } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
@@ -49,9 +50,8 @@ function ExpertOpinionSection({
 						disabled={disabled}
 						{...fieldProps('fileNumber')}
 					/>
-					<TextField
+					<DateField
 						label={t('accidentInfo.expertOpinion.caseDate')}
-						type="date"
 						disabled={disabled}
 						{...fieldProps('caseDate')}
 					/>
@@ -71,9 +71,8 @@ function ExpertOpinionSection({
 							onFieldBlur?.('orderWasPlacement')
 						}}
 					/>
-					<TextField
+					<DateField
 						label={t('accidentInfo.expertOpinion.issuedDate')}
-						type="date"
 						disabled={disabled}
 						{...fieldProps('issuedDate')}
 					/>

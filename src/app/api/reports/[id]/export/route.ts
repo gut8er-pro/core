@@ -1,11 +1,57 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { generateReportPdfBuffer } from '@/lib/pdf/generate-buffer'
+import { parseSectionsParam, sectionsFromToggles } from '@/lib/pdf/sections'
 import { prisma } from '@/lib/prisma'
 import { exportConfigSchema } from '@/lib/validations/export'
 
 type RouteContext = {
 	params: Promise<{ id: string }>
+}
+
+type StoredExportConfig = {
+	id: string
+	reportId: string
+	includeVehicleValuation: boolean
+	includeCommission: boolean
+	includeInvoice: boolean
+	lockReport: boolean
+	recipients: string[]
+	recipientMode: string | null
+	recipientEmail: string | null
+	recipientName: string | null
+	subject: string | null
+	body: string | null
+}
+
+/**
+ * `recipients` is the column the composer restores its chips from. The legacy
+ * `recipientEmail` is still written by the send route and is the fallback for
+ * reports last sent before the column existed.
+ */
+function serializeExportConfig(exportConfig: StoredExportConfig) {
+	const stored =
+		exportConfig.recipients.length > 0
+			? exportConfig.recipients
+			: (exportConfig.recipientEmail
+					?.split(',')
+					.map((email) => email.trim())
+					.filter(Boolean) ?? [])
+
+	return {
+		id: exportConfig.id,
+		reportId: exportConfig.reportId,
+		includeValuation: exportConfig.includeVehicleValuation,
+		includeCommission: exportConfig.includeCommission,
+		includeInvoice: exportConfig.includeInvoice,
+		lockReport: exportConfig.lockReport,
+		recipients: stored,
+		recipientMode: exportConfig.recipientMode,
+		recipientEmail: exportConfig.recipientEmail,
+		recipientName: exportConfig.recipientName,
+		emailSubject: exportConfig.subject,
+		emailBody: exportConfig.body,
+	}
 }
 
 async function GET(request: NextRequest, context: RouteContext) {
@@ -19,8 +65,28 @@ async function GET(request: NextRequest, context: RouteContext) {
 	// If ?format=pdf, generate and return the PDF
 	if (format === 'pdf') {
 		try {
-			const locale = searchParams.get('locale') ?? 'de'
-			const result = await generateReportPdfBuffer(id, user.id, locale)
+			// `lang` is the param the composer builds its preview links with;
+			// `locale` stays accepted because the exhaustive verifier uses it.
+			const locale = searchParams.get('lang') ?? searchParams.get('locale') ?? 'de'
+			const storedConfig = await prisma.exportConfig.findUnique({
+				where: { reportId: id },
+				select: {
+					includeVehicleValuation: true,
+					includeCommission: true,
+					includeInvoice: true,
+				},
+			})
+			const sections = parseSectionsParam(
+				searchParams.get('sections'),
+				sectionsFromToggles(
+					storedConfig ?? {
+						includeVehicleValuation: true,
+						includeCommission: true,
+						includeInvoice: true,
+					},
+				),
+			)
+			const result = await generateReportPdfBuffer(id, user.id, locale, sections)
 			if ('error' in result) {
 				// A refused download is not a missing report — say which it is.
 				if (result.missingInfo) {
@@ -31,11 +97,14 @@ async function GET(request: NextRequest, context: RouteContext) {
 				}
 				return NextResponse.json({ error: result.error }, { status: 404 })
 			}
+			// Preview opens in a tab rather than downloading — the assessor wants
+			// to look at the document, not collect a file (ticket 29).
+			const disposition = searchParams.get('disposition') === 'inline' ? 'inline' : 'attachment'
 			return new NextResponse(new Uint8Array(result.buffer), {
 				status: 200,
 				headers: {
 					'Content-Type': 'application/pdf',
-					'Content-Disposition': `attachment; filename="${result.filename}"`,
+					'Content-Disposition': `${disposition}; filename="${result.filename}"`,
 				},
 			})
 		} catch (pdfError) {
@@ -63,18 +132,7 @@ async function GET(request: NextRequest, context: RouteContext) {
 		})
 	}
 
-	return NextResponse.json({
-		id: exportConfig.id,
-		reportId: exportConfig.reportId,
-		includeValuation: exportConfig.includeVehicleValuation,
-		includeCommission: exportConfig.includeCommission,
-		includeInvoice: exportConfig.includeInvoice,
-		lockReport: exportConfig.lockReport,
-		recipientEmail: exportConfig.recipientEmail,
-		recipientName: exportConfig.recipientName,
-		emailSubject: exportConfig.subject,
-		emailBody: exportConfig.body,
-	})
+	return NextResponse.json(serializeExportConfig(exportConfig))
 }
 
 async function PATCH(request: NextRequest, context: RouteContext) {
@@ -111,6 +169,8 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	if (data.lockReport !== undefined) updateData.lockReport = data.lockReport
 	if (data.recipientEmail !== undefined) updateData.recipientEmail = data.recipientEmail
 	if (data.recipientName !== undefined) updateData.recipientName = data.recipientName
+	if (data.recipients !== undefined) updateData.recipients = data.recipients
+	if (data.recipientMode !== undefined) updateData.recipientMode = data.recipientMode
 	if (data.emailSubject !== undefined) updateData.subject = data.emailSubject
 	if (data.emailBody !== undefined) updateData.body = data.emailBody
 
@@ -132,18 +192,7 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		},
 	})
 
-	return NextResponse.json({
-		id: exportConfig.id,
-		reportId: exportConfig.reportId,
-		includeValuation: exportConfig.includeVehicleValuation,
-		includeCommission: exportConfig.includeCommission,
-		includeInvoice: exportConfig.includeInvoice,
-		lockReport: exportConfig.lockReport,
-		recipientEmail: exportConfig.recipientEmail,
-		recipientName: exportConfig.recipientName,
-		emailSubject: exportConfig.subject,
-		emailBody: exportConfig.body,
-	})
+	return NextResponse.json(serializeExportConfig(exportConfig))
 }
 
 export { GET, PATCH }

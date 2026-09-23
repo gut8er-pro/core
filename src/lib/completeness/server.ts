@@ -120,6 +120,16 @@ async function getMissingInfo(reportId: string, userId: string): Promise<Missing
 			}
 		: null
 
+	// Grading reads the same condition payload — it is its own tab in the UI and
+	// its own grouping in the manifest, not its own endpoint.
+	const condition = conditionValuesFromApi({
+		condition: json.condition,
+		damageMarkers: json.condition?.damageMarkers ?? [],
+		paintMarkers: json.condition?.paintMarkers ?? [],
+		tireSets: json.condition?.tireSets ?? [],
+		oldtimerDetails: json.oldtimer,
+	})
+
 	return computeMissingInfo(toReportType(report.reportType), {
 		gallery: { photos: json.photos },
 		accidentInfo: accidentInfoValuesFromApi({
@@ -132,13 +142,8 @@ async function getMissingInfo(reportId: string, userId: string): Promise<Missing
 			signatures: json.signatures,
 		}),
 		vehicle: vehicleFromApi(vehicle),
-		condition: conditionValuesFromApi({
-			condition: json.condition,
-			damageMarkers: json.condition?.damageMarkers ?? [],
-			paintMarkers: json.condition?.paintMarkers ?? [],
-			tireSets: json.condition?.tireSets ?? [],
-			oldtimerDetails: json.oldtimer,
-		}),
+		condition,
+		grading: condition,
 		calculation: calculationFromApi({
 			calculation: json.calculation,
 			additionalCosts: json.calculation?.additionalCosts ?? [],

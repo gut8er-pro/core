@@ -1,8 +1,9 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
+import { lineItemAmount } from '@/lib/invoice/default-line-items'
 import { cn } from '@/lib/utils'
 import { calculateGrossTotal, calculateNetTotal } from '@/lib/utils/invoice-calculations'
 import type { InvoiceSectionProps } from './types'
@@ -14,15 +15,18 @@ function formatEUR(value: number): string {
 	}).format(value)
 }
 
-function InvoiceBanner({ control, className }: Pick<InvoiceSectionProps, 'control' | 'className'>) {
+type InvoiceBannerProps = Pick<InvoiceSectionProps, 'control' | 'className'> & {
+	reportId: string
+}
+
+function InvoiceBanner({ control, className, reportId }: InvoiceBannerProps) {
 	const t = useTranslations('report.invoice')
+	const locale = useLocale()
 	const lineItems = useWatch({ control, name: 'lineItems' })
 
-	const parsedItems = (lineItems ?? []).map((item) => ({
-		amount: (parseFloat(String(item.rate)) || 0) * (parseInt(String(item.quantity), 10) || 1),
-	}))
-
-	const netTotal = calculateNetTotal(parsedItems)
+	const netTotal = calculateNetTotal(
+		(lineItems ?? []).map((item) => ({ amount: lineItemAmount(item) })),
+	)
 	const grossTotal = calculateGrossTotal(netTotal, 19)
 
 	return (
@@ -37,12 +41,18 @@ function InvoiceBanner({ control, className }: Pick<InvoiceSectionProps, 'contro
 				</div>
 
 				<Button
-					type="button"
+					asChild
 					variant="outline"
 					size="md"
 					className="border-white bg-white/10 text-white hover:bg-white/20 hover:text-white"
 				>
-					{t('previewInvoice')}
+					<a
+						href={`/api/reports/${reportId}/export?format=pdf&sections=invoice&lang=${locale}`}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{t('previewInvoice')}
+					</a>
 				</Button>
 			</div>
 		</div>

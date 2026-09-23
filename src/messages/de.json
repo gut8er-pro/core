@@ -1,5 +1,11 @@
 {
   "common": {
+    "dateField": {
+      "placeholder": "TT.MM.JJJJ",
+      "openCalendar": "Kalender öffnen",
+      "previousMonth": "Voriger Monat",
+      "nextMonth": "Nächster Monat"
+    },
     "save": "Speichern",
     "cancel": "Abbrechen",
     "delete": "Löschen",
@@ -768,7 +774,6 @@
         "miles": "Meilen"
       },
       "nextMot": "Nächste HU/AU",
-      "nextMotPlaceholder": "TT.MM.JJJJ",
       "fullServiceHistory": "Lückenlose Servicehistorie",
       "testDrivePerformed": "Probefahrt durchgeführt",
       "errorMemoryRead": "Fehlerspeicher ausgelesen",
@@ -826,12 +831,9 @@
       },
       "vehicleGrading": {
         "title": "Fahrzeugbewertung",
-        "grading": "Bewertung",
-        "paint": "Lack",
         "overallCondition": "Gesamtzustand",
         "bodywork": "Karosserie / Blech",
         "tires": "Reifen",
-        "paintLabel": "Lack",
         "interior": "Fahrgastzelle / Innenraum",
         "chrome": "Chrom- / Zierteile",
         "engineBay": "Motorraum",
@@ -841,8 +843,7 @@
         "trunk": "Kofferraum",
         "autoCalculateGrade": "Note automatisch berechnen",
         "scorePopupHint": "Klicken Sie + für überdurchschnittlich, Zahl für Standard oder - für unterdurchschnittlich",
-        "overallConditionTitle": "Gesamtzustand",
-        "paintGradingNote": "Die Lackbewertung verwendet die gleichen Lackschichtdicke-Daten aus dem Zustand-Tab."
+        "overallConditionTitle": "Gesamtzustand"
       },
       "valueIncreasingFeatures": {
         "title": "Wertsteigernde Merkmale",
@@ -964,8 +965,8 @@
         "average": "Durchschnitt",
         "minimum": "Minimum",
         "date": "Datum",
-        "datePlaceholder": "MM/JJJJ",
-        "removeCalculation": "Kalkulation entfernen"
+        "removeCalculation": "Kalkulation entfernen",
+        "needsDatCalculation": "Diese Bewertung wird aus einer SilverDAT3-Kalkulation übernommen. Führen Sie zuerst die DAT-Kalkulation durch, dann erscheinen die Werte hier."
       },
       "oldtimer": {
         "value": "Wert",
@@ -999,13 +1000,11 @@
       "settings": "Einstellungen",
       "recipient": "Empfänger",
       "recipientTypes": {
-        "individual": "Einzelempfänger",
-        "group": "Gruppenempfänger",
-        "document": "Dokumentenempfänger"
+        "claimant": "Anspruchsteller",
+        "claimantLawyer": "Anspruchsteller und Anwalt"
       },
       "invoiceNumber": "Rechnungsnummer",
       "date": "Datum",
-      "datePlaceholder": "TT.MM.JJJJ",
       "payoutDelay": "Zahlungsziel (optional)",
       "eInvoice": "E-Rechnung",
       "itemDetails": "Positionen",
@@ -1015,7 +1014,19 @@
       "amount": "Betrag",
       "serviceDescription": "Leistungsbeschreibung",
       "lumpSum": "Pauschal",
+      "quantity": "Menge",
       "addRow": "Zeile hinzufügen",
+      "removeRow": "Zeile entfernen",
+      "units": {
+        "km": "km",
+        "piece": "Stück"
+      },
+      "defaultRows": {
+        "grundhonorar": "Grundhonorar",
+        "anfahrt": "Anfahrt",
+        "druckVersand": "Druck & Versand",
+        "fotografien": "Fotografien"
+      },
       "invoiceAmount": "Rechnungsbetrag",
       "beforeTax": "Vor Steuer {amount}",
       "previewInvoice": "Rechnungsvorschau",
@@ -1044,9 +1055,12 @@
       "saving": "Wird gespeichert...",
       "saved": "Gespeichert",
       "failedToSave": "Speichern fehlgeschlagen",
-      "individualRecipient": "Einzelempfänger",
-      "groupRecipient": "Gruppenempfänger",
-      "documentRecipient": "Dokumentenempfänger",
+      "claimantRecipient": "An den Anspruchsteller senden",
+      "claimantLawyerRecipient": "An den Anspruchsteller und seinen Rechtsanwalt senden",
+      "previewPdf": "Vorschau",
+      "previewPdfLanguage": "Vorschau {language}",
+      "noRecipientsHint": "Fügen Sie mindestens einen Empfänger hinzu, um dieses Gutachten zu senden.",
+      "noSectionsHint": "Wählen Sie mindestens einen Dokumentabschnitt aus.",
       "reportSentToast": "Gutachten erfolgreich gesendet",
       "sendFailed": "Gutachten konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
       "pdfLanguage": "PDF-Sprache",
@@ -1337,6 +1351,9 @@
     "totalReports": "Gesamtgutachten",
     "avgReportValue": "Durchschn. Gutachtenwert",
     "completionRate": "Abschlussquote",
+    "pendingRevenue": "Ausstehender Betrag",
+    "delayedRevenue": "Überfälliger Betrag",
+    "toggleStatus": "Zahlungsstatus ändern",
     "last6Months": "Letzte 6 Monate",
     "downloadReport": "Bericht herunterladen",
     "searchPlaceholder": "Suchen...",
@@ -1364,12 +1381,14 @@
     },
     "table": {
       "clients": "Kunden",
+      "reportNumber": "Gutachten-Nr.",
       "invoiceId": "Rechnungsnr.",
       "dateCreated": "Erstellt am",
       "amount": "Betrag",
       "status": "Status"
     },
     "status": {
+      "all": "Alle",
       "completed": "Abgeschlossen",
       "pending": "Ausstehend",
       "rejected": "Abgelehnt",

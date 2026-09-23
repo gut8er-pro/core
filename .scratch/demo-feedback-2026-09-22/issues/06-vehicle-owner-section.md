@@ -57,3 +57,24 @@ loaded at boot, so a client regenerated afterwards is not picked up. The symptom
 PATCH returns 200 and the row really is written, but the reload reads back empty, which looks
 exactly like "the claimant block no longer persists". `Unknown field \`ownerInfo\` for include
 statement on model \`Report\`` in the dev log is the tell. Restarting `next dev` fixes it.
+
+## PDF part (2026-09-23) — done
+
+The wave-1 note said "for wave 2 (PDF): the owner arrives as a top-level `ownerInfo` object".
+It is now rendered.
+
+`AccidentInfoSection` prints a **Fahrzeughalter / Vehicle Owner** block after the claimant (and
+after the lawyer block when there is one), gated on `claimantInfo.isVehicleOwner === false` —
+the same condition that reveals the form section, so the PDF says what the screen says. Name,
+company, address, email and phone; no IBAN and no tax fields, matching the form. `ownerInfo` is
+included in the generator's query and mapped onto `ReportData`.
+
+Verified live with the box unchecked:
+
+```
+Fahrzeughalter
+Name       Frau Petra Halter
+Firma      Fuhrpark GmbH
+Adresse    Werksstraße 8, 28199, Bremen
+E-Mail     halter@fuhrpark.test
+```

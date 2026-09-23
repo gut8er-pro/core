@@ -7,6 +7,7 @@ import { useFieldProps, useSectionBadge } from '@/components/report/missing-info
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { DateField } from '@/components/ui/date-field'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { SelectField } from '@/components/ui/select'
@@ -198,9 +199,8 @@ function VisitSection({
 
 							{/* Data | Expert | Vehicle condition — 3-column per Figma */}
 							<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-								<TextField
+								<DateField
 									label={t('accidentInfo.visits.data')}
-									type="date"
 									disabled={disabled}
 									{...fieldProps(`visits.${index}.date`)}
 								/>
