@@ -92,3 +92,24 @@ block**, as its own "Rechtsanwalt" section under the claimant, rendered only whi
 
 E2E: `10-export.spec.ts` asserts both buttons are present and that no "Document recipient"
 button remains.
+
+## Follow-up (2026-09-23): a preset click could silently wipe the stored recipients
+
+Reported live on production: after a send, Send Report stayed disabled — the recipient list
+was empty although "Send to the claimant" showed as active. DB state confirmed it
+(`recipients: []`, `recipientEmail: ""`, stale `recipientName` from the send), and the
+claimant's email exists, so the preset click must have landed **before the accident-info GET
+answered**: `presets.claimant` was still `null`, and `applyMode` replaced the chips with an
+empty list and saved it.
+
+Fix in `email-composer.tsx` + `export/page.tsx`:
+
+- A preset that resolves to zero addresses no longer touches the chips or the mode — it calls
+  the new `onPresetEmpty`, which the page surfaces as a toast (`presetNoEmail`, both locales):
+  no address on file, add it in the report or type one manually. An empty preset can never
+  again overwrite a saved recipient list.
+- The two preset buttons are disabled while accident-info is still loading
+  (`presetsLoading`), which closes the race window itself.
+
+Tests: `email-composer.test.tsx` (new) — preset replaces chips; empty preset never wipes
+chips and never flips the mode; buttons disabled while loading. `10-export` E2E 13/13.

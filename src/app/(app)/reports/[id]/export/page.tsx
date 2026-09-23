@@ -46,7 +46,7 @@ function ExportPage() {
 	const reportId = params.id
 	const { data, isLoading } = useExportConfig(reportId)
 	const { data: report } = useReport(reportId)
-	const { data: accidentInfo } = useAccidentInfo(reportId)
+	const { data: accidentInfo, isLoading: accidentInfoLoading } = useAccidentInfo(reportId)
 	const sendMutation = useSendReport(reportId)
 	const toast = useToast()
 	const [sendSuccess, setSendSuccess] = useState(false)
@@ -167,6 +167,10 @@ function ExportPage() {
 	const handleSubjectBlur = useCallback(() => {
 		saveField('emailSubject', getValues('emailSubject'))
 	}, [saveField, getValues])
+
+	const handlePresetEmpty = useCallback(() => {
+		toast.error(t('presetNoEmail'))
+	}, [toast, t])
 
 	const previewUrl = useCallback(
 		(lang: 'en' | 'de') =>
@@ -366,8 +370,10 @@ function ExportPage() {
 							claimant: accidentInfo?.claimantInfo?.email ?? null,
 							lawyer: accidentInfo?.claimantInfo?.lawyerEmail ?? null,
 						}}
+						presetsLoading={accidentInfoLoading}
 						onRecipientsChange={handleRecipientsChange}
 						onRecipientModeChange={handleRecipientModeChange}
+						onPresetEmpty={handlePresetEmpty}
 						onBodyChange={handleBodyChange}
 						onSubjectBlur={handleSubjectBlur}
 					/>

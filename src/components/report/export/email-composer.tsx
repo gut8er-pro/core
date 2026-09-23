@@ -21,8 +21,10 @@ type EmailComposerProps = {
 	recipients: string[]
 	recipientMode: RecipientMode | null
 	presets: RecipientPresets
+	presetsLoading?: boolean
 	onRecipientsChange: (recipients: string[]) => void
 	onRecipientModeChange: (mode: RecipientMode | null) => void
+	onPresetEmpty?: (mode: RecipientMode) => void
 	onBodyChange: (html: string) => void
 	onSubjectBlur: () => void
 	disabled?: boolean
@@ -49,8 +51,10 @@ function EmailComposer({
 	recipients,
 	recipientMode,
 	presets,
+	presetsLoading,
 	onRecipientsChange,
 	onRecipientModeChange,
+	onPresetEmpty,
 	onBodyChange,
 	onSubjectBlur,
 	disabled,
@@ -77,15 +81,22 @@ function EmailComposer({
 	)
 
 	// Either/or: picking a preset replaces the chips with that preset's addresses.
-	// Missing emails leave the field empty, which is the fallback the client asked
-	// for — manual entry then works exactly as before (ticket 05B).
+	// A preset that resolves to no address replaces nothing: it must never wipe
+	// chips the assessor already has (that is how a stored recipient list got
+	// silently emptied when the click landed before the data did).
 	const applyMode = useCallback(
 		(mode: RecipientMode) => {
-			const next = mode === 'claimant' ? [presets.claimant] : [presets.claimant, presets.lawyer]
-			onRecipientsChange(next.filter((email): email is string => Boolean(email)))
+			const candidates =
+				mode === 'claimant' ? [presets.claimant] : [presets.claimant, presets.lawyer]
+			const next = candidates.filter((email): email is string => Boolean(email))
+			if (next.length === 0) {
+				onPresetEmpty?.(mode)
+				return
+			}
+			onRecipientsChange(next)
 			onRecipientModeChange(mode)
 		},
-		[presets, onRecipientsChange, onRecipientModeChange],
+		[presets, onRecipientsChange, onRecipientModeChange, onPresetEmpty],
 	)
 
 	return (
@@ -102,7 +113,7 @@ function EmailComposer({
 							<button
 								key={mode}
 								type="button"
-								disabled={disabled}
+								disabled={disabled || presetsLoading}
 								onClick={() => applyMode(mode)}
 								aria-pressed={recipientMode === mode}
 								aria-label={t(labelKey)}

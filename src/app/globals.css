@@ -68,6 +68,7 @@
   --text-body: 1rem;
   --text-body-sm: 0.875rem;
   --text-caption: 0.75rem;
+  --text-micro: 0.625rem;
 
   /* Spacing — use Tailwind v4 numeric scale (base: 4px = 1 unit)
      0.5=2px, 1=4px, 2=8px, 4=16px, 6=24px, 8=32px, 12=48px, 16=64px */

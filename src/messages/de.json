@@ -1060,6 +1060,7 @@
       "previewPdf": "Vorschau",
       "previewPdfLanguage": "Vorschau {language}",
       "noRecipientsHint": "Fügen Sie mindestens einen Empfänger hinzu, um dieses Gutachten zu senden.",
+      "presetNoEmail": "Für diesen Empfänger ist noch keine E-Mail-Adresse hinterlegt – ergänzen Sie sie im Gutachten oder geben Sie die Adresse manuell ein.",
       "noSectionsHint": "Wählen Sie mindestens einen Dokumentabschnitt aus.",
       "reportSentToast": "Gutachten erfolgreich gesendet",
       "sendFailed": "Gutachten konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
