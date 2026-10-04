@@ -133,3 +133,7 @@ I did not touch `src/lib/pdf/**`. What the OT template should do, once grading i
   by URL, no Paint category, Overall Condition below the categories (bounding-box compare),
   auto-calculate computes a 2 from three 2s **and survives a reload**, the popup closes on an
   outside click, and turning auto off allows a manual grade that persists.
+
+## Status check (2026-10-04) — still open
+
+The app side is done. **The PDF part has not been picked up:** `src/lib/pdf/` has no reference to grading at all, so the OT PDF prints no Vehicle Grading section and no final grade (the client's "end grade no where" complaint). The four points under "PDF — for the export agent" above are the remaining work.

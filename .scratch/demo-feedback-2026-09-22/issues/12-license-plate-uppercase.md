@@ -1,6 +1,6 @@
 # 12 — License plate input auto-uppercase
 
-Status: ready-for-agent
+Status: done
 Type: polish
 Severity: low
 
@@ -33,3 +33,9 @@ Note: the ticket also mentions "visits + vehicle wherever plates are entered". T
 have no plate field, and the vehicle tab is another wave's territory — the server-side transform
 above only covers `ClaimantInfo.licensePlate`. If the vehicle tab gains a plate input it needs
 the same `LicensePlateField` treatment.
+
+## Closed (2026-10-04)
+
+Status: done
+
+The claimant plate (UI + server) is done. Visits have no plate field; a future vehicle-tab plate input should reuse `LicensePlateField`.

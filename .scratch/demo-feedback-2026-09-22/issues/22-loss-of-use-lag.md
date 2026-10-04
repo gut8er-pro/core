@@ -1,6 +1,6 @@
 # 22 — Data loss on tab switch: calculation, invoice and tire values vanish or never save
 
-Status: ready-for-agent
+Status: done
 Type: bug
 Severity: high
 
@@ -174,3 +174,9 @@ object) the same way. The section-save barrier from this ticket makes the *write
 this second latch is a separate hazard and the same pattern is present in all of them. They
 pass today because their init guards happen to look at a nested object that is null until the
 first real save — which is luck, not design.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

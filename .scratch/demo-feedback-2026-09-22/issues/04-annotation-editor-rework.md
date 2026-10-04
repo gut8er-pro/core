@@ -1,6 +1,6 @@
 # 04 — Annotation editor rework: draw anchoring, move/edit, per-element delete
 
-Status: ready-for-agent
+Status: done
 Type: feature
 Severity: high
 
@@ -70,3 +70,9 @@ Browser-verified on the local stack: rectangles now anchor exactly at the drag s
 shows resize handles plus the floating trash; deleting one marking left the other two intact; a
 moved marking persisted at its new position. Covered in `annotation-shapes.test.ts` (14 tests)
 and `testing/e2e/20-annotations.spec.ts`.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

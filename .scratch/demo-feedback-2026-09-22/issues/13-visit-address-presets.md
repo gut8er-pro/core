@@ -1,6 +1,6 @@
 # 13 — Visits: address presets from the claimant when picking the visit type
 
-Status: ready-for-agent
+Status: done
 Type: feature
 Severity: medium
 
@@ -45,3 +45,9 @@ edit, and every seeded field stays fully editable.
 
 v1 ships with the single claimant address feeding BOTH presets, exactly as the open question
 above anticipated — Residence and Office produce identical values until Ivan decides.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Shipped as v1: both presets seed from the single claimant address. Splitting Residence and Office is still Ivan's call and would be a new ticket.

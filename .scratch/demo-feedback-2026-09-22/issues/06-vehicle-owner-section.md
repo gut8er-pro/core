@@ -1,6 +1,6 @@
 # 06 — Vehicle owner section when claimant is not the owner
 
-Status: ready-for-agent
+Status: done
 Type: feature
 Severity: medium
 
@@ -78,3 +78,9 @@ Firma      Fuhrpark GmbH
 Adresse    Werksstraße 8, 28199, Bremen
 E-Mail     halter@fuhrpark.test
 ```
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

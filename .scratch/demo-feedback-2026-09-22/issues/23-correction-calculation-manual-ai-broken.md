@@ -1,6 +1,6 @@
 # 23 — Correction Calculation: Manual and AI calculation don't work
 
-Status: ready-for-agent
+Status: done
 Type: bug
 Severity: high
 
@@ -158,3 +158,9 @@ Playwright runs in flight against it.
 `ValuationSection`'s "Quick Valuation" and "Detail Valuation" buttons (BE reports) have no
 `onClick` and do nothing. They are DAT-backed valuation calls and need the same credentials
 plumbing as the DAT card. Now tracked separately as **ticket 41**; left untouched here.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

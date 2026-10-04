@@ -65,3 +65,7 @@ spec additionally proved every swapped field round-trips through save + reload, 
 `22091987` persists as `1987-09-22`, and that a locked report disables both inputs.
 
 Screenshots of the open calendar: `testing/screenshots/datefield-de.png` and `-en.png`.
+
+## Status check (2026-10-04)
+
+The invoice date the resolution deferred has landed: `invoice-settings.tsx` uses `DateField`. Every date field is now on the shared picker.

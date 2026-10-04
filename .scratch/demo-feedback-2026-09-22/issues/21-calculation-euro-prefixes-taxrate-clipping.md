@@ -1,6 +1,6 @@
 # 21 — Calculation: missing € prefixes and a clipped tax-rate select
 
-Status: ready-for-agent
+Status: done
 Type: polish
 Severity: low
 
@@ -54,3 +54,9 @@ screenshot pass at 1280/1440 in DE + EN could **not** be completed: the shared d
 intermittently unresponsive (20s timeouts, 8s page loads) under the parallel-agent load this
 wave, and the calculation route repeatedly failed to render. The change is a pure Tailwind
 width swap on one element; it still wants a visual confirmation once the server is quiet.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

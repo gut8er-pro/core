@@ -1,6 +1,6 @@
 # 08 — Photo rotation in the single-photo view
 
-Status: ready-for-agent
+Status: done
 Type: feature
 Severity: medium
 
@@ -58,3 +58,9 @@ hash used as the AI cache key is computed from the upright bytes.
 **Verified:** new E2E `rotating a photo persists after a reload` clicks rotate, polls until the
 stored URL changes (proving the server re-encoded rather than transforming in CSS), then reloads
 and asserts the URL is unchanged. Green.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

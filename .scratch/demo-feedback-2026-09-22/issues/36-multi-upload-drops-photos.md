@@ -1,6 +1,6 @@
 # 36 — Multi-upload silently drops photos
 
-Status: ready-for-agent
+Status: done
 Type: bug
 Severity: high
 
@@ -50,3 +50,9 @@ Status: ready-for-human
 good / corrupt / oversized / wrong-type / server-refused / good — asserting all four failures are
 named and the summary reads `2 von 6 hochgeladen — 4 fehlgeschlagen:`; the already-18-photos cap
 case; and the all-succeeded case.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

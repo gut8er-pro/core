@@ -1,6 +1,6 @@
 # 26 — Line items: per-unit pricing, default rows, auto photo count, row delete
 
-Status: ready-for-agent
+Status: done
 Type: feature
 Severity: high
 
@@ -148,3 +148,9 @@ and `invoiceGross` now composes them, so its two existing callers are unchanged.
   database: totals stored, totals following a removal, re-grossing on a tax-rate change,
   zeroing on delete-all, the four rows seeding on first GET, and deleted rows **not** coming
   back.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

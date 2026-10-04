@@ -1,6 +1,6 @@
 # 19 — Schadstoffplakette: make the group selectable, ideally with the official sticker look
 
-Status: ready-for-agent
+Status: done
 Type: bug + design
 Severity: medium
 
@@ -66,3 +66,9 @@ the value is null**, exactly as the ticket note asked. New `emissionSticker` key
 locales (`src/lib/pdf/translations.ts`).
 
 Verified on a live report with group 4: `Schadstoffplakette    4`.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

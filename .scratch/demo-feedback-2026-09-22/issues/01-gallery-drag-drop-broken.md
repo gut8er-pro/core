@@ -1,6 +1,6 @@
 # 01 — Drag & drop into a non-empty gallery is broken and can land on a random screen
 
-Status: ready-for-agent
+Status: done
 Type: bug
 Severity: high
 
@@ -57,3 +57,20 @@ not, the two drag layers coexist without swallowing each other (ticket 09).
 **Verified:** new E2E `dropping files on a non-empty gallery uploads them without navigating away`
 in `testing/e2e/04-gallery.spec.ts` drops a real PNG onto the mounted gallery surface, asserts the
 photo count rises and that `page.url()` still points at the gallery. 7/7 green in that spec.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Code review against `091a228` confirms every point of the resolution above. The open question —
+whether the "vehicle grading error screen" was an in-app route or the browser opening the file —
+is settled: the client's tab showed a file/blob address, so it was the unhandled default drop,
+which `usePageFileDropGuard` now swallows.
+
+Known gaps, accepted rather than fixed:
+
+- The E2E dispatches synthetic drag events on the drop surface itself, so it covers the handlers
+  but not a stray drop outside them (the guard path).
+- The window guard is mounted on the gallery page only; a file dropped on another report tab
+  still opens the file in the tab. Lift `usePageFileDropGuard` into the report layout if that
+  ever comes up.

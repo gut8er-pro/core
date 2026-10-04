@@ -1,6 +1,6 @@
 # 39 — Condition unit option "MKR" fails validation and silently loses the save
 
-Status: ready-for-agent
+Status: done
 Type: bug
 Severity: medium
 
@@ -28,3 +28,9 @@ offer a value the schema rejects, because both read the same array.
 Tests in `src/lib/validations/condition.test.ts`: every unit the picker offers parses, and
 `'MKR'` is rejected. The same file also pins `emissionGroup` to `EMISSION_GROUPS` (accepts all
 four, accepts `null`, rejects `'5'`).
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

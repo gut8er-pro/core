@@ -1,6 +1,6 @@
 # 07 — IBAN: German validation + live formatting
 
-Status: ready-for-agent
+Status: done
 Type: feature
 Severity: medium
 
@@ -54,3 +54,9 @@ Verified live: `IBAN    DE89 3704 0044 0532 0130 00`.
 
 The open question on this ticket is unchanged: `Business` still has no `iban` column, so there
 is no sender IBAN to print on the invoice. Ivan to confirm whether it is wanted.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Report IBANs and the PDF are done. The business IBAN is not a defect of this ticket — whether it is wanted at all is still Ivan's question (no `Business.iban` column today).

@@ -1,6 +1,6 @@
 # 24 — Preview Invoice does nothing
 
-Status: ready-for-agent
+Status: done
 Type: bug
 Severity: high
 
@@ -40,3 +40,9 @@ once the export route honours the parameter. No change needed here when it does.
 The completeness gate applies: a report that does not satisfy its manifest gets the route's
 `incomplete` refusal rather than a PDF. That is the existing server-side behaviour and was
 deliberately not bypassed for the preview.
+
+## Closed (2026-10-04)
+
+Status: done
+
+The export route now honours `sections=invoice` (`parseSectionsParam` in `export/route.ts`), so the preview opens the invoice alone as planned.

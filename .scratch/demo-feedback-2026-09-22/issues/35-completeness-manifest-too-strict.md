@@ -1,6 +1,6 @@
 # 35 — Completeness gate demands fields the client considers optional
 
-Status: ready-for-agent
+Status: done
 Type: feature (manifest tuning)
 Severity: high
 
@@ -65,3 +65,9 @@ untouched — it still refuses an incomplete Gutachten server-side, it just asks
 
 The "minimum viable Gutachten" review of the remaining required set per type is untouched —
 that still needs Ivan and the client. These three were the only concrete asks in the notes.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

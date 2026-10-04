@@ -163,3 +163,7 @@ Wave 2 (staged) already fixes the save path. Two additions made today on top of 
    never exercised the unlock click — which is exactly where the client got stuck.
 
 Verified: tsc clean, biome clean, hooks unit 105/105, `10-export` + `19-send-gate` 18/18.
+
+## Status check (2026-10-04) — still open
+
+Every tab now freezes its inputs on a locked report (accident info, vehicle, condition, grading, calculation, invoice, gallery, annotation modal), and `YesNoField` gained `disabled`. **One gap remains:** `DamageDiagramSection` gets no `disabled`/`isLocked` (`details/condition/page.tsx:277`). Its markers can still be added, moved and deleted on a locked report. The server refuses the write, so this is the same looks-saved-but-is-not illusion this ticket exists to remove. Thread `disabled={isLocked}` into it and close.

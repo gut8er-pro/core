@@ -1,6 +1,6 @@
 # 18 — Mileage input: German thousands separators as you type
 
-Status: ready-for-agent
+Status: done
 Type: polish
 Severity: low
 
@@ -41,3 +41,9 @@ Mileage read and estimation mileage now format live with dots grouping from the 
 - `11-edge-cases` "numeric field rejects letters" was rewritten: it relied on `type="number"`
   dropping letters, which a text input does not do. The mask does, so the assertion is now an
   exact empty-string check, plus a new test that typing `125450` renders `125.450`.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

@@ -1,6 +1,6 @@
 # 09 — Manual photo reordering
 
-Status: ready-for-agent
+Status: done
 Type: feature
 Severity: medium
 
@@ -49,3 +49,9 @@ optimistic update and the request body, so the drop and the persisted write cann
 renumbering, no-op drops, unknown ids, and that the input array is not mutated. E2E `reordering
 thumbnails persists after a reload` drags the first thumbnail onto the second, polls the API for
 the swap, reloads and asserts the order held. Green.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

@@ -1,6 +1,6 @@
 # 27 — BVSK fee: automatic instead of manual (research only, per Ivan)
 
-Status: ready-for-agent
+Status: done
 Type: research
 Severity: medium
 
@@ -157,3 +157,9 @@ Sources: [BVSK-Honorarbefragung 2024 (full survey PDF)](https://www.burkard.lega
 [autoiXpert: eigene Honorartabelle](https://wissen.autoixpert.de/hc/de/articles/360027647432-Eigene-Honorartabelle) ·
 [die-kfzgutachter.de Ratgeber BVSK-Honorartabelle](https://die-kfzgutachter.de/ratgeber/bvsk-honorartabelle-gutachter.htm) ·
 [VKS Honorartableau (alternative survey)](https://vks-24.de/honorartableau-honorarumfrage/)
+
+## Closed (2026-10-04)
+
+Status: done
+
+Research question answered (findings + recommendation above). The automatic fee itself is NOT implemented — `BvskRateTable` is still rendered without `repairCost`. Building it needs its own ticket once Ivan decides on the recommendation and BVSK licensing.

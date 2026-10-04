@@ -1,6 +1,6 @@
 # 17 — Vehicle Condition: every dropdown also accepts manual entry
 
-Status: ready-for-agent
+Status: done
 Type: feature
 Severity: medium
 
@@ -48,3 +48,9 @@ E2E: `07-condition.spec.ts` selectors moved off positional `[role=combobox]` ind
 Radix trigger and the new input both report that role) onto `input[name="…"]`, and the
 persisted-value assertion moved from `toHaveText` to `toHaveValue`. Added a test that a typed
 value matching no option round-trips through a reload.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

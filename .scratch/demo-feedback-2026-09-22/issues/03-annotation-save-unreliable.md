@@ -1,6 +1,6 @@
 # 03 — Annotation editor: save is unreliable, markings vanish
 
-Status: ready-for-agent
+Status: done
 Type: bug
 Severity: high
 
@@ -69,3 +69,9 @@ Status: fixed
 Local stack, report `9c7c7d62`: draw → Save → reload → reopen → Save immediately (the exact
 failing sequence) kept all 3 markings and `annotatedUrl` intact. E2E covers it in
 `testing/e2e/20-annotations.spec.ts`.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.

@@ -1,6 +1,6 @@
 # 25 — Invoice must carry the claimant's name and address
 
-Status: ready-for-agent
+Status: done
 Type: feature
 Severity: medium
 
@@ -79,3 +79,9 @@ Bahnhofstraße 12
 
 Note for the invoice agent: this is the PDF's invoice section. The on-screen invoice preview is
 yours; the two should agree.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Data side verified and the PDF addressee block landed (name and address only). The `claimant_lawyer` mode does not yet change the printed addressee — pick that up as a new ticket if wanted.

@@ -1,6 +1,6 @@
 # 11 — "Empfohlene Fotos" panel text layout broken
 
-Status: ready-for-agent
+Status: done
 Type: bug
 Severity: low
 
@@ -42,3 +42,9 @@ would have rendered English inside the German panel.
 `testing/screenshots/suggested-de.png` and `testing/screenshots/suggested-en.png`. The German title
 now wraps onto two lines inside its card and the card grew to fit; Damage Overview and Document
 Shot are unchanged, and the English panel is unaffected.
+
+## Closed (2026-10-04)
+
+Status: done
+
+Every part of the resolution above checked against the code; nothing left open.
