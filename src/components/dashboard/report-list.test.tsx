@@ -112,6 +112,18 @@ describe('ReportTable', () => {
 
 		expect(mockOnDelete).toHaveBeenCalledWith('1')
 	})
+
+	it('offers no delete for a locked report', async () => {
+		const user = userEvent.setup()
+		const locked = mockReports.map((report) => ({ ...report, isLocked: true }))
+		render(<ReportTable reports={locked} onDelete={mockOnDelete} />)
+
+		const actionButtons = screen.getAllByLabelText('Report actions')
+		await user.click(actionButtons[0]!)
+
+		expect(screen.getByText('Details')).toBeInTheDocument()
+		expect(screen.queryByText('Delete')).not.toBeInTheDocument()
+	})
 })
 
 describe('EmptyState', () => {

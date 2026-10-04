@@ -242,19 +242,22 @@ function ReportRow({
 								<Pencil className="h-4 w-4 text-grey-100" />
 								{t('actions.editReport')}
 							</button>
-							<button
-								type="button"
-								onClick={(e) => {
-									e.stopPropagation()
-									onDelete()
-									setShowActions(false)
-								}}
-								disabled={isDeleting}
-								className="flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-body-sm text-error hover:bg-error-light"
-							>
-								<Trash2 className="h-4 w-4" />
-								{tc('delete')}
-							</button>
+							{/* A locked report is a delivered Gutachten; it has to be unlocked before deleting */}
+							{!report.isLocked && (
+								<button
+									type="button"
+									onClick={(e) => {
+										e.stopPropagation()
+										onDelete()
+										setShowActions(false)
+									}}
+									disabled={isDeleting}
+									className="flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-body-sm text-error hover:bg-error-light"
+								>
+									<Trash2 className="h-4 w-4" />
+									{tc('delete')}
+								</button>
+							)}
 						</div>
 					)}
 				</div>

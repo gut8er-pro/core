@@ -27,13 +27,28 @@ async function patchConditionSectionRequest(
 		body: JSON.stringify(data),
 	})
 	if (!response.ok) {
-		throw new Error('Failed to save condition data')
+		const body = (await response.json().catch(() => ({}))) as { error?: string }
+		throw new Error(body.error ?? 'Failed to save condition data')
 	}
 	return response.json()
 }
 
 function patchConditionSection(reportId: string, data: Record<string, unknown>): Promise<unknown> {
 	return trackSectionSave(reportId, 'condition', patchConditionSectionRequest(reportId, data))
+}
+
+/**
+ * A marker write refused because the report was locked elsewhere (another tab,
+ * the Export toggle) refetches the report itself, so the page picks up
+ * `isLocked`, shows the banner and freezes the diagram instead of failing
+ * silently.
+ */
+function useRefetchReportIfLocked(reportId: string) {
+	const queryClient = useQueryClient()
+	return (error: Error) => {
+		if (!/locked/i.test(error.message)) return
+		queryClient.invalidateQueries({ queryKey: ['report', reportId], exact: true })
+	}
 }
 
 function useCondition(reportId: string) {
@@ -60,11 +75,13 @@ function useSaveCondition(reportId: string) {
 
 function useSaveDamageMarker(reportId: string) {
 	const queryClient = useQueryClient()
+	const onError = useRefetchReportIfLocked(reportId)
 	return useMutation({
 		mutationFn: (data: DamageMarkerInput | DamageMarkerInput[]) =>
 			patchConditionSection(reportId, {
 				damageMarkers: Array.isArray(data) ? data : [data],
 			}),
+		onError,
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ['report', reportId, 'condition'],
@@ -75,11 +92,13 @@ function useSaveDamageMarker(reportId: string) {
 
 function useDeleteDamageMarker(reportId: string) {
 	const queryClient = useQueryClient()
+	const onError = useRefetchReportIfLocked(reportId)
 	return useMutation({
 		mutationFn: (markerId: string) =>
 			patchConditionSection(reportId, {
 				deleteDamageMarkerIds: [markerId],
 			}),
+		onError,
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ['report', reportId, 'condition'],
@@ -90,11 +109,13 @@ function useDeleteDamageMarker(reportId: string) {
 
 function useSavePaintMarker(reportId: string) {
 	const queryClient = useQueryClient()
+	const onError = useRefetchReportIfLocked(reportId)
 	return useMutation({
 		mutationFn: (data: PaintMarkerInput | PaintMarkerInput[]) =>
 			patchConditionSection(reportId, {
 				paintMarkers: Array.isArray(data) ? data : [data],
 			}),
+		onError,
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ['report', reportId, 'condition'],
@@ -176,11 +197,13 @@ function useSaveTireSet(reportId: string) {
 
 function useDeletePaintMarker(reportId: string) {
 	const queryClient = useQueryClient()
+	const onError = useRefetchReportIfLocked(reportId)
 	return useMutation({
 		mutationFn: (markerId: string) =>
 			patchConditionSection(reportId, {
 				deletePaintMarkerIds: [markerId],
 			}),
+		onError,
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ['report', reportId, 'condition'],

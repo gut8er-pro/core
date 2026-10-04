@@ -283,6 +283,7 @@ function ConditionPage() {
 						onAddPaintMarker={handleAddPaintMarker}
 						onUpdatePaintMarker={handleUpdatePaintMarker}
 						onDeletePaintMarker={handleDeletePaintMarker}
+						disabled={isLocked}
 					/>
 
 					<TireSection

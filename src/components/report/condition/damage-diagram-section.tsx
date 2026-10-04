@@ -23,6 +23,8 @@ type DamageDiagramSectionProps = {
 	onAddPaintMarker: (x: number, y: number) => void
 	onUpdatePaintMarker: (markerId: string, thickness: number) => void
 	onDeletePaintMarker: (markerId: string) => void
+	/** Locked report: markers stay viewable but cannot be added, edited or deleted. */
+	disabled?: boolean
 	className?: string
 }
 
@@ -37,6 +39,7 @@ function DamageDiagramSection({
 	onAddPaintMarker,
 	onUpdatePaintMarker,
 	onDeletePaintMarker,
+	disabled = false,
 	className,
 }: DamageDiagramSectionProps) {
 	const t = useTranslations('report')
@@ -64,13 +67,14 @@ function DamageDiagramSection({
 
 	const handleDiagramClick = useCallback(
 		(x: number, y: number) => {
+			if (disabled) return
 			if (activeTab === 'damages') {
 				onAddDamageMarker(x, y)
 			} else {
 				onAddPaintMarker(x, y)
 			}
 		},
-		[activeTab, onAddDamageMarker, onAddPaintMarker],
+		[activeTab, disabled, onAddDamageMarker, onAddPaintMarker],
 	)
 
 	const handleMarkerClick = useCallback(
@@ -137,6 +141,7 @@ function DamageDiagramSection({
 						onUpdateMarker={onUpdateDamageMarker}
 						editingMarkerId={editingMarkerId}
 						onEditingChange={setEditingMarkerId}
+						disabled={disabled}
 					/>
 				) : (
 					<PaintView
@@ -145,6 +150,7 @@ function DamageDiagramSection({
 						onDiagramClick={handleDiagramClick}
 						onUpdatePaintMarker={onUpdatePaintMarker}
 						onDeletePaintMarker={onDeletePaintMarker}
+						disabled={disabled}
 					/>
 				)}
 
@@ -153,6 +159,7 @@ function DamageDiagramSection({
 					<Button
 						variant="primary"
 						size="lg"
+						disabled={disabled}
 						onClick={() => {
 							/* Clicking on the diagram is the main way to add markers */
 						}}
@@ -174,6 +181,7 @@ type DamagesViewProps = {
 	onUpdateMarker: (markerId: string, comment: string) => void
 	editingMarkerId: string | null
 	onEditingChange: (id: string | null) => void
+	disabled: boolean
 }
 
 function DamagesView({
@@ -185,6 +193,7 @@ function DamagesView({
 	onUpdateMarker,
 	editingMarkerId,
 	onEditingChange,
+	disabled,
 }: DamagesViewProps) {
 	const diagramRef = useRef<HTMLDivElement>(null)
 
@@ -194,7 +203,7 @@ function DamagesView({
 				<VehicleDiagram
 					mode="damages"
 					markers={markers}
-					editable
+					editable={!disabled}
 					onAddMarker={onDiagramClick}
 					onMarkerClick={onMarkerClick}
 				/>
@@ -207,6 +216,7 @@ function DamagesView({
 						return (
 							<MarkerPopover
 								marker={marker}
+								readOnly={disabled}
 								onUpdate={(comment) => {
 									onUpdateMarker(marker.id, comment)
 									onEditingChange(null)
@@ -240,29 +250,33 @@ function DamagesView({
 							<span className="flex-1 text-body-sm text-black">
 								{marker.comment || 'No comment'}
 							</span>
-							<button
-								type="button"
-								onClick={() =>
-									onMarkerClick({
-										id: marker.id,
-										x: marker.x,
-										y: marker.y,
-										comment: marker.comment ?? undefined,
-										color: '#1F2937',
-									})
-								}
-								className="cursor-pointer text-caption text-primary hover:underline"
-							>
-								Edit
-							</button>
-							<button
-								type="button"
-								onClick={() => onDeleteMarker(marker.id)}
-								className="cursor-pointer text-grey-100 hover:text-error"
-								aria-label={`Delete marker ${index + 1}`}
-							>
-								<Trash2 className="h-4 w-4" />
-							</button>
+							{!disabled && (
+								<>
+									<button
+										type="button"
+										onClick={() =>
+											onMarkerClick({
+												id: marker.id,
+												x: marker.x,
+												y: marker.y,
+												comment: marker.comment ?? undefined,
+												color: '#1F2937',
+											})
+										}
+										className="cursor-pointer text-caption text-primary hover:underline"
+									>
+										Edit
+									</button>
+									<button
+										type="button"
+										onClick={() => onDeleteMarker(marker.id)}
+										className="cursor-pointer text-grey-100 hover:text-error"
+										aria-label={`Delete marker ${index + 1}`}
+									>
+										<Trash2 className="h-4 w-4" />
+									</button>
+								</>
+							)}
 						</div>
 					))}
 				</div>
@@ -273,12 +287,13 @@ function DamagesView({
 
 type MarkerPopoverProps = {
 	marker: DamageMarkerData
+	readOnly: boolean
 	onUpdate: (comment: string) => void
 	onDelete: () => void
 	onClose: () => void
 }
 
-function MarkerPopover({ marker, onUpdate, onDelete, onClose }: MarkerPopoverProps) {
+function MarkerPopover({ marker, readOnly, onUpdate, onDelete, onClose }: MarkerPopoverProps) {
 	const t = useTranslations('report')
 	const tc = useTranslations('common')
 	const inputRef = useRef<HTMLInputElement>(null)
@@ -314,27 +329,30 @@ function MarkerPopover({ marker, onUpdate, onDelete, onClose }: MarkerPopoverPro
 				className="mb-2 w-full rounded-md border border-border bg-white px-3 py-2 text-body-sm text-black placeholder:text-placeholder outline-none focus:border-border-focus"
 				placeholder={t('gallery.addComment')}
 				defaultValue={marker.comment ?? ''}
+				readOnly={readOnly}
 				onKeyDown={(e) => {
-					if (e.key === 'Enter') onUpdate(e.currentTarget.value)
+					if (e.key === 'Enter' && !readOnly) onUpdate(e.currentTarget.value)
 					if (e.key === 'Escape') onClose()
 				}}
 			/>
-			<div className="flex items-center justify-between">
-				<button
-					type="button"
-					onClick={onDelete}
-					className="cursor-pointer text-caption text-error hover:underline"
-				>
-					{t('gallery.deleteMarker')}
-				</button>
-				<button
-					type="button"
-					onClick={() => onUpdate(inputRef.current?.value ?? '')}
-					className="cursor-pointer rounded-md bg-primary px-3 py-1 text-caption font-medium text-white hover:bg-primary-hover"
-				>
-					{tc('save')}
-				</button>
-			</div>
+			{!readOnly && (
+				<div className="flex items-center justify-between">
+					<button
+						type="button"
+						onClick={onDelete}
+						className="cursor-pointer text-caption text-error hover:underline"
+					>
+						{t('gallery.deleteMarker')}
+					</button>
+					<button
+						type="button"
+						onClick={() => onUpdate(inputRef.current?.value ?? '')}
+						className="cursor-pointer rounded-md bg-primary px-3 py-1 text-caption font-medium text-white hover:bg-primary-hover"
+					>
+						{tc('save')}
+					</button>
+				</div>
+			)}
 		</div>
 	)
 }
@@ -345,6 +363,7 @@ type PaintViewProps = {
 	onDiagramClick: (x: number, y: number) => void
 	onUpdatePaintMarker: (markerId: string, thickness: number) => void
 	onDeletePaintMarker: (markerId: string) => void
+	disabled: boolean
 }
 
 // Paint call-out positions — mapped to portrait car (front at top)
@@ -374,7 +393,12 @@ const PAINT_LEGEND = [
 	{ label: '>700', color: '#F41414' },
 ]
 
-function PaintView({ paintMarkers, onDiagramClick, onUpdatePaintMarker }: PaintViewProps) {
+function PaintView({
+	paintMarkers,
+	onDiagramClick,
+	onUpdatePaintMarker,
+	disabled,
+}: PaintViewProps) {
 	const t = useTranslations('report')
 
 	return (
@@ -410,6 +434,7 @@ function PaintView({ paintMarkers, onDiagramClick, onUpdatePaintMarker }: PaintV
 							side={pos.side}
 							top={pos.top}
 							value={existing?.thickness ?? null}
+							readOnly={disabled}
 							onSubmit={(val) => {
 								if (existing) {
 									onUpdatePaintMarker(existing.id, val)
@@ -431,10 +456,11 @@ type PaintCalloutProps = {
 	side: 'left' | 'right' | 'center'
 	top: number
 	value: number | null
+	readOnly: boolean
 	onSubmit: (thickness: number) => void
 }
 
-function PaintCallout({ position, side, top, value, onSubmit }: PaintCalloutProps) {
+function PaintCallout({ position, side, top, value, readOnly, onSubmit }: PaintCalloutProps) {
 	const inputRef = useRef<HTMLInputElement>(null)
 	const color = value != null ? getPaintColor(value) : null
 
@@ -470,12 +496,15 @@ function PaintCallout({ position, side, top, value, onSubmit }: PaintCalloutProp
 					placeholder="μm"
 					defaultValue={value != null ? `${value}μm` : ''}
 					key={`${position}-${value}`}
+					readOnly={readOnly}
 					onFocus={(e) => {
+						if (readOnly) return
 						const raw = e.target.value.replace('μm', '')
 						e.target.value = raw
 						e.target.select()
 					}}
 					onBlur={(e) => {
+						if (readOnly) return
 						const val = parseInt(e.target.value.replace('μm', ''), 10)
 						if (!Number.isNaN(val) && val > 0) {
 							onSubmit(val)

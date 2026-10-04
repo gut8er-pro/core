@@ -116,6 +116,17 @@ failed send by being invisible to everyone until the client asks where the repor
 leaving the report locked against a second attempt.
 _Avoid_: partial send (a partial send has some of the PDFs; it is refused for the same reason)
 
+## Report locking
+
+**Locked report**:
+A Gutachten closed to change but still open to delivery. Anything that would change what the
+PDF says is refused — section data, photos, annotations, signatures, markers, the title — and
+so is deleting the report. Sending, re-sending, preview, download and the export composer's
+send settings (recipients, subject, body, section toggles) stay available. Locking is only
+ever the assessor's own toggle on Export, never a side effect of sending, and unlocking there
+is the only way back to editing.
+_Avoid_: read-only report (it can still be sent), finalized
+
 ## Billing and entitlement
 
 The September 2026 audit reported three defects here. They were one missing database

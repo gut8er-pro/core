@@ -89,6 +89,11 @@ async function DELETE(_request: NextRequest, context: RouteContext) {
 		return NextResponse.json({ error: 'Report not found' }, { status: 404 })
 	}
 
+	// A locked report is a delivered Gutachten: deleting it takes a deliberate unlock first
+	if (existing.isLocked) {
+		return NextResponse.json({ error: 'Report is locked' }, { status: 403 })
+	}
+
 	await prisma.report.delete({ where: { id } })
 
 	return NextResponse.json({ success: true })

@@ -167,3 +167,52 @@ Verified: tsc clean, biome clean, hooks unit 105/105, `10-export` + `19-send-gat
 ## Status check (2026-10-04) — still open
 
 Every tab now freezes its inputs on a locked report (accident info, vehicle, condition, grading, calculation, invoice, gallery, annotation modal), and `YesNoField` gained `disabled`. **One gap remains:** `DamageDiagramSection` gets no `disabled`/`isLocked` (`details/condition/page.tsx:277`). Its markers can still be added, moved and deleted on a locked report. The server refuses the write, so this is the same looks-saved-but-is-not illusion this ticket exists to remove. Thread `disabled={isLocked}` into it and close.
+
+## Decisions (grilling, 2026-10-04)
+
+- **A locked report cannot be deleted.** `DELETE /api/reports/[id]` returns 403 "Report is locked"
+  like every other write, and the dashboard hides/disables delete on a locked report. Deleting a
+  delivered Gutachten takes a deliberate unlock first (one click on Export).
+- **"Locked" is defined in `CONTEXT.md` → Report locking.** Closed to change (anything that alters
+  the PDF, title included, plus delete), open to delivery (send, re-send, preview, download,
+  export composer settings). Locking is only the assessor's Export toggle; unlocking is the only
+  way back.
+- **A stale page heals itself into the locked state.** The four marker mutations in
+  `use-condition.ts` get an `onError` that, on 403, invalidates `['report', id]` (exact), so the
+  page refetches, shows the banner and disables the diagram. No new error UI.
+- **E2E lives in a new `testing/e2e/21-locked-report.spec.ts`**, not `19-send-gate` (that one is
+  the completeness gate). Three blocks mirroring the `CONTEXT.md` definition: API writes to every
+  section route + report PATCH + report DELETE return 403; every tab's inputs disabled and
+  add/delete/upload affordances gone (condition includes the diagram); Export recipients,
+  subject and Send stay enabled. UI unlock is already covered by `10-export`.
+- **Locked diagram = view, not change.** `DamageDiagramSection` takes `disabled`. Kept: the
+  Damages/Paint tab switch and opening a marker to read its comment (popover without
+  Update/Delete). Blocked: click-to-add, the list's delete button, comment editing, paint callout
+  inputs (`readOnly`). The "manual setup" toggle is local state and stays as is.
+
+## Remaining work
+
+1. `DamageDiagramSection` `disabled` per the decision above, wired from `details/condition/page.tsx`.
+2. 403 → invalidate `['report', id]` on the four marker mutations in `use-condition.ts`.
+3. Lock guard on `DELETE /api/reports/[id]` + hide/disable delete for locked reports on the dashboard.
+4. `testing/e2e/21-locked-report.spec.ts`.
+
+## Resolution — remaining work (2026-10-04)
+
+All four items landed:
+
+1. `DamageDiagramSection` takes `disabled` (wired from `details/condition/page.tsx`). Locked: the
+   car ignores clicks (`editable={false}` + an early return), the marker list drops Edit/Delete,
+   the popover opens read-only without Update/Delete, paint callouts are `readOnly` and skip their
+   blur-submit, and the no-op Add Marker button is disabled. Tab switch and manual-setup toggle untouched.
+2. `use-condition.ts` now surfaces the server's error message, and the four marker mutations
+   share `useRefetchReportIfLocked`: on a "locked" refusal they invalidate `['report', id]`
+   (exact). Two unit tests in `use-condition.test.ts`.
+3. `DELETE /api/reports/[id]` returns 403 "Report is locked"; the dashboard row menu hides
+   Delete for a locked report (unit test in `report-list.test.tsx`).
+4. `testing/e2e/22-locked-report.spec.ts` (`npm run test:e2e:locked`) — 21 was already taken.
+
+Verified: tsc clean (after `prisma generate`; the local client was stale), unit 140/140 across
+hooks, dashboard and condition. **The E2E spec has not been run yet**: port 3000 was occupied by
+another app, and on a 3001 dev server the test account's login was rejected and the saved
+session (2026-09-14) had expired. Run `npm run test:e2e:locked` before closing.
