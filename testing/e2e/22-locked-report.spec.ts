@@ -55,6 +55,8 @@ async function setLocked(page: Page, reportId: string, locked: boolean) {
 /** Every visible text input, textarea and select inside the page body. */
 async function expectNothingEditable(page: Page) {
 	const fields = page.locator('main').locator('input:visible, textarea:visible, select:visible')
+	// The tab renders a spinner until its section data loads.
+	await expect(fields.first()).toBeVisible({ timeout: 30_000 })
 	const count = await fields.count()
 	expect(count, 'the tab rendered no fields at all').toBeGreaterThan(0)
 	for (let i = 0; i < count; i++) {
@@ -80,6 +82,7 @@ test.describe.serial('Locked report', () => {
 		// Unlock so the suite's own cleanup (or a human) can delete it.
 		if (!reportId) return
 		const page = await createAuthPage(browser)
+		await page.goto('/')
 		await setLocked(page, reportId, false)
 		await page.context().close()
 	})

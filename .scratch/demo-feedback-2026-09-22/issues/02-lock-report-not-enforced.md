@@ -1,6 +1,6 @@
 # 02 — Lock report does not actually prevent editing
 
-Status: ready-for-agent
+Status: done
 Type: bug
 Severity: high
 
@@ -213,6 +213,7 @@ All four items landed:
 4. `testing/e2e/22-locked-report.spec.ts` (`npm run test:e2e:locked`) — 21 was already taken.
 
 Verified: tsc clean (after `prisma generate`; the local client was stale), unit 140/140 across
-hooks, dashboard and condition. **The E2E spec has not been run yet**: port 3000 was occupied by
-another app, and on a 3001 dev server the test account's login was rejected and the saved
-session (2026-09-14) had expired. Run `npm run test:e2e:locked` before closing.
+hooks, dashboard and condition, and `22-locked-report` 9/9 against a dev server. The condition
+test was checked to fail with the diagram's `disabled` removed. The run also disabled the
+gallery's hidden filmstrip file input on a locked report, matching the upload zone's own input
+(it was already unreachable: its "+" trigger is hidden and returns early).

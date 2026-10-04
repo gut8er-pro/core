@@ -230,6 +230,7 @@ function GalleryPage() {
 				multiple
 				onChange={handleFileInputChange}
 				className="hidden"
+				disabled={isLocked}
 			/>
 
 			{/* Left sidebar: only show instruction sidebar during upload/grid phase (before generation).
