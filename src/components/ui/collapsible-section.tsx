@@ -22,6 +22,15 @@ type CollapsibleSectionProps = {
 	missingLabel?: string
 }
 
+/**
+ * A titled card that expands and collapses.
+ *
+ * Collapsed `children` are not mounted (Radix drops closed content), so an
+ * effect inside them does not run until the assessor first opens the card.
+ * Anything that must happen regardless — creating a row, seeding a default,
+ * keeping a stored value in step — belongs in the component that renders the
+ * section, outside `children`, the way `TireSection` auto-creates its first set.
+ */
 function CollapsibleSection({
 	title,
 	info,
