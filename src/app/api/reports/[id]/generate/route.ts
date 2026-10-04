@@ -416,14 +416,11 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 				update: {},
 			})
 
-			let tireSet = await prisma.tireSet.findFirst({
-				where: { conditionId: condition.id, setNumber: 1 },
+			const tireSet = await prisma.tireSet.upsert({
+				where: { conditionId_setNumber: { conditionId: condition.id, setNumber: 1 } },
+				create: { conditionId: condition.id, setNumber: 1 },
+				update: {},
 			})
-			if (!tireSet) {
-				tireSet = await prisma.tireSet.create({
-					data: { conditionId: condition.id, setNumber: 1 },
-				})
-			}
 
 			// Convert treadDepth to mm string; map qualitative labels to estimated mm values
 			function profileToMm(tire: TireAnalysisResult): string {

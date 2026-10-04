@@ -410,7 +410,8 @@ model TireSet {
   condition VehicleCondition @relation(fields: [conditionId], references: [id], onDelete: Cascade)
   tires     Tire[]
 
-  @@index([conditionId])
+  // One set per set number on a condition.
+  @@unique([conditionId, setNumber])
 }
 
 model Tire {

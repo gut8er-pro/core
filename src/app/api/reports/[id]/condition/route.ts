@@ -1,9 +1,14 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@/generated/prisma/client'
 import { getAuthenticatedUser, unauthorizedResponse } from '@/lib/api/auth'
 import { getPaintColor } from '@/lib/design-tokens'
 import { prisma } from '@/lib/prisma'
 import { syncReportCompletion } from '@/lib/reports/completion'
-import { conditionPatchSchema } from '@/lib/validations/condition'
+import {
+	conditionPatchSchema,
+	type TireInput,
+	type TireSetInput,
+} from '@/lib/validations/condition'
 
 type RouteContext = {
 	params: Promise<{ id: string }>
@@ -277,65 +282,32 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 		results.deletedPaintMarkers = data.deletePaintMarkerIds
 	}
 
-	// Handle tire sets
+	// Handle tire sets. An id-less set means "make sure set N exists" — see
+	// ensureTireSet — so a retried request or a client that has not yet seen the
+	// server's id lands on the existing set instead of stacking a second.
 	if (data.tireSets) {
 		const tireSetResults = []
 		for (const tireSet of data.tireSets) {
 			const { id: tireSetId, tires, ...tireSetData } = tireSet
+			let savedId: string
 			if (tireSetId) {
 				const existing = await prisma.tireSet.findFirst({
 					where: { id: tireSetId, conditionId: condition.id },
 				})
-				if (existing) {
-					const _updated = await prisma.tireSet.update({
-						where: { id: tireSetId },
-						data: tireSetData,
-					})
-
-					// Update tires if provided
-					if (tires) {
-						for (const tire of tires) {
-							const { id: tireId, ...tireData } = tire
-							if (tireId) {
-								await prisma.tire.update({
-									where: { id: tireId },
-									data: tireData,
-								})
-							} else {
-								await prisma.tire.create({
-									data: {
-										tireSetId: tireSetId,
-										...tireData,
-									},
-								})
-							}
-						}
-					}
-
-					const refreshed = await prisma.tireSet.findUnique({
-						where: { id: tireSetId },
-						include: { tires: { orderBy: { position: 'asc' } } },
-					})
-					tireSetResults.push(refreshed)
-				}
+				if (!existing) continue
+				await prisma.tireSet.update({ where: { id: tireSetId }, data: tireSetData })
+				if (tires) await saveTires(tireSetId, tires)
+				savedId = tireSetId
 			} else {
-				const created = await prisma.tireSet.create({
-					data: {
-						conditionId: condition.id,
-						...tireSetData,
-						tires: tires
-							? {
-									create: tires.map((tire) => {
-										const { id: _id, ...tireData } = tire
-										return tireData
-									}),
-								}
-							: undefined,
-					},
-					include: { tires: { orderBy: { position: 'asc' } } },
-				})
-				tireSetResults.push(created)
+				savedId = await ensureTireSet(condition.id, tireSetData, tires)
 			}
+
+			tireSetResults.push(
+				await prisma.tireSet.findUnique({
+					where: { id: savedId },
+					include: { tires: { orderBy: { position: 'asc' } } },
+				}),
+			)
 		}
 		results.tireSets = tireSetResults
 	}
@@ -355,6 +327,63 @@ async function PATCH(request: NextRequest, context: RouteContext) {
 	await syncReportCompletion(id, user.id)
 
 	return NextResponse.json(results)
+}
+
+/**
+ * The id-less branch: creates set N with its tires in one write, or — when the
+ * set already exists — returns it untouched apart from tires at positions it
+ * lacks. The callers that send an id-less set (the first-load auto-create, "add
+ * set", a retry of either) send blank defaults, so applying them onto an
+ * existing set would wipe what the assessor typed.
+ */
+async function ensureTireSet(
+	conditionId: string,
+	tireSetData: Omit<TireSetInput, 'id' | 'tires'>,
+	tires: TireInput[] | undefined,
+): Promise<string> {
+	const newTires = (tires ?? []).map(({ id: _id, ...tireData }) => tireData)
+	try {
+		const created = await prisma.tireSet.create({
+			data: { conditionId, ...tireSetData, tires: { create: newTires } },
+		})
+		return created.id
+	} catch (error) {
+		const isDuplicateSet =
+			error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
+		if (!isDuplicateSet) throw error
+	}
+
+	const existing = await prisma.tireSet.findUniqueOrThrow({
+		where: { conditionId_setNumber: { conditionId, setNumber: tireSetData.setNumber } },
+		include: { tires: { select: { position: true } } },
+	})
+	const taken = new Set(existing.tires.map((tire) => tire.position))
+	const missing = newTires.filter((tire) => !taken.has(tire.position))
+	if (missing.length > 0) {
+		await prisma.tire.createMany({
+			data: missing.map((tire) => ({ tireSetId: existing.id, ...tire })),
+		})
+	}
+	return existing.id
+}
+
+/**
+ * Writes a set's tires. A tire with an id updates that row; one without lands on
+ * the set's existing tire at the same position, or creates it — never a second
+ * tire at a position the set already has.
+ */
+async function saveTires(tireSetId: string, tires: TireInput[]) {
+	for (const tire of tires) {
+		const { id: tireId, ...tireData } = tire
+		// Scoped to the set, so a tire id from another report cannot be written through this one.
+		const where = tireId ? { id: tireId, tireSetId } : { tireSetId, position: tireData.position }
+		const existing = await prisma.tire.findFirst({ where, select: { id: true } })
+		if (existing) {
+			await prisma.tire.update({ where: { id: existing.id }, data: tireData })
+		} else if (!tireId) {
+			await prisma.tire.create({ data: { tireSetId, ...tireData } })
+		}
+	}
 }
 
 export { GET, PATCH }
