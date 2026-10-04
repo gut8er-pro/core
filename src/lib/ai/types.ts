@@ -156,7 +156,9 @@ type OcrExtractionResult = {
 }
 
 type VehicleLookupResult = {
-	source: 'nhtsa' | 'ai-decode' | 'none'
+	// 'wmi' — the VIN's first three characters, the only part with a public
+	// meaning. A future DAT VIN query adds its own source here.
+	source: 'wmi' | 'none'
 	vin?: string
 	manufacturer?: string
 	make?: string
@@ -206,6 +208,9 @@ type GenerationSummary = {
 	totalFieldsFilled: number
 	damageMarkersPlaced: number
 	warnings: string[]
+	// Document vehicle fields no source stated and the report does not hold —
+	// named in the summary so the assessor enters them by hand.
+	missingVehicleFields: string[]
 	photoOrder: string[]
 }
 

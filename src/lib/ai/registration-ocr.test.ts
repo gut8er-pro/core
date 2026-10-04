@@ -7,6 +7,7 @@
 
 import { describe, expect, it } from 'vitest'
 import {
+	findNextMot,
 	normalizeKbaNumber,
 	normalizeOcrDate,
 	parseOcrResponse,
@@ -171,5 +172,28 @@ describe('parsePlateResponse', () => {
 		const out = parsePlateResponse(JSON.stringify({ plate: 'M-XX 9999E', nextMot: 'unklar' }))
 		expect(out.plate).toBe('M-XX 9999E')
 		expect(out.nextMot).toBeNull()
+	})
+})
+
+describe('findNextMot', () => {
+	const plate = (nextMot: string | null) => ({
+		type: 'plate' as const,
+		result: { photoId: 'plate-1', plate: 'FÜ BP 147', nextMot },
+	})
+
+	it('takes the later date when the Plakette is newer than the document', () => {
+		// Re-inspection only ever moves the HU forward: an older printed date
+		// is from before the last inspection.
+		expect(findNextMot([plate('2027-05-01')], ocr({ nextMot: '2025-05-01' }))).toBe('2027-05-01')
+	})
+
+	it('takes the later date when the document is newer than the Plakette', () => {
+		expect(findNextMot([plate('2025-05-01')], ocr({ nextMot: '2027-05-01' }))).toBe('2027-05-01')
+	})
+
+	it('takes whichever source stated a date when only one did', () => {
+		expect(findNextMot([plate(null)], ocr({ nextMot: '2026-03-01' }))).toBe('2026-03-01')
+		expect(findNextMot([plate('2026-03-01')], null)).toBe('2026-03-01')
+		expect(findNextMot([], null)).toBeNull()
 	})
 })

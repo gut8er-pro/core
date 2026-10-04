@@ -1,41 +1,130 @@
-// Vehicle data lookup — NHTSA (free) with AI VIN decode fallback for European vehicles.
+// Vehicle data from the VIN. Only positions 1–3 (the WMI) have a public,
+// fixed meaning, so the VIN contributes itself and the manufacturer — nothing
+// more. Positions 4–9 encode model, body and engine in each manufacturer's
+// private scheme; turning them into kW / cm³ / body needs a licensed database
+// (DAT), and any figure decoded without one is an assumed value. See
+// "Vehicle data from Generate" in CONTEXT.md.
 
-import { getAnthropicClient } from './anthropic'
-import type { OcrExtractionResult, VehicleLookupResult } from './types'
+import type { OcrExtractionResult, OverviewAnalysisResult, VehicleLookupResult } from './types'
 
-const NHTSA_API_URL = 'https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues'
-
-// Authoritative WMI prefix → manufacturer mapping. The first 3 chars of a VIN
-// uniquely identify the manufacturer; we use this as a hard override after
-// any AI/NHTSA decode to prevent confusions like Audi (WAU) being labelled as
-// Volkswagen (WVW) when NHTSA has low confidence.
+// ISO 3779 World Manufacturer Identifiers of the brands sold in Germany. A
+// static list: an unknown WMI yields no manufacturer rather than a guess.
 const WMI_MANUFACTURER_MAP: Record<string, string> = {
+	// Volkswagen group
 	WAU: 'Audi',
 	WUA: 'Audi',
+	WA1: 'Audi',
 	TRU: 'Audi',
-	WBA: 'BMW',
-	WBS: 'BMW',
-	WBY: 'BMW',
-	WDD: 'Mercedes-Benz',
-	WDC: 'Mercedes-Benz',
-	WDB: 'Mercedes-Benz',
-	WMX: 'Mercedes-Benz',
 	WVW: 'Volkswagen',
 	WV1: 'Volkswagen',
 	WV2: 'Volkswagen',
 	WVG: 'Volkswagen',
-	W0L: 'Opel',
-	W0V: 'Opel',
 	VSS: 'SEAT',
 	TMB: 'Skoda',
+	WP0: 'Porsche',
+	WP1: 'Porsche',
+	SCB: 'Bentley',
+	ZHW: 'Lamborghini',
+	// BMW group
+	WBA: 'BMW',
+	WBS: 'BMW',
+	WBY: 'BMW',
+	'5UX': 'BMW',
+	WMW: 'MINI',
+	SCA: 'Rolls-Royce',
+	// Mercedes-Benz
+	WDD: 'Mercedes-Benz',
+	WDC: 'Mercedes-Benz',
+	WDB: 'Mercedes-Benz',
+	WDF: 'Mercedes-Benz',
+	WMX: 'Mercedes-Benz',
+	W1K: 'Mercedes-Benz',
+	W1N: 'Mercedes-Benz',
+	W1V: 'Mercedes-Benz',
+	WME: 'smart',
+	// Stellantis
+	W0L: 'Opel',
+	W0V: 'Opel',
+	VXK: 'Opel',
+	VF3: 'Peugeot',
+	VR3: 'Peugeot',
+	VF7: 'Citroën',
+	VR7: 'Citroën',
+	VR1: 'DS',
+	ZFA: 'Fiat',
+	ZAR: 'Alfa Romeo',
+	ZLA: 'Lancia',
+	ZAM: 'Maserati',
+	ZAC: 'Jeep',
+	'1C4': 'Jeep',
+	'1J4': 'Jeep',
+	// Renault group
+	VF1: 'Renault',
+	UU1: 'Dacia',
+	// Ford
+	WF0: 'Ford',
+	NM0: 'Ford',
+	'1FA': 'Ford',
+	'1FM': 'Ford',
+	'1FT': 'Ford',
+	// Hyundai group
+	KMH: 'Hyundai',
+	KMF: 'Hyundai',
+	KM8: 'Hyundai',
+	TMA: 'Hyundai',
+	NLH: 'Hyundai',
+	MAL: 'Hyundai',
+	KMT: 'Genesis',
+	KNA: 'Kia',
+	KNC: 'Kia',
+	KND: 'Kia',
+	KNE: 'Kia',
+	U5Y: 'Kia',
+	U6Y: 'Kia',
+	// Japanese brands
+	JTD: 'Toyota',
+	JTE: 'Toyota',
+	JTM: 'Toyota',
+	JTN: 'Toyota',
+	SB1: 'Toyota',
+	VNK: 'Toyota',
+	NMT: 'Toyota',
+	JTH: 'Lexus',
+	JTJ: 'Lexus',
+	JN1: 'Nissan',
+	JN8: 'Nissan',
+	SJN: 'Nissan',
+	VSK: 'Nissan',
+	JHM: 'Honda',
+	SHH: 'Honda',
+	SHS: 'Honda',
+	JMZ: 'Mazda',
+	JM1: 'Mazda',
+	JMB: 'Mitsubishi',
+	XMC: 'Mitsubishi',
+	JSA: 'Suzuki',
+	TSM: 'Suzuki',
+	MA3: 'Suzuki',
+	JF1: 'Subaru',
+	JF2: 'Subaru',
+	// Others
 	YV1: 'Volvo',
+	YV4: 'Volvo',
+	LYV: 'Volvo',
+	LPS: 'Polestar',
 	SAJ: 'Jaguar',
 	SAL: 'Land Rover',
-	WF0: 'Ford',
-	ZAR: 'Alfa Romeo',
-	ZFA: 'Fiat',
+	SCF: 'Aston Martin',
+	SBM: 'McLaren',
+	SCC: 'Lotus',
 	ZFF: 'Ferrari',
-	ZLA: 'Lancia',
+	LSJ: 'MG',
+	LGX: 'BYD',
+	KPT: 'SsangYong',
+	'5YJ': 'Tesla',
+	'7SA': 'Tesla',
+	LRW: 'Tesla',
+	XP7: 'Tesla',
 }
 
 function wmiManufacturer(vin: string): string | null {
@@ -44,216 +133,20 @@ function wmiManufacturer(vin: string): string | null {
 	return WMI_MANUFACTURER_MAP[wmi] ?? null
 }
 
-const AI_VIN_PROMPT = `Decode this Vehicle Identification Number (VIN): {VIN}
-
-Use your knowledge of VIN structure to extract vehicle information:
-- Positions 1-3 (WMI): World Manufacturer Identifier — AUTHORITATIVE for manufacturer.
-  Common European WMIs: WAU/WUA/TRU=Audi, WVW/WV1/WV2/WVG=Volkswagen (these are DIFFERENT manufacturers — WAU is NEVER Volkswagen), WBA/WBS=BMW, WDD/WDC/WDB=Mercedes-Benz, ZAR=Alfa Romeo, ZFF=Ferrari, W0L=Opel, VSS=SEAT, TMB=Skoda, YV1=Volvo, SAJ=Jaguar, SAL=Land Rover, WF0=Ford Europe
-- Positions 4-8: Vehicle attributes (model, body, engine)
-- Position 9: Check digit
-- Position 10: Model year (A=2010..J=2018, K=2019, L=2020, M=2021, N=2022, P=2023, R=2024, S=2025)
-- Position 11: Assembly plant
-- Positions 12-17: Sequential number
-
-Return JSON with:
-1. "manufacturer": Full manufacturer name (e.g., "Audi", "Volkswagen", "BMW", "Mercedes-Benz") — must match the WMI prefix
-2. "make": Parent company if different from manufacturer
-3. "model": Model name if determinable from VIN structure
-4. "modelYear": Model year as number
-5. "bodyType": Body type if determinable
-6. "engineDesign": Engine type if determinable
-7. "fuelType": Fuel type if determinable
-8. "confidence": 0.0-1.0 how confident you are in the decode
-
-Return ONLY valid JSON. Use null for fields you cannot determine.`
-
-async function lookupVehicleByVin(vin: string): Promise<VehicleLookupResult> {
-	// Try NHTSA first (free, works well for US/Asian vehicles)
-	const nhtsaResult = await lookupViaNhtsa(vin)
-
-	let chosen: VehicleLookupResult
-	if (nhtsaResult.confidence >= 0.3) {
-		chosen = nhtsaResult
-	} else {
-		// Fall back to AI VIN decoding for European vehicles
-		const aiResult = await lookupViaAiDecode(vin)
-		if (aiResult.confidence > nhtsaResult.confidence) {
-			chosen = {
-				...aiResult,
-				warnings: [
-					...nhtsaResult.warnings,
-					...aiResult.warnings,
-					'Used AI VIN decode (NHTSA had low confidence)',
-				],
-			}
-		} else {
-			chosen = nhtsaResult
-		}
-	}
-
-	return applyWmiOverride(vin, chosen)
-}
-
 /**
- * The WMI (first 3 chars of VIN) is the authoritative manufacturer identifier.
- * Override the chosen result whenever the WMI mapping disagrees with the
- * decoded manufacturer (e.g. NHTSA returns Volkswagen for an Audi WAU* VIN).
+ * What the VIN itself states: the VIN, and the manufacturer from its WMI.
+ * Synchronous on purpose — there is no VIN service to call. When DAT access
+ * lands, its VIN query belongs here, still ranked below the document by
+ * `mergeVehicleData`.
  */
-function applyWmiOverride(vin: string, result: VehicleLookupResult): VehicleLookupResult {
-	const wmi = wmiManufacturer(vin)
-	if (!wmi) return result
-
-	const current = result.manufacturer?.toLowerCase() ?? ''
-	if (current === wmi.toLowerCase()) return result
-
-	const message = result.manufacturer
-		? `Overriding decoded manufacturer "${result.manufacturer}" with WMI mapping "${wmi}"`
-		: `Filled manufacturer "${wmi}" from WMI prefix`
+function lookupVehicleByVin(vin: string): VehicleLookupResult {
+	const manufacturer = wmiManufacturer(vin)
 	return {
-		...result,
-		manufacturer: wmi,
-		warnings: [...result.warnings, message],
-	}
-}
-
-async function lookupViaNhtsa(vin: string): Promise<VehicleLookupResult> {
-	try {
-		const url = `${NHTSA_API_URL}/${encodeURIComponent(vin)}?format=json`
-		const response = await fetch(url, { signal: AbortSignal.timeout(10000) })
-
-		if (!response.ok) {
-			return {
-				source: 'none',
-				confidence: 0,
-				warnings: [`NHTSA API returned ${response.status}`],
-			}
-		}
-
-		const data = (await response.json()) as {
-			Results?: Array<Record<string, string | null>>
-		}
-		const result = data.Results?.[0]
-
-		if (!result) {
-			return {
-				source: 'none',
-				confidence: 0,
-				warnings: ['No results from NHTSA VIN decoder'],
-			}
-		}
-
-		const getString = (key: string): string | undefined => {
-			const val = result[key]
-			return val && val.trim() !== '' && val !== '0' ? val.trim() : undefined
-		}
-
-		const getNumber = (key: string): number | undefined => {
-			const val = result[key]
-			if (!val || val.trim() === '' || val === '0') return undefined
-			const num = Number.parseFloat(val)
-			return Number.isNaN(num) ? undefined : num
-		}
-
-		const warnings: string[] = []
-		const errorCode = getString('ErrorCode')
-		if (errorCode && errorCode !== '0') {
-			const errorText = getString('ErrorText')
-			if (errorText) warnings.push(errorText)
-		}
-
-		const manufacturer = getString('Make')
-		const model = getString('Model')
-		const modelYear = getNumber('ModelYear')
-
-		const filledFields = [
-			manufacturer,
-			model,
-			modelYear,
-			getString('BodyClass'),
-			getNumber('DisplacementCC'),
-			getNumber('EngineCylinders'),
-			getString('FuelTypePrimary'),
-		].filter(Boolean).length
-		const confidence = Math.min(1, filledFields / 7)
-
-		return {
-			source: 'nhtsa',
-			vin,
-			manufacturer,
-			make: getString('Manufacturer'),
-			model,
-			modelYear: modelYear ? Math.round(modelYear) : undefined,
-			subType: getString('Series') || getString('Trim'),
-			bodyType: getString('BodyClass'),
-			engineDesign: getString('EngineConfiguration'),
-			engineDisplacement: getNumber('DisplacementCC'),
-			cylinders: getNumber('EngineCylinders')
-				? Math.round(getNumber('EngineCylinders')!)
-				: undefined,
-			powerKw: getNumber('EngineKW'),
-			fuelType: getString('FuelTypePrimary'),
-			transmission: getString('TransmissionStyle'),
-			doors: getNumber('Doors') ? Math.round(getNumber('Doors')!) : undefined,
-			seats: getNumber('Seats') ? Math.round(getNumber('Seats')!) : undefined,
-			driveType: getString('DriveType'),
-			confidence,
-			warnings,
-		}
-	} catch (err) {
-		const message = err instanceof Error ? err.message : 'Unknown error'
-		console.error('NHTSA lookup failed:', message)
-		return {
-			source: 'none',
-			confidence: 0,
-			warnings: [`NHTSA lookup failed: ${message}`],
-		}
-	}
-}
-
-async function lookupViaAiDecode(vin: string): Promise<VehicleLookupResult> {
-	try {
-		const client = getAnthropicClient()
-		const prompt = AI_VIN_PROMPT.replace('{VIN}', vin)
-
-		const message = await client.messages.create({
-			model: 'claude-haiku-4-5-20251001',
-			max_tokens: 512,
-			messages: [{ role: 'user', content: prompt }],
-		})
-
-		const textBlock = message.content.find((b) => b.type === 'text')
-		const raw = textBlock ? textBlock.text.trim() : ''
-
-		const jsonString = raw
-			.replace(/^```(?:json)?\s*\n?/i, '')
-			.replace(/\n?```\s*$/i, '')
-			.trim()
-		const parsed = JSON.parse(jsonString) as Record<string, unknown>
-
-		const confidence =
-			typeof parsed.confidence === 'number' ? Math.min(1, Math.max(0, parsed.confidence)) : 0.4
-
-		return {
-			source: 'ai-decode',
-			vin,
-			manufacturer: typeof parsed.manufacturer === 'string' ? parsed.manufacturer : undefined,
-			make: typeof parsed.make === 'string' ? parsed.make : undefined,
-			model: typeof parsed.model === 'string' ? parsed.model : undefined,
-			modelYear: typeof parsed.modelYear === 'number' ? Math.round(parsed.modelYear) : undefined,
-			bodyType: typeof parsed.bodyType === 'string' ? parsed.bodyType : undefined,
-			engineDesign: typeof parsed.engineDesign === 'string' ? parsed.engineDesign : undefined,
-			fuelType: typeof parsed.fuelType === 'string' ? parsed.fuelType : undefined,
-			confidence,
-			warnings: [],
-		}
-	} catch (err) {
-		const message = err instanceof Error ? err.message : 'Unknown error'
-		console.error('AI VIN decode failed:', message)
-		return {
-			source: 'none',
-			confidence: 0,
-			warnings: [`AI VIN decode failed: ${message}`],
-		}
+		source: 'wmi',
+		vin,
+		...(manufacturer ? { manufacturer } : {}),
+		confidence: manufacturer ? 1 : 0,
+		warnings: [],
 	}
 }
 
@@ -343,89 +236,133 @@ function normalizeMotorType(raw: string): string {
 	return map[lower] ?? lower
 }
 
+function parseCount(raw: string | undefined): number | undefined {
+	if (!raw) return undefined
+	const n = Number.parseInt(raw, 10)
+	return Number.isNaN(n) ? undefined : n
+}
+
 /**
- * Merges vehicle data from VIN lookup and OCR extraction.
- * Prefers OCR for registration-specific data, lookup for technical specs.
+ * Merges the registration document with the VIN lookup. The document wins
+ * for every box it prints; the lookup only fills a box the document left
+ * empty. Never the other way round — a lookup value preferred over a read box
+ * is how the demo car got a 1.5 T-GDi's 1482 cm³ on a 1.6 CRDi.
  */
 function mergeVehicleData(
 	lookup: VehicleLookupResult | null,
 	ocr: OcrExtractionResult | null,
 ): Record<string, unknown> {
 	const merged: Record<string, unknown> = {}
-
-	// VIN: prefer OCR (direct from document)
-	if (ocr?.vin) merged.vin = ocr.vin
-	else if (lookup?.vin) merged.vin = lookup.vin
-
-	// Manufacturer: prefer lookup (standardized naming)
-	if (lookup?.manufacturer) merged.manufacturer = lookup.manufacturer
-	else if (ocr?.manufacturer) merged.manufacturer = ocr.manufacturer
-
-	// Model
-	if (lookup?.model) merged.mainType = lookup.model
-	else if (ocr?.model) merged.mainType = ocr.model
-
-	if (lookup?.subType) merged.subtype = lookup.subType
-
-	// Technical specs: prefer lookup
-	if (lookup?.powerKw) {
-		merged.powerKw = lookup.powerKw
-	} else if (ocr?.power) {
-		const kw = Number.parseInt(ocr.power, 10)
-		if (!Number.isNaN(kw)) merged.powerKw = kw
+	const set = (key: string, value: unknown) => {
+		if (value !== undefined && value !== null && value !== '') merged[key] = value
 	}
 
-	if (lookup?.cylinders) merged.cylinders = lookup.cylinders
-	if (lookup?.engineDesign) merged.engineDesign = lookup.engineDesign
-	if (lookup?.transmission) merged.transmission = lookup.transmission
-	else if (ocr?.transmission) merged.transmission = ocr.transmission
+	set('vin', ocr?.vin || lookup?.vin)
+	set('manufacturer', ocr?.manufacturer || lookup?.manufacturer)
+	set('mainType', ocr?.model || lookup?.model)
+	set('subtype', lookup?.subType)
 
-	if (lookup?.engineDisplacement) {
-		merged.engineDisplacementCcm = lookup.engineDisplacement
-	} else if (ocr?.engineDisplacement) {
-		const cc = Number.parseInt(ocr.engineDisplacement, 10)
-		if (!Number.isNaN(cc)) merged.engineDisplacementCcm = cc
-	}
+	set('powerKw', parseCount(ocr?.power) ?? lookup?.powerKw)
+	set('engineDisplacementCcm', parseCount(ocr?.engineDisplacement) ?? lookup?.engineDisplacement)
+	set('seats', parseCount(ocr?.seats) ?? lookup?.seats)
+	set('cylinders', lookup?.cylinders)
+	set('engineDesign', lookup?.engineDesign)
+	set('doors', lookup?.doors)
+	set('transmission', ocr?.transmission || lookup?.transmission)
 
-	// Vehicle details
-	if (lookup?.doors) merged.doors = lookup.doors
-	if (lookup?.seats) merged.seats = lookup.seats
-	else if (ocr?.seats) {
-		const seats = Number.parseInt(ocr.seats, 10)
-		if (!Number.isNaN(seats)) merged.seats = seats
-	}
-	if (lookup?.fuelType) merged.motorType = normalizeMotorType(lookup.fuelType)
-	else if (ocr?.fuel) merged.motorType = normalizeMotorType(ocr.fuel)
+	const fuel = ocr?.fuel || lookup?.fuelType
+	if (fuel) set('motorType', normalizeMotorType(fuel))
 
-	{
-		// Try lookup first, then OCR fallback. Skip the assignment entirely if
-		// neither produces a canonical match — leaving merged.vehicleType
-		// undefined so we never persist an off-list value.
-		const fromLookup = lookup?.bodyType ? normalizeVehicleType(lookup.bodyType) : null
-		const fromOcr = ocr?.vehicleType ? normalizeVehicleType(ocr.vehicleType) : null
-		const normalized = fromLookup ?? fromOcr
-		if (normalized) merged.vehicleType = normalized
-	}
+	// Skip the assignment entirely if neither produces a canonical match, so
+	// an off-list value is never persisted.
+	const fromOcr = ocr?.vehicleType ? normalizeVehicleType(ocr.vehicleType) : null
+	const fromLookup = lookup?.bodyType ? normalizeVehicleType(lookup.bodyType) : null
+	set('vehicleType', fromOcr ?? fromLookup)
 
-	// Registration dates: only from OCR
-	if (ocr?.firstRegistration) merged.firstRegistration = ocr.firstRegistration
-	if (ocr?.lastRegistration) merged.lastRegistration = ocr.lastRegistration
-
-	// KBA number: only from OCR
-	if (ocr?.kbaNumber) merged.kbaNumber = ocr.kbaNumber
-
-	// Previous owners: only from OCR
-	if (ocr?.previousOwners) {
-		const owners = Number.parseInt(ocr.previousOwners, 10)
-		if (!Number.isNaN(owners)) merged.previousOwners = owners
-	}
+	// Registration-specific boxes: only the document states them.
+	set('firstRegistration', ocr?.firstRegistration)
+	set('lastRegistration', ocr?.lastRegistration)
+	set('kbaNumber', ocr?.kbaNumber)
+	set('previousOwners', parseCount(ocr?.previousOwners))
 
 	return merged
 }
 
+/**
+ * The vehicle values Generate writes: the merged document + VIN, then a make
+ * badge read off an overview photo when neither stated a manufacturer. Never
+ * a model or body type from an overview photo — a model name is as often
+ * judged from the shape as read off a badge, and body type — body style judged from a
+ * silhouette is an assumed value (a wagon from the front three-quarter
+ * looks like a hatchback).
+ */
+function buildVehicleData(
+	lookup: VehicleLookupResult | null,
+	ocr: OcrExtractionResult | null,
+	overviews: OverviewAnalysisResult[],
+): Record<string, unknown> {
+	const data = mergeVehicleData(lookup, ocr)
+	if (!data.manufacturer) {
+		const make = overviews.find((o) => o.make)?.make
+		if (make) data.manufacturer = make
+	}
+	return data
+}
+
+/**
+ * The `VehicleInfo` columns a registration document prints (transmission is
+ * not a Teil I box, so it is not listed). When Generate
+ * leaves one of them empty, the summary names it so the assessor knows to
+ * enter it by hand.
+ */
+const DOCUMENT_VEHICLE_FIELDS = [
+	'vin',
+	'manufacturer',
+	'mainType',
+	'powerKw',
+	'engineDisplacementCcm',
+	'motorType',
+	'seats',
+	'vehicleType',
+	'firstRegistration',
+	'lastRegistration',
+	'kbaNumber',
+] as const
+
+type DocumentVehicleField = (typeof DOCUMENT_VEHICLE_FIELDS)[number]
+
+/**
+ * Document fields the saved `VehicleInfo` row already holds a value for.
+ */
+function filledDocumentFields(
+	vehicleInfo: Partial<Record<DocumentVehicleField, unknown>> | null,
+): DocumentVehicleField[] {
+	return DOCUMENT_VEHICLE_FIELDS.filter((field) => {
+		const value = vehicleInfo?.[field]
+		return value !== null && value !== undefined && value !== ''
+	})
+}
+
+/**
+ * Document fields that neither this run stated nor the report already holds.
+ */
+function missingVehicleFields(
+	vehicleData: Record<string, unknown>,
+	alreadyFilled: Iterable<string>,
+): DocumentVehicleField[] {
+	const filled = new Set(alreadyFilled)
+	return DOCUMENT_VEHICLE_FIELDS.filter(
+		(field) => vehicleData[field] === undefined && !filled.has(field),
+	)
+}
+
+export type { DocumentVehicleField }
 export {
+	buildVehicleData,
+	filledDocumentFields,
 	lookupVehicleByVin,
 	mergeVehicleData,
+	missingVehicleFields,
 	normalizeMotorType,
 	normalizeVehicleType,
 	wmiManufacturer,

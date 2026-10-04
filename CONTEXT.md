@@ -2,8 +2,8 @@
 
 The appraisal domain — Gutachten, Sachverständiger, BVSK, the four report types — is
 glossed in [CLAUDE.md](./CLAUDE.md#key-domain-concepts) and stays there. This file holds
-the vocabulary that *deploying* the thing forced on us — the two-origin split, and the
-mail senders. A different subject, and the one with a history of being got wrong.
+the vocabulary that *building and deploying* the thing forced on us — the two-origin split, the
+mail senders, and which vehicle values Generate may write. The ones with a history of being got wrong.
 
 ## Language
 
@@ -155,3 +155,49 @@ _Avoid_: trial period, grace period
 The Stripe object. It is what the billing page displays, and the only thing permitted to
 change entitlement — through the webhook that reports its lifecycle.
 _Avoid_: plan, membership, billing status
+
+## Vehicle data from Generate
+
+The demo of September 2026 showed a wrong kW figure and a wrong cm³ figure on a KIA Ceed. The
+document had been read; a value guessed from the VIN had then been preferred over it. These
+words keep a read and a guess from being treated as the same kind of value.
+
+**Registration document**:
+The Zulassungsbescheinigung Teil I (or the older Fahrzeugschein). Every value on it sits in a
+lettered or numbered **box** with a fixed meaning (P.2 is kW, P.1 is cm³, B is
+Erstzulassung). The authoritative source for anything it prints.
+_Avoid_: Fahrzeugbrief (that is Teil II, which we do not read), papers, registration
+
+**Extracted value**:
+A value read off something that states it: a box on the registration document, the
+manufacturer code in the first three characters of the VIN, the plate, the HU-Plakette, the
+odometer, a make badge on the car. The assessor's own observations of the photographed
+vehicle — colour, condition, damage — count too. Generate writes only extracted values.
+_Avoid_: detected value, AI value (both cover guesses too)
+
+**Assumed value**:
+A value inferred rather than read — a spec a model "knows" a VIN usually has, a figure typical
+of the model family, a body style judged from the car's silhouette (a wagon shot from the
+front three-quarter looks like a hatchback). Never written to a report. An empty field is correct; an assumed value
+in a Gutachten is a defect.
+_Avoid_: estimate, best guess, fallback
+
+**Erstzulassung**:
+Box B — the date the vehicle was first registered anywhere. Never changes over the vehicle's
+life.
+_Avoid_: first registration date when it could be read as "first registered to this owner"
+
+**Letzte Zulassung**:
+Box I — the date the vehicle was registered to its current holder. The `lastRegistration`
+column.
+_Avoid_: last re-registration, Ummeldung, HU date
+
+**Nächste HU**:
+The month the next Hauptuntersuchung falls due. Read from the HU-Plakette or from a printed
+date; when both are readable the later one wins, because re-inspection only ever moves it
+forward.
+_Avoid_: TÜV date, MOT (English shorthand only), next inspection
+
+**HU-Plakette**:
+The round inspection sticker on the rear plate. Two-digit year in the centre, due month at the
+12-o'clock position. Never on a front plate.

@@ -8,6 +8,8 @@ type AiGenerationSummary = {
 	photosProcessed: number
 	classifications: Record<string, number>
 	warnings: string[]
+	// Absent on summaries persisted before Generate named the empty fields.
+	missingVehicleFields?: string[]
 	generatedAt: string
 }
 

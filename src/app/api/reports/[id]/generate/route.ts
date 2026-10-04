@@ -13,7 +13,7 @@ import type {
 	OverviewAnalysisResult,
 	TireAnalysisResult,
 } from '@/lib/ai/types'
-import { normalizeVehicleType } from '@/lib/ai/vehicle-lookup'
+import { filledDocumentFields } from '@/lib/ai/vehicle-lookup'
 import { pickFillable } from '@/lib/ai/write-guard'
 import { authErrorResponse, getEntitledUser } from '@/lib/api/auth'
 import { prisma } from '@/lib/prisma'
@@ -110,11 +110,16 @@ async function POST(request: NextRequest, context: RouteContext) {
 				}))
 
 				// Run the pipeline with incremental option and user locale
+				// Document fields the report already holds, so the summary only
+				// asks for what is still empty.
+				const existingVehicle = await prisma.vehicleInfo.findUnique({ where: { reportId } })
+				const filledVehicleFields = filledDocumentFields(existingVehicle)
+
 				const summary = await runPipeline(
 					reportId,
 					photoInputs,
 					emit,
-					{ incrementalOnly: incremental },
+					{ incrementalOnly: incremental, filledVehicleFields },
 					locale,
 				)
 
@@ -251,37 +256,6 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 		}
 		if (payloads.vehicleData.lastRegistration) {
 			dbData.lastRegistration = new Date(payloads.vehicleData.lastRegistration as string)
-		}
-
-		// Enrich vehicleType and motorType from overview photos if VIN/OCR didn't provide them
-		if (!dbData.vehicleType) {
-			for (const overview of payloads.conditionData.overviewResults) {
-				if (overview.bodyType) {
-					const normalized = normalizeVehicleType(overview.bodyType)
-					if (normalized) {
-						dbData.vehicleType = normalized
-						break
-					}
-				}
-			}
-		}
-
-		// Auto-set manufacturer from overview if not from VIN/OCR
-		if (!dbData.manufacturer) {
-			for (const overview of payloads.conditionData.overviewResults) {
-				if (overview.make) {
-					dbData.manufacturer = overview.make
-					break
-				}
-			}
-		}
-		if (!dbData.mainType) {
-			for (const overview of payloads.conditionData.overviewResults) {
-				if (overview.model) {
-					dbData.mainType = overview.model
-					break
-				}
-			}
 		}
 
 		if (Object.keys(dbData).length > 0) {
@@ -706,6 +680,7 @@ async function persistResults(reportId: string, summary: GenerationSummary): Pro
 				photosProcessed: summary.photosProcessed,
 				classifications: summary.classifications,
 				warnings: summary.warnings,
+				missingVehicleFields: summary.missingVehicleFields,
 				generatedAt: new Date().toISOString(),
 			},
 		}

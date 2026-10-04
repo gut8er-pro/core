@@ -16,7 +16,6 @@ function GenerateProgress({ status, onCancel, className }: GenerateProgressProps
 	const STEP_LABELS: Record<string, string> = {
 		classify: t('gallery.classifyingPhotos'),
 		process: t('gallery.analyzingPhotos'),
-		lookup: t('gallery.lookingUpVehicleData'),
 		autofill: t('gallery.autoFillingReport'),
 	}
 	if (!status.isGenerating) return null

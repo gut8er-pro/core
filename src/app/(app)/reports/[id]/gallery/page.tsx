@@ -9,6 +9,7 @@ import { AnnotationModal } from '@/components/report/gallery/annotation-modal.dy
 import { Filmstrip } from '@/components/report/gallery/filmstrip'
 import { GenerateProgress } from '@/components/report/gallery/generate-progress'
 import { InstructionSidebar } from '@/components/report/gallery/instruction-sidebar'
+import { MissingVehicleFields } from '@/components/report/gallery/missing-vehicle-fields'
 import { ClassificationBadge } from '@/components/report/gallery/photo-classification-badge'
 import { PhotoGrid } from '@/components/report/gallery/photo-grid'
 import { PhotoViewer } from '@/components/report/gallery/photo-viewer'
@@ -272,11 +273,14 @@ function GalleryPage() {
 				{effectiveSummary && !genStatus.isGenerating && !genStatus.error && !summaryDismissed && (
 					<div className="flex items-center gap-2 rounded-lg border border-primary bg-primary-light px-4 py-3">
 						<Check className="h-4 w-4 shrink-0 text-primary" />
-						<p className="flex-1 text-body-sm text-primary">
-							{t('gallery.reportGenerated', { count: effectiveSummary.totalFieldsFilled })}
-							{effectiveSummary.damageMarkersPlaced > 0 &&
-								`, ${t('gallery.damageMarkersPlaced', { count: effectiveSummary.damageMarkersPlaced })}`}
-						</p>
+						<div className="flex flex-1 flex-col gap-1">
+							<p className="text-body-sm text-primary">
+								{t('gallery.reportGenerated', { count: effectiveSummary.totalFieldsFilled })}
+								{effectiveSummary.damageMarkersPlaced > 0 &&
+									`, ${t('gallery.damageMarkersPlaced', { count: effectiveSummary.damageMarkersPlaced })}`}
+							</p>
+							<MissingVehicleFields fields={effectiveSummary.missingVehicleFields ?? []} />
+						</div>
 						<button
 							type="button"
 							onClick={() => {

@@ -30,9 +30,13 @@ import type {
 	PhotoProcessingResult,
 	PlateDetectionResult,
 	TireAnalysisResult,
-	VehicleLookupResult,
 } from './types'
-import { lookupVehicleByVin, mergeVehicleData, normalizeVehicleType } from './vehicle-lookup'
+import {
+	buildVehicleData,
+	lookupVehicleByVin,
+	missingVehicleFields,
+	normalizeVehicleType,
+} from './vehicle-lookup'
 
 type PhotoInput = {
 	id: string
@@ -88,6 +92,9 @@ const LOCALE_AWARE_OPS: ReadonlySet<string> = new Set<LocaleAwareOp>([
 type PipelineOptions = {
 	incrementalOnly?: boolean
 	forcePhotoIds?: string[]
+	// VehicleInfo columns the report already holds, so the summary does not
+	// ask the assessor to enter what is already there.
+	filledVehicleFields?: string[]
 }
 
 type EmitFn = (event: GenerateEvent) => void
@@ -160,6 +167,7 @@ async function runPipeline(
 		totalFieldsFilled: 0,
 		damageMarkersPlaced: 0,
 		warnings: [],
+		missingVehicleFields: [],
 		photoOrder: [],
 	}
 
@@ -455,27 +463,8 @@ async function runPipeline(
 	const extractedPlate = findExtractedPlate(processedResults)
 	const extractedOcr = findExtractedOcr(processedResults)
 
-	let vehicleLookup: VehicleLookupResult | null = null
-	if (extractedVin) {
-		emit({
-			type: 'progress',
-			step: 'lookup',
-			current: 0,
-			total: 1,
-			message: t('progress.lookingUpVehicle'),
-		})
-		vehicleLookup = await lookupVehicleByVin(extractedVin)
-		if (vehicleLookup.warnings.length > 0) {
-			summary.warnings.push(...vehicleLookup.warnings)
-		}
-		emit({
-			type: 'progress',
-			step: 'lookup',
-			current: 1,
-			total: 1,
-			message: t('progress.vehicleRetrieved'),
-		})
-	}
+	// The VIN states itself and its manufacturer (WMI) — no spec decoding.
+	const vehicleLookup = extractedVin ? lookupVehicleByVin(extractedVin) : null
 
 	// --- Step 3b: Calculation extraction from damage photos ---
 	let calculationData: CalculationAutoFillResult | null = null
@@ -519,7 +508,12 @@ async function runPipeline(
 	})
 
 	// 4a: Vehicle tab
-	const vehicleData = mergeVehicleData(vehicleLookup, extractedOcr)
+	const overviewResults = collectOverviewResults(processedResults)
+	const vehicleData = buildVehicleData(vehicleLookup, extractedOcr, overviewResults)
+	summary.missingVehicleFields = missingVehicleFields(
+		vehicleData,
+		options.filledVehicleFields ?? [],
+	)
 	if (Object.keys(vehicleData).length > 0) {
 		summary.autoFilledFields.vehicle = Object.keys(vehicleData)
 		emit({ type: 'auto_fill', section: 'vehicle', fields: Object.keys(vehicleData) })
@@ -557,7 +551,6 @@ async function runPipeline(
 	// 4c: Condition tab (damage markers + tire data + overview/interior data)
 	const damageMarkers = collectDamageMarkers(processedResults, t)
 	const tireResults = collectTireResults(processedResults)
-	const overviewResults = collectOverviewResults(processedResults)
 	const interiorResults = collectInteriorResults(processedResults)
 
 	if (damageMarkers.length > 0) {
@@ -786,18 +779,21 @@ function findExtractedPlate(results: PhotoProcessingResult[]): string | null {
 }
 
 /**
- * Next HU date. The registration document wins over the rear-plate Plakette:
- * a printed date beats a sticker read at an angle.
+ * Next HU date. When both the registration document and the rear-plate
+ * Plakette state one, the later wins: re-inspection only ever moves the HU
+ * forward, so the earlier date predates the last inspection. Both sources
+ * are normalized to YYYY-MM-DD, so string order is date order.
  */
 function findNextMot(
 	results: PhotoProcessingResult[],
 	ocr: OcrExtractionResult | null,
 ): string | null {
-	if (ocr?.nextMot) return ocr.nextMot
+	const dates: string[] = []
+	if (ocr?.nextMot) dates.push(ocr.nextMot)
 	for (const r of results) {
-		if (r.type === 'plate' && r.result?.nextMot) return r.result.nextMot
+		if (r.type === 'plate' && r.result?.nextMot) dates.push(r.result.nextMot)
 	}
-	return null
+	return dates.length > 0 ? dates.reduce((a, b) => (b > a ? b : a)) : null
 }
 
 function findExtractedOcr(results: PhotoProcessingResult[]): OcrExtractionResult | null {
@@ -971,6 +967,7 @@ function buildPhotoUpdates(
 export type { EmitFn, PhotoInput, PhotoUpdate, PipelineOptions }
 export {
 	collectDamageMarkers,
+	findNextMot,
 	hashUrl,
 	normalizeKbaNumber,
 	normalizeOcrDate,
