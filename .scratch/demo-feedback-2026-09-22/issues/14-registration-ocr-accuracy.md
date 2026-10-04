@@ -1,6 +1,6 @@
 # 14 — Registration-document OCR reads the wrong boxes
 
-Status: ready-for-human
+Status: done
 Type: bug (AI quality)
 Severity: high
 
@@ -137,7 +137,7 @@ by unit tests over synthesised model responses instead. **Drop a real Teil I pho
 
 ## Reopened — grilling 2026-10-04
 
-Status: ready-for-human (waiting on the client's Teil I photo; everything else done)
+Status: done — closed 2026-10-05 without the live assertion (see *Still open* below)
 
 The Resolution above fixed how the document is *read*, but not which source *wins*.
 `mergeVehicleData` (`src/lib/ai/vehicle-lookup.ts`) prefers the VIN lookup for every technical
@@ -254,7 +254,11 @@ Summaries persisted before this change have no such key and render nothing.
 No AI operation's prompt or output shape changed. The AI VIN decode was never a cached
 operation, and the overview prompt still returns `bodyType` (it is just no longer written).
 
-### Still open — closes the ticket
+### Still open — follow-up, not blocking
+
+Closed by the maintainer on 2026-10-05 before this check ran. Do it when the client sends
+the photo:
+
 - [ ] Get the demo KIA Ceed Teil I photo from the client (holder block redacted), add it to
       `testing/testing-images/`, and assert P.2 / P.1 / B / I in
       `src/test/integration/ai-live-validation.integration.test.ts` (`AI_LIVE_VALIDATION=1`).
