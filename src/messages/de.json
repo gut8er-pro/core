@@ -843,7 +843,8 @@
         "trunk": "Kofferraum",
         "autoCalculateGrade": "Note automatisch berechnen",
         "scorePopupHint": "Klicken Sie + für überdurchschnittlich, Zahl für Standard oder - für unterdurchschnittlich",
-        "overallConditionTitle": "Gesamtzustand"
+        "overallConditionTitle": "Gesamtzustand",
+        "noCategoryGraded": "Keine Kategorie bewertet — bewerten Sie mindestens eine Kategorie oder schalten Sie die automatische Berechnung aus, um die Gesamtnote manuell festzulegen."
       },
       "valueIncreasingFeatures": {
         "title": "Wertsteigernde Merkmale",

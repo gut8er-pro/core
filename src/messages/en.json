@@ -843,7 +843,8 @@
         "trunk": "Trunk",
         "autoCalculateGrade": "Automatically calculate grade",
         "scorePopupHint": "Click + for above standard, number for standard, or - for below",
-        "overallConditionTitle": "Overall condition"
+        "overallConditionTitle": "Overall condition",
+        "noCategoryGraded": "No category graded — grade at least one category, or turn off auto-calculate to set the overall grade manually."
       },
       "valueIncreasingFeatures": {
         "title": "Value Increasing Features",

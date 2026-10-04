@@ -8,7 +8,7 @@ import { MISSING_GROUP_CLASS } from '@/components/ui/missing'
 import { ToggleSwitch } from '@/components/ui/toggle-switch'
 import { SECTION } from '@/lib/completeness'
 import { cn } from '@/lib/utils'
-import { computeOverallGrade, SCORE_OPTIONS, UNGRADED } from './grading-scale'
+import { autoOverallToSave, computeOverallGrade, SCORE_OPTIONS, UNGRADED } from './grading-scale'
 import type { GradingField, OldtimerDetailsData } from './types'
 import { GRADED_CATEGORIES, gradingKey } from './types'
 
@@ -51,12 +51,12 @@ function VehicleGradingSection({
 
 	// Auto-calculation is a promise about the stored grade, not a display trick:
 	// the PDF and the completeness gate read the column, so the column is what
-	// has to follow the categories.
+	// has to follow the categories — including back to empty.
+	const overallToSave = autoCalculate ? autoOverallToSave(values) : null
 	useEffect(() => {
-		if (!autoCalculate || disabled) return
-		if (!computedOverall || computedOverall === values.gradingOverall) return
-		onChange('gradingOverall', computedOverall)
-	}, [autoCalculate, disabled, computedOverall, values.gradingOverall, onChange])
+		if (disabled || overallToSave === null) return
+		onChange('gradingOverall', overallToSave)
+	}, [disabled, overallToSave, onChange])
 
 	function selectScore(field: GradingField, value: string, modifier?: string) {
 		onChange(field, value === 'Non' ? 'Non' : `${value}${modifier ?? ''}`)
@@ -136,6 +136,10 @@ function VehicleGradingSection({
 							{overall || UNGRADED}
 						</button>
 					</div>
+
+					{autoCalculate && computedOverall === null && (
+						<p className="text-caption text-grey-100">{t('vehicleGrading.noCategoryGraded')}</p>
+					)}
 
 					{editingCategory === 'overall' && !autoCalculate && (
 						<ScorePopup

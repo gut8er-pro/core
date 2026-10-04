@@ -56,6 +56,21 @@ async function expectSavedOverall(page: Page, reportId: string, grade: string) {
 		.toBe(grade)
 }
 
+/** Whether the server's gate counts the grading section as unfinished. */
+async function gradingSectionMissing(page: Page, reportId: string): Promise<boolean> {
+	return page.evaluate(async (rid: string) => {
+		const response = await fetch(`/api/reports/${rid}/export?format=pdf`)
+		if (response.status !== 422) return false
+		const body = (await response.json()) as {
+			missingInfo?: { tabs?: Record<string, { sections: { id: string; isComplete: boolean }[] }> }
+		}
+		const section = body.missingInfo?.tabs?.grading?.sections.find(
+			(candidate) => candidate.id === 'vehicle-grading',
+		)
+		return section ? !section.isComplete : false
+	}, reportId)
+}
+
 test.describe('OT Complete Flow', () => {
 	let reportId: string
 
@@ -203,6 +218,36 @@ test.describe('OT Complete Flow', () => {
 		await expect(page.getByRole('button', { name: 'Overall condition' })).toHaveText('2', {
 			timeout: 20000,
 		})
+	})
+
+	test('OT Grading: un-grading every category clears the auto-calculated grade', async ({
+		page,
+	}) => {
+		const ownId = await createOtReport(page, 'PW OT un-grade')
+		await page.goto(`/reports/${ownId}/details/grading`)
+		await page.waitForTimeout(3000)
+
+		const overall = page.getByRole('button', { name: 'Overall condition' })
+		const hint = page.getByText('No category graded', { exact: false })
+		await expect(hint).toBeVisible({ timeout: 10000 })
+
+		const bodywork = page.getByRole('button', { name: 'Bodywork / Sheet Metal', exact: true })
+		await bodywork.click()
+		await gradePopup(page).getByRole('button', { name: '2', exact: true }).click()
+		await expectSavedOverall(page, ownId, '2')
+		await expect(hint).toBeHidden()
+
+		// Back to not applicable: nothing supports a grade any more, so the
+		// column must empty with the screen rather than keep the old 2.
+		await bodywork.click()
+		await gradePopup(page).getByRole('button', { name: 'Non', exact: true }).click()
+		await expectSavedOverall(page, ownId, '')
+
+		page.on('dialog', async (d) => await d.accept())
+		await page.reload({ waitUntil: 'networkidle' })
+		await expect(overall).toHaveText('–', { timeout: 20000 })
+		await expect(hint).toBeVisible()
+		expect(await gradingSectionMissing(page, ownId)).toBe(true)
 	})
 
 	test('OT Grading: the popup closes on an outside click', async ({ page }) => {

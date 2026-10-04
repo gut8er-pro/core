@@ -1,6 +1,6 @@
 # 38 — OT Vehicle Grading rework (own tab, working automation, no duplicate paint)
 
-Status: ready-for-agent
+Status: done — reopened app-side scope fixed 2026-10-04; the PDF half lives in ticket 44 (needs-info)
 Type: feature + bugs
 Severity: medium-high
 
@@ -27,7 +27,8 @@ Files: `src/components/report/condition/` grading components → move under thei
 alongside the calculation/condition pages; manifest `vehicle-grading` section (see ticket 35's
 edits nearby); PDF OT template. Coordinate with whoever owns the tab bar that week.
 
-Status: done (app side) — PDF section order still owed by the export agent, see below
+> Reopened 2026-10-04 for the app side — see "Reopened (2026-10-04)" at the end. The PDF work
+> below is no longer part of this ticket; it moved to `44-ot-pdf-vehicle-grading.md`.
 
 ## Resolution
 
@@ -102,7 +103,11 @@ its Paint pane was only a placeholder note.
 It now renders after the nine-category grid, with the auto-calculate toggle under it —
 matching the auto-calculate flow (grade the parts, then read the whole).
 
-## PDF — for the export agent
+## PDF — for the export agent (moved to ticket 44)
+
+> Superseded by `44-ot-pdf-vehicle-grading.md`. One correction: the PDF never rendered grading
+> "inside the condition block". `src/lib/pdf/` has no grading code, and `generate-buffer.ts` does
+> not load `oldtimerDetails` at all.
 
 I did not touch `src/lib/pdf/**`. What the OT template should do, once grading is its own tab:
 
@@ -137,3 +142,66 @@ I did not touch `src/lib/pdf/**`. What the OT template should do, once grading i
 ## Status check (2026-10-04) — still open
 
 The app side is done. **The PDF part has not been picked up:** `src/lib/pdf/` has no reference to grading at all, so the OT PDF prints no Vehicle Grading section and no final grade (the client's "end grade no where" complaint). The four points under "PDF — for the export agent" above are the remaining work.
+
+## Reopened (2026-10-04) — app side: auto-calculate leaves a stale overall grade
+
+`computeOverallGrade` returning `null` when nothing is graded is intended (every category
+`Non` or ungraded → no overall grade). The bug is in how `vehicle-grading-section.tsx` saves it:
+
+```ts
+const overall = autoCalculate ? (computedOverall ?? '') : values.gradingOverall   // displayed
+if (!computedOverall || computedOverall === values.gradingOverall) return         // persisted
+```
+
+On `null` the effect returns early and never clears the column, so the screen and the column
+disagree:
+
+1. Grade three categories `2` with auto on → `gradingOverall = "2"` is saved.
+2. Set all three back to `Non`.
+3. The screen shows an empty overall grade; the column still holds `"2"`.
+4. The completeness gate sees `gradingOverall` filled and lets the report send; the PDF (once
+   built) would print a grade nobody can see and no category supports.
+
+**Fix:** with auto on, persist `''` when the computed grade is `null`, so the column always
+equals what is displayed. Regression test: grade → un-grade → reload → overall empty and the
+`vehicle-grading` section reported missing.
+
+### Also in the reopened scope: tell the assessor why the grade is empty
+
+With auto on and every category `Non`/ungraded, the overall grade is empty and its button is
+disabled, and nothing explains why. **Decision (2026-10-04): keep the completeness gate**, because
+an OT valuation with no overall grade is the "end grade no where" complaint again. Don't
+silently switch auto off either. Instead, render an inline hint under the empty overall disc
+while auto is on and `computeOverallGrade` is `null`:
+
+> No category graded — grade at least one category, or turn off auto-calculate to set the
+> overall grade manually.
+
+New i18n key under `vehicleGrading.*` in both `de.json` and `en.json`. E2E: set every category
+to `Non` with auto on → hint visible, overall empty, `vehicle-grading` listed as missing.
+
+## Resolution of the reopened scope (2026-10-04)
+
+- **Stale grade fixed.** New pure `autoOverallToSave(values)` in `grading-scale.ts` returns what the
+  column must become (`''` when nothing is graded) or `null` when it already matches the screen.
+  `vehicle-grading-section.tsx` writes that value, so with auto on, the column always matches what is displayed.
+  Side effect worth knowing: turning auto **on** with nothing graded clears a previous manual grade,
+  because the screen shows nothing and the column has to match it.
+- **Hint.** `vehicleGrading.noCategoryGraded` (de + en) renders under the overall disc while auto is
+  on and `computeOverallGrade` is `null`.
+- **Tests.** 3 new unit tests on `autoOverallToSave`. New E2E test in `15-ot-complete-flow.spec.ts`
+  ("un-grading every category clears the auto-calculated grade"): hint is visible on a fresh report, grading
+  a 2 saves `"2"` and hides the hint, setting it back to `Non` saves `''`, and after a reload the disc shows
+  `–`, the hint is back and the server gate reports `vehicle-grading` incomplete. Full OT spec 22/22,
+  unit suite 1254 passed.
+
+## Comments
+
+**2026-10-04 grilling:**
+- `computeOverallGrade` → `null` when nothing is graded is intended, not a bug. The bug was the
+  save path keeping a stale value (above).
+- All-`Non` decided: gate stays, add the hint (above).
+- Formula: still **unconfirmed by the client (Ivan)**. Does not block anything; the shipped
+  default stands until they answer. Changing it only touches `grading-scale.ts`.
+- PDF: the client has not defined the report PDFs yet, so the PDF half is split into ticket 44 as
+  `needs-info` instead of being guessed now.

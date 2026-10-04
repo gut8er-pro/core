@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeOverallGrade, gradeOf, scoreOf } from './grading-scale'
+import { autoOverallToSave, computeOverallGrade, gradeOf, scoreOf } from './grading-scale'
 
 describe('scoreOf', () => {
 	it('reads a plain grade as its own number', () => {
@@ -69,5 +69,22 @@ describe('computeOverallGrade', () => {
 	it('computes nothing while nothing is graded', () => {
 		expect(computeOverallGrade({})).toBeNull()
 		expect(computeOverallGrade({ gradingBodywork: 'Non' })).toBeNull()
+	})
+})
+
+describe('autoOverallToSave', () => {
+	it('writes the computed grade when the column lags behind', () => {
+		expect(autoOverallToSave({ gradingBodywork: '2', gradingOverall: '' })).toBe('2')
+		expect(autoOverallToSave({ gradingBodywork: '2', gradingOverall: '4' })).toBe('2')
+	})
+
+	it('writes nothing when the column already holds the computed grade', () => {
+		expect(autoOverallToSave({ gradingBodywork: '2', gradingOverall: '2' })).toBeNull()
+		expect(autoOverallToSave({ gradingOverall: '' })).toBeNull()
+	})
+
+	it('clears a stale grade once every category is ungraded again', () => {
+		expect(autoOverallToSave({ gradingBodywork: 'Non', gradingOverall: '2' })).toBe('')
+		expect(autoOverallToSave({ gradingOverall: '2' })).toBe('')
 	})
 })

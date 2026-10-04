@@ -55,4 +55,17 @@ function computeOverallGrade(values: Partial<Record<GradingField, string>>): str
 	return gradeOf(scores.reduce((total, score) => total + score, 0) / scores.length)
 }
 
-export { computeOverallGrade, gradeOf, SCORE_OPTIONS, scoreOf, UNGRADED }
+/**
+ * What auto-calculation has to write to the `gradingOverall` column, or `null`
+ * when the column already says what the screen shows.
+ *
+ * An empty computation writes `''` rather than nothing: a grade left behind
+ * after its categories were un-graded would satisfy the completeness gate and
+ * print in the PDF while no category supports it.
+ */
+function autoOverallToSave(values: Partial<Record<GradingField, string>>): string | null {
+	const computed = computeOverallGrade(values) ?? ''
+	return computed === (values.gradingOverall ?? '') ? null : computed
+}
+
+export { autoOverallToSave, computeOverallGrade, gradeOf, SCORE_OPTIONS, scoreOf, UNGRADED }
